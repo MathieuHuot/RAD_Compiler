@@ -1,3 +1,7 @@
 (executable
  (name main)
-)
+ (libraries lwt.unix syntax))
+
+(install
+ (section bin)
+ (files (main.exe as compile_RD)))

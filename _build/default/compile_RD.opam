@@ -1,0 +1,11 @@
+opam-version: "2.0"
+version: "1.0"
+maintainer: "mathieu.huot@stx.ox.ac.uk"
+authors: ["Mathieu Huot"]
+homepage: "https://github.com/SpongeBob/hello_world"
+bug-reports: "https://github.com/SpongeCob/hello_world/issues"
+dev-repo: "git+https://github.com/SpongeBob/hello_world.git"
+license: "Apache-2.0"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]

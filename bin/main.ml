@@ -1,18 +1,17 @@
-type op1 = COS  | SIN 
-type op2 = PLUS | TIMES 
-type var = Var of int
-type syn1 = var
-            | Const of float 
-            | Apply1 of op1 * syn1 
-            | Apply2 of op2 * syn1 * syn1
-            | Let of var * syn1 * syn1
+open Syntax.SourceLanguage
+open Syntax.Operators
 
-type syn2 = var
-            | Const of float 
-            | Apply1 of op1 * syn2 
-            | Apply2 of op2 * syn2 * syn2
-            | Let of var * syn2 * syn2
-            | Pair of syn2 * syn2
-            | Fun of var * syn2
+let x = Var(3);;
 
-let f () =  let x = (2+3) in x
+let f op = match op with 
+| Cos -> (Lwt_io.printf "Hello\n")
+| Sin -> (Lwt_io.printf "World\n");;
+
+f(Cos);;
+f(Sin);; 
+
+let g () = match x with 
+| Var(a) -> (Lwt_io.printf "%d" a) 
+| _ -> (Lwt_io.printf "42");;
+
+g();;

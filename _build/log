@@ -1,10 +1,10 @@
-# /Users/matuot/.opam/default/bin/dune build main.exe
+# /Users/matuot/.opam/default/bin/dune runtest
 # OCAMLPARAM: unset
 # Workspace root: /Users/matuot/repos/RAD_Compiler
-$ /usr/bin/getconf _NPROCESSORS_ONLN > /var/folders/9j/hglb3g2s4z16d49xygdv5_m40000gp/T/dune24c0b5.output 2> /dev/null
+$ /usr/bin/getconf _NPROCESSORS_ONLN > /var/folders/9j/hglb3g2s4z16d49xygdv5_m40000gp/T/dune27fbcf.output 2> /dev/null
 # Auto-detected concurrency: 4
 # disable binary cache
-$ /Users/matuot/.opam/default/bin/ocamlc.opt -config > /var/folders/9j/hglb3g2s4z16d49xygdv5_m40000gp/T/dune1ebcb5.output
+$ /Users/matuot/.opam/default/bin/ocamlc.opt -config > /var/folders/9j/hglb3g2s4z16d49xygdv5_m40000gp/T/dune8a00ff.output
 # Dune context:
 #  { name = "default"
 #  ; kind = "default"
@@ -105,7 +105,10 @@ $ /Users/matuot/.opam/default/bin/ocamlc.opt -config > /var/folders/9j/hglb3g2s4
 #      ; windows_unicode = false
 #      }
 #  }
-$ (cd _build/default && /Users/matuot/.opam/default/bin/ocamldep.opt -modules -impl bin/main.ml) > _build/default/bin/.main.eobjs/main.ml.d
-$ (cd _build/default && /Users/matuot/.opam/default/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -I bin/.main.eobjs/byte -no-alias-deps -opaque -o bin/.main.eobjs/byte/dune__exe__Main.cmo -c -impl bin/main.ml)
-$ (cd _build/default && /Users/matuot/.opam/default/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I bin/.main.eobjs/byte -I bin/.main.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -o bin/.main.eobjs/native/dune__exe__Main.cmx -c -impl bin/main.ml)
-$ (cd _build/default && /Users/matuot/.opam/default/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -o bin/main.exe bin/.main.eobjs/native/dune__exe__Main.cmx)
+$ (cd _build/default && /Users/matuot/.opam/default/bin/ocamldep.opt -modules -impl test/test.ml) > _build/default/test/.test.eobjs/test.ml.d
+$ (cd _build/default && /Users/matuot/.opam/default/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -I test/.test.eobjs/byte -I /Users/matuot/.opam/default/lib/bytes -I /Users/matuot/.opam/default/lib/lwt -I /Users/matuot/.opam/default/lib/lwt/unix -I /Users/matuot/.opam/default/lib/mmap -I /Users/matuot/.opam/default/lib/ocaml/threads -I /Users/matuot/.opam/default/lib/ocplib-endian -I /Users/matuot/.opam/default/lib/ocplib-endian/bigstring -I /Users/matuot/.opam/default/lib/pprint -I /Users/matuot/.opam/default/lib/result -I /Users/matuot/.opam/default/lib/seq -I lib/syntax/.syntax.objs/byte -I lib/syntax/.syntax.objs/native -no-alias-deps -opaque -o test/.test.eobjs/byte/dune__exe__Test.cmo -c -impl test/test.ml)
+> File "test/test.ml", line 1, characters 0-1:
+> 1 | f(Cos);;
+>     ^
+> Error: Unbound value f
+[2]

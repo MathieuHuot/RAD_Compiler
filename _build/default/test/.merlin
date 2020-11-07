@@ -1,0 +1,28 @@
+EXCLUDE_QUERY_DIR
+B /Users/matuot/.opam/default/lib/bytes
+B /Users/matuot/.opam/default/lib/lwt
+B /Users/matuot/.opam/default/lib/lwt/unix
+B /Users/matuot/.opam/default/lib/mmap
+B /Users/matuot/.opam/default/lib/ocaml
+B /Users/matuot/.opam/default/lib/ocaml/threads
+B /Users/matuot/.opam/default/lib/ocplib-endian
+B /Users/matuot/.opam/default/lib/ocplib-endian/bigstring
+B /Users/matuot/.opam/default/lib/pprint
+B /Users/matuot/.opam/default/lib/result
+B /Users/matuot/.opam/default/lib/seq
+B ../_build/default/lib/syntax/.syntax.objs/byte
+B ../_build/default/test/.test.eobjs/byte
+S /Users/matuot/.opam/default/lib/bytes
+S /Users/matuot/.opam/default/lib/lwt
+S /Users/matuot/.opam/default/lib/lwt/unix
+S /Users/matuot/.opam/default/lib/mmap
+S /Users/matuot/.opam/default/lib/ocaml
+S /Users/matuot/.opam/default/lib/ocaml/threads
+S /Users/matuot/.opam/default/lib/ocplib-endian
+S /Users/matuot/.opam/default/lib/ocplib-endian/bigstring
+S /Users/matuot/.opam/default/lib/pprint
+S /Users/matuot/.opam/default/lib/result
+S /Users/matuot/.opam/default/lib/seq
+S ../lib/syntax
+S .
+FLG -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs

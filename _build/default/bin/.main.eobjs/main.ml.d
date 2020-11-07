@@ -1,1 +1,1 @@
-bin/main.ml:
+bin/main.ml: Lwt_io Syntax
