@@ -7,7 +7,6 @@ B /Users/matuot/.opam/default/lib/ocaml
 B /Users/matuot/.opam/default/lib/ocaml/threads
 B /Users/matuot/.opam/default/lib/ocplib-endian
 B /Users/matuot/.opam/default/lib/ocplib-endian/bigstring
-B /Users/matuot/.opam/default/lib/pprint
 B /Users/matuot/.opam/default/lib/result
 B /Users/matuot/.opam/default/lib/seq
 B ../_build/default/lib/syntax/.syntax.objs/byte
@@ -20,7 +19,6 @@ S /Users/matuot/.opam/default/lib/ocaml
 S /Users/matuot/.opam/default/lib/ocaml/threads
 S /Users/matuot/.opam/default/lib/ocplib-endian
 S /Users/matuot/.opam/default/lib/ocplib-endian/bigstring
-S /Users/matuot/.opam/default/lib/pprint
 S /Users/matuot/.opam/default/lib/result
 S /Users/matuot/.opam/default/lib/seq
 S ../lib/syntax

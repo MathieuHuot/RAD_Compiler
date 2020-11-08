@@ -1,1 +1,1 @@
-test/test.ml:
+test/test.ml: Lwt_io Syntax

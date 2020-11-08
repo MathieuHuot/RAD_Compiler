@@ -1,6 +1,8 @@
 open Operators
 open Vars
 
+
+(* syntax *)
 type syn2 = Var of var
             | Const of float 
             | Apply1 of op1 * syn2 

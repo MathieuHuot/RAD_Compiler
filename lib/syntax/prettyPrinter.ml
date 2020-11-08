@@ -1,23 +1,24 @@
-(* open Operators *)
+open Operators
+open Lwt_io
 
-(* open Pprint
+let arrow = " ->"
+let lambda = " fun"
+let colon = " :" 
+let equal = " ="
+let kcase = "case "
+let return = "return" 
+let kwith = " with"
+let kof = " of "
 
-let arrow = text " ->"
-let lambda = text " fun"
-let colon = text " :" ^^softline
-let equal = text " ="
-let kcase = text "case "
-let return = softline ^^ "return" ^^softline
-let kwith = text " with"^^softline
-let kof = text " of " *)
-
-(* let printOp1 = function 
-   | COS -> text "cos "
-   | SIN -> text "sin "
+ let printOp1 = function 
+   | Cos -> "cos "
+   | Sin -> "sin "
+   | Exp -> "exp"
 
 let printOp2 = function 
-    | PLUS -> text " + "
-    | TIMES -> text " * "  *)
+    | Plus -> " + "
+    | Times -> " * " 
+    | Minus -> " - "
 
-(* let prettyPrinter = function
-|  *)
+let prettyPrinter = function
+| _ -> printf "Hello" 

@@ -1,2 +1,2 @@
-type op1 = Cos  | Sin
-type op2 = Plus | Times
+type op1 = Cos  | Sin | Exp
+type op2 = Plus | Times | Minus

@@ -1,1 +1,1 @@
-bin/main.mli: Lwt Syntax
+bin/main.mli:
