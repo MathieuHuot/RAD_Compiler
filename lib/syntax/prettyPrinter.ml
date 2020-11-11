@@ -24,8 +24,8 @@ let kin = " in"
 let kdot= ". "
 
 let printVar = function
-| Var(str,n) -> str^(string_of_int n)
-| _          -> failwith "this is not a variable"
+| Var((str,n),_) -> str^(string_of_int n)
+| _              -> failwith "this is not a variable"
 
 let printConst = function
 | Const c -> string_of_float c
@@ -45,17 +45,17 @@ let printOp2 = function
     | Times -> " * "
     | Minus -> " - "
 
-let prettyPrinter (expr:synSource) = 
+let prettySourcePrinter (expr:synSource) = 
 let rec prettyP = function
-| Var x                     -> printVar (Var x)
+| Var(x,ty)                 -> printVar (Var(x,ty))
 | Const c                   -> printConst (Const c)
 | Apply1(op,expr)           -> printOp1 op^"("^(prettyP expr)^")"  
 | Apply2(op,expr1,expr2)    -> if (isOp2Infix op) then "("^(prettyP expr1)^(printOp2 op)^(prettyP expr2)^")"
 else (printOp2 op)^"("^(prettyP expr1)^", "^(prettyP expr2)^")"
-| Let(x,expr1,expr2)        -> klet^(printVar (Var x))^kequal^(prettyP expr1)^kin^"\n"^(prettyP expr2)
+| Let(x,ty,expr1,expr2)     -> klet^(printVar (Var(x,ty)))^kequal^(prettyP expr1)^kin^"\n"^(prettyP expr2)
 in Lwt_io.print ((prettyP expr)^"\n");;
 
-(* let prettyPrinterTarget (expr: synTarget) = 
+(* let prettyTargetPrinter (expr: synTarget) = 
 let rec prettyP = function
 | Var x                     -> printVar (Var x)
 | Const c                   -> printConst (Const c)

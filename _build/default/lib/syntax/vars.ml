@@ -1,7 +1,7 @@
 (* A global counter to produce unique numbers *)
 let counter = ref 0
 
-(* A variable is just given by a name and a number *)
+(* A variable is just given by a name, a number *)
 type var = string * int
 
 (* we assume programs don't use the variable name y *)

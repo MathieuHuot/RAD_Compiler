@@ -1,1 +1,5 @@
 *.objs/byte
+*.objs/native
+*.cmi
+*.cmo
+*.cmt
