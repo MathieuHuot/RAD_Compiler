@@ -1,7 +1,6 @@
 open Operators
 open Vars
 
-
 (* syntax *)
 type synTarget = Var of var
             | Const of float 

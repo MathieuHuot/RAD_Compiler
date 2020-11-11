@@ -12,9 +12,10 @@ type context = (var * synSource) list
 
 (* auxiliary for interpreter *)
 let interpreterOp1 op v = match op with
-| Cos -> cos(v)
-| Sin -> sin(v)
-| Exp -> exp(v)
+| Cos  -> cos(v)
+| Sin  -> sin(v)
+| Exp  -> exp(v)
+| Minus-> -.v
 
 let interpreterOp2 op val1 val2= match op with
 | Plus  -> val1+.val2
@@ -23,11 +24,11 @@ let interpreterOp2 op val1 val2= match op with
 
 (* substitute variable n by expr1 in expr2*)
 let rec subst (x:var) expr1 expr2 = match expr2 with 
-| Var a -> if equal a x then expr1 else Var a
-| Const a -> Const a
-| Apply1(op,a) -> Apply1(op,subst x expr1 a)
-| Apply2(op,a,b) -> Apply2(op,subst x expr1 a,subst x expr1 b)
-| Let(y,a,b) -> if equal x y 
+| Var a         -> if equal a x then expr1 else Var a
+| Const a       -> Const a
+| Apply1(op,a)  -> Apply1(op,subst x expr1 a)
+| Apply2(op,a,b)-> Apply2(op,subst x expr1 a,subst x expr1 b)
+| Let(y,a,b)    -> if equal x y 
     then failwith "trying to substitute a bound variable"
     else Let(y,subst x expr1 a, subst x expr1 b)
 
@@ -68,28 +69,26 @@ let canonicalAlphaRename (name:string) expr =
 let freeV = freeVars expr in 
 if varNameNotBound name expr then 
 let rec canRen expr = match expr with
-| Var s -> let i = index_of s freeV in Var (name,i)
-| Let(y,expr1,expr2) -> Let(y,canRen expr1,canRen expr2)
-| Apply1(op,expr1)  -> Apply1(op,canRen expr1)
-| Apply2(op,expr1,expr2)  -> Apply2(op,canRen expr1,canRen expr2) 
-| _  -> expr
+| Var s                 -> let i = index_of s freeV in Var (name,i)
+| Let(y,expr1,expr2)    -> Let(y,canRen expr1,canRen expr2)
+| Apply1(op,expr1)      -> Apply1(op,canRen expr1)
+| Apply2(op,expr1,expr2)-> Apply2(op,canRen expr1,canRen expr2) 
+| _                     -> expr
 in canRen expr
 else failwith ("variable "^name^" is already used as a bound variable, can't rename free vars canonically with "^name)
 
 (* interpreter *)
- let interpreterSource expr context = 
- let expr2 = closingTerm expr context in 
- let rec interp = function
-| Const a -> a
-| Apply1(op,a) -> 
-    let v = interp a in 
-    interpreterOp1 op v
-| Apply2(op,a,b) ->
-    let val1 = interp a in 
-    let val2 = interp b in 
-    interpreterOp2 op val1 val2
-| Let(n,a,b) -> let v = interp a in 
-                let c = subst n (Const v) b in
-                interp c
-| _ -> failwith "the expression should not contain this pattern"
-in interp expr2
+let interpreterSource expr context = 
+let expr2 = closingTerm expr context in 
+let rec interp = function
+| Const a               -> a
+| Apply1(op,expr)       ->  let v = interp expr in 
+                            interpreterOp1 op v
+| Apply2(op,expr1,expr2)->  let val1 = interp expr1 in 
+                            let val2 = interp expr2 in 
+                            interpreterOp2 op val1 val2
+| Let(x,expr1,expr2)    ->  let v = interp expr1 in 
+                            let expr3 = subst x (Const v) expr2 in
+                            interp expr3
+| _                     -> failwith "the expression should not contain this pattern"
+in interp expr2 
