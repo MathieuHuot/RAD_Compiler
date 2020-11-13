@@ -48,6 +48,8 @@ let rec freeVars = function
 
 let rec varNameNotBound (name:string) expr = match expr with
 | Let((str,_),_,expr1,expr2) -> str<> name && (varNameNotBound name expr1) && (varNameNotBound name expr2)
+| Apply1(_,expr)             ->  (varNameNotBound name expr)
+| Apply2(_,expr1,expr2)      ->  (varNameNotBound name expr1) && (varNameNotBound name expr2)
 | _ -> true 
 
 let index_of el lis = 
@@ -86,9 +88,15 @@ let rec isWellTyped = function
                         && isWellTyped expr2
 | Let(_,ty,expr1,expr2) -> ty == (typeSource expr1) && isWellTyped expr2
  
+(* checks whether the context captures all the free variables of an expression*)
+let contextComplete expr context =
+    let exprFv = freeVars expr in 
+    List.fold_left (fun acc x -> acc && (List.exists (fun (y,_,_) -> equal y x) context)) true exprFv
+
 (* interpreter *)
 let interpreter expr context = 
 if not(isWellTyped expr) then failwith "the term is ill-typed";
+if not(contextComplete expr context) then failwith "the context does not capture all free vars";
 let expr2 = closingTerm expr context in 
 let rec interp = function
 | Const a               ->  a

@@ -14,11 +14,14 @@ let f5 = Apply1(Sin, var1);;
 let f6 = Apply1(Cos, Const 0.716814692820);;
 let f7 = Apply1(Sin, Var(Syntax.Vars.fresh(),Real));;
 
+(* Printers tests*)
+
 SourcePrinter.prettyPrinter f1;;
 SourcePrinter.prettyPrinter f2;;
 SourcePrinter.prettyPrinter f7;;
 
-let printVal expr context= Lwt_io.print ((string_of_float (interpreterSource expr context))^"\n");;
+(* Interpreters tests*)
+let printVal expr context= Lwt_io.print ((string_of_float (interpreter expr context))^"\n");;
 printVal (Const 7.) ;;
 printVal f1 [];;
 printVal f3;;
@@ -27,3 +30,7 @@ printVal f5 [(1,Const 0.)];;
 printVal f5 [(1,Const 2.)];;
 printVal f5 [(1,Const 8.283185307)];;
 printVal f6 []
+
+(* ANF tests *)
+
+(* forward mode tests *)

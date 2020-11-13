@@ -19,4 +19,4 @@ val freeVars: synTarget -> Vars.var list
 val canonicalAlphaRename: string -> synTarget -> synTarget
 val typeTarget: synTarget -> targetType
 val isWellTyped: synTarget -> bool
-val interpreter: synTarget -> context -> float 
+val interpreter: synTarget -> context -> synTarget
