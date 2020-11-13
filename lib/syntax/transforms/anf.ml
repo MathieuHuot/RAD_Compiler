@@ -4,11 +4,6 @@ let isVar (expr : synSource) = match expr with
 | Var _ -> true
 | _     -> false
 
-let isConst expr = 
-match expr with
-| Const _   -> true
-| _         -> false
-
 let isImmediate expr = match expr with
 | Const _                  -> true
 | Var _                    -> true
