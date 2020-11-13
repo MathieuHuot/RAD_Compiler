@@ -93,6 +93,17 @@ let contextComplete expr context =
     let exprFv = freeVars expr in 
     List.fold_left (fun acc x -> acc && (List.exists (fun (y,_,_) -> equal y x) context)) true exprFv
 
+let interpreterOp1 op v = match op with
+    | Cos  -> cos(v)
+    | Sin  -> sin(v)
+    | Exp  -> exp(v)
+    | Minus-> -.v
+    
+let interpreterOp2 op val1 val2= match op with
+    | Plus  -> val1+.val2
+    | Times -> val1*.val2
+    | Minus -> val1-.val2
+
 (* interpreter *)
 let interpreter expr context = 
 if not(isWellTyped expr) then failwith "the term is ill-typed";

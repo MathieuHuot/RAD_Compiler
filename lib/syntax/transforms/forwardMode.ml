@@ -28,13 +28,6 @@ let rec dsubst (var1,var2) expr = match expr with
   else Case(dsubst (var1,var2) expr1,y1,ty1,y2,ty2,dsubst (var1,var2) expr2)
 | _ -> expr
 
-let rec isValue = function
-| Const _           -> true
-| Pair(expr1,expr2) -> isValue expr1 && isValue expr2
-| Fun(_,_,_)        -> true
-| _                 -> false
-
-
 (* Simple forward AD transformation. does not assume ANF *)
 let rec forwardAD (expr : synSource) : synTarget = match expr with
 | Const c               -> Pair(Const c, Const 0.)

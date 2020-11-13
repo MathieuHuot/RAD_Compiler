@@ -21,15 +21,15 @@ SourcePrinter.prettyPrinter f2;;
 SourcePrinter.prettyPrinter f7;;
 
 (* Interpreters tests*)
-let printVal expr context= Lwt_io.print ((string_of_float (interpreter expr context))^"\n");;
-printVal (Const 7.) ;;
+let printVal expr context = Lwt_io.print ((string_of_float (interpreter expr context))^"\n");;
+printVal (Const 7.) [] ;;
 printVal f1 [];;
-printVal f3;;
+printVal f3 [];;
 printVal f4 [];;
-printVal f5 [(1,Const 0.)];;
-printVal f5 [(1,Const 2.)];;
-printVal f5 [(1,Const 8.283185307)];;
-printVal f6 []
+printVal f5 [(x1,Real,Const 0.)];;
+printVal f5 [(x1,Real,Const 2.)];;
+printVal f5 [(x1,Real,Const 8.283185307)];;
+printVal f6 [];;
 
 (* ANF tests *)
 
