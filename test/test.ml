@@ -2,17 +2,23 @@ open Syntax.Operators
 open Syntax.SourceLanguage
 open Syntax.PrettyPrinter
 
+let x1 = ("x",1);;
+let x2 = ("x",2);;
+let var1 = Var(x1,Real);;
+let var2 = Var(x2,Real);;
 let f1 = Apply1(Cos, Const 7.);; 
-let f2 = Let(1,Apply2(Plus, Const 5.,Var 2),Apply1(Sin,Var 1));;
+let f2 = Let(x1,Real,Apply2(Plus, Const 5.,var2),Apply1(Sin,var1));;
 let f3 = Apply2(Plus,Const 7.,Const 8.);;
 let f4 = Apply1(Exp, Const 6.);;
-let f5 = Apply1(Sin, Var 1);;
-let f6 = Apply1(Cos, Const 0.716814692820);; 
+let f5 = Apply1(Sin, var1);;
+let f6 = Apply1(Cos, Const 0.716814692820);;
+let f7 = Apply1(Sin, Var(Syntax.Vars.fresh(),Real));;
 
-prettyPrinter f1;;
-prettyPrinter f2;;
+SourcePrinter.prettyPrinter f1;;
+SourcePrinter.prettyPrinter f2;;
+SourcePrinter.prettyPrinter f7;;
 
-let printVal expr context= Lwt_io.print ((string_of_float (interpreterSource expr context))^"\n");;
+let printVal expr context= Lwt_io.print ((string_of_float (interpreter expr context))^"\n");;
 printVal (Const 7.) ;;
 printVal f1 [];;
 printVal f3;;

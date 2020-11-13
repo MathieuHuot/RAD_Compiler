@@ -1,6 +1,6 @@
 open Syntax.SourceLanguage
 
-let isVar expr = match expr with
+let isVar (expr : synSource) = match expr with
 | Var _ -> true
 | _     -> false
 

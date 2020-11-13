@@ -1,6 +1,4 @@
 open Operators
-open SourceLanguage
-(* open TargetLanguage *)
 
 let arrow = " ->"
 let arrow2= " →"
@@ -23,14 +21,6 @@ let kequal = " = "
 let kin = " in" 
 let kdot= ". "
 
-let printVar = function
-| Var((str,n),_) -> str^(string_of_int n)
-| _              -> failwith "this is not a variable"
-
-let printConst = function
-| Const c -> string_of_float c
-| _       -> failwith "this is not a constant"
-
 let printOp1 = function 
    | Cos  -> "cos "
    | Sin  -> "sin "
@@ -45,8 +35,29 @@ let printOp2 = function
     | Times -> " * "
     | Minus -> " - "
 
-let prettySourcePrinter (expr:synSource) = 
-let rec prettyP = function
+module type PrettyPrinter = sig
+    type types
+    type terms
+    val printVar : terms -> string
+    val printConst : terms -> string
+    val prettyPrinter : terms -> unit Lwt.t
+end
+
+module SourcePrinter : PrettyPrinter = struct
+open SourceLanguage
+type types = sourceType
+type terms = synSource
+
+let printVar (expr:terms) = match expr with
+| Var((str,n),_) -> str^(string_of_int n)
+| _              -> failwith "this is not a variable"
+
+let printConst (expr:terms) = match expr with
+| Const c -> string_of_float c
+| _       -> failwith "this is not a constant"
+
+let prettyPrinter (expr:terms) = 
+let rec prettyP (expr:terms) = match expr with
 | Var(x,ty)                 -> printVar (Var(x,ty))
 | Const c                   -> printConst (Const c)
 | Apply1(op,expr)           -> printOp1 op^"("^(prettyP expr)^")"  
@@ -54,17 +65,32 @@ let rec prettyP = function
 else (printOp2 op)^"("^(prettyP expr1)^", "^(prettyP expr2)^")"
 | Let(x,ty,expr1,expr2)     -> klet^(printVar (Var(x,ty)))^kequal^(prettyP expr1)^kin^"\n"^(prettyP expr2)
 in Lwt_io.print ((prettyP expr)^"\n");;
+end
 
-(* let prettyTargetPrinter (expr: synTarget) = 
+module TargetPrinter :  PrettyPrinter = struct
+open TargetLanguage
+type types = targetType
+type terms = synTarget
+
+let printVar = function
+| Var((str,n),_) -> str^(string_of_int n)
+| _              -> failwith "this is not a variable"
+
+let printConst = function
+| Const c -> string_of_float c
+| _       -> failwith "this is not a constant"
+
+let prettyPrinter (expr: synTarget) = 
 let rec prettyP = function
-| Var x                     -> printVar (Var x)
-| Const c                   -> printConst (Const c)
-| Apply1(op,expr)           -> printOp1 op^leftpar^(prettyP expr)^rightpar 
-| Apply2(op,expr1,expr2)    -> if (isOp2Infix op) then leftpar^(prettyP expr1)^(printOp2 op)^(prettyP expr2)^rightpar
+| Var(x,ty)                     -> printVar (Var(x,ty))
+| Const c                       -> printConst (Const c)
+| Apply1(op,expr)               -> printOp1 op^leftpar^(prettyP expr)^rightpar 
+| Apply2(op,expr1,expr2)        -> if (isOp2Infix op) then leftpar^(prettyP expr1)^(printOp2 op)^(prettyP expr2)^rightpar
 else (printOp2 op)^leftpar^(prettyP expr1)^comma^(prettyP expr2)^rightpar
-| Let(x,expr1,expr2)        -> klet^(printVar (Var x))^kequal^(prettyP expr1)^kin^"\n"^(prettyP expr2)
-| Pair(expr1,expr2)         -> bra^(prettyP expr1)^comma^(prettyP expr2)^ket
-| Fun(x,expr)               -> klambda^(printVar (Var x))^kdot^(prettyP expr)
-| App(expr1,expr2)          -> leftpar^(prettyP expr1)^rightpar^(prettyP expr2)
-| Case(expr1,x,y,expr2)     -> kcase^(prettyP expr1)^kof^bra^(printVar (Var x))^comma^(printVar (Var y))^ket^arrow3^(prettyP expr2)
-in Lwt_io.print ((prettyP expr)^"\n") *)
+| Let(x,ty,expr1,expr2)         -> klet^(printVar (Var(x,ty)))^kequal^(prettyP expr1)^kin^"\n"^(prettyP expr2)
+| Pair(expr1,expr2)             -> bra^(prettyP expr1)^comma^(prettyP expr2)^ket
+| Fun(x,ty,expr)                -> klambda^(printVar (Var(x,ty)))^kdot^(prettyP expr)
+| App(expr1,expr2)              -> leftpar^(prettyP expr1)^rightpar^(prettyP expr2)
+| Case(expr1,x,ty1,y,ty2,expr2) -> kcase^(prettyP expr1)^kof^bra^(printVar (Var (x,ty1)))^comma^(printVar (Var(y,ty2)))^ket^arrow3^(prettyP expr2)
+in Lwt_io.print ((prettyP expr)^"\n")
+end

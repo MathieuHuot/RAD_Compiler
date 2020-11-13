@@ -1,1 +1,1 @@
-lib/syntax/prettyPrinter.ml: Lwt_io Operators SourceLanguage
+lib/syntax/prettyPrinter.ml: Lwt Lwt_io Operators SourceLanguage TargetLanguage

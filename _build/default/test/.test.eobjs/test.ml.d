@@ -1,1 +1,1 @@
-test/test.ml: Lwt_io Syntax
+test/test.ml: Lwt_io SourcePrinter Syntax

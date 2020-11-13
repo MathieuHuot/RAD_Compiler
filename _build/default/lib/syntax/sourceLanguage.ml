@@ -2,8 +2,7 @@ open Operators
 open Vars
 
 (* syntax *)
-type sourceType = Real 
-            | Prod of sourceType * sourceType
+type sourceType = Real | Prod of sourceType * sourceType
 
 and synSource = Var of var * sourceType
             | Const of float 
@@ -12,18 +11,6 @@ and synSource = Var of var * sourceType
             | Let of var * sourceType * synSource * synSource
 
 type context = (var * sourceType * synSource) list
-
-(* auxiliary for interpreter *)
-let interpreterOp1 op v = match op with
-| Cos  -> cos(v)
-| Sin  -> sin(v)
-| Exp  -> exp(v)
-| Minus-> -.v
-
-let interpreterOp2 op val1 val2= match op with
-| Plus  -> val1+.val2
-| Times -> val1*.val2
-| Minus -> val1-.val2
 
 (* substitute variable n by expr1 in expr2*)
 let rec subst (x:var) expr1 expr2 = match expr2 with 
@@ -100,7 +87,7 @@ let rec isWellTyped = function
 | Let(_,ty,expr1,expr2) -> ty == (typeSource expr1) && isWellTyped expr2
  
 (* interpreter *)
-let interpreterSource expr context = 
+let interpreter expr context = 
 if not(isWellTyped expr) then failwith "the term is ill-typed";
 let expr2 = closingTerm expr context in 
 let rec interp = function
