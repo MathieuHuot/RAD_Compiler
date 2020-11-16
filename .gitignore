@@ -6,3 +6,8 @@
 *.cmx
 *.o
 *.d
+_build
+*.db
+*.a
+*.cmxa
+*.cmti

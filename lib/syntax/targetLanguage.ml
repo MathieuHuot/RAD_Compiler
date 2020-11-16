@@ -18,6 +18,10 @@ and synTarget = Var of var * targetType
 
 type context = (var * targetType * synTarget) list
 
+let rec sourceToTargetType (ty : SourceLanguage.sourceType) : targetType = match ty with
+| Real          -> Real
+| Prod(ty1,ty2) -> Prod(sourceToTargetType ty1,sourceToTargetType ty2)
+
 (* substitute variable n by expr1 in expr2*)
 let rec subst (x:var) expr1 expr2 = match expr2 with 
 | Var(a,_)                        -> if equal a x then expr1 else expr2
@@ -195,3 +199,6 @@ let rec interp expr = match expr with
     | _             -> failwith "expression should reduce to a function" end
 | _                           ->  expr
 in interp expr2
+
+(* for readability *)
+let rec reduce expr = match expr with | _ -> failwith "TODO"

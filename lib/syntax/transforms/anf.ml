@@ -22,9 +22,9 @@ let rec isInWeakAnf expr = match expr with
 | _                    -> true
 
 let rec weakAnf expr = match expr with
-| Const _ -> expr
-| Var _ -> expr
-| Apply1(op,expr1) -> if isImmediate expr then expr else 
+| Const _                -> expr
+| Var _                  -> expr
+| Apply1(op,expr1)       -> if isImmediate expr then expr else 
     let exprAnf = weakAnf expr1 in
     let n = Syntax.Vars.fresh() in
     let ty = Real in
@@ -40,7 +40,7 @@ let rec weakAnf expr = match expr with
     let ty2 = Real in
     let newVar2 = Var(m,ty2) in 
     Let(n,ty1,expr1Anf,Let(m,ty2,expr2Anf,Apply2(op,newVar1, newVar2)))
-| Let(x,ty,expr1,expr2) -> Let(x,ty, weakAnf expr1, weakAnf expr2)
+| Let(x,ty,expr1,expr2)  -> Let(x,ty, weakAnf expr1, weakAnf expr2)
 
 let rec letCommutativity expr = match expr with
 | Let(x,ty1,Let(y,ty2,expr1,expr2),expr3)   -> Let(y,ty2,expr1,Let(x,ty1,expr2,expr3))

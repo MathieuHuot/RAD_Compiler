@@ -14,6 +14,7 @@ and synTarget = Var of Vars.var * targetType
 
 type context
 
+val sourceToTargetType : SourceLanguage.sourceType -> targetType
 val isValue : synTarget -> bool
 val freeVars: synTarget -> Vars.var list
 val canonicalAlphaRename: string -> synTarget -> synTarget

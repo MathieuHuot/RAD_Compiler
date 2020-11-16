@@ -3,10 +3,6 @@ open Syntax.Operators
 open Syntax.TargetLanguage
 open Syntax.Vars
 
-let rec sourceToTargetType (ty : sourceType) : targetType = match ty with
-| Real          -> Real
-| Prod(ty1,ty2) -> Prod(sourceToTargetType ty1,sourceToTargetType ty2)
-
 let rec forwardADType (ty : sourceType) : targetType = match ty with
 | Real          -> Prod(Real,Real)
 | Prod(ty1,ty2) -> Prod(forwardADType ty1,forwardADType ty2)
