@@ -200,5 +200,24 @@ let rec interp expr = match expr with
 | _                           ->  expr
 in interp expr2
 
-(* for readability *)
-let rec reduce expr = match expr with | _ -> failwith "TODO"
+(* Some algebraic simplifications, done unefficiently *)
+let rec iterator f x n = 
+  if n == 0 then x
+  else let x = f x in iterator f x (n-1) 
+
+let realOptimizer expr n =
+  let rec optim expr = match expr with
+  | Apply2(Plus,Const a,Const b)    -> Const(a+.b)
+  | Apply2(Times,Const a,Const b)   -> Const(a*.b)
+  | Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) when expr1 == expr3 -> 
+     Apply2(Times,expr1,Apply2(Plus,expr2,expr4))
+  | Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) when expr2 == expr4 -> 
+    Apply2(Times,Apply2(Plus,expr1,expr3),expr2)
+  | Apply1(op, expr)                -> Apply1(op,optim expr)
+  | Apply2(op, expr1, expr2)        ->  Apply2(op, optim expr1, optim expr2)
+  | Pair(expr1,expr2)               -> Pair(optim expr1,optim expr2) 
+  | App(expr1,expr2)                -> App(optim expr1,optim expr2)
+  | Fun(x,ty,expr)                  -> Fun(x,ty, optim expr) 
+  | Case(expr1,x1,ty1,x2,ty2,expr2) -> Case(optim expr1,x1,ty1,x2,ty2,optim expr2)
+  | _                               -> expr
+  in iterator optim expr n

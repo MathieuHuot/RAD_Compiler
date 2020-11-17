@@ -31,6 +31,20 @@ printVal f5 [(x1,Real,Const 2.)];;
 printVal f5 [(x1,Real,Const 8.283185307)];;
 printVal f6 [];;
 
+(* capture avoiding substitutions tests *)
+
+
+(* typing tests *)
+
+
 (* ANF tests *)
 
+
 (* forward mode tests *)
+
+
+(* optimisation tests *)
+
+
+(* semi-naive reverse mode tests *)
+

@@ -21,3 +21,4 @@ val canonicalAlphaRename: string -> synTarget -> synTarget
 val typeTarget: synTarget -> targetType
 val isWellTyped: synTarget -> bool
 val interpreter: synTarget -> context -> synTarget
+val realOptimizer: synTarget -> int -> synTarget
