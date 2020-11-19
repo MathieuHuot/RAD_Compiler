@@ -1,8 +1,0 @@
-(** @canonical Transforms.Anf *)
-module Anf = Transforms__Anf
-
-(** @canonical Transforms.ForwardMode *)
-module ForwardMode = Transforms__ForwardMode
-
-(** @canonical Transforms.ReverseMode *)
-module ReverseMode = Transforms__ReverseMode
