@@ -4,23 +4,23 @@ open Vars
 (* syntax *)
 type sourceType = Real | Prod of sourceType * sourceType
 
-and synSource = Var of var * sourceType
+and sourceSyn = Var of var * sourceType
             | Const of float 
-            | Apply1 of op1 * synSource 
-            | Apply2 of op2 * synSource * synSource 
-            | Let of var * sourceType * synSource * synSource
+            | Apply1 of op1 * sourceSyn 
+            | Apply2 of op2 * sourceSyn * sourceSyn 
+            | Let of var * sourceType * sourceSyn * sourceSyn
 
-type context = (var * sourceType * synSource) list
+type context = (var * sourceType * sourceSyn) list
 
-(* substitute variable n by expr1 in expr2*)
-let rec subst (x:var) expr1 expr2 = match expr2 with 
-| Var (a,_)             -> if equal a x then expr1 else expr2
+(* substitute variable x of type ty by expr1 in expr2 *)
+let rec subst (x:var) ty expr1 expr2 = match expr2 with 
+| Var (a,ty1)           -> if equal a x && ty1 == ty then expr1 else expr2
 | Const _               -> expr2
-| Apply1(op,expr2)      -> Apply1(op,subst x expr1 expr2)
-| Apply2(op,expr2,expr3)-> Apply2(op,subst x expr1 expr2,subst x expr1 expr3)
-| Let(y,ty,expr2,expr3) -> if equal x y 
+| Apply1(op,expr2)      -> Apply1(op,subst x ty expr1 expr2)
+| Apply2(op,expr2,expr3)-> Apply2(op,subst x ty expr1 expr2,subst x ty expr1 expr3)
+| Let(y,ty1,expr2,expr3)-> if equal x y 
     then failwith "trying to substitute a bound variable"
-    else Let(y,ty,subst x expr1 expr2, subst x expr1 expr3)
+    else Let(y,ty1,subst x ty expr1 expr2, subst x ty expr1 expr3)
 
 let isValue = function
 | Const _   -> true
@@ -31,7 +31,7 @@ let isContextOfValues (cont : context) =
 
 let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
     then failwith "context does not only contain values"
-    else List.fold_left (fun expr1 (x,_,v) -> subst x v expr1) expr cont
+    else List.fold_left (fun expr1 (x,ty,v) -> subst x ty v expr1) expr cont
 
 let rec freeVars = function
 | Var (x,_)             -> [x]
@@ -52,7 +52,7 @@ let rec varNameNotBound (name:string) expr = match expr with
 | Apply2(_,expr1,expr2)      ->  (varNameNotBound name expr1) && (varNameNotBound name expr2)
 | _ -> true 
 
-let index_of el lis = 
+let indexOf el lis = 
   let rec index_rec i = function
     | [] -> failwith "Element not found in the list"
     | hd::tl -> if hd == el then i else index_rec (i+1) tl
@@ -62,7 +62,7 @@ let canonicalAlphaRename (name:string) expr =
 let freeV = freeVars expr in 
 if varNameNotBound name expr then 
 let rec canRen expr = match expr with
-| Var (s,ty)            -> let i = index_of s freeV in Var ((name,i),ty)
+| Var (s,ty)            -> let i = indexOf s freeV in Var ((name,i),ty)
 | Apply1(op,expr1)      -> Apply1(op,canRen expr1)
 | Apply2(op,expr1,expr2)-> Apply2(op,canRen expr1,canRen expr2)
 | Let(y,ty,expr1,expr2) -> Let(y,ty,canRen expr1,canRen expr2) 
@@ -72,52 +72,58 @@ else failwith ("variable "^name^" is already used as a bound variable, can't ren
 
 (* simple typecheker *)
 let rec typeSource = function
-| Const _           -> Real
-| Var(_,ty)         -> ty
-| Apply1(_,_)       -> Real
-| Apply2(_,_,_)     -> Real
-| Let(_,_,_,expr)   -> typeSource expr
+| Const _               -> Some Real
+| Var(_,ty)             -> Some ty
+| Apply1(_,expr)        -> begin 
+    match typeSource expr with 
+    | Some Real -> Some Real 
+    | _         -> None
+    end
+| Apply2(_,expr1,expr2) -> begin
+    match typeSource expr1,typeSource expr2 with 
+    | (Some Real,Some Real) -> Some Real
+    | _                     -> None
+    end
+| Let(_,ty,expr1,expr2) -> begin
+    match typeSource expr1,typeSource expr2 with 
+    | (Some ty1, Some ty2) when ty1 == ty   -> Some ty2
+    | (_,_)                                 -> None
+    end
 
-let rec isWellTyped = function
-| Const _               -> true
-| Var _                 -> true
-| Apply1(_,expr)        -> (typeSource expr) == Real && isWellTyped expr 
-| Apply2(_,expr1,expr2) -> (typeSource expr1) == Real 
-                        && (typeSource expr2) == Real 
-                        && isWellTyped expr1 
-                        && isWellTyped expr2
-| Let(_,ty,expr1,expr2) -> ty == (typeSource expr1) && isWellTyped expr2
- 
+let isWellTyped expr = match (typeSource expr) with
+| None      -> false
+| Some _    -> true
+    
 (* checks whether the context captures all the free variables of an expression*)
 let contextComplete expr context =
     let exprFv = freeVars expr in 
     List.fold_left (fun acc x -> acc && (List.exists (fun (y,_,_) -> equal y x) context)) true exprFv
 
-let interpreterOp1 op v = match op with
+let interpretOp1 op v = match op with
     | Cos  -> cos(v)
     | Sin  -> sin(v)
     | Exp  -> exp(v)
     | Minus-> -.v
     
-let interpreterOp2 op val1 val2= match op with
+let interpretOp2 op val1 val2= match op with
     | Plus  -> val1+.val2
     | Times -> val1*.val2
     | Minus -> val1-.val2
 
 (* interpreter *)
-let interpreter expr context = 
+let interpret expr context = 
 if not(isWellTyped expr) then failwith "the term is ill-typed";
 if not(contextComplete expr context) then failwith "the context does not capture all free vars";
 let expr2 = closingTerm expr context in 
 let rec interp = function
 | Const a               ->  a
 | Apply1(op,expr)       ->  let v = interp expr in 
-                            interpreterOp1 op v
+                            interpretOp1 op v
 | Apply2(op,expr1,expr2)->  let val1 = interp expr1 in 
                             let val2 = interp expr2 in 
-                            interpreterOp2 op val1 val2
-| Let(x,_,expr1,expr2)  ->  let v = interp expr1 in 
-                            let expr3 = subst x (Const v) expr2 in
+                            interpretOp2 op val1 val2
+| Let(x,ty,expr1,expr2)  ->  let v = interp expr1 in 
+                            let expr3 = subst x ty (Const v) expr2 in
                             interp expr3
 | _                     ->  failwith "the expression should not contain this pattern"
 in interp expr2

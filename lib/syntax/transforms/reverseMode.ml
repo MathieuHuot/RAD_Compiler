@@ -13,11 +13,11 @@ let semiNaiveReverseADType (ty : sourceType) (retTy : targetType) =
 
    (*FIXME: this is where I start to suffer from having pairs instead of n-ary tuples! That's annoying, 
     especially knowing it's just Intermediate Repr and going to be removed eventually! *) 
-let semiNaiveReverseAD (expr : synSource) : synTarget =
-  let retTy = sourceToTargetType (typeSource expr) in (*TODO: very wrong, should be type of the context*)
+let semiNaiveReverseAD (expr : sourceSyn) : targetSyn =
+  let retTy = failwith "TODO" in (*TODO: very wrong, should be type of the context*)
   let new_var = Syntax.Vars.fresh() in 
   let id_cont = Fun(new_var,retTy,Var(new_var, retTy)) in
-  let rec rad (expr : synSource) (cont : synTarget) (contType : targetType) : synTarget * targetType = match expr with
+  let rec rad (expr : sourceSyn) (cont : targetSyn) (contType : targetType) : targetSyn * targetType = match expr with
     | Const c                -> let newContType = Prod(contType,Real) in
                                 let newVar = Syntax.Vars.fresh() in
                                 let newVar1 = Syntax.Vars.fresh() in

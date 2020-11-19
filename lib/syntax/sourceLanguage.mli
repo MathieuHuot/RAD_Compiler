@@ -1,16 +1,16 @@
 type sourceType = Real | Prod of sourceType * sourceType
 
-and synSource = Var of Vars.var * sourceType
+and sourceSyn = Var of Vars.var * sourceType
             | Const of float 
-            | Apply1 of Operators.op1 * synSource 
-            | Apply2 of Operators.op2 * synSource * synSource 
-            | Let of Vars.var * sourceType * synSource * synSource
+            | Apply1 of Operators.op1 * sourceSyn 
+            | Apply2 of Operators.op2 * sourceSyn * sourceSyn 
+            | Let of Vars.var * sourceType * sourceSyn * sourceSyn
 
-type context = (Vars.var * sourceType * synSource) list
+type context = (Vars.var * sourceType * sourceSyn) list
 
-val isValue : synSource -> bool
-val freeVars: synSource -> Vars.var list
-val canonicalAlphaRename: string -> synSource -> synSource
-val typeSource: synSource -> sourceType
-val isWellTyped: synSource -> bool
-val interpreter: synSource -> context -> float 
+val isValue : sourceSyn -> bool
+val freeVars: sourceSyn -> Vars.var list
+val canonicalAlphaRename: string -> sourceSyn -> sourceSyn
+val typeSource: sourceSyn -> sourceType option
+val isWellTyped: sourceSyn -> bool
+val interpret: sourceSyn -> context -> float 

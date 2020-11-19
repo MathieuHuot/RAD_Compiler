@@ -1,10 +1,10 @@
-opam-version: "2.0"
+opam-version: "2.0.7"
 version: "1.0"
-maintainer: "mathieu.huot@stx.ox.ac.uk"
-authors: ["Mathieu Huot"]
-homepage: "https://github.com/SpongeBob/hello_world"
-bug-reports: "https://github.com/SpongeCob/hello_world/issues"
-dev-repo: "git+https://github.com/SpongeBob/hello_world.git"
+maintainer: "mathieu.huot@cs.ox.ac.uk"
+authors: ["Mathieu Huot, Amir Shaikhha, Sam Staton"]
+homepage: "https://github.com/MathieuHuot/RAD_Compiler"
+bug-reports: ""
+dev-repo: "git+https://github.com/MathieuHuot/RAD_Compiler.git"
 license: "Apache-2.0"
 build: [
   ["dune" "build" "-p" name "-j" jobs]

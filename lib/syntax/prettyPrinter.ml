@@ -43,20 +43,20 @@ module type PrettyPrinter = sig
     val prettyPrinter : terms -> unit Lwt.t
 end
 
-module SourcePrinter : PrettyPrinter with type terms = SourceLanguage.synSource = struct
+module SourcePrinter : PrettyPrinter with type terms = SourceLanguage.sourceSyn = struct
 open SourceLanguage
 type types = sourceType
-type terms = synSource
+type terms = sourceSyn
 
-let printVar (expr:synSource) = match expr with
+let printVar (expr:sourceSyn) = match expr with
 | Var((str,n),_) -> str^(string_of_int n)
 | _              -> failwith "this is not a variable"
 
-let printConst (expr:synSource) = match expr with
+let printConst (expr:sourceSyn) = match expr with
 | Const c -> string_of_float c
 | _       -> failwith "this is not a constant"
 
-let prettyPrinter (expr:synSource) = 
+let prettyPrinter (expr:sourceSyn) = 
 let rec prettyP (expr:terms) = match expr with
 | Var(x,ty)                 -> printVar (Var(x,ty))
 | Const c                   -> printConst (Const c)
@@ -67,10 +67,10 @@ else (printOp2 op)^"("^(prettyP expr1)^", "^(prettyP expr2)^")"
 in Lwt_io.print ((prettyP expr)^"\n");;
 end
 
-module TargetPrinter :  PrettyPrinter  with type terms = TargetLanguage.synTarget = struct
+module TargetPrinter :  PrettyPrinter  with type terms = TargetLanguage.targetSyn = struct
 open TargetLanguage
 type types = targetType
-type terms = synTarget
+type terms = targetSyn
 
 let printVar = function
 | Var((str,n),_) -> str^(string_of_int n)
@@ -80,7 +80,7 @@ let printConst = function
 | Const c -> string_of_float c
 | _       -> failwith "this is not a constant"
 
-let prettyPrinter (expr: synTarget) = 
+let prettyPrinter (expr: targetSyn) = 
 let rec prettyP = function
 | Var(x,ty)                     -> printVar (Var(x,ty))
 | Const c                       -> printConst (Const c)

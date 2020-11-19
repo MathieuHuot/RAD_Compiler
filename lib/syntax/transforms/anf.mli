@@ -1,4 +1,4 @@
-val weakAnf : Syntax.SourceLanguage.synSource -> Syntax.SourceLanguage.synSource 
-val anf : Syntax.SourceLanguage.synSource -> Syntax.SourceLanguage.synSource 
-val isInWeakAnf : Syntax.SourceLanguage.synSource -> bool
-val isInAnf : Syntax.SourceLanguage.synSource -> bool
+val weakAnf : Syntax.SourceLanguage.sourceSyn -> Syntax.SourceLanguage.sourceSyn 
+val anf : Syntax.SourceLanguage.sourceSyn -> Syntax.SourceLanguage.sourceSyn 
+val isInWeakAnf : Syntax.SourceLanguage.sourceSyn -> bool
+val isInAnf : Syntax.SourceLanguage.sourceSyn -> bool

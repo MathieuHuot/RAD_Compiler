@@ -21,7 +21,7 @@ SourcePrinter.prettyPrinter f2;;
 SourcePrinter.prettyPrinter f7;;
 
 (* Interpreters tests*)
-let printVal expr context = Lwt_io.print ((string_of_float (interpreter expr context))^"\n");;
+let printVal expr context = Lwt_io.print ((string_of_float (interpret expr context))^"\n");;
 printVal (Const 7.) [] ;;
 printVal f1 [];;
 printVal f3 [];;

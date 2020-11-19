@@ -25,7 +25,7 @@ let rec dsubst (var1,var2) expr = match expr with
 | _ -> expr
 
 (* Simple forward AD transformation. does not assume ANF *)
-let rec forwardAD (expr : synSource) : synTarget = match expr with
+let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
 | Const c               -> Pair(Const c, Const 0.)
 | Var(x,ty)             -> Pair(Var(x,sourceToTargetType ty), Var(Syntax.Vars.fresh(),sourceToTargetType ty))
 | Apply1(op,expr)       ->  let yPrimal = Syntax.Vars.fresh() in
