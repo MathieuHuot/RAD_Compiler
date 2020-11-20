@@ -9,6 +9,7 @@ and sourceSyn = Var of Vars.var * sourceType
 type context = (Vars.var * sourceType * sourceSyn) list
 
 val isValue : sourceSyn -> bool
+val equalTerms: sourceSyn -> sourceSyn ->  bool
 val freeVars: sourceSyn -> Vars.var list
 val canonicalAlphaRename: string -> sourceSyn -> sourceSyn
 val typeSource: sourceSyn -> sourceType option

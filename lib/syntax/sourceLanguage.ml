@@ -26,6 +26,33 @@ let isValue = function
 | Const _   -> true
 | _         -> false
 
+
+let equalOp1 op1 op2 = match op1,op2 with
+| Cos,Cos -> true
+| Sin,Sin -> true
+| Exp,Exp -> true
+| Minus,Minus -> true
+| _ -> false
+
+let equalOp2 op1 op2 = match op1,op2 with
+| Plus,Plus -> true
+| Times,Times -> true
+| Minus,Minus -> true
+| _ -> false
+
+let rec equalTypes ty1 ty2 = match ty1,ty2 with
+| Real,Real -> true
+| Prod(ty11,ty12),Prod(ty21,ty22) -> equalTypes ty11 ty21 && equalTypes ty12 ty22
+| _ -> false
+
+let rec equalTerms expr1 expr2 = match expr1,expr2 with
+| Const a,Const b -> a==b
+| Var (a,ty1),Var (b,ty2) -> a==b && equalTypes ty1 ty2
+| Apply1(op1,expr11),Apply1(op2,expr22) -> equalOp1 op1 op2 && equalTerms expr11 expr22
+| Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 &&  equalTerms expr11 expr21 &&  equalTerms expr12 expr22
+| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22) -> equal x y && equalTypes ty1 ty2 && equalTerms expr11 expr21 &&  equalTerms expr12 expr22 
+| _ -> false
+
 let isContextOfValues (cont : context) = 
     List.fold_left (fun acc (_,_,v) -> (isValue v) && acc) true cont 
 

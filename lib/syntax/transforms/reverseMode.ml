@@ -14,10 +14,11 @@ let semiNaiveReverseADType (ty : sourceType) (retTy : targetType) =
    (*FIXME: this is where I start to suffer from having pairs instead of n-ary tuples! That's annoying, 
     especially knowing it's just Intermediate Repr and going to be removed eventually! *) 
 let semiNaiveReverseAD (expr : sourceSyn) : targetSyn =
+  let termAnf = weakAnf expr in
   let retTy = failwith "TODO" in (*TODO: very wrong, should be type of the context*)
   let new_var = Syntax.Vars.fresh() in 
   let id_cont = Fun(new_var,retTy,Var(new_var, retTy)) in
-  let rec rad (expr : sourceSyn) (cont : targetSyn) (contType : targetType) : targetSyn * targetType = match expr with
+  let rad (expr : sourceSyn) (cont : targetSyn) (contType : targetType) : targetSyn * targetType = match expr with
     | Const c                -> let newContType = Prod(contType,Real) in
                                 let newVar = Syntax.Vars.fresh() in
                                 let newVar1 = Syntax.Vars.fresh() in
@@ -32,8 +33,8 @@ let semiNaiveReverseAD (expr : sourceSyn) : targetSyn =
                                 let newContCore = Case(Var(newVar,newContType),newVar1,contType,newVar2,Real,App(cont,Var(newVar1,newContType))) in  (*TODO: WRONG !*)
                                 let newCont = Fun(newVar,newContType,newContCore) in
                                 Pair(Var(x,sourceToTargetType ty),newCont), newContType
-    | Apply1(op,expr)        -> failwith "TODO"
-    | Apply2(op,expr1,expr2) -> failwith "TODO"
-    | Let(y,ty,expr1,expr2)  -> failwith "TODO"
-  in let x,_ = rad expr (id_cont) retTy 
+    | Apply1(_,_)        -> failwith "TODO"
+    | Apply2(_,_,_) -> failwith "TODO"
+    | Let(_,_,_,_)  -> failwith "TODO"
+  in let x,_ = rad termAnf (id_cont) retTy 
   in x

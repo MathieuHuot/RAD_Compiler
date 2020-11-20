@@ -43,7 +43,7 @@ let rec weakAnf expr = match expr with
 | Let(x,ty,expr1,expr2)  -> Let(x,ty, weakAnf expr1, weakAnf expr2)
 
 let rec letCommutativity expr = match expr with
-| Let(x,ty1,Let(y,ty2,expr1,expr2),expr3)   -> Let(y,ty2,expr1,Let(x,ty1,expr2,expr3))
+| Let(x,ty1,Let(y,ty2,expr1,expr2),expr3)   -> Let(y,ty2,letCommutativity expr1,Let(x,ty1,letCommutativity expr2,letCommutativity expr3))
 | Let(x,ty,expr1,expr2)                     -> Let(x,ty,letCommutativity expr1,letCommutativity expr2)
 | Apply1(op,expr)                           -> Apply1(op,letCommutativity expr)
 | Apply2(op,expr1,expr2)                    -> Apply2(op,letCommutativity expr1,letCommutativity expr2)
@@ -51,7 +51,7 @@ let rec letCommutativity expr = match expr with
 
 let rec letNormalisation expr = 
     let expr2 = letCommutativity expr in 
-    if expr == expr2 then expr else
+    if equalTerms expr expr2 then expr else
     letNormalisation expr2
 
 let anf expr = 

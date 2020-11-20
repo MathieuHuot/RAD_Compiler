@@ -1,6 +1,7 @@
 open Syntax.Operators
 open Syntax.SourceLanguage
 open Syntax.PrettyPrinter
+open Transforms.Anf
 
 let x1 = ("x",1);;
 let x2 = ("x",2);;
@@ -14,6 +15,11 @@ let f5 = Apply1(Sin, var1);;
 let f6 = Apply1(Cos, Const 0.716814692820);;
 let f7 = Apply1(Sin, Var(Syntax.Vars.fresh(),Real));;
 
+(* Random term generator tests *)
+Lwt_io.print "random term:\n";;
+Random.self_init();;
+SourcePrinter.prettyPrinter(anf(Syntax.Generator.sourceSynGen()));;
+Lwt_io.print "end random term\n";;
 (* Printers tests*)
 
 SourcePrinter.prettyPrinter f1;;
@@ -29,7 +35,7 @@ printVal f4 [];;
 printVal f5 [(x1,Real,Const 0.)];;
 printVal f5 [(x1,Real,Const 2.)];;
 printVal f5 [(x1,Real,Const 8.283185307)];;
-printVal f6 [];;
+printVal f6 [];; 
 
 (* capture avoiding substitutions tests *)
 
