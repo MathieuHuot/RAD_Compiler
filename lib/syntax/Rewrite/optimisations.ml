@@ -3,9 +3,9 @@ open Strategies
 
 (* real factorisation*)
 let realFact expr = match expr with  
-| Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) when expr1 == expr3 -> 
+| Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) when equalTerms expr1 expr3 -> 
   Apply2(Times,expr1,Apply2(Plus,expr2,expr4))
-| Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) when expr2 == expr4 -> 
+| Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) when equalTerms expr2 expr4 -> 
   Apply2(Times,Apply2(Plus,expr1,expr3),expr2)
 | _ -> expr
 

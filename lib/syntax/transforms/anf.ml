@@ -12,8 +12,8 @@ let isImmediate expr = match expr with
 | _                        -> failwith "wrong expression format"
 
 let rec isInAnf expr = match expr with
-| Let(_,_,expr1,expr2) -> isImmediate expr1 && isInAnf expr2
-| _ -> true
+| Let(_,_,expr1,expr2)  -> isImmediate expr1 && isInAnf expr2
+| _                     -> true
 
 let rec isInWeakAnf expr = match expr with
 | Let(_,_,expr1,expr2) -> isInWeakAnf expr1 && isInWeakAnf expr2
