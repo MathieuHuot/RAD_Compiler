@@ -4,7 +4,7 @@ open Vars
 (* syntax *)
 type targetType = Real 
             | Prod of targetType * targetType
-            | Arrow of targetType * targetType 
+            | Arrow of (targetType list ) * targetType 
 
 and targetSyn = Var of var * targetType
             | Const of float 
@@ -12,8 +12,8 @@ and targetSyn = Var of var * targetType
             | Apply2 of op2 * targetSyn * targetSyn
             | Let of var * targetType * targetSyn * targetSyn
             | Pair of targetSyn * targetSyn
-            | Fun of var * targetType * targetSyn
-            | App of targetSyn * targetSyn
+            | Fun of ((var * targetType) list) * targetSyn
+            | App of targetSyn * (targetSyn list)
             | Case of targetSyn * var * targetType * var * targetType * targetSyn
 
 type context = (var * targetType * targetSyn) list
@@ -21,6 +21,34 @@ type context = (var * targetType * targetSyn) list
 let rec sourceToTargetType (ty : SourceLanguage.sourceType) : targetType = match ty with
 | Real          -> Real
 | Prod(ty1,ty2) -> Prod(sourceToTargetType ty1,sourceToTargetType ty2)
+
+let equalOp1 op1 op2 = match op1,op2 with
+  | Cos,Cos     -> true
+  | Sin,Sin     -> true
+  | Exp,Exp     -> true
+  | Minus,Minus -> true
+  | _           -> false
+
+let equalOp2 op1 op2 = match op1,op2 with
+  | Plus,Plus   -> true
+  | Times,Times -> true
+  | Minus,Minus -> true
+  | _           -> false
+
+let rec equalTypes ty1 ty2 = match ty1,ty2 with
+  | Real,Real                             -> true
+  | Prod(ty11,ty12),Prod(ty21,ty22)       -> equalTypes ty11 ty21 && equalTypes ty12 ty22
+  | Arrow(tyList1,ty1),Arrow(tyList2,ty2) -> equalTypes ty1 ty2 && List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2
+  | _                                     -> false
+  
+  (* TODO: need to check equality up to alpha-renaming / finish cases *)
+let rec equalTerms expr1 expr2 = match expr1,expr2 with
+  | Const a,Const b                                     -> a==b
+  | Var (a,ty1),Var (b,ty2)                             -> equal a b && equalTypes ty1 ty2
+  | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 && equalTerms expr11 expr22
+  | Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 &&  equalTerms expr11 expr21 &&  equalTerms expr12 expr22
+  | Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> equal x y && equalTypes ty1 ty2 && equalTerms expr11 expr21 &&  equalTerms expr12 expr22 
+  | _ -> false
 
 (* substitute variable x of type xTy by expr1 in expr2*)
 let rec subst (x:var) xTy expr1 expr2 = match expr2 with 
@@ -32,47 +60,18 @@ let rec subst (x:var) xTy expr1 expr2 = match expr2 with
   then failwith "trying to substitute a bound variable"
   else Let(y,ty,subst x xTy expr1 expr2, subst x xTy expr1 expr3)
 | Pair(expr2,expr3)               -> Pair(subst x xTy expr1 expr2,subst x xTy expr1 expr3)
-| Fun(y,ty,expr2)                 -> if equal x y 
+| Fun(varList,expr2)              -> if (List.exists (fun (y,ty) -> equal x y && equalTypes ty xTy) varList)
   then failwith "trying to substitute a bound variable"
-  else Fun(y,ty,subst x xTy expr1 expr2)
-| App(expr2,expr3)                -> App(subst x xTy expr1 expr2,subst x xTy expr1 expr3)
+  else Fun(varList,subst x xTy expr1 expr2)
+| App(expr2,exprList)             -> App(subst x xTy expr1 expr2,List.map (subst x xTy expr1) exprList)
 | Case(expr2,y1,ty1,y2,ty2,expr3) -> if (equal x y1)||(equal x y2)
   then failwith "trying to substitute a bound variable"
   else Case(subst x xTy expr1 expr2,y1,ty1,y2,ty2,subst x xTy expr1 expr3)
-
-let equalOp1 op1 op2 = match op1,op2 with
-  | Cos,Cos -> true
-  | Sin,Sin -> true
-  | Exp,Exp -> true
-  | Minus,Minus -> true
-  | _ -> false
-
-let equalOp2 op1 op2 = match op1,op2 with
-  | Plus,Plus -> true
-  | Times,Times -> true
-  | Minus,Minus -> true
-  | _ -> false
-
-  (* TODO: finish *)
-let rec equalTypes ty1 ty2 = match ty1,ty2 with
-  | Real,Real -> true
-  | Prod(ty11,ty12),Prod(ty21,ty22) -> equalTypes ty11 ty21 && equalTypes ty12 ty22
-  | _ -> false
-  
-  (* TODO: need to check equality up to alpha-renaming / finish cases *)
-let rec equalTerms expr1 expr2 = match expr1,expr2 with
-  | Const a,Const b -> a==b
-  | Var (a,ty1),Var (b,ty2) -> a==b && equalTypes ty1 ty2
-  | Apply1(op1,expr11),Apply1(op2,expr22) -> equalOp1 op1 op2 && equalTerms expr11 expr22
-  | Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 &&  equalTerms expr11 expr21 &&  equalTerms expr12 expr22
-  | Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22) -> equal x y && equalTypes ty1 ty2 && equalTerms expr11 expr21 &&  equalTerms expr12 expr22 
-  | _ -> false
-   
   
 let rec isValue = function
 | Const _           -> true
 | Pair(expr1,expr2) -> isValue expr1 && isValue expr2
-| Fun(_,_,_)        -> true
+| Fun(_,_)          -> true
 | _                 -> false
 
 let isContextOfValues (cont : context) = 
@@ -83,20 +82,23 @@ let closingTerm expr (cont : context) = if not(isContextOfValues cont)
     else List.fold_left (fun expr1 (x,ty,v) -> subst x ty v expr1) expr cont
 
 let rec freeVars = function
-| Var (x,_)             -> [x]
-| Apply1(_,expr)        -> freeVars expr
+| Var (x,_)                   -> [x]
+| Apply1(_,expr)              -> freeVars expr
 | Apply2(_,expr1,expr2)
-| App(expr1,expr2) 
-| Pair(expr1,expr2)     -> 
+| Pair(expr1,expr2)           -> 
     let expr1Fv = freeVars expr1 in 
     let expr2Fv = List.filter (fun x -> not (List.mem x expr1Fv)) (freeVars expr2) in 
     List.append expr1Fv expr2Fv
-| Let(y,_,expr1,expr2)  ->
+| Let(y,_,expr1,expr2)        ->
     let expr1Fv = List.filter (fun x -> not(equal x y)) (freeVars expr1) in 
     let expr2Fv = List.filter (fun x -> not(List.mem x expr1Fv)) (freeVars expr2) in 
     List.append expr1Fv expr2Fv
-| Fun(y,_,expr)         -> let exprFv = freeVars expr in
-    List.filter (fun x -> not(equal x y)) exprFv
+| App(expr1,exprList)         ->  
+    let expr1Fv = freeVars expr1 in 
+    let lis = List.map freeVars exprList in
+    List.fold_left (fun currentList newList ->  List.append currentList (List.filter (fun x -> not(List.mem x currentList)) newList)) expr1Fv lis
+| Fun(varList,expr)           -> let exprFv = freeVars expr in
+    List.fold_left (fun list (y,_) -> List.filter (fun x -> not(equal x y)) list) exprFv varList
 | Case(expr1,y1,_,y2,_,expr2) -> 
     let expr1Fv = freeVars expr1 in 
     let expr2Fv = List.filter (fun x -> not(equal x y1) && not(equal x y2)) (freeVars expr2) in 
@@ -105,11 +107,11 @@ let rec freeVars = function
 
 let rec varNameNotBound (name:string) expr = match expr with
 | Let((str,_),_,expr1,expr2)              -> str<> name && (varNameNotBound name expr1) && (varNameNotBound name expr2)
-| Apply1(_,expr)                          ->  (varNameNotBound name expr)
+| Apply1(_,expr)                          -> (varNameNotBound name expr)
 | Apply2(_,expr1,expr2)
-| Pair(expr1,expr2)
-| App(expr1,expr2)                        ->  (varNameNotBound name expr1) && (varNameNotBound name expr2)
-| Fun((str,_),_,expr)                     -> str<> name && (varNameNotBound name expr)
+| Pair(expr1,expr2)                       -> (varNameNotBound name expr1) && (varNameNotBound name expr2)
+| App(expr1,exprList)                     -> (varNameNotBound name expr1) && List.for_all (varNameNotBound name) exprList
+| Fun(varList,expr)                       -> (varNameNotBound name expr) && List.for_all (fun ((str,_),_) -> str<>name) varList
 | Case(expr1,(str1,_),_,(str2,_),_,expr2) -> str1<> name && str2<> name && (varNameNotBound name expr1) && (varNameNotBound name expr2)
 | _ -> true 
 
@@ -128,8 +130,8 @@ let rec canRen expr = match expr with
 | Apply2(op,expr1,expr2)          -> Apply2(op,canRen expr1,canRen expr2)
 | Let(y,ty,expr1,expr2)           -> Let(y,ty,canRen expr1,canRen expr2)
 | Pair(expr1,expr2)               -> Pair(canRen expr1,canRen expr2)
-| App(expr1,expr2)                -> App(canRen expr1,canRen expr2) 
-| Fun(y,ty,expr)                  -> Fun(y,ty,canRen expr)
+| App(expr1,exprList)             -> App(canRen expr1,List.map canRen exprList) 
+| Fun(varList,expr)               -> Fun(varList,canRen expr)
 | Case(expr1,y1,ty1,y2,ty2,expr2) -> Case(canRen expr1,y1,ty1,y2,ty2,canRen expr2)
 | _                               -> expr
 in canRen expr
@@ -137,42 +139,47 @@ else failwith ("variable "^name^" is already used as a bound variable, can't ren
 
 (* simple typecheker *)
 let rec typeTarget = function
-| Const _               -> Some Real
-| Var(_,ty)             -> Some ty
-| Apply1(_,expr)        -> begin 
+| Const _                       -> Some Real
+| Var(_,ty)                     -> Some ty
+| Apply1(_,expr)                -> begin 
     match typeTarget expr with 
     | Some Real -> Some Real 
     | _         -> None
     end
-| Apply2(_,expr1,expr2) -> begin
+| Apply2(_,expr1,expr2)         -> begin
     match typeTarget expr1,typeTarget expr2 with 
     | (Some Real,Some Real) -> Some Real
     | _                     -> None
     end
-| Let(_,ty,expr1,expr2) -> begin
+| Let(_,ty,expr1,expr2)         -> begin
     match typeTarget expr1,typeTarget expr2 with 
-    | (Some ty1, Some ty2) when ty1 == ty   -> Some ty2
-    | (_,_)                                 -> None
+    | (Some ty1, Some ty2) when equalTypes ty1 ty   -> Some ty2
+    | (_,_)                                         -> None
     end
-| Pair(expr1,expr2)     -> begin
+| Pair(expr1,expr2)             -> begin
   match typeTarget expr1,typeTarget expr2 with 
   | (Some ty1,Some ty2) -> Some(Prod(ty1,ty2))
   | _                   -> None
   end
-| Fun(_,ty,expr)        -> begin
+| Fun(varList,expr)             -> begin
   match typeTarget expr with
-  | None -> None
-  | Some ty1 -> Some(Arrow(ty,ty1)) 
+  | None      -> None
+  | Some ty1  -> Some(Arrow(List.map snd varList,ty1)) 
   end
-| App(expr1,expr2)      ->  begin
-  match typeTarget expr1,typeTarget expr2 with 
-  | Some Arrow(ty1,ty2),Some ty3 when ty1==ty3  -> Some ty2 
-  | _                                           -> None
+| App(expr1,exprList)           ->  begin
+  match typeTarget expr1,List.map typeTarget exprList with 
+  | Some Arrow(tyList1,ty1), tyList2 
+    when List.for_all2 (fun ty11 ty2 -> match ty2 with  | Some ty22 -> equalTypes ty11 ty22 
+                                                        | _ -> false ) 
+          tyList1 
+          tyList2  
+        -> Some ty1 
+  | _   -> None
   end
-| Case(expr1,_,ty1,_,ty2,expr2)  -> begin
+| Case(expr1,_,ty1,_,ty2,expr2) -> begin
   match typeTarget expr1,typeTarget expr2 with
-  | Some Prod(ty3,ty4),Some ty5 when ty1==ty3 && ty2==ty4 -> Some ty5
-  | _                                                     -> None
+  | Some Prod(ty3,ty4),Some ty5 when equalTypes ty1 ty3 && equalTypes ty2 ty4 -> Some ty5
+  | _                                                                         -> None
   end
 
 let isWellTyped expr = match (typeTarget expr) with
@@ -194,7 +201,7 @@ let interpretOp1T op expr = match expr with
   | Exp  -> Const(exp(v))
   | Minus-> Const(-.v)
   end
-| _ -> failwith "the operand of a unary operator is not a real value"
+| _       -> failwith "the operand of a unary operator is not a real value"
   
 let interpretOp2T op expr1 expr2 = match expr1,expr2 with
 | (Const v1,Const v2) -> begin
@@ -203,7 +210,7 @@ let interpretOp2T op expr1 expr2 = match expr1,expr2 with
   | Times -> Const(v1*.v2)
   | Minus -> Const(v1-.v2)
   end
-| _ -> failwith "one operand of a binary operator is not a real value"
+| _                   -> failwith "one operand of a binary operator is not a real value"
 
 (* assumes the context captures all free vars, and is only given values *)
 let interpret expr context = 
@@ -223,30 +230,8 @@ let rec interp expr = match expr with
 | Case(expr1,y1,ty1,y2,ty2,expr2) -> begin match (interp expr1) with
     | Pair(v1,v2) -> interp (subst y2 ty2 v2 (subst y1 ty1 v1 expr2))
     | _           -> failwith "expression should reduce to a pair" end
-| App(expr1,expr2)                ->  begin match (interp expr1) with
-    | Fun(x,ty,expr1) -> let v = interp expr2 in interp (subst x ty v expr1)
-    | _               -> failwith "expression should reduce to a function" end
+| App(expr1,exprList)             ->  begin match (interp expr1) with
+    | Fun(varList,expr1)  -> let vList = List.map interp exprList in interp (List.fold_left (fun expr ((x,ty),v) -> subst x ty v expr) expr1 (List.combine varList vList))
+    | _                   -> failwith "expression should reduce to a function" end
 | _                               ->  expr
 in interp expr2
-
-(* Some algebraic simplifications, done unefficiently *)
-let rec iterator f x n = 
-  if n == 0 then x
-  else let x = f x in iterator f x (n-1) 
-
-let realOptimizer expr n =
-  let rec optim expr = match expr with
-  | Apply2(Plus,Const a,Const b)    -> Const(a+.b)
-  | Apply2(Times,Const a,Const b)   -> Const(a*.b)
-  | Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) when expr1 == expr3 -> 
-     Apply2(Times,expr1,Apply2(Plus,expr2,expr4))
-  | Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) when expr2 == expr4 -> 
-    Apply2(Times,Apply2(Plus,expr1,expr3),expr2)
-  | Apply1(op, expr)                -> Apply1(op,optim expr)
-  | Apply2(op, expr1, expr2)        ->  Apply2(op, optim expr1, optim expr2)
-  | Pair(expr1,expr2)               -> Pair(optim expr1,optim expr2) 
-  | App(expr1,expr2)                -> App(optim expr1,optim expr2)
-  | Fun(x,ty,expr)                  -> Fun(x,ty, optim expr) 
-  | Case(expr1,x1,ty1,x2,ty2,expr2) -> Case(optim expr1,x1,ty1,x2,ty2,optim expr2)
-  | _                               -> expr
-  in iterator optim expr n

@@ -6,7 +6,9 @@ let arrow3= "⟶"
 let bra   = "⟨"
 let ket   = "⟩"
 let leftpar="("
-let rightpar=")" 
+let rightpar=")"
+let leftbra="["
+let rightbra="]" 
 let klambda= "λ"
 let lambda = " fun"
 let colon = " :" 
@@ -89,8 +91,8 @@ let rec prettyP = function
 else (printOp2 op)^leftpar^(prettyP expr1)^comma^(prettyP expr2)^rightpar
 | Let(x,ty,expr1,expr2)         -> klet^(printVar (Var(x,ty)))^kequal^(prettyP expr1)^kin^"\n"^(prettyP expr2)
 | Pair(expr1,expr2)             -> bra^(prettyP expr1)^comma^(prettyP expr2)^ket
-| Fun(x,ty,expr)                -> klambda^(printVar (Var(x,ty)))^kdot^(prettyP expr)
-| App(expr1,expr2)              -> leftpar^(prettyP expr1)^rightpar^(prettyP expr2)
+| Fun(varList,expr)             -> klambda^(List.fold_left (fun acc (x,ty) -> acc^(printVar (Var(x,ty))^" ")) "" varList)^kdot^(prettyP expr)
+| App(expr1,exprList)           -> leftpar^(prettyP expr1)^rightpar^leftbra^(List.fold_left (fun acc expr -> acc^prettyP expr^",") "" exprList)^rightbra
 | Case(expr1,x,ty1,y,ty2,expr2) -> kcase^(prettyP expr1)^kof^bra^(printVar (Var (x,ty1)))^comma^(printVar (Var(y,ty2)))^ket^arrow3^(prettyP expr2)
 in Lwt_io.print ((prettyP expr)^"\n")
-end
+end 
