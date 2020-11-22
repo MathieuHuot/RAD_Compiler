@@ -45,21 +45,25 @@ let rec subst (x:var) ty expr1 expr2 = match expr2 with
     then failwith "trying to substitute a bound variable"
     else Let(y,ty1,subst x ty expr1 expr2, subst x ty expr1 expr3)
 
-(* TODO: need to check equality up to alpha-renaming *)
-let rec equalTerms expr1 expr2 = match expr1,expr2 with
-| Const a,Const b                                       ->  a==b
-| Var (a,ty1),Var (b,ty2)                               ->  equal a b 
-                                                            && equalTypes ty1 ty2
-| Apply1(op1,expr11),Apply1(op2,expr22)                 ->  equalOp1 op1 op2 
-                                                            && equalTerms expr11 expr22
-| Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22)   ->  equalOp2 op1 op2 
-                                                            &&  equalTerms expr11 expr21 
-                                                            &&  equalTerms expr12 expr22
-| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)    ->  equal x y 
-                                                            && equalTypes ty1 ty2 
-                                                            && equalTerms expr11 expr21 
-                                                            &&  equalTerms expr12 expr22 
-| _                                                     ->  false
+(*  Checks whether two terms are equal up to alpha renaming.
+    Two variables match iff they are the same free variable or they are both bound and equal up to renaming.
+    This renaming is checked by carrying an explicit list of pairs of bound variables found so far in the term. 
+    When an occurence of bound variable is found deeper in the term, we check whether it matches the renaming *)
+let equalTerms expr1 expr2 = 
+    let rec eqT expr1 expr2 list = match expr1,expr2 with
+    | Const a,Const b                                     -> a==b
+    | Var (a,ty1),Var (b,ty2)                             -> (equal a b || List.mem  ((a,ty1),(b,ty2)) list)
+                                                             && equalTypes ty1 ty2
+    | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 
+                                                             && eqT expr11 expr22 list
+    | Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 
+                                                             &&  eqT expr11 expr21 list 
+                                                             &&  eqT expr12 expr22 list
+    | Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> equalTypes ty1 ty2 
+                                                             && eqT expr11 expr21 list
+                                                             &&  eqT expr12 expr22 (((x,ty1),(y,ty2))::list)                                                      
+    | _                                                   -> false
+    in eqT expr1 expr2 []
 
 let isContextOfValues (cont : context) = 
     List.fold_left (fun acc (_,_,v) -> (isValue v) && acc) true cont 

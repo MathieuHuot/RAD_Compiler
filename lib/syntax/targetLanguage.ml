@@ -61,35 +61,36 @@ let rec subst (x:var) xTy expr1 expr2 = match expr2 with
                                      then failwith "trying to substitute a bound variable"
                                      else Case(subst x xTy expr1 expr2,y1,ty1,y2,ty2,subst x xTy expr1 expr3)
 
-(* TODO: need to check equality up to alpha-renaming / finish cases *)
-let rec equalTerms expr1 expr2 = match expr1,expr2 with
+(*  Checks whether two terms are equal up to alpha renaming.
+    Two variables match iff they are the same free variable or they are both bound and equal up to renaming.
+    This renaming is checked by carrying an explicit list of pairs of bound variables found so far in the term. 
+    When an occurence of bound variable is found deeper in the term, we check whether it matches the renaming *)
+let equalTerms expr1 expr2 = 
+let rec eqT expr1 expr2 list = match expr1,expr2 with
 | Const a,Const b                                     -> a==b
-| Var (a,ty1),Var (b,ty2)                             -> equal a b 
+| Var (a,ty1),Var (b,ty2)                             -> (equal a b || List.mem  ((a,ty1),(b,ty2)) list)
                                                          && equalTypes ty1 ty2
 | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 
-                                                         && equalTerms expr11 expr22
+                                                         && eqT expr11 expr22 list
 | Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 
-                                                         &&  equalTerms expr11 expr21 
-                                                         &&  equalTerms expr12 expr22
-| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> equal x y 
-                                                         && equalTypes ty1 ty2 
-                                                         && equalTerms expr11 expr21 
-                                                         &&  equalTerms expr12 expr22
-| App(expr11,exprList1),App(expr21,exprList2)         -> equalTerms expr11 expr21 
-                                                         &&  List.for_all2 equalTerms exprList1 exprList2
-| Pair(expr11,expr12), Pair(expr21,expr22)            -> equalTerms expr11 expr21 
-                                                         && equalTerms expr12 expr22
-| Fun(varList1,expr1),Fun(varList2,expr2)             -> equalTerms expr1 expr2 
-                                                         && List.for_all2 (fun (x1,ty1) (x2,ty2) -> equal x1 x2 && equalTypes ty1 ty2) varList1 varList2
+                                                         &&  eqT expr11 expr21 list 
+                                                         &&  eqT expr12 expr22 list
+| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> equalTypes ty1 ty2 
+                                                         && eqT expr11 expr21 list
+                                                         &&  eqT expr12 expr22 (((x,ty1),(y,ty2))::list)
+| App(expr11,exprList1),App(expr21,exprList2)         -> eqT expr11 expr21 list
+                                                         &&  List.for_all2 (fun x y -> eqT x y list) exprList1 exprList2
+| Pair(expr11,expr12), Pair(expr21,expr22)            -> eqT expr11 expr21 list
+                                                         && eqT expr12 expr22 list
+| Fun(varList1,expr1),Fun(varList2,expr2)             -> eqT expr1 expr2 (List.append (List.combine varList1 varList2) list) 
+                                                         && List.for_all2 (fun (_,ty1) (_,ty2) -> equalTypes ty1 ty2) varList1 varList2
 | Case(expr11,x11,ty11,x12,ty12,expr12),
-  Case(expr21,x21,ty21,x22,ty22,expr22)               -> equalTerms expr11 expr21
-                                                         && equalTerms expr12 expr22
-                                                         && equal x11 x21 
-                                                         && equal x12 x22 
+  Case(expr21,x21,ty21,x22,ty22,expr22)               -> eqT expr11 expr21 list
+                                                         && eqT expr12 expr22 (((x11,ty11),(x21,ty21))::((x12,ty12),(x22,ty22))::list)
                                                          && equalTypes ty11 ty21  
-                                                         && equalTypes ty12 ty22
-                                                          
+                                                         && equalTypes ty12 ty22                                                          
 | _                                                   -> false
+in eqT expr1 expr2 []
 
 let rec isValue = function
 | Const _           -> true
@@ -120,7 +121,8 @@ let rec freeVars = function
     let expr1Fv = freeVars expr1 in 
     let lis = List.map freeVars exprList in
     List.fold_left 
-    (fun currentList newList ->  List.append currentList (List.filter (fun x -> not(List.mem x currentList)) newList)) 
+    (fun currentList newList ->  List.append  currentList 
+                                              (List.filter (fun x -> not(List.mem x currentList)) newList)) 
     expr1Fv 
     lis
 | Fun(varList,expr)           -> let exprFv = freeVars expr in
@@ -271,7 +273,12 @@ let rec interp expr = match expr with
     | Pair(v1,v2) -> interp (subst y2 ty2 v2 (subst y1 ty1 v1 expr2))
     | _           -> failwith "expression should reduce to a pair" end
 | App(expr1,exprList)             ->  begin match (interp expr1) with
-    | Fun(varList,expr1)  -> let vList = List.map interp exprList in interp (List.fold_left2 (fun expr (x,ty) v -> subst x ty v expr) expr1 varList vList)
-    | _                   -> failwith "expression should reduce to a function" end
+    | Fun(varList,expr1)  ->  let vList = List.map interp exprList in 
+                              interp (List.fold_left2 
+                                          (fun expr (x,ty) v -> subst x ty v expr) 
+                                          expr1 
+                                          varList 
+                                          vList)
+    | _                   ->  failwith "expression should reduce to a function" end
 | _                               ->  expr
 in interp expr2
