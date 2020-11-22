@@ -12,9 +12,32 @@ and sourceSyn = Var of var * sourceType
 
 type context = (var * sourceType * sourceSyn) list
 
+let rec equalTypes ty1 ty2 = match ty1,ty2 with
+| Real,Real                         ->  true
+| Prod(ty11,ty12),Prod(ty21,ty22)   ->  equalTypes ty11 ty21 
+                                        && equalTypes ty12 ty22
+| _                                 ->  false
+
+let isValue = function
+| Const _   -> true
+| _         -> false
+
+let equalOp1 op1 op2 = match op1,op2 with
+| Cos,Cos       -> true
+| Sin,Sin       -> true
+| Exp,Exp       -> true
+| Minus,Minus   -> true
+| _ -> false
+
+let equalOp2 op1 op2 = match op1,op2 with
+| Plus,Plus     -> true
+| Times,Times   -> true
+| Minus,Minus   -> true
+| _             -> false
+
 (* substitute variable x of type ty by expr1 in expr2 *)
 let rec subst (x:var) ty expr1 expr2 = match expr2 with 
-| Var (a,ty1)           -> if equal a x && ty1 == ty then expr1 else expr2
+| Var (a,ty1)           -> if equal a x && equalTypes ty1 ty then expr1 else expr2
 | Const _               -> expr2
 | Apply1(op,expr2)      -> Apply1(op,subst x ty expr1 expr2)
 | Apply2(op,expr2,expr3)-> Apply2(op,subst x ty expr1 expr2,subst x ty expr1 expr3)
@@ -22,36 +45,21 @@ let rec subst (x:var) ty expr1 expr2 = match expr2 with
     then failwith "trying to substitute a bound variable"
     else Let(y,ty1,subst x ty expr1 expr2, subst x ty expr1 expr3)
 
-let isValue = function
-| Const _   -> true
-| _         -> false
-
-let equalOp1 op1 op2 = match op1,op2 with
-| Cos,Cos -> true
-| Sin,Sin -> true
-| Exp,Exp -> true
-| Minus,Minus -> true
-| _ -> false
-
-let equalOp2 op1 op2 = match op1,op2 with
-| Plus,Plus -> true
-| Times,Times -> true
-| Minus,Minus -> true
-| _ -> false
-
-let rec equalTypes ty1 ty2 = match ty1,ty2 with
-| Real,Real -> true
-| Prod(ty11,ty12),Prod(ty21,ty22) -> equalTypes ty11 ty21 && equalTypes ty12 ty22
-| _ -> false
-
 (* TODO: need to check equality up to alpha-renaming *)
 let rec equalTerms expr1 expr2 = match expr1,expr2 with
-| Const a,Const b -> a==b
-| Var (a,ty1),Var (b,ty2) -> a==b && equalTypes ty1 ty2
-| Apply1(op1,expr11),Apply1(op2,expr22) -> equalOp1 op1 op2 && equalTerms expr11 expr22
-| Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 &&  equalTerms expr11 expr21 &&  equalTerms expr12 expr22
-| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22) -> equal x y && equalTypes ty1 ty2 && equalTerms expr11 expr21 &&  equalTerms expr12 expr22 
-| _ -> false
+| Const a,Const b                                       ->  a==b
+| Var (a,ty1),Var (b,ty2)                               ->  equal a b 
+                                                            && equalTypes ty1 ty2
+| Apply1(op1,expr11),Apply1(op2,expr22)                 ->  equalOp1 op1 op2 
+                                                            && equalTerms expr11 expr22
+| Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22)   ->  equalOp2 op1 op2 
+                                                            &&  equalTerms expr11 expr21 
+                                                            &&  equalTerms expr12 expr22
+| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)    ->  equal x y 
+                                                            && equalTypes ty1 ty2 
+                                                            && equalTerms expr11 expr21 
+                                                            &&  equalTerms expr12 expr22 
+| _                                                     ->  false
 
 let isContextOfValues (cont : context) = 
     List.fold_left (fun acc (_,_,v) -> (isValue v) && acc) true cont 
@@ -74,15 +82,18 @@ let rec freeVars = function
 | _                     -> []
 
 let rec varNameNotBound (name:string) expr = match expr with
-| Let((str,_),_,expr1,expr2) -> str<> name && (varNameNotBound name expr1) && (varNameNotBound name expr2)
-| Apply1(_,expr)             ->  (varNameNotBound name expr)
-| Apply2(_,expr1,expr2)      ->  (varNameNotBound name expr1) && (varNameNotBound name expr2)
-| _ -> true 
+| Let((str,_),_,expr1,expr2) -> str<> name 
+                                && (varNameNotBound name expr1) 
+                                && (varNameNotBound name expr2)
+| Apply1(_,expr)             -> (varNameNotBound name expr)
+| Apply2(_,expr1,expr2)      -> (varNameNotBound name expr1) 
+                                && (varNameNotBound name expr2)
+| _                          -> true 
 
 let indexOf el lis = 
   let rec index_rec i = function
     | [] -> failwith "Element not found in the list"
-    | hd::tl -> if hd == el then i else index_rec (i+1) tl
+    | hd::tl -> if equal hd el then i else index_rec (i+1) tl
   in index_rec 0 lis
 
 let canonicalAlphaRename (name:string) expr =
@@ -113,8 +124,8 @@ let rec typeSource = function
     end
 | Let(_,ty,expr1,expr2) -> begin
     match typeSource expr1,typeSource expr2 with 
-    | (Some ty1, Some ty2) when ty1 == ty   -> Some ty2
-    | (_,_)                                 -> None
+    | (Some ty1, Some ty2) when equalTypes ty1 ty   -> Some ty2
+    | (_,_)                                         -> None
     end
 
 let isWellTyped expr = match (typeSource expr) with
@@ -143,14 +154,14 @@ if not(isWellTyped expr) then failwith "the term is ill-typed";
 if not(contextComplete expr context) then failwith "the context does not capture all free vars";
 let expr2 = closingTerm expr context in 
 let rec interp = function
-| Const a               ->  a
-| Apply1(op,expr)       ->  let v = interp expr in 
+| Const a                -> a
+| Apply1(op,expr)        -> let v = interp expr in 
                             interpretOp1 op v
-| Apply2(op,expr1,expr2)->  let val1 = interp expr1 in 
+| Apply2(op,expr1,expr2) -> let val1 = interp expr1 in 
                             let val2 = interp expr2 in 
                             interpretOp2 op val1 val2
-| Let(x,ty,expr1,expr2)  ->  let v = interp expr1 in 
+| Let(x,ty,expr1,expr2)  -> let v = interp expr1 in 
                             let expr3 = subst x ty (Const v) expr2 in
                             interp expr3
-| _                     ->  failwith "the expression should not contain this pattern"
+| _                      -> failwith "the expression should not contain this pattern"
 in interp expr2

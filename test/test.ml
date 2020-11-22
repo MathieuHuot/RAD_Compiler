@@ -19,7 +19,7 @@ let f7 = Apply1(Sin, Var(Syntax.Vars.fresh(),Real));;
 (* Random term generator tests *)
 Lwt_io.print "random term:\n";;
 Random.self_init();;
-SourcePrinter.prettyPrinter(anf(Syntax.Generator.sourceSynGen()));;
+SourcePrinter.prettyPrinter(anf(Syntax.Generator.sourceSynGen(100)));;
 Lwt_io.print "end random term\n";;
 (* Printers tests*)
 

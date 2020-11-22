@@ -11,8 +11,12 @@ let naiveReverseADType (ty : sourceType) (retTy : targetType) =
 let semiNaiveReverseADType (ty : sourceType) (retTy : targetType) =
     Prod(sourceToTargetType ty, Arrow([sourceToTargetType ty],retTy))
 
-let semiNaiveReverseAD (expr : sourceSyn) : targetSyn = failwith "TODO"
-  (* let termAnf = weakAnf expr in
+(* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
+(* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
+let dvar var : Syntax.Vars.var *  Syntax.Vars.var = let str,i = var in (str,i),("d"^str,i) 
+
+let semiNaiveReverseAD (expr : sourceSyn) : targetSyn =
+  let termAnf = weakAnf expr in
   let retTy = failwith "TODO" in (*TODO: very wrong, should be type of the context*)
   let new_var = Syntax.Vars.fresh() in 
   let id_cont = Fun(new_var,retTy,Var(new_var, retTy)) in
@@ -35,4 +39,4 @@ let semiNaiveReverseAD (expr : sourceSyn) : targetSyn = failwith "TODO"
     | Apply2(_,_,_) -> failwith "TODO"
     | Let(_,_,_,_)  -> failwith "TODO"
   in let x,_ = rad termAnf (id_cont) retTy 
-  in x *)
+  in x

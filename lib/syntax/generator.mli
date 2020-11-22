@@ -1,3 +1,3 @@
-(* produces a random closed term of average depth the given input *)
-val sourceSynGen : unit -> SourceLanguage.sourceSyn
-val targetSynGen : unit -> TargetLanguage.targetSyn
+(* produces a random closed term of max depth the given input *)
+val sourceSynGen : int -> SourceLanguage.sourceSyn
+val targetSynGen : int -> TargetLanguage.targetSyn

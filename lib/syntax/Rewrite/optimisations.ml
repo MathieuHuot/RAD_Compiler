@@ -42,21 +42,47 @@ let funEval expr = match expr with
 (* let x1=e1 in let x2=e2 in ... in let xn=en in e *)
 (* for later optimisations like forward substitution *)
 let lambdaReplacement expr = match expr with 
+| App(Fun(varList,expr),exprList) -> List.fold_left2 (fun acc (x,ty) expr -> Let(x,ty,expr,acc)) expr (List.rev varList) (List.rev exprList)
 | _ -> expr
 
-let allVars _ = failwith "TODO"
+(* collects all variables -- bound and free -- in expr *)
+let rec allVars = function
+| Var (x,_)                   -> [x]
+| Apply1(_,expr)              -> allVars expr
+| Apply2(_,expr1,expr2)
+| Pair(expr1,expr2)           -> 
+    let expr1Fv = allVars expr1 in 
+    let expr2Fv = List.filter (fun x -> not (List.mem x expr1Fv)) (allVars expr2) in 
+    List.append expr1Fv expr2Fv
+| Let(y,_,expr1,expr2)        ->
+    let expr1Fv = List.filter (fun x -> not(Syntax.Vars.equal x y)) (allVars expr1) in 
+    let expr2Fv = List.filter (fun x -> not(List.mem x expr1Fv)) (allVars expr2) in 
+    y::(List.append expr1Fv expr2Fv)
+| App(expr1,exprList)         ->  
+    let expr1Fv = allVars expr1 in 
+    let lis = List.map allVars exprList in
+    List.fold_left (fun currentList newList ->  List.append currentList (List.filter (fun x -> not(List.mem x currentList)) newList)) expr1Fv lis
+| Fun(varList,expr)           -> let exprFv = allVars expr in
+    List.append (List.map fst varList) (List.fold_left (fun list (y,_) -> List.filter (fun x -> not(Syntax.Vars.equal x y)) list) exprFv varList)
+| Case(expr1,y1,_,y2,_,expr2) -> 
+    let expr1Fv = allVars expr1 in 
+    let expr2Fv = List.filter (fun x -> not(Syntax.Vars.equal x y1) && not(Syntax.Vars.equal x y2)) (allVars expr2) in 
+    List.append (List.append expr1Fv (y1::y2::[])) (List.filter (fun x -> not(List.mem x expr1Fv)) expr2Fv)
+| _ -> [] 
 
 (* collects the list of unused bound variables *)
 let listUnusedVars expr =
-  let list = allVars expr in 
   let rec aux expr =  match expr with
-  | Let(x,ty,e1,e2) -> (if (List.mem (x,ty) list ) then [x] else [])@aux e1 @ aux e2  
-  | _ -> [] (* TODO *)
+  | Let(x,_,e1,e2) -> (if (List.mem x (freeVars e1)) then [] else [x])@ aux e1 @ aux e2  
+  | _ -> []
+  in aux expr
 
 (* dead code elimination of a list of unused variables *)
+(* TODO: think about optimisation strategy, when to do each optimisation. *)
+(* Right now I assume lambdas are already evaluated/removed and this elimination is done around the end *)
 let deadVarsElim expr list = match expr with
 | Let(x,ty,_,e) when (List.mem (x,ty) list) -> e
-| _ -> expr
+| _ -> expr 
 
 (* Applies forward substitution: let x=y in e -> e[y/x] where y is a variable *)
 let forwardSubst expr = match expr with

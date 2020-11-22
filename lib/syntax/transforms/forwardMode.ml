@@ -15,7 +15,8 @@ let dvar var : var * var = let str,i = var in (str,i),("d"^str,i)
 let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
 | Const c               ->  Pair(Const c, Const 0.)
 | Var(x,ty)             ->  let x,y = dvar x in
-                            Pair(Var(x,sourceToTargetType ty), Var(y,sourceToTargetType ty))
+                            Pair( Var(x,sourceToTargetType ty), 
+                                  Var(y,sourceToTargetType ty))
 | Apply1(op,expr)       ->  let yPrimal = Syntax.Vars.fresh() in
                             let tyPrimal = Real in
                             let yTangent = Syntax.Vars.fresh() in
@@ -29,10 +30,15 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
                             in 
                             let primal = Apply1(op,Var(yPrimal,tyPrimal)) in
                             let tangent = Apply2(Times,
-                              dop(Var(yPrimal,tyPrimal)),
-                              Var(yTangent,tyTangent))  in 
-                            Case(exprD,yPrimal,tyPrimal,yTangent,tyTangent,
-                            Pair(primal,tangent))
+                                                  dop(Var(yPrimal,tyPrimal)),
+                                                  Var(yTangent,tyTangent))  
+                            in 
+                            Case(exprD,
+                                yPrimal,
+                                tyPrimal,
+                                yTangent,
+                                tyTangent,
+                                Pair(primal,tangent))
 | Apply2(op,expr1,expr2)->  let y1Primal = Syntax.Vars.fresh() in
                             let ty1Primal = Real in
                             let y1VarP = Var(y1Primal,ty1Primal) in
@@ -57,19 +63,32 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
                             in 
                             let primal = Apply2(op,y1VarP,y2VarP) in
                             let tangent = Apply2(Plus,
-                              Apply2(Times,
-                                d1op y1VarP y2VarP,
-                                Var(y1Tangent,ty1Tangent)),
-                              Apply2(Times,
-                                d2op y1VarP y2VarP,
-                                Var(y2Tangent,ty2Tangent))) in
-                            Case(expr1D,y1Primal,ty1Primal,y1Tangent,ty1Tangent,
-                            Case(expr2D,y2Primal,ty2Primal,y2Tangent,ty2Tangent,
-                            Pair(primal,tangent)
-                            ))
+                                                  Apply2(Times,
+                                                          d1op y1VarP y2VarP,
+                                                          Var(y1Tangent,ty1Tangent)),
+                                                  Apply2(Times,
+                                                          d2op y1VarP y2VarP,
+                                                          Var(y2Tangent,ty2Tangent))) 
+                            in
+                            Case(expr1D,
+                                  y1Primal,
+                                  ty1Primal,
+                                  y1Tangent,
+                                  ty1Tangent,
+                                  Case(expr2D,
+                                        y2Primal,
+                                        ty2Primal,
+                                        y2Tangent,
+                                        ty2Tangent,
+                                        Pair(primal,tangent)))
 | Let(y,ty,expr1,expr2) ->  let expr1D = forwardAD expr1 in
                             let expr2D = forwardAD expr2 in
                             let yPrimal, yTangent = dvar y in
                             let tyPrimal = sourceToTargetType ty in
                             let tyTangent = tyPrimal in
-                            Case(expr1D,yPrimal,tyPrimal,yTangent,tyTangent,expr2D)
+                            Case(expr1D,
+                                  yPrimal,
+                                  tyPrimal,
+                                  yTangent,
+                                  tyTangent,
+                                  expr2D)

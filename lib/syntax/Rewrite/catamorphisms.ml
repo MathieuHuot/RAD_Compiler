@@ -15,7 +15,7 @@ module CataSource : Catamorphism with type adt = Syntax.SourceLanguage.sourceSyn
   let rule expr = match expr with 
     | Apply2(Plus,Const a,Const b)  -> 0, lazy (Const(a+.b))
     | Apply2(Times,Const a,Const b) -> 1, lazy (Const(a*.b))
-    | expr -> 2, lazy expr
+    | expr                          -> 2, lazy expr
 
   let rec catamorphism list expr = 
     let aux expr = begin 

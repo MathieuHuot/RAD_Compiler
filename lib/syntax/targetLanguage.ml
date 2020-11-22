@@ -37,37 +37,60 @@ let equalOp2 op1 op2 = match op1,op2 with
 
 let rec equalTypes ty1 ty2 = match ty1,ty2 with
   | Real,Real                             -> true
-  | Prod(ty11,ty12),Prod(ty21,ty22)       -> equalTypes ty11 ty21 && equalTypes ty12 ty22
-  | Arrow(tyList1,ty1),Arrow(tyList2,ty2) -> equalTypes ty1 ty2 && List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2
+  | Prod(ty11,ty12),Prod(ty21,ty22)       -> equalTypes ty11 ty21 
+                                             && equalTypes ty12 ty22
+  | Arrow(tyList1,ty1),Arrow(tyList2,ty2) -> equalTypes ty1 ty2 
+                                             && List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2
   | _                                     -> false
   
-  (* TODO: need to check equality up to alpha-renaming / finish cases *)
-let rec equalTerms expr1 expr2 = match expr1,expr2 with
-  | Const a,Const b                                     -> a==b
-  | Var (a,ty1),Var (b,ty2)                             -> equal a b && equalTypes ty1 ty2
-  | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 && equalTerms expr11 expr22
-  | Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 &&  equalTerms expr11 expr21 &&  equalTerms expr12 expr22
-  | Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> equal x y && equalTypes ty1 ty2 && equalTerms expr11 expr21 &&  equalTerms expr12 expr22 
-  | _ -> false
-
 (* substitute variable x of type xTy by expr1 in expr2*)
 let rec subst (x:var) xTy expr1 expr2 = match expr2 with 
-| Var(a,ty)                       -> if equal a x && ty==xTy then expr1 else expr2
+| Var(a,ty)                       -> if equal a x && equalTypes ty xTy then expr1 else expr2
 | Const _                         -> expr2
 | Apply1(op,expr2)                -> Apply1(op,subst x xTy expr1 expr2)
 | Apply2(op,expr2,expr3)          -> Apply2(op,subst x xTy expr1 expr2,subst x xTy expr1 expr3)
 | Let(y,ty,expr2,expr3)           -> if equal x y 
-  then failwith "trying to substitute a bound variable"
-  else Let(y,ty,subst x xTy expr1 expr2, subst x xTy expr1 expr3)
+                                     then failwith "trying to substitute a bound variable"
+                                     else Let(y,ty,subst x xTy expr1 expr2, subst x xTy expr1 expr3)
 | Pair(expr2,expr3)               -> Pair(subst x xTy expr1 expr2,subst x xTy expr1 expr3)
 | Fun(varList,expr2)              -> if (List.exists (fun (y,ty) -> equal x y && equalTypes ty xTy) varList)
-  then failwith "trying to substitute a bound variable"
-  else Fun(varList,subst x xTy expr1 expr2)
+                                     then failwith "trying to substitute a bound variable"
+                                     else Fun(varList,subst x xTy expr1 expr2)
 | App(expr2,exprList)             -> App(subst x xTy expr1 expr2,List.map (subst x xTy expr1) exprList)
 | Case(expr2,y1,ty1,y2,ty2,expr3) -> if (equal x y1)||(equal x y2)
-  then failwith "trying to substitute a bound variable"
-  else Case(subst x xTy expr1 expr2,y1,ty1,y2,ty2,subst x xTy expr1 expr3)
-  
+                                     then failwith "trying to substitute a bound variable"
+                                     else Case(subst x xTy expr1 expr2,y1,ty1,y2,ty2,subst x xTy expr1 expr3)
+
+(* TODO: need to check equality up to alpha-renaming / finish cases *)
+let rec equalTerms expr1 expr2 = match expr1,expr2 with
+| Const a,Const b                                     -> a==b
+| Var (a,ty1),Var (b,ty2)                             -> equal a b 
+                                                         && equalTypes ty1 ty2
+| Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 
+                                                         && equalTerms expr11 expr22
+| Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 
+                                                         &&  equalTerms expr11 expr21 
+                                                         &&  equalTerms expr12 expr22
+| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> equal x y 
+                                                         && equalTypes ty1 ty2 
+                                                         && equalTerms expr11 expr21 
+                                                         &&  equalTerms expr12 expr22
+| App(expr11,exprList1),App(expr21,exprList2)         -> equalTerms expr11 expr21 
+                                                         &&  List.for_all2 equalTerms exprList1 exprList2
+| Pair(expr11,expr12), Pair(expr21,expr22)            -> equalTerms expr11 expr21 
+                                                         && equalTerms expr12 expr22
+| Fun(varList1,expr1),Fun(varList2,expr2)             -> equalTerms expr1 expr2 
+                                                         && List.for_all2 (fun (x1,ty1) (x2,ty2) -> equal x1 x2 && equalTypes ty1 ty2) varList1 varList2
+| Case(expr11,x11,ty11,x12,ty12,expr12),
+  Case(expr21,x21,ty21,x22,ty22,expr22)               -> equalTerms expr11 expr21
+                                                         && equalTerms expr12 expr22
+                                                         && equal x11 x21 
+                                                         && equal x12 x22 
+                                                         && equalTypes ty11 ty21  
+                                                         && equalTypes ty12 ty22
+                                                          
+| _                                                   -> false
+
 let rec isValue = function
 | Const _           -> true
 | Pair(expr1,expr2) -> isValue expr1 && isValue expr2
@@ -96,29 +119,45 @@ let rec freeVars = function
 | App(expr1,exprList)         ->  
     let expr1Fv = freeVars expr1 in 
     let lis = List.map freeVars exprList in
-    List.fold_left (fun currentList newList ->  List.append currentList (List.filter (fun x -> not(List.mem x currentList)) newList)) expr1Fv lis
+    List.fold_left 
+    (fun currentList newList ->  List.append currentList (List.filter (fun x -> not(List.mem x currentList)) newList)) 
+    expr1Fv 
+    lis
 | Fun(varList,expr)           -> let exprFv = freeVars expr in
-    List.fold_left (fun list (y,_) -> List.filter (fun x -> not(equal x y)) list) exprFv varList
+    List.fold_left 
+    (fun list (y,_) -> List.filter (fun x -> not(equal x y)) list) 
+    exprFv 
+    varList
 | Case(expr1,y1,_,y2,_,expr2) -> 
     let expr1Fv = freeVars expr1 in 
     let expr2Fv = List.filter (fun x -> not(equal x y1) && not(equal x y2)) (freeVars expr2) in 
-    List.append expr1Fv (List.filter (fun x -> not(List.mem x expr1Fv)) expr2Fv)
+    List.append 
+    expr1Fv 
+    (List.filter (fun x -> not(List.mem x expr1Fv)) expr2Fv)
 | _ -> [] 
 
 let rec varNameNotBound (name:string) expr = match expr with
-| Let((str,_),_,expr1,expr2)              -> str<> name && (varNameNotBound name expr1) && (varNameNotBound name expr2)
-| Apply1(_,expr)                          -> (varNameNotBound name expr)
+| Let((str,_),_,expr1,expr2)              ->  str<> name 
+                                              && (varNameNotBound name expr1) 
+                                              && (varNameNotBound name expr2)
+| Apply1(_,expr)                          ->  (varNameNotBound name expr)
 | Apply2(_,expr1,expr2)
-| Pair(expr1,expr2)                       -> (varNameNotBound name expr1) && (varNameNotBound name expr2)
-| App(expr1,exprList)                     -> (varNameNotBound name expr1) && List.for_all (varNameNotBound name) exprList
-| Fun(varList,expr)                       -> (varNameNotBound name expr) && List.for_all (fun ((str,_),_) -> str<>name) varList
-| Case(expr1,(str1,_),_,(str2,_),_,expr2) -> str1<> name && str2<> name && (varNameNotBound name expr1) && (varNameNotBound name expr2)
-| _ -> true 
+| Pair(expr1,expr2)                       ->  (varNameNotBound name expr1) 
+                                              && (varNameNotBound name expr2)
+| App(expr1,exprList)                     ->  (varNameNotBound name expr1) 
+                                              && List.for_all (varNameNotBound name) exprList
+| Fun(varList,expr)                       ->  (varNameNotBound name expr) 
+                                              && List.for_all (fun ((str,_),_) -> str<>name) varList
+| Case(expr1,(str1,_),_,(str2,_),_,expr2) ->  str1<> name 
+                                              && str2<> name 
+                                              && (varNameNotBound name expr1) 
+                                              && (varNameNotBound name expr2)
+| _                                       -> true 
 
 let indexOf el lis = 
   let rec indexAux i = function
     | [] -> failwith "Element not found in the list"
-    | hd::tl -> if hd == el then i else indexAux (i+1) tl
+    | hd::tl -> if equal hd el then i else indexAux (i+1) tl
   in indexAux 0 lis
 
 let canonicalAlphaRename (name:string) expr =
@@ -169,8 +208,9 @@ let rec typeTarget = function
 | App(expr1,exprList)           ->  begin
   match typeTarget expr1,List.map typeTarget exprList with 
   | Some Arrow(tyList1,ty1), tyList2 
-    when List.for_all2 (fun ty11 ty2 -> match ty2 with  | Some ty22 -> equalTypes ty11 ty22 
-                                                        | _ -> false ) 
+    when List.for_all2 
+        (fun ty11 ty2 -> match ty2 with | Some ty22 -> equalTypes ty11 ty22 
+                                        | _         -> false ) 
           tyList1 
           tyList2  
         -> Some ty1 
@@ -231,7 +271,7 @@ let rec interp expr = match expr with
     | Pair(v1,v2) -> interp (subst y2 ty2 v2 (subst y1 ty1 v1 expr2))
     | _           -> failwith "expression should reduce to a pair" end
 | App(expr1,exprList)             ->  begin match (interp expr1) with
-    | Fun(varList,expr1)  -> let vList = List.map interp exprList in interp (List.fold_left (fun expr ((x,ty),v) -> subst x ty v expr) expr1 (List.combine varList vList))
+    | Fun(varList,expr1)  -> let vList = List.map interp exprList in interp (List.fold_left2 (fun expr (x,ty) v -> subst x ty v expr) expr1 varList vList)
     | _                   -> failwith "expression should reduce to a function" end
 | _                               ->  expr
 in interp expr2
