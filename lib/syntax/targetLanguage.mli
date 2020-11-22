@@ -15,10 +15,12 @@ and targetSyn = Var of Vars.var * targetType
 type context
 
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
+val equalTerms: targetSyn -> targetSyn ->  bool
 val isValue : targetSyn -> bool
-val freeVars: targetSyn -> Vars.var list
-val canonicalAlphaRename: string -> targetSyn -> targetSyn
-val typeTarget: targetSyn -> targetType option
-val isWellTyped: targetSyn -> bool
-val interpret: targetSyn -> context -> targetSyn
-val realOptimizer: targetSyn -> int -> targetSyn
+val freeVars : targetSyn -> Vars.var list
+val subst : Vars.var -> targetType -> targetSyn -> targetSyn -> targetSyn
+val canonicalAlphaRename : string -> targetSyn -> targetSyn
+val typeTarget : targetSyn -> targetType option
+val isWellTyped : targetSyn -> bool
+val interpret : targetSyn -> context -> targetSyn
+val realOptimizer : targetSyn -> int -> targetSyn

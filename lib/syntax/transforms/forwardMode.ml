@@ -7,27 +7,15 @@ let rec forwardADType (ty : sourceType) : targetType = match ty with
 | Real          -> Prod(Real,Real)
 | Prod(ty1,ty2) -> Prod(forwardADType ty1,forwardADType ty2)
 
-let rec dsubst (var1,var2) expr = match expr with
-| Pair(Var(x,ty1),Var(_,ty2))     -> if equal x var1 then Pair(Var(x,ty1),Var(var2,ty2)) else expr
-| Apply1(op,expr)                 -> Apply1(op,dsubst  (var1,var2) expr)
-| Apply2(op,expr1,expr2)          -> Apply2(op,dsubst  (var1,var2) expr1,dsubst (var1,var2) expr2)
-| Let(y,ty,expr1,expr2)           -> if equal var1 y || equal var2 y
-  then failwith "trying to substitute a bound variable"
-  else Let(y,ty,dsubst (var1,var2) expr1, dsubst (var1,var2) expr2)
-| Pair(expr1,expr2)               -> Pair(dsubst (var1,var2) expr1,dsubst (var1,var2) expr2)
-| Fun(y,ty,expr)                  -> if equal var1 y || equal var2 y
-  then failwith "trying to substitute a bound variable"
-  else Fun(y,ty,dsubst (var1,var2) expr)
-| App(expr1,expr2)                -> App(dsubst (var1,var2) expr1,dsubst (var1,var2) expr2)
-| Case(expr1,y1,ty1,y2,ty2,expr2) -> if equal var1 y1 || equal var1 y2 ||  equal var2 y1 ||  equal var2 y2
-  then failwith "trying to substitute a bound variable"
-  else Case(dsubst (var1,var2) expr1,y1,ty1,y2,ty2,dsubst (var1,var2) expr2)
-| _ -> expr
+(* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
+(* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
+let dvar var : var * var = let str,i = var in (str,i),("d"^str,i) 
 
-(* Simple forward AD transformation. does not assume ANF *)
+(* Simple forward AD transformation. does not assume any ANF *)
 let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
-| Const c               -> Pair(Const c, Const 0.)
-| Var(x,ty)             -> Pair(Var(x,sourceToTargetType ty), Var(Syntax.Vars.fresh(),sourceToTargetType ty))
+| Const c               ->  Pair(Const c, Const 0.)
+| Var(x,ty)             ->  let x,y = dvar x in
+                            Pair(Var(x,sourceToTargetType ty), Var(y,sourceToTargetType ty))
 | Apply1(op,expr)       ->  let yPrimal = Syntax.Vars.fresh() in
                             let tyPrimal = Real in
                             let yTangent = Syntax.Vars.fresh() in
@@ -80,10 +68,8 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
                             Pair(primal,tangent)
                             ))
 | Let(y,ty,expr1,expr2) ->  let expr1D = forwardAD expr1 in
-                            let yPrimal = y in
+                            let expr2D = forwardAD expr2 in
+                            let yPrimal, yTangent = dvar y in
                             let tyPrimal = sourceToTargetType ty in
-                            let yTangent = Syntax.Vars.fresh() in
-                            let tyTangent = sourceToTargetType ty in 
-                            let expr2D = dsubst (yPrimal,yTangent) (forwardAD expr2) in
-                            Case(expr1D,yPrimal,tyPrimal,yTangent,tyTangent,
-                            expr2D)
+                            let tyTangent = tyPrimal in
+                            Case(expr1D,yPrimal,tyPrimal,yTangent,tyTangent,expr2D)

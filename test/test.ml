@@ -2,6 +2,7 @@ open Syntax.Operators
 open Syntax.SourceLanguage
 open Syntax.PrettyPrinter
 open Transforms.Anf
+open Syntax.Rewrite
 
 let x1 = ("x",1);;
 let x2 = ("x",2);;

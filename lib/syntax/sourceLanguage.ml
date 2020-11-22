@@ -26,7 +26,6 @@ let isValue = function
 | Const _   -> true
 | _         -> false
 
-
 let equalOp1 op1 op2 = match op1,op2 with
 | Cos,Cos -> true
 | Sin,Sin -> true
@@ -45,6 +44,7 @@ let rec equalTypes ty1 ty2 = match ty1,ty2 with
 | Prod(ty11,ty12),Prod(ty21,ty22) -> equalTypes ty11 ty21 && equalTypes ty12 ty22
 | _ -> false
 
+(* TODO: need to check equality up to alpha-renaming *)
 let rec equalTerms expr1 expr2 = match expr1,expr2 with
 | Const a,Const b -> a==b
 | Var (a,ty1),Var (b,ty2) -> a==b && equalTypes ty1 ty2
