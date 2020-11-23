@@ -2,6 +2,8 @@ open Operators
 open Vars
 
 (* syntax *)
+type 'a tuple = 'a list
+
 type sourceType = Real | Prod of sourceType * sourceType
 
 and sourceSyn = Var of var * sourceType

@@ -1,3 +1,5 @@
+type 'a tuple = 'a list
+
 type sourceType = Real | Prod of sourceType * sourceType
 
 and sourceSyn = Var of Vars.var * sourceType
@@ -9,6 +11,7 @@ and sourceSyn = Var of Vars.var * sourceType
 type context = (Vars.var * sourceType * sourceSyn) list
 
 val isValue : sourceSyn -> bool
+val equalTypes : sourceType -> sourceType -> bool
 val equalTerms : sourceSyn -> sourceSyn ->  bool
 val freeVars : sourceSyn -> Vars.var list
 val canonicalAlphaRename : string -> sourceSyn -> sourceSyn

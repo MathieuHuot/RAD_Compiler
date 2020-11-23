@@ -19,6 +19,7 @@ and targetSyn = Var of Vars.var * targetType
 type context
 
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
+val equalTypes : targetType -> targetType -> bool
 val equalTerms: targetSyn -> targetSyn ->  bool
 val isValue : targetSyn -> bool
 val freeVars : targetSyn -> Vars.var list
