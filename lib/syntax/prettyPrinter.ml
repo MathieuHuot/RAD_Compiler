@@ -152,5 +152,8 @@ let rec prettyP = function
                                     ^ket
                                     ^arrow3
                                     ^(prettyP expr2)
+| Tuple(exprList)               ->  leftbra
+                                    ^(List.fold_left (fun acc expr -> acc^prettyP expr^",") "" exprList)
+                                    ^rightbra
 in Lwt_io.print ((prettyP expr)^"\n")
-end 
+end

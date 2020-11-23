@@ -2,19 +2,23 @@ open Operators
 open Vars
 
 (* syntax *)
+type 'a tuple = 'a list
+
 type targetType = Real 
-            | Prod of targetType * targetType
-            | Arrow of (targetType list ) * targetType 
+                | Prod of targetType * targetType
+                | Arrow of (targetType list ) * targetType
+                | NProd of targetType tuple
 
 and targetSyn = Var of var * targetType
-            | Const of float 
-            | Apply1 of op1 * targetSyn 
-            | Apply2 of op2 * targetSyn * targetSyn
-            | Let of var * targetType * targetSyn * targetSyn
-            | Pair of targetSyn * targetSyn
-            | Fun of ((var * targetType) list) * targetSyn
-            | App of targetSyn * (targetSyn list)
-            | Case of targetSyn * var * targetType * var * targetType * targetSyn
+                | Const of float 
+                | Apply1 of op1 * targetSyn 
+                | Apply2 of op2 * targetSyn * targetSyn
+                | Let of var * targetType * targetSyn * targetSyn
+                | Pair of targetSyn * targetSyn
+                | Fun of ((var * targetType) list) * targetSyn
+                | App of targetSyn * (targetSyn list)
+                | Case of targetSyn * var * targetType * var * targetType * targetSyn
+                | Tuple of targetSyn tuple       
 
 type context = (var * targetType * targetSyn) list
 
@@ -41,6 +45,7 @@ let rec equalTypes ty1 ty2 = match ty1,ty2 with
                                              && equalTypes ty12 ty22
   | Arrow(tyList1,ty1),Arrow(tyList2,ty2) -> equalTypes ty1 ty2 
                                              && List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2
+  | NProd(tyList1), NProd(tyList2)        -> List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2 
   | _                                     -> false
   
 (* substitute variable x of type xTy by expr1 in expr2*)
@@ -60,6 +65,7 @@ let rec subst (x:var) xTy expr1 expr2 = match expr2 with
 | Case(expr2,y1,ty1,y2,ty2,expr3) -> if (equal x y1)||(equal x y2)
                                      then failwith "trying to substitute a bound variable"
                                      else Case(subst x xTy expr1 expr2,y1,ty1,y2,ty2,subst x xTy expr1 expr3)
+| Tuple(exprList)                 -> Tuple(List.map (subst x xTy expr1) exprList)
 
 (*  Checks whether two terms are equal up to alpha renaming.
     Two variables match iff they are the same free variable or they are both bound and equal up to renaming.
@@ -88,7 +94,8 @@ let rec eqT expr1 expr2 list = match expr1,expr2 with
   Case(expr21,x21,ty21,x22,ty22,expr22)               -> eqT expr11 expr21 list
                                                          && eqT expr12 expr22 (((x11,ty11),(x21,ty21))::((x12,ty12),(x22,ty22))::list)
                                                          && equalTypes ty11 ty21  
-                                                         && equalTypes ty12 ty22                                                          
+                                                         && equalTypes ty12 ty22
+| Tuple(exprList1), Tuple(exprList2)                  -> List.for_all2 (fun expr1 expr2 -> eqT expr1 expr2 list) exprList1 exprList2                                                       
 | _                                                   -> false
 in eqT expr1 expr2 []
 
@@ -96,6 +103,7 @@ let rec isValue = function
 | Const _           -> true
 | Pair(expr1,expr2) -> isValue expr1 && isValue expr2
 | Fun(_,_)          -> true
+| Tuple(exprList)   -> List.for_all isValue exprList
 | _                 -> false
 
 let isContextOfValues (cont : context) = 
@@ -136,6 +144,13 @@ let rec freeVars = function
     List.append 
     expr1Fv 
     (List.filter (fun x -> not(List.mem x expr1Fv)) expr2Fv)
+| Tuple(exprList)             -> 
+    let lis = List.map freeVars exprList in
+    List.fold_left 
+    (fun currentList newList ->  List.append  currentList 
+                                              (List.filter (fun x -> not(List.mem x currentList)) newList)) 
+    [] 
+    lis
 | _ -> [] 
 
 let rec varNameNotBound (name:string) expr = match expr with
@@ -154,6 +169,7 @@ let rec varNameNotBound (name:string) expr = match expr with
                                               && str2<> name 
                                               && (varNameNotBound name expr1) 
                                               && (varNameNotBound name expr2)
+| Tuple(exprList)                         -> List.for_all (varNameNotBound name) exprList
 | _                                       -> true 
 
 let indexOf el lis = 
@@ -174,6 +190,7 @@ let rec canRen expr = match expr with
 | App(expr1,exprList)             -> App(canRen expr1,List.map canRen exprList) 
 | Fun(varList,expr)               -> Fun(varList,canRen expr)
 | Case(expr1,y1,ty1,y2,ty2,expr2) -> Case(canRen expr1,y1,ty1,y2,ty2,canRen expr2)
+| Tuple(exprList)                 -> Tuple(List.map canRen exprList)
 | _                               -> expr
 in canRen expr
 else failwith ("variable "^name^" is already used as a bound variable, can't rename free vars canonically with "^name)
@@ -223,6 +240,10 @@ let rec typeTarget = function
   | Some Prod(ty3,ty4),Some ty5 when equalTypes ty1 ty3 && equalTypes ty2 ty4 -> Some ty5
   | _                                                                         -> None
   end
+| Tuple(exprList)               ->  let lis = List.map typeTarget exprList in 
+                                    if (List.exists (fun ty -> ty == None) lis) 
+                                    then None
+                                    else Some(NProd(List.map (fun x -> match x with | Some(x) -> x | _ -> failwith "") lis))
 
 let isWellTyped expr = match (typeTarget expr) with
 | None      -> false
@@ -280,5 +301,6 @@ let rec interp expr = match expr with
                                           varList 
                                           vList)
     | _                   ->  failwith "expression should reduce to a function" end
+| Tuple(exprList)                 -> Tuple(List.map interp exprList)
 | _                               ->  expr
 in interp expr2

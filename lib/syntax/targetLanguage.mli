@@ -1,6 +1,9 @@
+type 'a tuple = 'a list
+
 type targetType = Real 
             | Prod of targetType * targetType
-            | Arrow of (targetType list ) * targetType 
+            | Arrow of (targetType list ) * targetType
+            | NProd of targetType tuple 
 
 and targetSyn = Var of Vars.var * targetType
             | Const of float 
@@ -11,6 +14,7 @@ and targetSyn = Var of Vars.var * targetType
             | Fun of ((Vars.var * targetType) list) * targetSyn
             | App of targetSyn * (targetSyn list)
             | Case of targetSyn * Vars.var * targetType * Vars.var * targetType * targetSyn
+            | Tuple of targetSyn tuple     
 
 type context
 

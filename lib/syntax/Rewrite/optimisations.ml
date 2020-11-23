@@ -68,6 +68,13 @@ let rec allVars = function
     let expr1Fv = allVars expr1 in 
     let expr2Fv = List.filter (fun x -> not(Syntax.Vars.equal x y1) && not(Syntax.Vars.equal x y2)) (allVars expr2) in 
     List.append (List.append expr1Fv (y1::y2::[])) (List.filter (fun x -> not(List.mem x expr1Fv)) expr2Fv)
+| Tuple(exprList)             -> 
+  let lis = List.map allVars exprList in
+  List.fold_left 
+      (fun currentList newList ->  List.append  currentList 
+                                                (List.filter (fun x -> not(List.mem x currentList)) newList)) 
+      [] 
+      lis
 | _ -> [] 
 
 (* collects the list of unused bound variables *)
