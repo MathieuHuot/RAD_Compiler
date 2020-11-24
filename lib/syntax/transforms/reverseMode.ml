@@ -42,28 +42,24 @@ let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
   let rec rad (context: context) (cont : targetSyn)  (expr : sourceSyn) : targetSyn * targetSyn = match expr with
     | Const c                   -> begin
                                     match typeTarget cont with 
-                                    | Some(Arrow(tyList,_)) ->                      
-                                    let newContVarList =  List.append 
-                                                          (List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList) 
-                                                          [(Syntax.Vars.fresh(), Real)] 
-                                    in
-                                    let newCont = Fun(newContVarList, App(cont, varToSyn newContVarList)) in
+                                    | Some(Arrow(tyList,_)) ->
+                                    let newVar,newTy = (Syntax.Vars.fresh(), Real) in 
+                                    let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                  
+                                    let newContVarList =  List.append newVarList [(newVar,newTy)] in
+                                    let newCont = Fun(newContVarList, App(cont, varToSyn newVarList)) in
                                     Pair(Const c, newCont), newCont
                                     | _ -> failwith "rad: the continuation should be a function"
                                     end
     | Var(x, ty)                -> begin
                                     match typeTarget cont with 
                                     | Some(Arrow(tyList,_)) ->
-                                    let new_ty = sourceToTargetType ty in
+                                    let new_var, new_ty = Syntax.Vars.fresh(), sourceToTargetType ty in  
+                                    let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                          
+                                    let newContVarList = List.append newVarList [(new_var, new_ty)] in
                                     let pos_x = getPos (x,ty) context in
-                                    let new_var = Syntax.Vars.fresh() in                           
-                                    let newContVarList =  List.append 
-                                                          (List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList) 
-                                                          [(new_var, new_ty)] 
-                                    in
                                     let newCont = Fun(newContVarList, 
                                                       App(cont,
-                                                          addToPos pos_x (varToSyn newContVarList) (Var(new_var, new_ty) )
+                                                          addToPos pos_x (varToSyn newVarList) (Var(new_var, new_ty) )
                                                           )
                                                       ) 
                                     in
@@ -131,13 +127,13 @@ let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
                                     Pair(Apply2(op, Var(x1, new_ty1), Var(x2, new_ty2)), newCont), newCont
                                     | _,_,_ -> failwith "rad: the continuation should be a function"
                                     end
-    | Let(x, _, _, expr2)  -> (* let dexpr1, cont = rad context cont expr1 in *)
+    | Let(x, ty, expr1, expr2)  -> let dexpr1, cont = rad context cont expr1 in  
                                    let _, newContVar = dvar x in
                                    match typeTarget cont with
                                     | None              -> failwith "rad: continuation ill-typed" 
                                     | Some(newContType) ->
                                    let newCont = Var(newContVar, newContType) in
-                                   let dexpr2, newNewCont = rad context newCont expr2 in
-                                   dexpr2, newNewCont
-                                   (* Case(dexpr1, x, sourceToTargetType ty, newContVar, newContType, dexpr2), newNewCont *)
+                                   let newContext = context @ [(x,ty)] in
+                                   let dexpr2, newNewCont = rad newContext newCont expr2 in
+                                   Case(dexpr1, x, sourceToTargetType ty, newContVar, newContType, dexpr2), newNewCont
   in expr |> weakAnf |> rad context id_cont  |> fst

@@ -127,7 +127,12 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
                                     -> 22, lazy (Apply2(Minus,expr1,expr2))
     | Apply2(Times,Const(-1.),expr) -> 23, lazy (Apply1(Minus,expr))
     | Case(Pair(Const c,Const d), x1, ty1, x2, ty2, expr)
-                                    -> 24, lazy  (subst x2 ty2 (Const d) (subst x1 ty1 (Const c) expr))
+                                    -> 24, lazy (subst x2 ty2 (Const d) (subst x1 ty1 (Const c) expr))
+    | Apply1(Minus,Apply1(Minus,expr))
+                                    -> 25, lazy expr
+    | Apply1(Minus,Const c)         -> 26, lazy (Const(-.c))
+    | Apply2(Minus,expr1,Apply1(Minus,expr2))
+                                    -> 27, lazy (Apply2(Plus,expr1,expr2))
     (* Default, do nothing *)
     | expr                          -> 101, lazy expr
 

@@ -6,7 +6,7 @@ open Transforms.Anf
 open Transforms.ReverseMode
 open Rewrite.Catamorphisms
 open Transforms.ForwardMode
-(* open Rewrite.Optimisations *)
+open Rewrite.Optimisations
 
 (* Helpers *)
 let rec unfold_right f init =
@@ -17,6 +17,9 @@ let rec unfold_right f init =
 let range n =
   let irange x = if x > n then None else Some (x, x + 1) in
   unfold_right irange 1
+
+let nb_opti = 27
+let nb_opti_iterations = 200 
 
 (* Random term generator tests *)
 let x=2;;
@@ -80,7 +83,7 @@ OUnit2.assert_equal (typeTarget f9) None;;
 
 let f7 : sourceSyn = Apply1(Sin, Var(Syntax.Vars.fresh(),Real));;
 let f8 = forwardAD f7;;
-let f9 = TargetCata.iterate 30 (range 24) f8;;
+let f9 = TargetCata.iterate nb_opti_iterations (range nb_opti) f8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(f7);;
 Lwt_io.print "Forward derivative of term:\n";;
@@ -92,7 +95,7 @@ Lwt_io.print "\n\n";;
 let f6 = Syntax.Generator.sourceSynGen(5);;
 let f7 : sourceSyn = anf(f6);;
 let f8 = forwardAD f7;;
-let f9 = TargetCata.iterate 30 (range 24) f8;;
+let f9 = TargetCata.iterate nb_opti_iterations (range nb_opti) f8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(f6);;
 Lwt_io.print "\n";;
@@ -109,7 +112,7 @@ Lwt_io.print "\n\n";;
 (* optimisation tests *)
 
 
-(* semi-naive reverse mode tests *)
+(* reverse mode tests *)
 
 let x11 = ("x",1);;
 let var11 : sourceSyn = Var(x11,Real);;
@@ -117,8 +120,8 @@ let f11 : sourceSyn = Apply1(Exp, var11);;
 let cst1 : targetSyn list = [Const(0.);Const(1.)]
 let f12 = semiNaiveReverseAD [(x11,Real)] f11;;
 let f13 = match f12 with | Pair(_,x)-> App(x,cst1) | _ -> failwith "f12 wrong format" ;;
-let f14 = TargetCata.catamorphism (range 24) f13;;
-let f15 = TargetCata.iterate 10 (range 24) f13;;
+let f14 = TargetCata.catamorphism (range nb_opti) f13;;
+let f15 = TargetCata.iterate 10 (range nb_opti) f13;;
 Lwt_io.print "variable:\n";;
 SourcePrinter.prettyPrinter(var11);;
 Lwt_io.print "term:\n";;
@@ -140,7 +143,7 @@ let f22 = anf f21;;
 let f23 = semiNaiveReverseAD [(x11,Real);(x12,Real)] f21;;
 let cst2 : targetSyn list = [Const(0.);Const(0.);Const(1.)]
 let f24 = match f23 with | Pair(_,x)-> App(x,cst2) | _ -> failwith "f12 wrong format" ;;
-let f25 = TargetCata.iterate 30 (range 24) f24;;
+let f25 = TargetCata.iterate nb_opti_iterations (range nb_opti) f24;;
 
 Lwt_io.print "term:\n";;
 SourcePrinter.prettyPrinter(f21);;
@@ -154,23 +157,78 @@ Lwt_io.print "fully reduced term:\n";;
 TargetPrinter.prettyPrinter(f25);;
 Lwt_io.print "\n\n";;
 
-(* let f21 : sourceSyn = Let(x11,Real,Apply2(Plus, Const 5.,var12),Apply1(Sin,var11));; *)
-(* let f21 : sourceSyn = Apply2(Plus, Const(5.),var12);;
-let f22 = anf f21;;
-let f23 = semiNaiveReverseAD [(x12,Real)] f21;; *)
-(* let cst2 : targetSyn list = [Const(0.);Const(0.);Const(1.)]
-let f24 = match f23 with | Pair(_,x)-> App(x,cst2) | _ -> failwith "f12 wrong format" ;;
-let f25 = TargetCata.iterate 30 [0;1;2;3;4;5;7;8;9;10;11;12;13;14;15;16;17] f24;; *)
-
-(* Lwt_io.print "term:\n";;
-SourcePrinter.prettyPrinter(f21);;
-Lwt_io.print "anf term:\n";;
-SourcePrinter.prettyPrinter(f22);;
+Lwt_io.print "term:\n";;
+let f1 : sourceSyn = Let(x11,Real,Const(3.),Var(x11,Real));;
+SourcePrinter.prettyPrinter(f1);;
 Lwt_io.print "reverse derivative macro of term:\n";;
-TargetPrinter.prettyPrinter(f23);;
+let f2 = semiNaiveReverseAD [(x12,Real)] f1;;
+TargetPrinter.prettyPrinter(f2);;
+Lwt_io.print "fully reduced reverse derivative macro of term:\n";;
+let f3 = TargetCata.iterate nb_opti_iterations (range nb_opti) f2;;
+TargetPrinter.prettyPrinter(f3);;
 Lwt_io.print "derivative of term:\n";;
-TargetPrinter.prettyPrinter(f24);;
-Lwt_io.print "fully reduced term:\n";;
-TargetPrinter.prettyPrinter(f25);; *)
+let cst2 : targetSyn list = [Const(0.);Const(0.);Const(1.)];;
+let f4 = match f3 with | Pair(_,x)-> App(x,cst2) | _ -> failwith "f3 wrong format" ;;
+TargetPrinter.prettyPrinter(f4);; 
+Lwt_io.print "fully reduced derivative of term:\n";;
+let f5 = TargetCata.iterate nb_opti_iterations (range nb_opti) f4;;
+TargetPrinter.prettyPrinter(f5);;
+Lwt_io.print "\n\n";;
 
-(* let f14 = deadVarsElim f13;; *)
+(* let g6 = Syntax.Generator.sourceSynGen(20);;  
+let g7 : sourceSyn = anf(g6);;
+let g8 = semiNaiveReverseAD [] g7;;
+let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
+Lwt_io.print "Term:\n";;
+SourcePrinter.prettyPrinter(g6);;
+Lwt_io.print "\n";; 
+Lwt_io.print "Anf Term:\n";;
+SourcePrinter.prettyPrinter(g7);;
+Lwt_io.print "\n";;
+Lwt_io.print "Reverse derivative macro of term:\n";;
+TargetPrinter.prettyPrinter(g8);;
+Lwt_io.print "\n";;
+Lwt_io.print "Reduced reverse derivative macro of term:\n";;
+TargetPrinter.prettyPrinter(g9);;
+Lwt_io.print "After dead-code elim:\n";;
+let g10 = Opti.deadVarsElim g9;;
+TargetPrinter.prettyPrinter(g10);;
+Lwt_io.print "\n\n";; *)
+
+(* let g6 : sourceSyn = Apply1(Minus,Apply1(Cos,Const 3.));;
+let g7 : sourceSyn = anf(g6);; 
+let g8 = semiNaiveReverseAD [(x12,Real)] g7;;
+let g9 = TargetCata.iterate 30 (range nb_opti) g8;;
+Lwt_io.print "Term:\n";;
+SourcePrinter.prettyPrinter(g6);;
+Lwt_io.print "\n";;
+Lwt_io.print "Anf Term:\n";;
+SourcePrinter.prettyPrinter(g7);;
+Lwt_io.print "\n";;
+Lwt_io.print "Reverse derivative macro of term:\n";;
+TargetPrinter.prettyPrinter(g8);;
+Lwt_io.print "\n";;
+Lwt_io.print "Reduced reverse derivative macro of term:\n";;
+TargetPrinter.prettyPrinter(g9);;
+Lwt_io.print "\n\n";; *)
+
+
+let g6 : sourceSyn  = Apply2(Times, Apply2(Plus,Var(x1,Real),Var(x2,Real)),Apply2(Plus,Var(x1,Real),Var(x2,Real)));;
+let g7 = anf(g6);;
+let g8 = semiNaiveReverseAD [(x1,Real);(x2,Real)] g7;;
+let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
+Lwt_io.print "Term:\n";;
+SourcePrinter.prettyPrinter(g6);;
+Lwt_io.print "\n";; 
+Lwt_io.print "Anf Term:\n";;
+SourcePrinter.prettyPrinter(g7);;
+Lwt_io.print "\n";;
+Lwt_io.print "Reverse derivative macro of term:\n";;
+TargetPrinter.prettyPrinter(g8);;
+Lwt_io.print "\n";;
+Lwt_io.print "Reduced reverse derivative macro of term:\n";;
+TargetPrinter.prettyPrinter(g9);;
+Lwt_io.print "After dead-code elim:\n";;
+let g10 = Opti.deadVarsElim g9;;
+TargetPrinter.prettyPrinter(g10);;
+Lwt_io.print "\n\n";;

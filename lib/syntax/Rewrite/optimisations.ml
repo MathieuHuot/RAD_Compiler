@@ -1,4 +1,4 @@
-(* open Syntax.TargetLanguage
+open Syntax.TargetLanguage
 
 module Opti = struct
 (* collects all variables -- bound and free -- in expr *)
@@ -59,10 +59,10 @@ let unusedVars = listUnusedVars expr in
 let rec aux expr =
   match expr with
   | Let(x, ty,_,expr) 
-    when (List.mem (x,ty) unusedVars)    -> expr
+    when (List.mem (x,ty) unusedVars)    -> aux expr
   | Case(_, x1, ty1, x2, ty2, expr2) 
     when (List.mem (x1,ty1) unusedVars) 
-    && (List.mem (x2,ty2) unusedVars)    -> expr2
+    && (List.mem (x2,ty2) unusedVars)    -> aux expr2
   | Var _                                -> expr
   | Const _                              -> expr
   | Apply1(op, expr)                     -> Apply1(op,aux expr)
@@ -74,4 +74,7 @@ let rec aux expr =
   | Fun(varList, expr)                   -> Fun(varList, aux expr)
   | Case(expr1, x1, ty1, x2, ty2, expr2) -> Case(aux expr1,x1,ty1,x2,ty2,aux expr2)
 in aux expr
-end *)
+end
+
+let _ = Opti.deadVarsElim;;
+let _ = Opti.allVars; 

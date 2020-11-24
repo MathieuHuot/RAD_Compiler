@@ -139,15 +139,16 @@ let rec prettyP = function
                                     ^(prettyP expr2)
                                     ^ket
 | Fun(varList,expr)             ->  klambda
-                                    ^removeLast (List.fold_left (fun acc (x,ty) -> acc^(printVar (Var(x,ty))^comma2)) "" varList)
+                                    ^(if varList==[] then "" else removeLast (List.fold_left (fun acc (x,ty) -> acc^(printVar (Var(x,ty))^comma2)) "" varList))
                                     ^kdot
                                     ^(prettyP expr)
 | App(expr1,exprList)           ->  leftpar
                                     ^(prettyP expr1)
                                     ^rightpar
-                                    ^leftbra
+                                    ^(if exprList==[] then  leftcurlbra^rightcurlbra else
+                                    leftbra
                                     ^removeLast (removeLast(List.fold_left (fun acc expr -> acc^prettyP expr^comma) "" exprList))
-                                    ^rightbra
+                                    ^rightbra)
 | Case(expr1,x,ty1,y,ty2,expr2) ->  kcase
                                     ^(prettyP expr1)
                                     ^kof
@@ -159,7 +160,8 @@ let rec prettyP = function
                                     ^arrow3
                                     ^"\n"
                                     ^(prettyP expr2)
-| Tuple(exprList)               ->  leftcurlbra
+| Tuple(exprList)               ->  if exprList==[] then  leftcurlbra^rightcurlbra else
+                                    leftcurlbra
                                     ^removeLast (List.fold_left (fun acc expr -> acc^prettyP expr^comma2) "" exprList)
                                     ^rightcurlbra 
 in Lwt_io.print ((prettyP expr)^"\n")
