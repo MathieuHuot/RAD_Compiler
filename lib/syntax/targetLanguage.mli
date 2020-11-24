@@ -16,7 +16,7 @@ and targetSyn = Var of Vars.var * targetType
             | Case of targetSyn * Vars.var * targetType * Vars.var * targetType * targetSyn
             | Tuple of targetSyn tuple     
 
-type context
+type context = (Vars.var * targetType * targetSyn) list
 
 val isArrow : targetType -> bool
 val sourceToTargetType : SourceLanguage.sourceType -> targetType

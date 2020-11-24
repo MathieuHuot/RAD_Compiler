@@ -116,6 +116,18 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
       when isArrow ty2              -> 16, lazy (Let(x,ty1,expr1,subst y ty2 expr2 expr3))
     (* Constant propagation part 2 *)
     | Let(x,ty,Const(c),e)          -> 17, lazy (subst x ty (Const(c)) e)
+    (* More forward substitution *)
+    | Case(Pair(Var(x1,ty1),Var(x2,ty2)), x3, ty3, x4, ty4, expr) 
+                                    -> 18, lazy  (subst x4 ty4 (Var(x2,ty2)) (subst x3 ty3 (Var(x1,ty1)) expr))
+    (* More constant propagation *)
+    | Apply1(Cos, Const c)          -> 19, lazy (Const(cos c))
+    | Apply1(Sin, Const c)          -> 20, lazy (Const(sin c))
+    | Apply1(Exp, Const c)          -> 21, lazy (Const(exp c))
+    | Apply2(Plus,expr1,Apply1(Minus,expr2)) 
+                                    -> 22, lazy (Apply2(Minus,expr1,expr2))
+    | Apply2(Times,Const(-1.),expr) -> 23, lazy (Apply1(Minus,expr))
+    | Case(Pair(Const c,Const d), x1, ty1, x2, ty2, expr)
+                                    -> 24, lazy  (subst x2 ty2 (Const d) (subst x1 ty1 (Const c) expr))
     (* Default, do nothing *)
     | expr                          -> 101, lazy expr
 

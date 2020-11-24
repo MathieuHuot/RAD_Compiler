@@ -157,6 +157,7 @@ let rec prettyP = function
                                     ^(printVar (Var(y,ty2)))
                                     ^ket
                                     ^arrow3
+                                    ^"\n"
                                     ^(prettyP expr2)
 | Tuple(exprList)               ->  leftcurlbra
                                     ^removeLast (List.fold_left (fun acc expr -> acc^prettyP expr^comma2) "" exprList)

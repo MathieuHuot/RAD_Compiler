@@ -1,16 +1,100 @@
+random term:
+let y3 = 2.26659837853 in
+let y0 = 8.36719264702 in
+let y1 = 93.79352511 in
+let y2 = -(y1) in
+let y4 = exp (y2) in
+let y5 = (y3 - y4) in
+-(y5)
+end random term
+
+
+7.
+0.753902254343
+15.
+403.428793493
+0.
+0.909297426826
+0.9092974269
+0.753902254344
+
+
+Term:
+sin (y7)
+Forward derivative of term:
+case ⟨y7, dy7⟩ of ⟨y8, y9⟩⟶
+⟨sin (y8), (cos (y8) * y9)⟩
+Reduced derivative of term:
+⟨sin (y7), (cos (y7) * dy7)⟩
+
+
+Term:
+let y10 = 49.8693727237 in
+cos (let y11 = cos (let y12 = 66.9306755579 in
+7.01913621845) in
+(let y13 = y10 in
+10.4143676203 - let y14 = 64.9310191901 in
+90.1336976478))
+
+Anf Term:
+let y10 = 49.8693727237 in
+let y12 = 66.9306755579 in
+let y17 = 7.01913621845 in
+let y11 = cos (y17) in
+let y13 = y10 in
+let y15 = 10.4143676203 in
+let y14 = 64.9310191901 in
+let y16 = 90.1336976478 in
+let y18 = (y15 - y16) in
+cos (y18)
+
+Forward derivative of term:
+case ⟨49.8693727237, 0.⟩ of ⟨y10, dy10⟩⟶
+case ⟨66.9306755579, 0.⟩ of ⟨y12, dy12⟩⟶
+case ⟨7.01913621845, 0.⟩ of ⟨y17, dy17⟩⟶
+case case ⟨y17, dy17⟩ of ⟨y19, y20⟩⟶
+⟨cos (y19), (-(sin (y19)) * y20)⟩ of ⟨y11, dy11⟩⟶
+case ⟨y10, dy10⟩ of ⟨y13, dy13⟩⟶
+case ⟨10.4143676203, 0.⟩ of ⟨y15, dy15⟩⟶
+case ⟨64.9310191901, 0.⟩ of ⟨y14, dy14⟩⟶
+case ⟨90.1336976478, 0.⟩ of ⟨y16, dy16⟩⟶
+case case ⟨y15, dy15⟩ of ⟨y21, y22⟩⟶
+case ⟨y16, dy16⟩ of ⟨y23, y24⟩⟶
+⟨(y21 - y23), ((1. * y22) + (-1. * y24))⟩ of ⟨y18, dy18⟩⟶
+case ⟨y18, dy18⟩ of ⟨y25, y26⟩⟶
+⟨cos (y25), (-(sin (y25)) * y26)⟩
+
+Reduced derivative of term:
+case ⟨cos (y17), (-(sin (y17)) * dy17)⟩ of ⟨y11, dy11⟩⟶
+case ⟨(y15 - y16), (dy15 - dy16)⟩ of ⟨y18, dy18⟩⟶
+⟨cos (y18), (-(sin (y18)) * dy18)⟩
+
+
 variable:
 x1
 term:
 exp (x1)
 reverse derivative macro of term:
-⟨exp (x1), λy2,y1. (λy0. {y0})[(y2 + (exp (x1) * y1))]⟩
+⟨exp (x1), λy29,y28. (λy27. {y27})[(y29 + (exp (x1) * y28))]⟩
 derivative of term:
-(λy2,y1. (λy0. {y0})[(y2 + (exp (x1) * y1))])[0., 1.]
+(λy29,y28. (λy27. {y27})[(y29 + (exp (x1) * y28))])[0., 1.]
 partially reduced term:
-let y2 = 0. in
-let y1 = 1. in
-let y0 = (y2 + (exp (x1) * y1)) in
-{y0}
+let y29 = 0. in
+(λy27. {y27})[(y29 + exp (x1))]
 fully reduced term:
-let y0 = exp (x1) in
-{y0}
+let y27 = exp (x1) in
+{y27}
+
+
+term:
+(x1 + x2)
+anf term:
+(x1 + x2)
+reverse derivative macro of term:
+⟨(x1 + x2), λy33,y34,y32. (λy30,y31. {y30,y31})[(y33 + (1. * y32)), (y34 + (1. * y32))]⟩
+derivative of term:
+(λy33,y34,y32. (λy30,y31. {y30,y31})[(y33 + (1. * y32)), (y34 + (1. * y32))])[0., 0., 1.]
+fully reduced term:
+{1.,1.}
+
+
