@@ -8,11 +8,14 @@ let ket   = "⟩"
 let leftpar="("
 let rightpar=")"
 let leftbra="["
-let rightbra="]" 
+let rightbra="]"
+let leftcurlbra="{"
+let rightcurlbra="}" 
 let klambda= "λ"
 let lambda = " fun"
 let colon = " :" 
-let comma = ", " 
+let comma = ", "
+let comma2 = "," 
 let equal = " ="
 let kcase = "case "
 let return = "return" 
@@ -100,6 +103,10 @@ let printConst = function
 | Const c -> string_of_float c
 | _       -> failwith "this is not a constant"
 
+let removeLast string = 
+  let n = String.length string in 
+  String.sub string 0 (n-1)
+
 let prettyPrinter (expr: targetSyn) = 
 let rec prettyP = function
 | Var(x,ty)                     ->  printVar (Var(x,ty))
@@ -132,15 +139,14 @@ let rec prettyP = function
                                     ^(prettyP expr2)
                                     ^ket
 | Fun(varList,expr)             ->  klambda
-                                    ^(List.fold_left (fun acc (x,ty) -> acc
-                                    ^(printVar (Var(x,ty))^" ")) "" varList)
+                                    ^removeLast (List.fold_left (fun acc (x,ty) -> acc^(printVar (Var(x,ty))^comma2)) "" varList)
                                     ^kdot
                                     ^(prettyP expr)
 | App(expr1,exprList)           ->  leftpar
                                     ^(prettyP expr1)
                                     ^rightpar
                                     ^leftbra
-                                    ^(List.fold_left (fun acc expr -> acc^prettyP expr^",") "" exprList)
+                                    ^removeLast (removeLast(List.fold_left (fun acc expr -> acc^prettyP expr^comma) "" exprList))
                                     ^rightbra
 | Case(expr1,x,ty1,y,ty2,expr2) ->  kcase
                                     ^(prettyP expr1)
@@ -152,8 +158,8 @@ let rec prettyP = function
                                     ^ket
                                     ^arrow3
                                     ^(prettyP expr2)
-| Tuple(exprList)               ->  leftbra
-                                    ^(List.fold_left (fun acc expr -> acc^prettyP expr^",") "" exprList)
-                                    ^rightbra
+| Tuple(exprList)               ->  leftcurlbra
+                                    ^removeLast (List.fold_left (fun acc expr -> acc^prettyP expr^comma2) "" exprList)
+                                    ^rightcurlbra 
 in Lwt_io.print ((prettyP expr)^"\n")
 end

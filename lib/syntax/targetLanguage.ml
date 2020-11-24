@@ -22,6 +22,10 @@ and targetSyn = Var of var * targetType
 
 type context = (var * targetType * targetSyn) list
 
+let isArrow ty = match ty with
+| Arrow(_,_)  -> true
+| _           -> false
+
 let rec sourceToTargetType (ty : SourceLanguage.sourceType) : targetType = match ty with
 | Real          -> Real
 | Prod(ty1,ty2) -> Prod(sourceToTargetType ty1,sourceToTargetType ty2)

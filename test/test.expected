@@ -1,15 +1,16 @@
-random term:
-
-end random term
-cos (7.)
-let x1 = (5. + x2) in
-sin (x1)
-sin (y0)
-7.
-0.753902254343
-15.
-403.428793493
-0.
-0.909297426826
-0.9092974269
-0.753902254344
+variable:
+x1
+term:
+exp (x1)
+reverse derivative macro of term:
+⟨exp (x1), λy2,y1. (λy0. {y0})[(y2 + (exp (x1) * y1))]⟩
+derivative of term:
+(λy2,y1. (λy0. {y0})[(y2 + (exp (x1) * y1))])[0., 1.]
+partially reduced term:
+let y2 = 0. in
+let y1 = 1. in
+let y0 = (y2 + (exp (x1) * y1)) in
+{y0}
+fully reduced term:
+let y0 = exp (x1) in
+{y0}

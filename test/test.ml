@@ -1,10 +1,13 @@
 open Syntax.Operators
 open Syntax.SourceLanguage
+open Syntax.TargetLanguage
 open Syntax.PrettyPrinter
-open Transforms.Anf
-open Syntax.Rewrite
+(* open Transforms.Anf *)
+open Transforms.ReverseMode
+open Rewrite.Catamorphisms
+(* open Rewrite.Optimisations *)
 
-let x1 = ("x",1);;
+(* let x1 = ("x",1);;
 let x2 = ("x",2);;
 let var1 = Var(x1,Real);;
 let var2 = Var(x2,Real);;
@@ -36,7 +39,7 @@ printVal f4 [];;
 printVal f5 [(x1,Real,Const 0.)];;
 printVal f5 [(x1,Real,Const 2.)];;
 printVal f5 [(x1,Real,Const 8.283185307)];;
-printVal f6 [];; 
+printVal f6 [];;  *)
 
 (* capture avoiding substitutions tests *)
 
@@ -55,3 +58,25 @@ printVal f6 [];;
 
 (* semi-naive reverse mode tests *)
 
+let x11 = ("x",1);;
+let var11 = Syntax.SourceLanguage.Var(x11,Real);;
+let f11 = Syntax.SourceLanguage.Apply1(Exp, var11);;
+let cst : targetSyn list = [Const(0.);Const(1.)]
+let f12 = semiNaiveReverseAD [(x11,Real)] f11;;
+let f13 = match f12 with | Pair(_,x)-> App(x,cst) | _ -> failwith "f12 wrong format" ;;
+let f14 = TargetCata.catamorphism [1;2;3;4;5;7;8;9;10;11;12;13;14;15;16] f13;;
+let f15 = TargetCata.iterate 10 [1;2;3;4;5;7;8;9;10;11;12;13;14;15;16;17] f13;;
+Lwt_io.print "variable:\n";;
+SourcePrinter.prettyPrinter(var11);;
+Lwt_io.print "term:\n";;
+SourcePrinter.prettyPrinter(f11);;
+Lwt_io.print "reverse derivative macro of term:\n";;
+TargetPrinter.prettyPrinter(f12);;
+Lwt_io.print "derivative of term:\n";;
+TargetPrinter.prettyPrinter(f13);;
+Lwt_io.print "partially reduced term:\n";;
+TargetPrinter.prettyPrinter(f14);;
+Lwt_io.print "fully reduced term:\n";;
+TargetPrinter.prettyPrinter(f15);;
+
+(* let f14 = deadVarsElim f13;; *)

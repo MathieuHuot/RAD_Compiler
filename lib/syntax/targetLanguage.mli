@@ -18,6 +18,7 @@ and targetSyn = Var of Vars.var * targetType
 
 type context
 
+val isArrow : targetType -> bool
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
 val equalTypes : targetType -> targetType -> bool
 val equalTerms: targetSyn -> targetSyn ->  bool

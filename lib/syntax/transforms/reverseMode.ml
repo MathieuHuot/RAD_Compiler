@@ -73,11 +73,9 @@ let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
                                     | Fun(varList,_), Var(x, ty) ->
                                     let new_ty = sourceToTargetType ty in
                                     let pos_x = getPos (x, ty) context in
-                                    let new_var = Syntax.Vars.fresh() in                           
-                                    let newContVarList =  List.append 
-                                                          (List.map (fun (_,ty) -> Syntax.Vars.fresh(), ty) varList) 
-                                                          [(new_var, new_ty)] 
-                                    in
+                                    let new_var = Syntax.Vars.fresh() in 
+                                    let newVarList = (List.map (fun (_,ty) -> Syntax.Vars.fresh(), ty) varList)  in                         
+                                    let newContVarList =  List.append newVarList [(new_var, new_ty)] in
                                     let dop y = begin match op with
                                       | Cos   -> Apply1(Minus,Apply1(Sin, y))
                                       | Sin   -> Apply1(Cos, y)
@@ -88,7 +86,7 @@ let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
                                     let partialOp = fun z -> Apply2(Times, dop (Var(x, new_ty)), z) in
                                     let newCont = Fun(newContVarList, 
                                                       App(cont,
-                                                          (Var (new_var, new_ty) |> partialOp |> addToPos pos_x (varToSyn newContVarList))
+                                                          (Var (new_var, new_ty) |> partialOp |> addToPos pos_x (varToSyn newVarList))
                                                           )
                                                       ) 
                                     in
@@ -102,11 +100,9 @@ let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
                                     let pos_x1 = getPos (x1, ty1) context in
                                     let new_ty2 = sourceToTargetType ty2 in
                                     let pos_x2 = getPos (x2, ty2) context in
-                                    let new_var = Syntax.Vars.fresh() in                           
-                                    let newContVarList =  List.append 
-                                                          (List.map (fun (_,ty) -> Syntax.Vars.fresh(), ty) varList) 
-                                                          [(new_var, Real)] 
-                                    in
+                                    let new_var = Syntax.Vars.fresh() in 
+                                    let newVarList = (List.map (fun (_,ty) -> Syntax.Vars.fresh(), ty) varList) in                         
+                                    let newContVarList =  List.append newVarList [(new_var, Real)] in
                                     let d1op _ y2 = begin
                                       match op with
                                       | Plus  -> Const(1.)
@@ -126,7 +122,7 @@ let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
                                     let newCont = Fun(newContVarList, 
                                                       App(cont,
                                                            Var (new_var, Real) |> partial1Op |> addToPos pos_x1 
-                                                          (Var (new_var, Real) |> partial2Op |> addToPos pos_x2 (varToSyn newContVarList))
+                                                          (Var (new_var, Real) |> partial2Op |> addToPos pos_x2 (varToSyn newVarList))
                                                           )
                                                       ) 
                                     in
