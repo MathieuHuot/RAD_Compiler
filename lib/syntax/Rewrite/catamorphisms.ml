@@ -133,6 +133,16 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
     | Apply1(Minus,Const c)         -> 26, lazy (Const(-.c))
     | Apply2(Minus,expr1,Apply1(Minus,expr2))
                                     -> 27, lazy (Apply2(Plus,expr1,expr2))
+    (* Let commutativity *)
+    | Let(x,ty1,Let(y,ty2,expr1,expr2),expr3)   
+                                    -> 28, lazy (Let(y,ty2, expr1,Let(x,ty1, expr2, expr3)))
+    | Case(Let(x1,ty1,expr1,expr2),x2,ty2,x3,ty3,expr3)
+                                    -> 29, lazy (Let(x1,ty1,expr1,Case(expr2,x2,ty2,x3,ty3,expr3)))
+    | Case(Case(expr1,x1,ty1,x2,ty2,expr2),x3,ty3,x4,ty4,expr3)
+                                    -> 30, lazy (Case(expr1,x1,ty1,x2,ty2,Case(expr2,x3,ty3,x4,ty4,expr3)))
+    (* More factorisation *)
+    | Apply2(Plus,expr1,expr2) when equalTerms expr1 expr2 
+                                    -> 31, lazy (Apply2(Times,Const 2.,expr1))
     (* Default, do nothing *)
     | expr                          -> 101, lazy expr
 

@@ -18,8 +18,8 @@ let range n =
   let irange x = if x > n then None else Some (x, x + 1) in
   unfold_right irange 1
 
-let nb_opti = 27
-let nb_opti_iterations = 200 
+let nb_opti = 31
+let nb_opti_iterations = 300 
 
 (* Random term generator tests *)
 let x=2;;
@@ -175,9 +175,9 @@ let f5 = TargetCata.iterate nb_opti_iterations (range nb_opti) f4;;
 TargetPrinter.prettyPrinter(f5);;
 Lwt_io.print "\n\n";;
 
-(* let g6 = Syntax.Generator.sourceSynGen(20);;  
+let g6 = Syntax.Generator.sourceSynGen(20);;  
 let g7 : sourceSyn = anf(g6);;
-let g8 = semiNaiveReverseAD [] g7;;
+let g8 = grad [] g7;;
 let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(g6);;
@@ -193,9 +193,9 @@ TargetPrinter.prettyPrinter(g9);;
 Lwt_io.print "After dead-code elim:\n";;
 let g10 = Opti.deadVarsElim g9;;
 TargetPrinter.prettyPrinter(g10);;
-Lwt_io.print "\n\n";; *)
+Lwt_io.print "\n\n";;
 
-(* let g6 : sourceSyn = Apply1(Minus,Apply1(Cos,Const 3.));;
+let g6 : sourceSyn = Apply1(Minus,Apply1(Cos,Const 3.));;
 let g7 : sourceSyn = anf(g6);; 
 let g8 = semiNaiveReverseAD [(x12,Real)] g7;;
 let g9 = TargetCata.iterate 30 (range nb_opti) g8;;
@@ -210,12 +210,12 @@ TargetPrinter.prettyPrinter(g8);;
 Lwt_io.print "\n";;
 Lwt_io.print "Reduced reverse derivative macro of term:\n";;
 TargetPrinter.prettyPrinter(g9);;
-Lwt_io.print "\n\n";; *)
+Lwt_io.print "\n\n";;
 
 
 let g6 : sourceSyn  = Apply2(Times, Apply2(Plus,Var(x1,Real),Var(x2,Real)),Apply2(Plus,Var(x1,Real),Var(x2,Real)));;
 let g7 = anf(g6);;
-let g8 = semiNaiveReverseAD [(x1,Real);(x2,Real)] g7;;
+let g8 = grad [(x1,Real);(x2,Real)] g7;;
 let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(g6);;
@@ -228,6 +228,7 @@ TargetPrinter.prettyPrinter(g8);;
 Lwt_io.print "\n";;
 Lwt_io.print "Reduced reverse derivative macro of term:\n";;
 TargetPrinter.prettyPrinter(g9);;
+Lwt_io.print "\n";;
 Lwt_io.print "After dead-code elim:\n";;
 let g10 = Opti.deadVarsElim g9;;
 TargetPrinter.prettyPrinter(g10);;

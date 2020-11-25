@@ -35,10 +35,6 @@ let rec addToPos i list y = match i, list with
   | 0,x::tl   -> (Apply2(Plus, x, y))::tl
   | _,x::tl   -> x::(addToPos (i-1) tl y) 
 
-let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
-  let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
-
   let rec rad (context: context) (cont : targetSyn)  (expr : sourceSyn) : targetSyn * targetSyn = match expr with
     | Const c                   -> begin
                                     match typeTarget cont with 
@@ -136,4 +132,33 @@ let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont = rad newContext newCont expr2 in
                                    Case(dexpr1, x, sourceToTargetType ty, newContVar, newContType, dexpr2), newNewCont
-  in expr |> weakAnf |> rad context id_cont  |> fst
+
+
+let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
+  let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
+  expr |> weakAnf |> rad context id_cont |> fst
+
+(* To actually compute the gradient of a term, we need to initialize tangent variables as in imperative reverse-mode.
+    Every tangent variable is initialized at 0 except from the last one which is the returned variable and is initialized at 1 *)
+let rec initialize_rad list = match list with
+ | []     -> failwith "the gradient of a closed term won't give you much!" 
+ | _::[] -> [Const 1.] 
+ | _::tl -> (Const 0.)::initialize_rad tl
+
+let grad (context: context) (expr: sourceSyn) : targetSyn =
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
+  let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
+  let dexpr, cont = rad context id_cont expr in
+  match typeTarget cont with
+    | None                  -> failwith "rad: continuation ill-typed" 
+    | Some(Arrow(tyList,_)) -> 
+    let sensitivities = initialize_rad tyList in
+    begin 
+    match typeTarget dexpr with
+    | Some(Prod(ty1,ty2)) ->
+      let x,dx= dvar (Syntax.Vars.fresh()) in
+      Case(dexpr,x,ty1,dx,ty2,App(Var(dx,ty2),sensitivities))
+    | _ -> failwith "rad: should return a pair"
+    end
+    | _ -> failwith "rad: continuation should have a function type"
