@@ -39,13 +39,30 @@ let equalOp2 op1 op2 = match op1,op2 with
 
 (* substitute variable x of type ty by expr1 in expr2 *)
 let rec subst (x:var) ty expr1 expr2 = match expr2 with 
-| Var (a,ty1)           -> if equal a x && equalTypes ty1 ty then expr1 else expr2
-| Const _               -> expr2
-| Apply1(op,expr2)      -> Apply1(op,subst x ty expr1 expr2)
-| Apply2(op,expr2,expr3)-> Apply2(op,subst x ty expr1 expr2,subst x ty expr1 expr3)
-| Let(y,ty1,expr2,expr3)-> if equal x y 
-    then failwith "trying to substitute a bound variable"
+| Var (a,ty1)            -> if equal a x && equalTypes ty1 ty then expr1 else expr2
+| Const _                -> expr2
+| Apply1(op,expr2)       -> Apply1(op,subst x ty expr1 expr2)
+| Apply2(op,expr2,expr3) -> Apply2(op,subst x ty expr1 expr2,subst x ty expr1 expr3)
+| Let(y,ty1,expr2,expr3) -> if equal x y 
+    then failwith "subst: trying to substitute a bound variable"
     else Let(y,ty1,subst x ty expr1 expr2, subst x ty expr1 expr3)
+
+let isInContext (x,ty) context = List.fold_left (fun acc (y,ty2,_) -> acc || (equal x y && equalTypes ty ty2)) false context
+
+let rec findInContext (x,ty) context = match context with
+  | []                                                  -> failwith "variable not found in this context"
+  | (y,ty2,expr)::_ when equal x y && equalTypes ty ty2 -> expr
+  | _::tl                                               -> findInContext (x,ty) tl
+
+ let rec simSubst context expr = match expr with
+  | Var (a,ty1) when isInContext (a,ty1) context          
+                           -> findInContext (a,ty1) context
+  | Apply1(op,expr)        -> Apply1(op,simSubst context expr)
+  | Apply2(op,expr1,expr2) -> Apply2(op,simSubst context expr1,simSubst context expr2)
+  | Let(y,ty1,expr1,expr2) -> if isInContext (y,ty1) context
+      then failwith "simsubst: trying to substitute a bound variable"
+      else Let(y,ty1,simSubst context expr1,simSubst context expr2)
+  | _                      -> expr
 
 (*  Checks whether two terms are equal up to alpha renaming.
     Two variables match iff they are the same free variable or they are both bound and equal up to renaming.

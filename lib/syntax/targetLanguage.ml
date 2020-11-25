@@ -59,17 +59,43 @@ let rec subst (x:var) xTy expr1 expr2 = match expr2 with
 | Apply1(op,expr2)                -> Apply1(op,subst x xTy expr1 expr2)
 | Apply2(op,expr2,expr3)          -> Apply2(op,subst x xTy expr1 expr2,subst x xTy expr1 expr3)
 | Let(y,ty,expr2,expr3)           -> if equal x y 
-                                     then failwith "trying to substitute a bound variable"
+                                     then failwith "sim: trying to substitute a bound variable"
                                      else Let(y,ty,subst x xTy expr1 expr2, subst x xTy expr1 expr3)
 | Pair(expr2,expr3)               -> Pair(subst x xTy expr1 expr2,subst x xTy expr1 expr3)
 | Fun(varList,expr2)              -> if (List.exists (fun (y,ty) -> equal x y && equalTypes ty xTy) varList)
-                                     then failwith "trying to substitute a bound variable"
+                                     then failwith "sim: trying to substitute a bound variable"
                                      else Fun(varList,subst x xTy expr1 expr2)
 | App(expr2,exprList)             -> App(subst x xTy expr1 expr2,List.map (subst x xTy expr1) exprList)
 | Case(expr2,y1,ty1,y2,ty2,expr3) -> if (equal x y1)||(equal x y2)
-                                     then failwith "trying to substitute a bound variable"
+                                     then failwith "sim: trying to substitute a bound variable"
                                      else Case(subst x xTy expr1 expr2,y1,ty1,y2,ty2,subst x xTy expr1 expr3)
 | Tuple(exprList)                 -> Tuple(List.map (subst x xTy expr1) exprList)
+
+let isInContext (x,ty) context = List.fold_left (fun acc (y,ty2,_) -> acc || (equal x y && equalTypes ty ty2)) false context
+
+let rec findInContext (x,ty) context = match context with
+  | []                                                  -> failwith "variable not found in this context"
+  | (y,ty2,expr)::_ when equal x y && equalTypes ty ty2 -> expr
+  | _::tl                                               -> findInContext (x,ty) tl
+
+ let rec simSubst context expr = match expr with
+  | Var (a,ty1) when isInContext (a,ty1) context          
+                                    -> findInContext (a,ty1) context
+  | Apply1(op,expr)                 -> Apply1(op,simSubst context expr)
+  | Apply2(op,expr1,expr2)          -> Apply2(op,simSubst context expr1,simSubst context expr2)
+  | Let(y,ty1,expr1,expr2)          -> if isInContext (y,ty1) context
+      then failwith "simsubst: trying to substitute a bound variable"
+      else Let(y,ty1,simSubst context expr1,simSubst context expr2)
+  | Pair(expr1,expr2)               -> Pair(simSubst context expr1, simSubst context expr2)
+  | Fun(varList,expr2)              -> if (List.exists (fun (y,ty) -> isInContext (y,ty) context) varList)
+                                        then failwith "simsubst: trying to substitute a bound variable"
+                                        else Fun(varList,simSubst context expr2)
+  | App(expr2,exprList)             -> App(simSubst context expr2,List.map (simSubst context) exprList)
+  | Case(expr1,y1,ty1,y2,ty2,expr2) -> if isInContext (y1,ty1) context || isInContext (y2,ty2) context
+                                        then failwith "simsubst: trying to substitute a bound variable"
+                                        else Case(simSubst context expr1,y1,ty1,y2,ty2,simSubst context expr2)
+  | Tuple(exprList)                 -> Tuple(List.map (simSubst context) exprList)
+  | _                               -> expr 
 
 (*  Checks whether two terms are equal up to alpha renaming.
     Two variables match iff they are the same free variable or they are both bound and equal up to renaming.

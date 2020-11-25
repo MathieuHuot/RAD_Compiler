@@ -25,6 +25,7 @@ val equalTerms: targetSyn -> targetSyn ->  bool
 val isValue : targetSyn -> bool
 val freeVars : targetSyn -> Vars.var list
 val subst : Vars.var -> targetType -> targetSyn -> targetSyn -> targetSyn
+val simSubst : context -> targetSyn -> targetSyn
 val canonicalAlphaRename : string -> targetSyn -> targetSyn
 val typeTarget : targetSyn -> targetType option
 val isWellTyped : targetSyn -> bool

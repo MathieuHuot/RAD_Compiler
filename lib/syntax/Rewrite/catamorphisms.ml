@@ -4,7 +4,7 @@ module type Catamorphism = sig
   val rule : adt -> pattern * (adt Lazy.t)  (* applies a rule on an adt depending on its pattern *)
   val catamorphism : pattern list -> adt -> adt (* applies the rule to each pattern found within an adt *)
   val iterate : int -> pattern list -> adt -> adt (* iterate a catamorphism a given number of times *)
-end
+end 
 
 module SourceCata : Catamorphism with type adt = Syntax.SourceLanguage.sourceSyn and type pattern = int = struct
   open Syntax.SourceLanguage
@@ -146,25 +146,25 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
     (* Default, do nothing *)
     | expr                          -> 101, lazy expr
 
-  let rec catamorphism list expr = 
+  let rec catamorphism lis expr = 
     let aux expr = begin 
     match expr with
       | Var _                                -> expr
       | Const _                              -> expr
-      | Apply1(op, expr)                     -> Apply1(op,catamorphism list expr)
-      | Apply2(op, expr1, expr2)             -> Apply2(op,catamorphism list expr1, catamorphism list expr2)
-      | Let(x, ty, expr1, expr2)             -> Let(x,ty,catamorphism list expr1, catamorphism list expr2)
-      | Pair(expr1, expr2)                   -> Pair(catamorphism list expr1, catamorphism list expr2)   
-      | Tuple(exprList)                      -> Tuple(List.map (catamorphism list) exprList)
-      | App(expr, exprList)                  -> App(catamorphism list expr, List.map (catamorphism list) exprList)
-      | Fun(varList, expr)                   -> Fun(varList, catamorphism list expr)
-      | Case(expr1, x1, ty1, x2, ty2, expr2) -> Case(catamorphism list expr1,x1,ty1,x2,ty2,catamorphism list expr2)
+      | Apply1(op, expr)                     -> Apply1(op,catamorphism lis expr)
+      | Apply2(op, expr1, expr2)             -> Apply2(op,catamorphism lis expr1, catamorphism lis expr2)
+      | Let(x, ty, expr1, expr2)             -> Let(x,ty,catamorphism lis expr1, catamorphism lis expr2)
+      | Pair(expr1, expr2)                   -> Pair(catamorphism lis expr1, catamorphism lis expr2)   
+      | Tuple(exprList)                      -> Tuple(List.map (catamorphism lis) exprList)
+      | App(expr, exprList)                  -> App(catamorphism lis expr, List.map (catamorphism lis) exprList)
+      | Fun(varList, expr)                   -> Fun(varList, catamorphism lis expr)
+      | Case(expr1, x1, ty1, x2, ty2, expr2) -> Case(catamorphism lis expr1,x1,ty1,x2,ty2,catamorphism lis expr2)
     end in 
     let f expr i =
       let (j,e) = rule expr in
       if i==j then force e else expr
     in
-    aux (List.fold_left f expr list)
+    aux (List.fold_left f expr lis)
 
     let iterate n list expr = 
       let rec aux n expr = if n==0 then expr else aux (n-1) (catamorphism list expr) in 
