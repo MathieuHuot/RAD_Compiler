@@ -1,7 +1,30 @@
 random term:
-let y0 = 31.837146351 in
-let y1 = 40.3306465528 in
--(y1)
+let y0 = 22.2482316414 in
+let y7 = 67.5915818287 in
+let y8 = exp (y7) in
+let y9 = 1.35741877816 in
+let y1 = (y8 - y9) in
+let y5 = 39.9109945773 in
+let y2 = 97.3461818483 in
+let y6 = 14.6699842666 in
+let y22 = (y5 + y6) in
+let y20 = y0 in
+let y18 = y0 in
+let y16 = y0 in
+let y17 = 60.4586420026 in
+let y3 = (y16 * y17) in
+let y14 = y0 in
+let y10 = 51.9762403304 in
+let y11 = 77.7988560044 in
+let y12 = (y10 - y11) in
+let y4 = 71.5095495595 in
+let y13 = 55.7577100213 in
+let y15 = (y12 - y13) in
+let y19 = (y14 - y15) in
+let y21 = (y18 * y19) in
+let y23 = (y20 - y21) in
+let y24 = (y22 * y23) in
+exp (y24)
 end random term
 
 
@@ -16,25 +39,39 @@ end random term
 
 
 Term:
-sin (y3)
+sin (y26)
 Forward derivative of term:
-case ⟨y3, dy3⟩ of ⟨y4, y5⟩⟶
-⟨sin (y4), (cos (y4) * y5)⟩
+case ⟨y26, dy26⟩ of ⟨y27, y28⟩⟶
+⟨sin (y27), (cos (y27) * y28)⟩
 Reduced derivative of term:
-⟨sin (y3), (cos (y3) * dy3)⟩
+⟨sin (y26), (cos (y26) * dy26)⟩
 
 
 Term:
-67.305134303
+exp ((sin (83.3949860377) - 96.9281925854))
 
 Anf Term:
-67.305134303
+let y29 = 83.3949860377 in
+let y30 = sin (y29) in
+let y31 = 96.9281925854 in
+let y32 = (y30 - y31) in
+exp (y32)
 
 Forward derivative of term:
-⟨67.305134303, 0.⟩
+case ⟨83.3949860377, 0.⟩ of ⟨y29, dy29⟩⟶
+case case ⟨y29, dy29⟩ of ⟨y33, y34⟩⟶
+⟨sin (y33), (cos (y33) * y34)⟩ of ⟨y30, dy30⟩⟶
+case ⟨96.9281925854, 0.⟩ of ⟨y31, dy31⟩⟶
+case case ⟨y30, dy30⟩ of ⟨y35, y36⟩⟶
+case ⟨y31, dy31⟩ of ⟨y37, y38⟩⟶
+⟨(y35 - y37), ((1. * y36) + (-1. * y38))⟩ of ⟨y32, dy32⟩⟶
+case ⟨y32, dy32⟩ of ⟨y39, y40⟩⟶
+⟨exp (y39), (exp (y39) * y40)⟩
 
 Reduced derivative of term:
-⟨67.305134303, 0.⟩
+case ⟨sin (y29), (cos (y29) * dy29)⟩ of ⟨y30, dy30⟩⟶
+case ⟨(y30 - y31), (dy30 - dy31)⟩ of ⟨y32, dy32⟩⟶
+⟨exp (y32), (exp (y32) * dy32)⟩
 
 
 variable:
@@ -42,15 +79,16 @@ x1
 term:
 exp (x1)
 reverse derivative macro of term:
-⟨exp (x1), λy8,y7. (λy6. {y6})[(y8 + (exp (x1) * y7))]⟩
+⟨exp (x1), λy43,y42. (λy41. {y41})[(y43 + (exp (x1) * y42))]⟩
 derivative of term:
-(λy8,y7. (λy6. {y6})[(y8 + (exp (x1) * y7))])[0., 1.]
+(λy43,y42. (λy41. {y41})[(y43 + (exp (x1) * y42))])[0., 1.]
 partially reduced term:
-let y8 = 0. in
-(λy6. {y6})[(y8 + exp (x1))]
+let y43 = 0. in
+let y41 = (y43 + exp (x1)) in
+{y41}
 fully reduced term:
-let y6 = exp (x1) in
-{y6}
+let y41 = exp (x1) in
+{y41}
 
 
 term:
@@ -58,9 +96,9 @@ term:
 anf term:
 (x1 + x2)
 reverse derivative macro of term:
-⟨(x1 + x2), λy12,y13,y11. (λy9,y10. {y9,y10})[(y12 + (1. * y11)), (y13 + (1. * y11))]⟩
+⟨(x1 + x2), λy47,y48,y46. (λy44,y45. {y44,y45})[(y47 + (1. * y46)), (y48 + (1. * y46))]⟩
 derivative of term:
-(λy12,y13,y11. (λy9,y10. {y9,y10})[(y12 + (1. * y11)), (y13 + (1. * y11))])[0., 0., 1.]
+(λy47,y48,y46. (λy44,y45. {y44,y45})[(y47 + (1. * y46)), (y48 + (1. * y46))])[0., 0., 1.]
 fully reduced term:
 {1.,1.}
 
@@ -69,97 +107,60 @@ term:
 let x1 = 3. in
 x1
 reverse derivative macro of term:
-case ⟨3., λy16,y15. (λy14. {y14})[y16]⟩ of ⟨x1, dx1⟩⟶
-⟨x1, λy18,y19,y17. (dx1)[y18, (y19 + y17)]⟩
+case ⟨3., λy51,y50. (λy49. {y49})[y51]⟩ of ⟨x1, dx1⟩⟶
+⟨x1, λy53,y54,y52. (dx1)[y53, (y54 + y52)]⟩
 fully reduced reverse derivative macro of term:
-⟨3., λy18,y19,y17. let y15 = (y19 + y17) in
-{y18}⟩
+⟨3., λy53,y54,y52. let y50 = (y54 + y52) in
+{y53}⟩
 derivative of term:
-(λy18,y19,y17. let y15 = (y19 + y17) in
-{y18})[0., 0., 1.]
+(λy53,y54,y52. let y50 = (y54 + y52) in
+{y53})[0., 0., 1.]
 fully reduced derivative of term:
 {0.}
 
 
 Term:
-sin (((cos (let y20 = 87.900994519 in
-cos (y20)) + (64.1991358156 - sin (9.90888539171))) * let y21 = 70.5712236732 in
-sin ((48.8441156752 - let y22 = (-(y21) + (y21 + y21)) in
-y21))))
+let y55 = 73.4485770147 in
+let y56 = let y57 = sin (let y58 = exp (y55) in
+y55) in
+58.940353936 in
+sin (let y59 = let y60 = let y61 = y56 in
+(y61 + sin (y55)) in
+y55 in
+45.0412528306)
 
 Anf Term:
-let y20 = 87.900994519 in
-let y23 = cos (y20) in
-let y27 = cos (y23) in
-let y25 = 64.1991358156 in
-let y24 = 9.90888539171 in
-let y26 = sin (y24) in
-let y28 = (y25 - y26) in
-let y34 = (y27 + y28) in
-let y21 = 70.5712236732 in
-let y31 = 48.8441156752 in
-let y29 = -(y21) in
-let y30 = (y21 + y21) in
-let y22 = (y29 + y30) in
-let y32 = y21 in
-let y33 = (y31 - y32) in
-let y35 = sin (y33) in
-let y36 = (y34 * y35) in
-sin (y36)
+let y55 = 73.4485770147 in
+let y58 = exp (y55) in
+let y65 = y55 in
+let y57 = sin (y65) in
+let y56 = 58.940353936 in
+let y61 = y56 in
+let y62 = y61 in
+let y63 = sin (y55) in
+let y60 = (y62 + y63) in
+let y59 = y55 in
+let y64 = 45.0412528306 in
+sin (y64)
 
 Reverse derivative macro of term:
-case case ⟨87.900994519, λy37. (λ. {}){}⟩ of ⟨y20, dy20⟩⟶
-case ⟨cos (y20), λy39,y38. (dy20)[(y39 + (-(sin (y20)) * y38))]⟩ of ⟨y23, dy23⟩⟶
-case ⟨cos (y23), λy41,y42,y40. (dy23)[y41, (y42 + (-(sin (y23)) * y40))]⟩ of ⟨y27, dy27⟩⟶
-case ⟨64.1991358156, λy44,y45,y46,y43. (dy27)[y44, y45, y46]⟩ of ⟨y25, dy25⟩⟶
-case ⟨9.90888539171, λy48,y49,y50,y51,y47. (dy25)[y48, y49, y50, y51]⟩ of ⟨y24, dy24⟩⟶
-case ⟨sin (y24), λy53,y54,y55,y56,y57,y52. (dy24)[y53, y54, y55, y56, (y57 + (cos (y24) * y52))]⟩ of ⟨y26, dy26⟩⟶
-case ⟨(y25 - y26), λy59,y60,y61,y62,y63,y64,y58. (dy26)[y59, y60, y61, (y62 + (1. * y58)), y63, (y64 + (-1. * y58))]⟩ of ⟨y28, dy28⟩⟶
-case ⟨(y27 + y28), λy66,y67,y68,y69,y70,y71,y72,y65. (dy28)[y66, y67, (y68 + (1. * y65)), y69, y70, y71, (y72 + (1. * y65))]⟩ of ⟨y34, dy34⟩⟶
-case ⟨70.5712236732, λy74,y75,y76,y77,y78,y79,y80,y81,y73. (dy34)[y74, y75, y76, y77, y78, y79, y80, y81]⟩ of ⟨y21, dy21⟩⟶
-case ⟨48.8441156752, λy83,y84,y85,y86,y87,y88,y89,y90,y91,y82. (dy21)[y83, y84, y85, y86, y87, y88, y89, y90, y91]⟩ of ⟨y31, dy31⟩⟶
-case ⟨-(y21), λy93,y94,y95,y96,y97,y98,y99,y100,y101,y102,y92. (dy31)[y93, y94, y95, y96, y97, y98, y99, y100, (y101 + (-1. * y92)), y102]⟩ of ⟨y29, dy29⟩⟶
-case ⟨(y21 + y21), λy104,y105,y106,y107,y108,y109,y110,y111,y112,y113,y114,y103. (dy29)[y104, y105, y106, y107, y108, y109, y110, y111, ((y112 + (1. * y103)) + (1. * y103)), y113, y114]⟩ of ⟨y30, dy30⟩⟶
-case ⟨(y29 + y30), λy116,y117,y118,y119,y120,y121,y122,y123,y124,y125,y126,y127,y115. (dy30)[y116, y117, y118, y119, y120, y121, y122, y123, y124, y125, (y126 + (1. * y115)), (y127 + (1. * y115))]⟩ of ⟨y22, dy22⟩⟶
-case ⟨y21, λy129,y130,y131,y132,y133,y134,y135,y136,y137,y138,y139,y140,y141,y128. (dy22)[y129, y130, y131, y132, y133, y134, y135, y136, (y137 + y128), y138, y139, y140, y141]⟩ of ⟨y32, dy32⟩⟶
-case ⟨(y31 - y32), λy143,y144,y145,y146,y147,y148,y149,y150,y151,y152,y153,y154,y155,y156,y142. (dy32)[y143, y144, y145, y146, y147, y148, y149, y150, y151, (y152 + (1. * y142)), y153, y154, y155, (y156 + (-1. * y142))]⟩ of ⟨y33, dy33⟩⟶
-case ⟨sin (y33), λy158,y159,y160,y161,y162,y163,y164,y165,y166,y167,y168,y169,y170,y171,y172,y157. (dy33)[y158, y159, y160, y161, y162, y163, y164, y165, y166, y167, y168, y169, y170, y171, (y172 + (cos (y33) * y157))]⟩ of ⟨y35, dy35⟩⟶
-case ⟨(y34 * y35), λy174,y175,y176,y177,y178,y179,y180,y181,y182,y183,y184,y185,y186,y187,y188,y189,y173. (dy35)[y174, y175, y176, y177, y178, y179, y180, (y181 + (y35 * y173)), y182, y183, y184, y185, y186, y187, y188, (y189 + (y34 * y173))]⟩ of ⟨y36, dy36⟩⟶
-⟨sin (y36), λy191,y192,y193,y194,y195,y196,y197,y198,y199,y200,y201,y202,y203,y204,y205,y206,y207,y190. (dy36)[y191, y192, y193, y194, y195, y196, y197, y198, y199, y200, y201, y202, y203, y204, y205, y206, (y207 + (cos (y36) * y190))]⟩ of ⟨y208, dy208⟩⟶
-(dy208)[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1.]
+case case ⟨73.4485770147, λy66. (λ. {}){}⟩ of ⟨y55, dy55⟩⟶
+case ⟨exp (y55), λy68,y67. (dy55)[(y68 + (exp (y55) * y67))]⟩ of ⟨y58, dy58⟩⟶
+case ⟨y55, λy70,y71,y69. (dy58)[(y70 + y69), y71]⟩ of ⟨y65, dy65⟩⟶
+case ⟨sin (y65), λy73,y74,y75,y72. (dy65)[y73, y74, (y75 + (cos (y65) * y72))]⟩ of ⟨y57, dy57⟩⟶
+case ⟨58.940353936, λy77,y78,y79,y80,y76. (dy57)[y77, y78, y79, y80]⟩ of ⟨y56, dy56⟩⟶
+case ⟨y56, λy82,y83,y84,y85,y86,y81. (dy56)[y82, y83, y84, y85, (y86 + y81)]⟩ of ⟨y61, dy61⟩⟶
+case ⟨y61, λy88,y89,y90,y91,y92,y93,y87. (dy61)[y88, y89, y90, y91, y92, (y93 + y87)]⟩ of ⟨y62, dy62⟩⟶
+case ⟨sin (y55), λy95,y96,y97,y98,y99,y100,y101,y94. (dy62)[(y95 + (cos (y55) * y94)), y96, y97, y98, y99, y100, y101]⟩ of ⟨y63, dy63⟩⟶
+case ⟨(y62 + y63), λy103,y104,y105,y106,y107,y108,y109,y110,y102. (dy63)[y103, y104, y105, y106, y107, y108, (y109 + (1. * y102)), (y110 + (1. * y102))]⟩ of ⟨y60, dy60⟩⟶
+case ⟨y55, λy112,y113,y114,y115,y116,y117,y118,y119,y120,y111. (dy60)[(y112 + y111), y113, y114, y115, y116, y117, y118, y119, y120]⟩ of ⟨y59, dy59⟩⟶
+case ⟨45.0412528306, λy122,y123,y124,y125,y126,y127,y128,y129,y130,y131,y121. (dy59)[y122, y123, y124, y125, y126, y127, y128, y129, y130, y131]⟩ of ⟨y64, dy64⟩⟶
+⟨sin (y64), λy133,y134,y135,y136,y137,y138,y139,y140,y141,y142,y143,y132. (dy64)[y133, y134, y135, y136, y137, y138, y139, y140, y141, y142, (y143 + (cos (y64) * y132))]⟩ of ⟨y144, dy144⟩⟶
+(dy144)[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1.]
 
 Reduced reverse derivative macro of term:
-let y28 = (64.1991358156 - -0.46541854036) in
-let y33 = (48.8441156752 - 70.5712236732) in
-let y22 = (-70.5712236732 + 141.142447346) in
-let y35 = sin (y33) in
-let y34 = (0.542002473405 + y28) in
-let y36 = (y34 * y35) in
-let y173 = cos (y36) in
-let y165 = (y35 * y173) in
-let y38 = (-0.840376890938 * y165) in
-let y157 = (y34 * y173) in
-let y52 = (0. - y165) in
-let y208 = sin (y36) in
-let y47 = (-0.885090719808 * y52) in
-let y37 = (0.0635569140673 * y38) in
-let y142 = (cos (y33) * y157) in
-let y128 = (0. - y142) in
-let y91 = (y128 - 0.) in
 {}
 After dead-code elim:
-let y28 = (64.1991358156 - -0.46541854036) in
-let y33 = (48.8441156752 - 70.5712236732) in
-let y35 = sin (y33) in
-let y34 = (0.542002473405 + y28) in
-let y36 = (y34 * y35) in
-let y173 = cos (y36) in
-let y165 = (y35 * y173) in
-let y38 = (-0.840376890938 * y165) in
-let y157 = (y34 * y173) in
-let y52 = (0. - y165) in
-let y142 = (cos (y33) * y157) in
-let y128 = (0. - y142) in
 {}
 
 
@@ -167,77 +168,44 @@ Term:
 -(cos (3.))
 
 Anf Term:
-let y209 = 3. in
-let y210 = cos (y209) in
--(y210)
+let y145 = 3. in
+let y146 = cos (y145) in
+-(y146)
 
 Reverse derivative macro of term:
-case ⟨3., λy213,y212. (λy211. {y211})[y213]⟩ of ⟨y209, dy209⟩⟶
-case ⟨cos (y209), λy215,y216,y214. (dy209)[y215, (y216 + (-(sin (y209)) * y214))]⟩ of ⟨y210, dy210⟩⟶
-⟨-(y210), λy218,y219,y220,y217. (dy210)[y218, y219, (y220 + (-1. * y217))]⟩
+case ⟨3., λy149,y148. (λy147. {y147})[y149]⟩ of ⟨y145, dy145⟩⟶
+case ⟨cos (y145), λy151,y152,y150. (dy145)[y151, (y152 + (-(sin (y145)) * y150))]⟩ of ⟨y146, dy146⟩⟶
+⟨-(y146), λy154,y155,y156,y153. (dy146)[y154, y155, (y156 + (-1. * y153))]⟩
 
 Reduced reverse derivative macro of term:
-⟨0.9899924966, λy218,y219,y220,y217. let y214 = (y220 - y217) in
-let y212 = (y219 + (-0.14112000806 * y214)) in
-{y218}⟩
+⟨0.9899924966, λy154,y155,y156,y153. let y150 = (y156 - y153) in
+let y148 = (y155 + (-0.14112000806 * y150)) in
+{y154}⟩
 
 
 Term:
 ((x1 + x2) * (x1 + x2))
 
 Anf Term:
-let y221 = (x1 + x2) in
-let y222 = (x1 + x2) in
-(y221 * y222)
+let y157 = (x1 + x2) in
+let y158 = (x1 + x2) in
+(y157 * y158)
 
 Reverse derivative macro of term:
-case case ⟨(x1 + x2), λy226,y227,y225. (λy223,y224. {y223,y224})[(y226 + (1. * y225)), (y227 + (1. * y225))]⟩ of ⟨y221, dy221⟩⟶
-case ⟨(x1 + x2), λy229,y230,y231,y228. (dy221)[(y229 + (1. * y228)), (y230 + (1. * y228)), y231]⟩ of ⟨y222, dy222⟩⟶
-⟨(y221 * y222), λy233,y234,y235,y236,y232. (dy222)[y233, y234, (y235 + (y222 * y232)), (y236 + (y221 * y232))]⟩ of ⟨y237, dy237⟩⟶
-(dy237)[0., 0., 0., 0., 1.]
+case case ⟨(x1 + x2), λy162,y163,y161. (λy159,y160. {y159,y160})[(y162 + (1. * y161)), (y163 + (1. * y161))]⟩ of ⟨y157, dy157⟩⟶
+case ⟨(x1 + x2), λy165,y166,y167,y164. (dy157)[(y165 + (1. * y164)), (y166 + (1. * y164)), y167]⟩ of ⟨y158, dy158⟩⟶
+⟨(y157 * y158), λy169,y170,y171,y172,y168. (dy158)[y169, y170, (y171 + (y158 * y168)), (y172 + (y157 * y168))]⟩ of ⟨y173, dy173⟩⟶
+(dy173)[0., 0., 0., 0., 1.]
 
 Reduced reverse derivative macro of term:
-let y221 = (x1 + x2) in
-let y224 = (2. * y221) in
-let y237 = (y221 * y221) in
-{y224,y224}
+let y157 = (x1 + x2) in
+let y159 = (2. * y157) in
+let y173 = (y157 * y157) in
+{y159,y159}
 
 After dead-code elim:
-let y221 = (x1 + x2) in
-let y224 = (2. * y221) in
-{y224,y224}
-
-
-Term:
-let y1 = ((x1 + x2) * (x1 + x2)) in
-y1
-
-Anf Term:
-let y238 = (x1 + x2) in
-let y239 = (x1 + x2) in
-let y1 = (y238 * y239) in
-y1
-
-Reverse derivative macro of term:
-case case ⟨(x1 + x2), λy243,y244,y242. (λy240,y241. {y240,y241})[(y243 + (1. * y242)), (y244 + (1. * y242))]⟩ of ⟨y238, dy238⟩⟶
-case ⟨(x1 + x2), λy246,y247,y248,y245. (dy238)[(y246 + (1. * y245)), (y247 + (1. * y245)), y248]⟩ of ⟨y239, dy239⟩⟶
-case ⟨(y238 * y239), λy250,y251,y252,y253,y249. (dy239)[y250, y251, (y252 + (y239 * y249)), (y253 + (y238 * y249))]⟩ of ⟨y1, dy1⟩⟶
-⟨y1, λy255,y256,y257,y258,y259,y254. (dy1)[y255, y256, y257, y258, (y259 + y254)]⟩ of ⟨y260, dy260⟩⟶
-(dy260)[0., 0., 0., 0., 0., 1.]
-
-Reduced reverse derivative macro of term:
-let y238 = (x1 + x2) in
-let y249 = (0. + 1.) in
-let y245 = (y238 * y249) in
-let y1 = (y238 * y238) in
-let y241 = (2. * y245) in
-{y241,y241}
-
-After dead-code elim:
-let y238 = (x1 + x2) in
-let y249 = (0. + 1.) in
-let y245 = (y238 * y249) in
-let y241 = (2. * y245) in
-{y241,y241}
+let y157 = (x1 + x2) in
+let y159 = (2. * y157) in
+{y159,y159}
 
 

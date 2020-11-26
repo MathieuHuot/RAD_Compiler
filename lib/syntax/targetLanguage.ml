@@ -52,7 +52,7 @@ let rec equalTypes ty1 ty2 = match ty1,ty2 with
   | NProd(tyList1), NProd(tyList2)        -> List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2 
   | _                                     -> false
   
-(* substitute variable x of type xTy by expr1 in expr2*)
+(* substitute variable x of type xTy by expr1 in expr2 *)
 let rec subst (x:var) xTy expr1 expr2 = match expr2 with 
 | Var(a,ty)                       -> if equal a x && equalTypes ty xTy then expr1 else expr2
 | Const _                         -> expr2
