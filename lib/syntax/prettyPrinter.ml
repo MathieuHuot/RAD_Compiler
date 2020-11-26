@@ -149,7 +149,8 @@ let rec prettyP = function
                                     leftbra
                                     ^removeLast (removeLast(List.fold_left (fun acc expr -> acc^prettyP expr^comma) "" exprList))
                                     ^rightbra)
-| Case(expr1,x,ty1,y,ty2,expr2) ->  kcase
+| Case(expr1,x,ty1,y,ty2,expr2) ->  
+                                      (* kcase
                                     ^(prettyP expr1)
                                     ^kof
                                     ^bra
@@ -158,6 +159,15 @@ let rec prettyP = function
                                     ^(printVar (Var(y,ty2)))
                                     ^ket
                                     ^arrow3
+                                    ^"\n"
+                                    ^(prettyP expr2) *)
+                                    klet
+                                    ^(printVar (Var(x,ty1)))
+                                    ^comma
+                                    ^(printVar (Var(y,ty2)))
+                                    ^kequal
+                                    ^prettyP expr1
+                                    ^kin
                                     ^"\n"
                                     ^(prettyP expr2)
 | Tuple(exprList)               ->  if exprList==[] then  leftcurlbra^rightcurlbra else
