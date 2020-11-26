@@ -18,8 +18,8 @@ let range n =
   let irange x = if x > n then None else Some (x, x + 1) in
   unfold_right irange 0
 
-let nb_opti = 31
-let nb_opti_iterations = 350 
+let nb_opti = 36
+let nb_opti_iterations = 300 
 
 let genFresh = let n = ref 0 in fun () ->  n := !n+1; "z", !n
 let rec genContext size = if size==0 then [] else genFresh()::genContext (size-1)

@@ -95,6 +95,7 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
     | 2, Apply1(Cos, Const c)           -> Const(cos c)
     | 3, Apply1(Sin, Const c)           -> Const(sin c)
     | 4, Apply1(Exp, Const c)           -> Const(exp c)
+    | 34, Apply1(Power n, Const c)      -> Const (c ** float_of_int n)
     (* Simple Algebraic simplifications *)
     | 5, Apply2(Plus,expr1,Apply1(Minus,expr2)) 
                                         -> Apply2(Minus,expr1,expr2)
@@ -111,6 +112,12 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
                                         -> Apply1(Minus,Apply2(Times,expr1,expr2))
     | 33, Apply2(Times,expr1,Apply1(Minus,expr2)) 
                                         -> Apply1(Minus,Apply2(Times,expr1,expr2))
+    | 35, Apply1(Power n, Apply1(Minus, expr))
+                                        -> if n mod 2==0 
+                                            then Apply1(Power n,expr)
+                                            else Apply1(Minus,Apply1(Power n,expr))
+    | 36, Apply1(Power n,Apply1(Exp,expr))
+                                        -> Apply1(Exp,Apply2(Times,Const(float_of_int n),expr))
     (* 0 simplification *)
     | 12, Apply2(Times,_,Const 0.)      -> Const 0.
     | 13, Apply2(Times,Const 0.,_)      -> Const 0.
