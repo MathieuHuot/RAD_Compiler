@@ -139,7 +139,7 @@ let rec addToPos i list y = match i, list with
 let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
   let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
-  expr |> weakAnf |> rad context id_cont |> fun (a,_,_) -> a
+  expr |> SourceAnf.weakAnf |> rad context id_cont |> fun (a,_,_) -> a
 
 (* To actually compute the gradient of a term, we need to initialize tangent variables as in imperative reverse-mode.
     Every tangent variable is initialized at 0 except from the last one which is the returned variable and is initialized at 1 *)
@@ -151,7 +151,7 @@ let rec initialize_rad list = match list with
 let grad (context: context) (expr: sourceSyn) : targetSyn =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
   let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
-  let dexpr, cont, _ = rad context id_cont (weakAnf expr) in
+  let dexpr, cont, _ = rad context id_cont (SourceAnf.weakAnf expr) in
   match typeTarget cont with
     | None                  -> failwith "rad: continuation ill-typed" 
     | Some(Arrow(tyList,_)) -> 

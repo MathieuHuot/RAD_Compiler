@@ -28,7 +28,7 @@ let rec genContext size = if size==0 then [] else genFresh()::genContext (size-1
 let x=2;;
 Lwt_io.print "random term:\n";;
 Random.self_init();;
-SourcePrinter.prettyPrinter(anf(Syntax.Generator.sourceSynGen 10 []));;
+SourcePrinter.prettyPrinter(SourceAnf.anf(Syntax.Generator.sourceSynGen 10 []));;
 Lwt_io.print "end random term\n";;
 Lwt_io.print "\n\n";;
 
@@ -96,7 +96,7 @@ TargetPrinter.prettyPrinter(f9);;
 Lwt_io.print "\n\n";;
 
 let f6 = Syntax.Generator.sourceSynGen 5 [];;
-let f7 : sourceSyn = anf(f6);;
+let f7 : sourceSyn = SourceAnf.anf(f6);;
 let f8 = forwardAD f7;;
 let f9 = TargetCata.iterate nb_opti_iterations (range nb_opti) f8;;
 Lwt_io.print "Term:\n";;
@@ -142,7 +142,7 @@ Lwt_io.print "\n\n";;
 let x12 = ("x",2);;
 let var12 : sourceSyn = Var(x12,Real);;
 let f21 : sourceSyn = Apply2(Plus, var11,var12);;
-let f22 = anf f21;;
+let f22 = SourceAnf.anf f21;;
 let f23 = semiNaiveReverseAD [(x11,Real);(x12,Real)] f21;;
 let cst2 : targetSyn list = [Const(0.);Const(0.);Const(1.)]
 let f24 = match f23 with | Pair(_,x)-> App(x,cst2) | _ -> failwith "f12 wrong format" ;;
@@ -179,7 +179,7 @@ TargetPrinter.prettyPrinter(f5);;
 Lwt_io.print "\n\n";;
 
 let g6 = Syntax.Generator.sourceSynGen 10 [];;  
-let g7 : sourceSyn = anf(g6);;
+let g7 : sourceSyn = SourceAnf.anf(g6);;
 let g8 = Transforms.ReverseMode.grad [] g7;;
 let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
 Lwt_io.print "Term:\n";;
@@ -199,7 +199,7 @@ TargetPrinter.prettyPrinter(g10);;
 Lwt_io.print "\n\n";;
 
 let g6 : sourceSyn = Apply1(Minus,Apply1(Cos,Const 3.));;
-let g7 : sourceSyn = anf(g6);; 
+let g7 : sourceSyn = SourceAnf.anf(g6);; 
 let g8 = semiNaiveReverseAD [(x12,Real)] g7;;
 let g9 = TargetCata.iterate 30 (range nb_opti) g8;;
 Lwt_io.print "Term:\n";;
@@ -217,7 +217,7 @@ Lwt_io.print "\n\n";;
 
 
 let g6 : sourceSyn  = Apply2(Times, Apply2(Plus,Var(x1,Real),Var(x2,Real)),Apply2(Plus,Var(x1,Real),Var(x2,Real)));;
-let g7 = anf(g6);;
+let g7 = SourceAnf.anf(g6);;
 let g8 =  Transforms.ReverseMode.grad [(x1,Real);(x2,Real)] g7;;
 let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
 Lwt_io.print "Term:\n";;
@@ -238,7 +238,7 @@ TargetPrinter.prettyPrinter(g10);;
 Lwt_io.print "\n\n";; 
 
 let g6 : sourceSyn  = Let(("z",1),Real,Apply2(Times, Var(x2,Real),Apply2(Plus,Var(x1,Real),Var(x2,Real))),Var(("z",1),Real));;
-let g7 = weakAnf(g6);;
+let g7 = SourceAnf.weakAnf(g6);;
 let g8 = Transforms.ReverseMode.grad [(x1,Real);(x2,Real)] g7;;
 let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
 Lwt_io.print "Term:\n";;
@@ -259,7 +259,7 @@ TargetPrinter.prettyPrinter(g10);;
 Lwt_io.print "\n\n";; 
 
 let g6 : sourceSyn  = Let(("z",1),Real,Var(x1,Real),Var(("z",1),Real));;
-let g7 = weakAnf(g6);;
+let g7 = SourceAnf.weakAnf(g6);;
 let g8 = Transforms.ReverseMode.grad [(x1,Real)] g7;;
 let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
 Lwt_io.print "Term:\n";;
@@ -276,7 +276,7 @@ TargetPrinter.prettyPrinter(g9);;
 Lwt_io.print "\n";;
 
 let g6 : sourceSyn  = Let(("z",1),Real,Let(("z",2),Real,Var(x1,Real),Var(("z",2),Real)),Var(("z",1),Real));;
-let g7 = weakAnf(g6);;
+let g7 = SourceAnf.weakAnf(g6);;
 let g8 = Transforms.ReverseMode.grad [(x1,Real)] g7;;
 let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
 Lwt_io.print "Term:\n";;
