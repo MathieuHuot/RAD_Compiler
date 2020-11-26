@@ -4,6 +4,7 @@ module type Catamorphism = sig
   val rule : adt -> pattern -> adt  (* tries to apply a pattern rewriting to an adt *)
   val catamorphism : pattern list -> adt -> adt (* applies the rule to each pattern from a chosen list to an adt *)
   val iterate : int -> pattern list -> adt -> adt (* iterate catamorphism a given number of times *)
+  val normalize: pattern list -> adt -> adt (* iterate catamorphism until no rewriting changes the term anymore. Beware it might not temrinate in general *)
 end 
 
 module SourceCata : Catamorphism with type adt = Syntax.SourceLanguage.sourceSyn and type pattern = int = struct
@@ -74,6 +75,11 @@ module SourceCata : Catamorphism with type adt = Syntax.SourceLanguage.sourceSyn
     let iterate n list expr = 
       let rec aux n expr = if n==0 then expr else aux (n-1) (catamorphism list expr) in 
       aux n expr
+
+    let rec normalize list expr =
+      let rewrittenExpr = catamorphism list expr in
+      if equalTerms rewrittenExpr expr then expr
+      else  normalize list rewrittenExpr
 end
 
 module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn and type pattern = int = struct
@@ -175,8 +181,13 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
     (* for all i in lis *)
     aux (List.fold_left rule expr lis)
 
-    (* iterate n times catamorphism on expr *)
+    (* iterate catamorphism n times on expr *)
     let iterate n lis expr = 
       let rec aux n expr = if n==0 then expr else aux (n-1) (catamorphism lis expr) in 
       aux n expr
+
+    let rec normalize list expr =
+      let rewrittenExpr = catamorphism list expr in
+      if equalTerms rewrittenExpr expr then expr
+      else  normalize list rewrittenExpr 
 end
