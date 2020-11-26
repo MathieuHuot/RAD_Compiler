@@ -35,6 +35,8 @@ let equalOp1 op1 op2 = match op1,op2 with
   | Sin,Sin     -> true
   | Exp,Exp     -> true
   | Minus,Minus -> true
+  | Power n, Power m when n==m
+                -> true
   | _           -> false
 
 let equalOp2 op1 op2 = match op1,op2 with
@@ -287,17 +289,20 @@ let contextComplete expr context =
   List.fold_left (fun acc x -> acc && (List.exists (fun (y,_,_) -> equal y x) context)) true exprFv
 
 let interpretOp1T op expr = match expr with
-| Const v -> begin
+| Const v -> 
+  begin
   match op with
-  | Cos  -> Const(cos(v))
-  | Sin  -> Const(sin(v))
-  | Exp  -> Const(exp(v))
-  | Minus-> Const(-.v)
+  | Cos     -> Const(cos(v))
+  | Sin     -> Const(sin(v))
+  | Exp     -> Const(exp(v))
+  | Minus   -> Const(-.v)
+  | Power n -> Const(v ** float_of_int n)
   end
 | _       -> failwith "the operand of a unary operator is not a real value"
   
-let interpretOp2T op expr1 expr2 = match expr1,expr2 with
-| (Const v1,Const v2) -> begin
+let interpretOp2T op expr1 expr2 = match expr1, expr2 with
+| (Const v1,Const v2) -> 
+  begin
   match op with
   | Plus  -> Const(v1+.v2)
   | Times -> Const(v1*.v2)

@@ -71,10 +71,12 @@ let rec addToPos i list y = match i, list with
                                     let newVarList = (List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList)  in                         
                                     let newContVarList =  List.append newVarList [(new_var, new_ty)] in
                                     let dop y = begin match op with
-                                      | Cos   -> Apply1(Minus,Apply1(Sin, y))
-                                      | Sin   -> Apply1(Cos, y)
-                                      | Exp   -> Apply1(Exp, y)
-                                      | Minus -> Const (-1.)
+                                      | Cos     -> Apply1(Minus,Apply1(Sin, y))
+                                      | Sin     -> Apply1(Cos, y)
+                                      | Exp     -> Apply1(Exp, y)
+                                      | Minus   -> Const (-1.)
+                                      | Power 0 -> Const(0.)
+                                      | Power n -> Apply2(Times, Const(float_of_int (n-1)),Apply1(Power(n-1),y))
                                       end
                                     in
                                     let partialOp = fun z -> Apply2(Times, dop (Var(x, new_ty)), z) in

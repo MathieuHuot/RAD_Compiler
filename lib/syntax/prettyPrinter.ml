@@ -25,12 +25,14 @@ let klet = "let "
 let kequal = " = "
 let kin = " in" 
 let kdot= ". "
+let kpower= "^"
 
 let printOp1 = function 
-   | Cos  -> "cos "
-   | Sin  -> "sin "
-   | Exp  -> "exp "
-   | Minus-> "-"
+   | Cos      -> "cos "
+   | Sin      -> "sin "
+   | Exp      -> "exp "
+   | Minus    -> "-"
+   | Power(n) -> kpower^string_of_int n
 
 let isOp2Infix = function
 | Plus | Times | Minus -> true

@@ -23,10 +23,12 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
                             let tyTangent = Real in 
                             let exprD = forwardAD expr in
                             let dop y = match op with
-                              | Cos   -> Apply1(Minus,Apply1(Sin,y))
-                              | Sin   -> Apply1(Cos,y)
-                              | Exp   -> Apply1(Exp,y)
-                              | Minus -> Const (-1.)
+                              | Cos     -> Apply1(Minus,Apply1(Sin,y))
+                              | Sin     -> Apply1(Cos,y)
+                              | Exp     -> Apply1(Exp,y)
+                              | Minus   -> Const (-1.)
+                              | Power 0 -> Const(0.)
+                              | Power n -> Apply2(Times, Const(float_of_int (n-1)),Apply1(Power(n-1),y))
                             in 
                             let primal = Apply1(op,Var(yPrimal,tyPrimal)) in
                             let tangent = Apply2(Times,
