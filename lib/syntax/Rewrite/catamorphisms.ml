@@ -118,6 +118,11 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
                                             else Apply1(Minus,Apply1(Power n,expr))
     | 36, Apply1(Power n,Apply1(Exp,expr))
                                         -> Apply1(Exp,Apply2(Times,Const(float_of_int n),expr))
+    (* Basic rules for sin, cos *)
+    | 37, Apply1(Sin,Apply1(Minus,expr))-> Apply1(Minus,Apply1(Sin,expr))
+    | 38, Apply1(Cos,Apply1(Minus,expr))-> Apply1(Cos,expr)
+    | 39, Apply2(Plus,Apply1(Power 2,Apply1(Sin,expr1)),Apply1(Power 2,Apply1(Cos,expr2)))
+      when equalTerms expr1 expr2       -> Const 1. 
     (* 0 simplification *)
     | 12, Apply2(Times,_,Const 0.)      -> Const 0.
     | 13, Apply2(Times,Const 0.,_)      -> Const 0.
