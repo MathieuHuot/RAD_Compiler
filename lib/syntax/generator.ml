@@ -25,7 +25,7 @@ let randOp2() = match (randOp2Choice()) with
 | _ -> Minus
 
 let rec get_i i list = match list with
-| [] -> failwith "empty list"
+| [] -> failwith "randVar: empty list"
 | x::list ->  if i==0 then x 
               else get_i (i-1) list 
 

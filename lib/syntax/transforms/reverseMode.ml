@@ -144,7 +144,7 @@ let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
 (* To actually compute the gradient of a term, we need to initialize tangent variables as in imperative reverse-mode.
     Every tangent variable is initialized at 0 except from the last one which is the returned variable and is initialized at 1 *)
 let rec initialize_rad list = match list with
- | []     -> failwith "the gradient of a closed term won't give you much!" 
+ | []     -> failwith "initialize_rad: the gradient of a closed term won't give you much!" 
  | _::[] -> [Const 1.] 
  | _::tl -> (Const 0.)::initialize_rad tl
 
@@ -153,7 +153,7 @@ let grad (context: context) (expr: sourceSyn) : targetSyn =
   let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = rad context id_cont (SourceAnf.weakAnf expr) in
   match typeTarget cont with
-    | None                  -> failwith "rad: continuation ill-typed" 
+    | None                  -> failwith "grad: continuation ill-typed" 
     | Some(Arrow(tyList,_)) -> 
     let sensitivities = initialize_rad tyList in
     begin 
@@ -161,6 +161,6 @@ let grad (context: context) (expr: sourceSyn) : targetSyn =
     | Some(Prod(ty1,ty2)) ->
       let x,dx= dvar (Syntax.Vars.fresh()) in
       Case(dexpr,x,ty1,dx,ty2,App(Var(dx,ty2),sensitivities))
-    | _                   -> failwith "rad: should return a pair"
+    | _                   -> failwith "grad: should return a pair"
     end
-    | _ -> failwith "rad: continuation should have a function type"
+    | _ -> failwith "grad: continuation should have a function type"

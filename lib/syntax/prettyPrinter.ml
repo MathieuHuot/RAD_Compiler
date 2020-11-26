@@ -57,11 +57,11 @@ type terms = sourceSyn
 
 let printVar (expr:sourceSyn) = match expr with
 | Var((str,n),_) -> str^(string_of_int n)
-| _              -> failwith "this is not a variable"
+| _              -> failwith "printVar: this is not a variable"
 
 let printConst (expr:sourceSyn) = match expr with
 | Const c -> string_of_float c
-| _       -> failwith "this is not a constant"
+| _       -> failwith "printConst: this is not a constant"
 
 let prettyPrinter (expr:sourceSyn) = 
 let rec prettyP (expr:terms) = match expr with
@@ -99,11 +99,11 @@ type terms = targetSyn
 
 let printVar = function
 | Var((str,n),_) -> str^(string_of_int n)
-| _              -> failwith "this is not a variable"
+| _              -> failwith "printVar: this is not a variable"
 
 let printConst = function
 | Const c -> string_of_float c
-| _       -> failwith "this is not a constant"
+| _       -> failwith "printConst: this is not a constant"
 
 let removeLast string = 
   let n = String.length string in 

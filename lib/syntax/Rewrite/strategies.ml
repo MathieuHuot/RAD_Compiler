@@ -23,7 +23,7 @@ module Strategy = struct
   (* Runs a strategy and returns the result if successes *)
   let run (m: 'a mon) : 'a result = match m with 
     | Success(expr) -> expr
-    | Failure(_)    -> failwith "strategy failed" 
+    | Failure(_)    -> failwith "run: strategy failed" 
 
   (* strategy that always fails *)
   let rec fail : 'a strategy = fun _ -> Failure(fail)

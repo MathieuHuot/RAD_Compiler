@@ -142,7 +142,7 @@ let isContextOfValues (cont : context) =
     List.fold_left (fun acc (_,_,v) -> (isValue v) && acc) true cont 
 
 let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
-    then failwith "context does not only contain values"
+    then failwith "closingTerm: context does not only contain values"
     else List.fold_left (fun expr1 (x,ty,v) -> subst x ty v expr1) expr cont
 
 let rec freeVars = function
@@ -206,7 +206,7 @@ let rec varNameNotBound (name:string) expr = match expr with
 
 let indexOf el lis = 
   let rec indexAux i = function
-    | [] -> failwith "Element not found in the list"
+    | [] -> failwith "canonicalAlphaRename: Element not found in the list"
     | hd::tl -> if equal hd el then i else indexAux (i+1) tl
   in indexAux 0 lis
 
@@ -225,7 +225,7 @@ let rec canRen expr = match expr with
 | Tuple(exprList)                 -> Tuple(List.map canRen exprList)
 | _                               -> expr
 in canRen expr
-else failwith ("variable "^name^" is already used as a bound variable, can't rename free vars canonically with "^name)
+else failwith ("canonicalAlphaRename: variable "^name^" is already used as a bound variable, can't rename free vars canonically with "^name)
 
 (* simple typecheker *)
 let rec typeTarget = function
@@ -288,7 +288,7 @@ let contextComplete expr context =
   let exprFv = freeVars expr in 
   List.fold_left (fun acc x -> acc && (List.exists (fun (y,_,_) -> equal y x) context)) true exprFv
 
-let interpretOp1T op expr = match expr with
+let interpretOp1 op expr = match expr with
 | Const v -> 
   begin
   match op with
@@ -298,9 +298,9 @@ let interpretOp1T op expr = match expr with
   | Minus   -> Const(-.v)
   | Power n -> Const(v ** float_of_int n)
   end
-| _       -> failwith "the operand of a unary operator is not a real value"
+| _       -> failwith "interpretOp1: the operand of a unary operator is not a real value"
   
-let interpretOp2T op expr1 expr2 = match expr1, expr2 with
+let interpretOp2 op expr1 expr2 = match expr1, expr2 with
 | (Const v1,Const v2) -> 
   begin
   match op with
@@ -308,26 +308,26 @@ let interpretOp2T op expr1 expr2 = match expr1, expr2 with
   | Times -> Const(v1*.v2)
   | Minus -> Const(v1-.v2)
   end
-| _                   -> failwith "one operand of a binary operator is not a real value"
+| _                   -> failwith "interpretOp2: one operand of a binary operator is not a real value"
 
 (* assumes the context captures all free vars, and is only given values *)
 let interpret expr context = 
-if not(isWellTyped expr) then failwith "the term is ill-typed";
-if not(contextComplete expr context) then failwith "the context does not capture all free vars";
+if not(isWellTyped expr) then failwith "interpret: the term is ill-typed";
+if not(contextComplete expr context) then failwith "interpret: the context does not capture all free vars";
 let expr2 = closingTerm expr context in 
 let rec interp expr = match expr with
 | expr when isValue(expr)         ->  expr
 | Apply1(op,expr)                 ->  let v = interp expr in 
-                                  interpretOp1T op v
+                                  interpretOp1 op v
 | Apply2(op,expr1,expr2)          ->  let val1 = interp expr1 in 
                                   let val2 = interp expr2 in 
-                                  interpretOp2T op val1 val2
+                                  interpretOp2 op val1 val2
 | Let(x,ty,expr1,expr2)           ->  let v = interp expr1 in 
                                   interp (subst x ty v expr2)
 | Pair(expr1,expr2)               ->  Pair(interp expr1,interp expr2)
 | Case(expr1,y1,ty1,y2,ty2,expr2) -> begin match (interp expr1) with
     | Pair(v1,v2) -> interp (subst y2 ty2 v2 (subst y1 ty1 v1 expr2))
-    | _           -> failwith "expression should reduce to a pair" end
+    | _           -> failwith "interpret: expression should reduce to a pair" end
 | App(expr1,exprList)             ->  begin match (interp expr1) with
     | Fun(varList,expr1)  ->  let vList = List.map interp exprList in 
                               interp (List.fold_left2 
@@ -335,7 +335,7 @@ let rec interp expr = match expr with
                                           expr1 
                                           varList 
                                           vList)
-    | _                   ->  failwith "expression should reduce to a function" end
+    | _                   ->  failwith "interpret: expression should reduce to a function" end
 | Tuple(exprList)                 -> Tuple(List.map interp exprList)
 | _                               ->  expr
 in interp expr2

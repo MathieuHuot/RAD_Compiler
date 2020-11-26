@@ -52,7 +52,7 @@ let rec subst (x: var) ty expr1 expr2 = match expr2 with
 let isInContext (x, ty) context = List.fold_left (fun acc (y, ty2,_) -> acc || (equal x y && equalTypes ty ty2)) false context
 
 let rec findInContext (x,ty) context = match context with
-  | []                                                    -> failwith "variable not found in this context"
+  | []                                                    -> failwith "findInContext: variable not found in this context"
   | (y, ty2, expr)::_ when equal x y && equalTypes ty ty2 -> expr
   | _::cont                                               -> findInContext (x, ty) cont
 
@@ -90,7 +90,7 @@ let isContextOfValues (cont: context) =
     List.fold_left (fun acc (_,_,v) -> (isValue v) && acc) true cont 
 
 let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
-    then failwith "context does not only contain values"
+    then failwith "closingTerm: context does not only contain values"
     else List.fold_left (fun expr1 (x,ty,v) -> subst x ty v expr1) expr cont
 
 let rec freeVars = function
@@ -118,7 +118,7 @@ let rec varNameNotBound (name:string) expr = match expr with
 (* returns theposition of el in lis *)
 let indexOf el lis = 
   let rec index_rec i = function
-    | [] -> failwith "Element not found in the list"
+    | [] -> failwith "canonicalAlphaRename: Element not found in the list"
     | hd::tl -> if equal hd el then i else index_rec (i+1) tl
   in index_rec 0 lis
 
@@ -132,7 +132,7 @@ let rec canRen expr = match expr with
 | Let(y, ty, expr1, expr2) -> Let(y, ty, canRen expr1, canRen expr2) 
 | _                        -> expr
 in canRen expr
-else failwith ("variable "^name^" is already used as a bound variable, can't rename free vars canonically with "^name)
+else failwith ("canonicalAlphaRename: variable "^name^" is already used as a bound variable, can't rename free vars canonically with "^name)
 
 (* simple typecheker *)
 let rec typeSource = function
@@ -180,8 +180,8 @@ let interpretOp2 op val1 val2= match op with
 
 (* interpreter *)
 let interpret expr context = 
-if not(isWellTyped expr) then failwith "the term is ill-typed";
-if not(contextComplete expr context) then failwith "the context does not capture all free vars";
+if not(isWellTyped expr) then failwith "interpret: the term is ill-typed";
+if not(contextComplete expr context) then failwith "interpret: the context does not capture all free vars";
 let expr2 = closingTerm expr context in 
 let rec interp = function
 | Const a                   -> a
@@ -193,5 +193,5 @@ let rec interp = function
 | Let(x, ty, expr1, expr2)  -> let v = interp expr1 in 
                                let expr3 = subst x ty (Const v) expr2 in
                                interp expr3
-| _                         -> failwith "the expression should not contain this pattern"
+| _                         -> failwith "interpret: the expression should not contain this pattern"
 in interp expr2
