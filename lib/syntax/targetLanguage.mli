@@ -14,7 +14,8 @@ and targetSyn = Var of Vars.var * targetType
             | Fun of ((Vars.var * targetType) list) * targetSyn
             | App of targetSyn * (targetSyn list)
             | Case of targetSyn * Vars.var * targetType * Vars.var * targetType * targetSyn
-            | Tuple of targetSyn tuple     
+            | Tuple of targetSyn tuple
+            | NCase of targetSyn * ((Vars.var * targetType) list) * targetSyn     
 
 type context = (Vars.var * targetType * targetSyn) list
 

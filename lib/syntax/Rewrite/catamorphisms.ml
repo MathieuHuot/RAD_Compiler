@@ -1,3 +1,5 @@
+(* Module for optimisations. Somewhat similar to generalized folds in Haskell *)
+
 module type Catamorphism = sig
   type adt (* a chosen syntax that needs rewriting, preferably given by an algebraic data type *)
   type pattern 
@@ -88,6 +90,14 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
   type adt = targetSyn
   type pattern = int
 
+  let isVar expr = match expr with
+    | Var(_) -> true
+    | _      -> false
+
+  let isConst expr = match expr with
+    | Const(_) -> true
+    | _        -> false
+
   let rule expr i = match i, expr with
     (* Constant propagation *) 
     | 0, Apply2(Plus,Const a,Const b)   -> Const(a+.b)
@@ -148,10 +158,26 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
                                         -> Let(x1,ty1,expr1,Case(expr2,x2,ty2,x3,ty3,expr3))
     | 24, Case(Case(expr1,x1,ty1,x2,ty2,expr2),x3,ty3,x4,ty4,expr3)
                                         -> Case(expr1,x1,ty1,x2,ty2,Case(expr2,x3,ty3,x4,ty4,expr3))
+    | 40, NCase(NCase(expr1,varList1,expr2),varList2,expr3)
+                                        -> NCase(expr1,varList1,NCase(expr2,varList2,expr3))
+    | 41, NCase(Let(x1,ty1,expr1,expr2),varList,expr3)
+                                        -> Let(x1,ty1,expr1,NCase(expr2,varList,expr3))
+    | 42, NCase(Case(expr1,x1,ty1,x2,ty2,expr2),varList,expr3) 
+                                        -> Case(expr1,x1,ty1,x2,ty2,NCase(expr2,varList,expr3))
+    | 43, Case(NCase(expr1,varList,expr2),x1,ty1,x2,ty2,expr3)
+                                        -> NCase(expr1,varList,Case(expr2,x1,ty1,x2,ty2,expr3))
+    | 44, Let(x,ty,Case(expr1,x1,ty1,x2,ty2,expr2),expr3)
+                                        -> Case(expr1,x1,ty1,x2,ty2,Let(x,ty,expr2,expr3))
+    | 45, Let(x,ty,NCase(expr1,varList,expr2),expr3)
+                                        -> NCase(expr1,varList,Let(x,ty,expr2,expr3))
     (* Applies forward substitution: let x=y in e -> e[y/x] where y is a variable *)
     | 25, Let(x,_,Var(y,ty),e)          -> subst x ty (Var(y,ty)) e
-    | 26, Case(Pair(Var(x1,ty1),Var(x2,ty2)), x3, ty3, x4, ty4, expr) 
-                                        -> subst x4 ty4 (Var(x2,ty2)) (subst x3 ty3 (Var(x1,ty1)) expr)
+    | 26, Case(Pair(expr1,expr2), x3, ty3, x4, ty4, expr) 
+      when isVar expr1 || isVar expr2 || isConst expr1 || isConst expr2                                   
+                                        -> subst x4 ty4 expr1 (subst x3 ty3 expr2 expr)
+    | 46, NCase(Tuple(exprList),varList,expr)
+      when List.for_all (fun x -> isVar x || isConst x) exprList
+                                        -> simSubst (List.map (fun ((x,y),z) -> x,y,z) (List.combine varList exprList)) expr 
     (* let x=e1 in let y=e1 in e2 -> let x=e0 in let y=x in e2 *)
     | 27, Let(x1,ty1,e0,Let(x2,ty2,e1,e2)) 
       when (equalTerms e0 e1)           -> Let(x1,ty1,e0,Let(x2,ty2,Var(x1,ty1),e2))
@@ -188,6 +214,7 @@ module TargetCata : Catamorphism with type adt = Syntax.TargetLanguage.targetSyn
       | App(expr, exprList)                  -> App(catamorphism lis expr, List.map (catamorphism lis) exprList)
       | Fun(varList, expr)                   -> Fun(varList, catamorphism lis expr)
       | Case(expr1, x1, ty1, x2, ty2, expr2) -> Case(catamorphism lis expr1,x1,ty1,x2,ty2,catamorphism lis expr2)
+      | NCase(expr1, varList, expr2)         -> NCase(catamorphism lis expr1, varList, catamorphism lis expr2) 
     end in 
     (* try rewrite i on expr *)
     (* for all i in lis *)

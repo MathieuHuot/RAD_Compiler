@@ -100,6 +100,7 @@ let rec isInWeakAnf expr = match expr with
   | Tuple(exprList)      -> List.for_all isInWeakAnf exprList
   | Fun(_,expr)          -> isInWeakAnf expr
   | App(expr,exprList)   -> isInWeakAnf expr && List.for_all isInWeakAnf exprList
+  | NCase(expr1,_,expr2) -> isInWeakAnf expr1 && isInWeakAnf expr2
   | _                    -> true
 
 let rec weakAnf expr = match expr with
@@ -128,6 +129,8 @@ let rec weakAnf expr = match expr with
   | Tuple(exprList)        -> Tuple(List.map weakAnf exprList)
   | Fun(varList,expr)      -> Fun(varList,weakAnf expr)
   | App(expr,exprList)     -> App(weakAnf expr, List.map weakAnf exprList)
+  | NCase(expr1,varList,expr2)
+                           ->  NCase(weakAnf expr1,varList,weakAnf expr2)
 
 (* rule 22,23,24 correspond to the rules for let commutativity *)
 let letCommutativity expr = Rewrite.Catamorphisms.TargetCata.catamorphism [22;23;24] expr

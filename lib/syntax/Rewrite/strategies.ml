@@ -1,5 +1,6 @@
-(* Restricted form of monads where 'a='b *)
+(* Module for optimisations strategies. Allows to create and combine strategies. Currenlty NOT used *)
 
+(* Restricted form of monads where 'a='b *)
 module type MONAD = sig
   type 'a mon
   val ret: 'a -> 'a mon

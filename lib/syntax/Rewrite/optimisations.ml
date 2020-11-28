@@ -31,6 +31,10 @@ let rec allVars = function
                                                 (List.filter (fun x -> not(List.mem x currentList)) newList)) 
       [] 
       lis
+| NCase(expr1,varList,expr2)  -> 
+  let expr1Fv = allVars expr1 in 
+  let expr2Fv = List.filter (fun x -> not(List.mem x expr1Fv)) (allVars (Fun(varList,expr2))) in
+  List.append expr1Fv expr2Fv
 | _                           -> [] 
 
 (* collects the list of unused bound variables *)
@@ -48,7 +52,10 @@ let listUnusedVars expr =
     | Case(expr1, x1, ty1, x2, ty2, expr2) -> (if (List.mem x1 (freeVars expr2)) then [] else [(x1,ty1)])
                                               @ (if (List.mem x2 (freeVars expr2)) then [] else [(x2,ty2)]) 
                                               @ aux expr1 
-                                              @ aux expr2 
+                                              @ aux expr2
+    | NCase(expr1,varList, expr2)          -> aux expr1
+                                              @(let fv = freeVars expr2 in List.filter (fun (y,_) -> List.mem y fv) varList)
+                                              @aux expr2
   in aux expr
 
 (* dead code elimination of a list of unused variables *)
@@ -63,6 +70,13 @@ let rec aux expr =
   | Case(_, x1, ty1, x2, ty2, expr2) 
     when (List.mem (x1,ty1) unusedVars) 
     && (List.mem (x2,ty2) unusedVars)    -> aux expr2
+  | NCase(_,varList, expr)
+    when List.for_all (fun y -> List.mem y unusedVars) varList
+                                         -> expr
+  | NCase(Tuple(exprList),varList,expr)  -> let list = List.combine exprList varList in (* remove each expr bound to an unused var *)
+                                            let filteredList = List.filter (fun (_,y) -> List.mem y unusedVars) list in
+                                            let filtExpr, filtVars = List.split filteredList in
+                                            NCase(Tuple(filtExpr), filtVars, expr)
   | Var _                                -> expr
   | Const _                              -> expr
   | Apply1(op, expr)                     -> Apply1(op,aux expr)
@@ -73,6 +87,7 @@ let rec aux expr =
   | App(expr, exprList)                  -> App(aux expr, List.map (aux) exprList)
   | Fun(varList, expr)                   -> Fun(varList, aux expr)
   | Case(expr1, x1, ty1, x2, ty2, expr2) -> Case(aux expr1,x1,ty1,x2,ty2,aux expr2)
+  | NCase(expr1, varList, expr2)         -> NCase(aux expr1, varList, aux expr2)  
 in aux expr
 end
 

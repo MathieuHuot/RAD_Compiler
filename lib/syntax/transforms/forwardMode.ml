@@ -9,14 +9,14 @@ let rec forwardADType (ty : sourceType) : targetType = match ty with
 
 (* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
-let dvar var : var * var = let str,i = var in (str,i),("d"^str,i) 
+let dvar var : var * var = let str, i = var in var, ("d"^str,i) 
 
 (* Simple forward AD transformation. does not assume any ANF *)
 let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
 | Const c               ->  Pair(Const c, Const 0.)
-| Var(x,ty)             ->  let x,y = dvar x in
+| Var(x,ty)             ->  let x,dx = dvar x in
                             Pair( Var(x,sourceToTargetType ty), 
-                                  Var(y,sourceToTargetType ty))
+                                  Var(dx,sourceToTargetType ty))
 | Apply1(op,expr)       ->  let yPrimal = Syntax.Vars.fresh() in
                             let tyPrimal = Real in
                             let yTangent = Syntax.Vars.fresh() in
@@ -99,6 +99,7 @@ let grad context expr =
   let dexpr = forwardAD expr in
   List.map 
       (fun (x,_,_) -> List.fold_left 
-      (fun acc (y,ty2,expr2) -> let y,dy = dvar y in
-      (if (equal x y) then subst dy ty2 (Const(1.)) else subst dy ty2 (Const(0.))) (subst y ty2 expr2 acc) ) dexpr context) 
-      context
+      (fun acc (y,ty2,expr2) -> let y, dy = dvar y in
+      let f z = if (equal x y) then subst dy ty2 (Const(1.)) z else subst dy ty2 (Const(0.)) z in
+      f (subst y ty2 expr2 acc)) dexpr context) 
+      context 

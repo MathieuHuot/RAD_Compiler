@@ -7,9 +7,10 @@ open Transforms.ReverseMode
 open Rewrite.Catamorphisms
 open Transforms.ForwardMode
 open Rewrite.Optimisations
+open Transforms.JetAD.SecondOrderForward
 
 (* Helpers *)
-let rec unfold_right f init =
+let rec unfold_right f init = 
   match f init with
   | None -> []
   | Some (x, next) -> x :: unfold_right f next
@@ -18,7 +19,7 @@ let range n =
   let irange x = if x > n then None else Some (x, x + 1) in
   unfold_right irange 0
 
-let nb_opti = 36
+let nb_opti = 45
 let nb_opti_iterations = 300 
 
 let genFresh = let n = ref 0 in fun () ->  n := !n+1; "z", !n
@@ -294,4 +295,20 @@ Lwt_io.print "\n";;
 Lwt_io.print "After dead-code elim:\n";;
 let g10 = Opti.deadVarsElim g9;;
 TargetPrinter.prettyPrinter(g10);;
+Lwt_io.print "\n\n";;
+
+
+let var = "x",1
+let var2 = "z",1
+let f7 : sourceSyn = Apply1(Sin, Var(var,Real));;
+let f9 = Tuple(hessian [(var,Real,Var(var2,Real))] f7);;
+let f10 = TargetCata.iterate nb_opti_iterations (range nb_opti) f9;;
+Lwt_io.print "Term:\n";;
+SourcePrinter.prettyPrinter(f7);;
+Lwt_io.print "Forward derivative of term:\n";;
+TargetPrinter.prettyPrinter(f8);;
+Lwt_io.print "Gradient of term:\n";;
+TargetPrinter.prettyPrinter(f9);;
+Lwt_io.print "Reduced derivative of term:\n";;
+TargetPrinter.prettyPrinter(f10);;
 Lwt_io.print "\n\n";;

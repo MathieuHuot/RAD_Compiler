@@ -12,4 +12,4 @@ let fresh () : var =
     assert (succ <> 0 ); (* check overflow*)
     "y", n
 
-let equal = (==)
+let equal var1 var2 = String.equal (fst var1) (fst var2) && snd var1 == snd var2

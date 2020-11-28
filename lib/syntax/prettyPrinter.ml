@@ -175,6 +175,13 @@ let rec prettyP = function
 | Tuple(exprList)               ->  if exprList==[] then  leftcurlbra^rightcurlbra else
                                     leftcurlbra
                                     ^removeLast (List.fold_left (fun acc expr -> acc^prettyP expr^comma2) "" exprList)
-                                    ^rightcurlbra 
+                                    ^rightcurlbra
+| NCase(expr1,varList,expr2)    ->  klet
+                                    ^(if varList==[] then "" else removeLast (List.fold_left (fun acc (x,ty) -> acc^(printVar (Var(x,ty))^comma2)) "" varList))
+                                    ^kequal
+                                    ^prettyP expr1
+                                    ^kin
+                                    ^"\n"
+                                    ^(prettyP expr2)
 in Lwt_io.print ((prettyP expr)^"\n")
 end
