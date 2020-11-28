@@ -1,6 +1,8 @@
 (* Prototype for Higher-Order Derivatives *)
 
-(* To compute v^T H u *)
+(* This method computes (1,2) velocities. *)
+(* A better method using (2,2) velocities will be implemented later *)
+(* See the paper A Geometric Theory of Higher-Order Automatic Differentiation for more information *)
 module SecondOrderForward = struct
 
 open Syntax.SourceLanguage
@@ -85,7 +87,8 @@ let rec forward2AD (expr : sourceSyn) : targetSyn = match expr with
                             NCase(expr1D,[(y,ty);(dy,ty);(d2y,ty)],expr2D)
 
 
-let hessian context expr = 
+(* Compute the list d2 f/dx2 for all variables x from the context *)                           
+let secondPartial context expr = 
   let dexpr = forward2AD expr in
   List.map 
       (fun (x,_,_) -> List.fold_left 

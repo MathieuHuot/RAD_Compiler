@@ -301,7 +301,7 @@ Lwt_io.print "\n\n";;
 let var = "x",1
 let var2 = "z",1
 let f7 : sourceSyn = Apply1(Sin, Var(var,Real));;
-let f9 = Tuple(hessian [(var,Real,Var(var2,Real))] f7);;
+let f9 = Tuple(secondPartial [(var,Real,Var(var2,Real))] f7);;
 let f10 = TargetCata.iterate nb_opti_iterations (range nb_opti) f9;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(f7);;
