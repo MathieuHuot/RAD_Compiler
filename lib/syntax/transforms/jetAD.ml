@@ -86,7 +86,6 @@ let rec forward2AD (expr : sourceSyn) : targetSyn = match expr with
                             let ty = sourceToTargetType ty in
                             NCase(expr1D,[(y,ty);(dy,ty);(d2y,ty)],expr2D)
 
-
 (* Compute the list d2 f/dx2 for all variables x from the context *)                           
 let secondPartial context expr = 
   let dexpr = forward2AD expr in

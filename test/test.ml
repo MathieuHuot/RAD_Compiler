@@ -4,7 +4,6 @@ open Syntax.TargetLanguage
 open Syntax.PrettyPrinter
 open Transforms.Anf
 open Transforms.ReverseMode
-open Rewrite.Catamorphisms
 open Transforms.ForwardMode
 open Rewrite.Optimisations
 open Transforms.JetAD.SecondOrderForward
@@ -18,9 +17,6 @@ let rec unfold_right f init =
 let range n =
   let irange x = if x > n then None else Some (x, x + 1) in
   unfold_right irange 0
-
-let nb_opti = 45
-let nb_opti_iterations = 300 
 
 let genFresh = let n = ref 0 in fun () ->  n := !n+1; "z", !n
 let rec genContext size = if size==0 then [] else genFresh()::genContext (size-1)
@@ -87,7 +83,7 @@ OUnit2.assert_equal (typeTarget f9) None;;
 
 let f7 : sourceSyn = Apply1(Sin, Var(Syntax.Vars.fresh(),Real));;
 let f8 = forwardAD f7;;
-let f9 = TargetCata.iterate nb_opti_iterations (range nb_opti) f8;;
+let f9 = fullOpti f8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(f7);;
 Lwt_io.print "Forward derivative of term:\n";;
@@ -99,7 +95,7 @@ Lwt_io.print "\n\n";;
 let f6 = Syntax.Generator.sourceSynGen 5 [];;
 let f7 : sourceSyn = SourceAnf.anf(f6);;
 let f8 = forwardAD f7;;
-let f9 = TargetCata.iterate nb_opti_iterations (range nb_opti) f8;;
+let f9 = fullOpti f8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(f6);;
 Lwt_io.print "\n";;
@@ -124,8 +120,8 @@ let f11 : sourceSyn = Apply1(Exp, var11);;
 let cst1 : targetSyn list = [Const(0.);Const(1.)]
 let f12 = semiNaiveReverseAD [(x11,Real)] f11;;
 let f13 = match f12 with | Pair(_,x)-> App(x,cst1) | _ -> failwith "f12 wrong format" ;;
-let f14 = TargetCata.catamorphism (range nb_opti) f13;;
-let f15 = TargetCata.iterate 10 (range nb_opti) f13;;
+let f14 = fullOpti f13;;
+
 Lwt_io.print "variable:\n";;
 SourcePrinter.prettyPrinter(var11);;
 Lwt_io.print "term:\n";;
@@ -134,10 +130,8 @@ Lwt_io.print "reverse derivative macro of term:\n";;
 TargetPrinter.prettyPrinter(f12);;
 Lwt_io.print "derivative of term:\n";;
 TargetPrinter.prettyPrinter(f13);;
-Lwt_io.print "partially reduced term:\n";;
-TargetPrinter.prettyPrinter(f14);;
 Lwt_io.print "fully reduced term:\n";;
-TargetPrinter.prettyPrinter(f15);;
+TargetPrinter.prettyPrinter(f14);;
 Lwt_io.print "\n\n";;
 
 let x12 = ("x",2);;
@@ -147,7 +141,7 @@ let f22 = SourceAnf.anf f21;;
 let f23 = semiNaiveReverseAD [(x11,Real);(x12,Real)] f21;;
 let cst2 : targetSyn list = [Const(0.);Const(0.);Const(1.)]
 let f24 = match f23 with | Pair(_,x)-> App(x,cst2) | _ -> failwith "f12 wrong format" ;;
-let f25 = TargetCata.iterate nb_opti_iterations (range nb_opti) f24;;
+let f25 = fullOpti f24;;
 
 Lwt_io.print "term:\n";;
 SourcePrinter.prettyPrinter(f21);;
@@ -160,29 +154,11 @@ TargetPrinter.prettyPrinter(f24);;
 Lwt_io.print "fully reduced term:\n";;
 TargetPrinter.prettyPrinter(f25);;
 Lwt_io.print "\n\n";;
-
-Lwt_io.print "term:\n";;
-let f1 : sourceSyn = Let(x11,Real,Const(3.),Var(x11,Real));;
-SourcePrinter.prettyPrinter(f1);;
-Lwt_io.print "reverse derivative macro of term:\n";;
-let f2 = semiNaiveReverseAD [(x12,Real)] f1;;
-TargetPrinter.prettyPrinter(f2);;
-Lwt_io.print "fully reduced reverse derivative macro of term:\n";;
-let f3 = TargetCata.iterate nb_opti_iterations (range nb_opti) f2;;
-TargetPrinter.prettyPrinter(f3);;
-Lwt_io.print "derivative of term:\n";;
-let cst2 : targetSyn list = [Const(0.);Const(0.);Const(1.)];;
-let f4 = match f3 with | Pair(_,x)-> App(x,cst2) | _ -> failwith "f3 wrong format" ;;
-TargetPrinter.prettyPrinter(f4);; 
-Lwt_io.print "fully reduced derivative of term:\n";;
-let f5 = TargetCata.iterate nb_opti_iterations (range nb_opti) f4;;
-TargetPrinter.prettyPrinter(f5);;
-Lwt_io.print "\n\n";;
-
+ 
 let g6 = Syntax.Generator.sourceSynGen 10 [];;  
 let g7 : sourceSyn = SourceAnf.anf(g6);;
 let g8 = Transforms.ReverseMode.grad [] g7;;
-let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
+let g9 = fullOpti g8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(g6);;
 Lwt_io.print "\n";; 
@@ -194,15 +170,12 @@ TargetPrinter.prettyPrinter(g8);;
 Lwt_io.print "\n";;
 Lwt_io.print "Reduced reverse derivative macro of term:\n";;
 TargetPrinter.prettyPrinter(g9);;
-Lwt_io.print "After dead-code elim:\n";;
-let g10 = Opti.deadVarsElim g9;;
-TargetPrinter.prettyPrinter(g10);;
 Lwt_io.print "\n\n";;
 
 let g6 : sourceSyn = Apply1(Minus,Apply1(Cos,Const 3.));;
 let g7 : sourceSyn = SourceAnf.anf(g6);; 
 let g8 = semiNaiveReverseAD [(x12,Real)] g7;;
-let g9 = TargetCata.iterate 30 (range nb_opti) g8;;
+let g9 = fullOpti g8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(g6);;
 Lwt_io.print "\n";;
@@ -220,7 +193,7 @@ Lwt_io.print "\n\n";;
 let g6 : sourceSyn  = Apply2(Times, Apply2(Plus,Var(x1,Real),Var(x2,Real)),Apply2(Plus,Var(x1,Real),Var(x2,Real)));;
 let g7 = SourceAnf.anf(g6);;
 let g8 =  Transforms.ReverseMode.grad [(x1,Real);(x2,Real)] g7;;
-let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
+let g9 = fullOpti g8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(g6);;
 Lwt_io.print "\n";; 
@@ -232,16 +205,12 @@ TargetPrinter.prettyPrinter(g8);;
 Lwt_io.print "\n";;
 Lwt_io.print "Reduced reverse derivative macro of term:\n";;
 TargetPrinter.prettyPrinter(g9);;
-Lwt_io.print "\n";;
-Lwt_io.print "After dead-code elim:\n";;
-let g10 = Opti.deadVarsElim g9;;
-TargetPrinter.prettyPrinter(g10);;
 Lwt_io.print "\n\n";; 
 
 let g6 : sourceSyn  = Let(("z",1),Real,Apply2(Times, Var(x2,Real),Apply2(Plus,Var(x1,Real),Var(x2,Real))),Var(("z",1),Real));;
 let g7 = SourceAnf.weakAnf(g6);;
 let g8 = Transforms.ReverseMode.grad [(x1,Real);(x2,Real)] g7;;
-let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
+let g9 = fullOpti g8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(g6);;
 Lwt_io.print "\n";; 
@@ -253,16 +222,12 @@ TargetPrinter.prettyPrinter(g8);;
 Lwt_io.print "\n";;
 Lwt_io.print "Reduced reverse derivative macro of term:\n";;
 TargetPrinter.prettyPrinter(g9);;
-Lwt_io.print "\n";;
-Lwt_io.print "After dead-code elim:\n";;
-let g10 = Opti.deadVarsElim g9;;
-TargetPrinter.prettyPrinter(g10);;
 Lwt_io.print "\n\n";; 
 
 let g6 : sourceSyn  = Let(("z",1),Real,Var(x1,Real),Var(("z",1),Real));;
 let g7 = SourceAnf.weakAnf(g6);;
 let g8 = Transforms.ReverseMode.grad [(x1,Real)] g7;;
-let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
+let g9 = fullOpti g8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(g6);;
 Lwt_io.print "\n";; 
@@ -279,7 +244,7 @@ Lwt_io.print "\n";;
 let g6 : sourceSyn  = Let(("z",1),Real,Let(("z",2),Real,Var(x1,Real),Var(("z",2),Real)),Var(("z",1),Real));;
 let g7 = SourceAnf.weakAnf(g6);;
 let g8 = Transforms.ReverseMode.grad [(x1,Real)] g7;;
-let g9 = TargetCata.iterate nb_opti_iterations (range nb_opti) g8;;
+let g9 = fullOpti g8;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(g6);;
 Lwt_io.print "\n";; 
@@ -291,10 +256,6 @@ TargetPrinter.prettyPrinter(g8);;
 Lwt_io.print "\n";;
 Lwt_io.print "Reduced reverse derivative macro of term:\n";;
 TargetPrinter.prettyPrinter(g9);;
-Lwt_io.print "\n";;
-Lwt_io.print "After dead-code elim:\n";;
-let g10 = Opti.deadVarsElim g9;;
-TargetPrinter.prettyPrinter(g10);;
 Lwt_io.print "\n\n";;
 
 
@@ -302,7 +263,7 @@ let var = "x",1
 let var2 = "z",1
 let f7 : sourceSyn = Apply1(Sin, Var(var,Real));;
 let f9 = Tuple(secondPartial [(var,Real,Var(var2,Real))] f7);;
-let f10 = TargetCata.iterate nb_opti_iterations (range nb_opti) f9;;
+let f10 = fullOpti f9;;
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(f7);;
 Lwt_io.print "Forward derivative of term:\n";;

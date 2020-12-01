@@ -1,9 +1,9 @@
 module type Anf = sig
 type ast
-val weakAnf: ast -> ast
-val anf: ast -> ast
 val isInWeakAnf: ast -> bool
 val isInAnf: ast -> bool
+val weakAnf: ast -> ast
+val anf: ast -> ast
 end
 
 module SourceAnf: Anf with type ast = Syntax.SourceLanguage.sourceSyn = struct
@@ -69,8 +69,6 @@ let anf expr =
   letNormalisation expr1
 end
 
-
-
 module TargetAnf: Anf with type ast = Syntax.TargetLanguage.targetSyn = struct
   open Syntax.TargetLanguage
   type ast = targetSyn
@@ -132,15 +130,15 @@ let rec weakAnf expr = match expr with
   | NCase(expr1,varList,expr2)
                            ->  NCase(weakAnf expr1,varList,weakAnf expr2)
 
-(* rule 22,23,24 correspond to the rules for let commutativity *)
-let letCommutativity expr = Rewrite.Catamorphisms.TargetCata.catamorphism [22;23;24] expr
+open Rewrite.Optimisations
+open Rewrite.Strategies
 
-let rec letNormalisation expr = 
-  let expr2 = letCommutativity expr in 
-  if equalTerms expr expr2 then expr else
-  letNormalisation expr2
+module LC = LetCommutativity(TargetTr)
+let letCommutativity expr = LC.run expr
+
+module CTS = CompleteTraversalStrat(EvStrat)
 
 let anf expr = 
   let expr1 = weakAnf expr in
-  letNormalisation expr1
+  Strategy.run (CTS.tryAll letCommutativity expr1)
 end

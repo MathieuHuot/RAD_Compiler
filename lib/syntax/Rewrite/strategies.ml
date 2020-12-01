@@ -24,7 +24,7 @@ module Strategy = struct
   (* Runs a strategy and returns the result if successes *)
   let run (m: 'a mon) : 'a result = match m with 
     | Success(expr) -> expr
-    | Failure(_)    -> failwith "run: strategy failed" 
+    | Failure(_)    -> failwith "run: strategy failed"
 
   (* strategy that always fails *)
   let rec fail : 'a strategy = fun _ -> Failure(fail)
@@ -33,12 +33,16 @@ module Strategy = struct
   let seq : 'a strategy -> 'a strategy -> 'a strategy = 
     fun fs -> fun ss -> fun p -> bind (fs p) ss
 
+  (* convenient infix notation for seq *) 
+  let (>>) fs ss = seq fs ss  
+
   (* applies the second strategy only if the first one failed *)
   let lChoice : 'a strategy -> 'a strategy -> 'a strategy =
     fun fs -> fun ss -> fun p -> match fs p with 
     | Success(p2) -> Success(p2)
     | Failure _   -> ss p
-  (* convenient infix notation for lChoice*) 
+
+  (* convenient infix notation for lChoice *) 
   let (<+) fs ss = lChoice fs ss
 
   (* tries to apply the first strategy and applies the identity if fails *)  
@@ -47,14 +51,25 @@ module Strategy = struct
 
   (* applies a strategy until it is no longer applicable *)  
   let rec repeat : 'a strategy -> 'a strategy = 
-    fun s -> fun p -> p |> tryStrat (seq s (repeat s))
+    fun s -> fun p -> p |> tryStrat(s >> (repeat s))
+
+  (* applies a strategy n times *)    
+  let rec iterate : int -> 'a strategy -> 'a strategy = 
+    fun n -> fun s -> match n with | 0 -> id | n -> s >> iterate (n-1) s 
+
+  (* tries to apply as many strategies as possible in order from a list *) 
+  let rec tryStratList : 'a strategy list -> 'a strategy =
+  fun sList -> match sList with 
+  | []    -> id
+  | s::tl -> tryStrat s >> tryStratList tl  
 end 
 
 module type EvalStrat = sig
   open Strategy
-  val all: 'a strategy -> 'a strategy
-  val one: 'a strategy -> 'a strategy
-  val some: 'a strategy -> 'a strategy
+  type adt
+  val all: adt strategy -> adt strategy
+  val one: adt strategy -> adt strategy
+  val some: adt strategy -> adt strategy
 end
 
 module CompleteTraversalStrat =
@@ -74,7 +89,7 @@ module CompleteTraversalStrat =
       fun p -> p |> seq (s |> allBottomUp |> EvStrat.all) s
 
     let rec tryAll (s : 'a strategy) : 'a strategy = 
-      fun p -> p |> seq (s |> tryAll |> EvStrat.all) (tryStrat s)
+      fun p -> p |> seq (s |> tryStrat |> tryAll |> EvStrat.all) (tryStrat s)
 
     let normalize (s : 'a strategy) : 'a strategy =
       fun p -> p |> repeat (topDown s)

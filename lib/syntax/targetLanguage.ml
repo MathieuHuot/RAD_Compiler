@@ -353,7 +353,9 @@ let rec interp expr = match expr with
     | Pair(v1,v2) -> interp (subst y2 ty2 v2 (subst y1 ty1 v1 expr2))
     | _           -> failwith "interpret: expression should reduce to a pair" end
 | App(expr1,exprList)             ->  begin match (interp expr1) with
-    | Fun(varList,expr1)  ->  let vList = List.map interp exprList in 
+    | Fun(varList,expr1)  ->  let vList = List.map interp exprList in
+                              if not(List.length varList == List.length vList) 
+                              then failwith "interp: Function applied to wrong number of arguments"; 
                               interp (List.fold_left2 
                                           (fun expr (x,ty) v -> subst x ty v expr) 
                                           expr1 
@@ -362,7 +364,12 @@ let rec interp expr = match expr with
     | _                   ->  failwith "interpret: expression should reduce to a function" end
 | Tuple(exprList)                 -> Tuple(List.map interp exprList)
 | NCase(expr1,varList,expr2)      -> begin match (interp expr1) with
-| Tuple(exprList) -> interp (List.fold_left2 (fun expr (x,ty) v -> subst x ty v expr) expr2 varList exprList)
-| _               -> failwith "interpret: expression should reduce to a tuple" end
+    | Tuple(exprList) -> if not(List.length varList == List.length exprList) 
+                         then failwith ("interp: NCase argument should be a tuple of size "
+                                        ^(string_of_int (List.length varList))
+                                        ^"but is of size"
+                                        ^(string_of_int (List.length exprList))); 
+                         interp (List.fold_left2 (fun expr (x,ty) v -> subst x ty v expr) expr2 varList exprList)
+    | _               -> failwith "interpret: expression should reduce to a tuple" end
 | _                               ->  expr
 in interp expr2
