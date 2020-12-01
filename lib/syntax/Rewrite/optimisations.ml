@@ -78,9 +78,9 @@
                                               (* Else success tuple with the successes replacing the original expressions *)
                                               Success(Tuple(
                                                 List.rev (List.fold_left2 
-                                              (fun acc expr s -> match s with | Success(s) -> s::acc | Failure _ -> expr::acc)
-                                              [] exprList sList
-                                              )))
+                                                (fun acc expr s -> match s with | Success(s) -> s::acc | Failure _ -> expr::acc)
+                                                [] exprList sList
+                                                )))
     | App(expr, exprList)                  -> let sList = List.map strat (expr::exprList) in
                                               (* If no success is found, failure *)
                                               if not(List.exists (fun x -> match x with Success _ -> true | _ -> false) sList)
@@ -374,4 +374,7 @@ module CP = ConstantPropagation(TargetTr)
 open Strategies.Strategy
 
 let fullOpti (expr: Syntax.TargetLanguage.targetSyn) = 
-  run (iterate 200 (tryStratList [DVE.run; LR.run; LS.run; FS.run; LC.run; RF.run; TS.run; ZS.run; SAS.run; CP.run]) expr) 
+  run (
+    let num_iter = 200 in 
+    (iterate num_iter (tryStratList [LR.run; FS.run])   
+    >> iterate num_iter (tryStratList [LS.run; LC.run; RF.run; TS.run; ZS.run; SAS.run; CP.run; DVE.run])) expr) 

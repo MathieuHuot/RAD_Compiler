@@ -50,9 +50,15 @@ let rec equalTypes ty1 ty2 = match ty1,ty2 with
   | Real,Real                             -> true
   | Prod(ty11,ty12),Prod(ty21,ty22)       -> equalTypes ty11 ty21 
                                              && equalTypes ty12 ty22
-  | Arrow(tyList1,ty1),Arrow(tyList2,ty2) -> equalTypes ty1 ty2 
+  | Arrow(tyList1,ty1),Arrow(tyList2,ty2) -> if List.length tyList1 <> List.length tyList2 
+                                             then false
+                                             else
+                                             equalTypes ty1 ty2 
                                              && List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2
-  | NProd(tyList1), NProd(tyList2)        -> List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2 
+  | NProd(tyList1), NProd(tyList2)        -> if List.length tyList1 <> List.length tyList2 
+                                             then false
+                                             else
+                                             List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2 
   | _                                     -> false
   
 (* substitute variable x of type xTy by expr1 in expr2 *)
@@ -127,16 +133,26 @@ let rec eqT expr1 expr2 list = match expr1, expr2 with
                                                          &&  List.for_all2 (fun x y -> eqT x y list) exprList1 exprList2
 | Pair(expr11,expr12), Pair(expr21,expr22)            -> eqT expr11 expr21 list
                                                          && eqT expr12 expr22 list
-| Fun(varList1,expr1),Fun(varList2,expr2)             -> eqT expr1 expr2 (List.append (List.combine varList1 varList2) list) 
+| Fun(varList1,expr1),Fun(varList2,expr2)             -> if List.length varList1 <> List.length varList2 
+                                                         then false 
+                                                         else
+                                                         eqT expr1 expr2 (List.append (List.combine varList1 varList2) list) 
                                                          && List.for_all2 (fun (_,ty1) (_,ty2) -> equalTypes ty1 ty2) varList1 varList2
 | Case(expr11,x11,ty11,x12,ty12,expr12),
   Case(expr21,x21,ty21,x22,ty22,expr22)               -> eqT expr11 expr21 list
                                                          && eqT expr12 expr22 (((x11,ty11),(x21,ty21))::((x12,ty12),(x22,ty22))::list)
                                                          && equalTypes ty11 ty21  
                                                          && equalTypes ty12 ty22
-| Tuple(exprList1), Tuple(exprList2)                  -> List.for_all2 (fun expr1 expr2 -> eqT expr1 expr2 list) exprList1 exprList2
+| Tuple(exprList1), Tuple(exprList2)                  -> if List.length exprList1 <> List.length exprList2 
+                                                         then false 
+                                                         else
+                                                         List.for_all2 (fun expr1 expr2 -> eqT expr1 expr2 list) exprList1 exprList2
 | NCase(expr11,varList1,expr12), NCase(expr21,varList2,expr22)
-                                                      -> eqT expr11 expr21 list && eqT expr12 expr22 (List.append (List.combine varList1 varList2) list)                                                   
+                                                      -> if List.length varList1 <> List.length varList2 
+                                                         then false 
+                                                         else
+                                                         eqT expr11 expr21 list 
+                                                         && eqT expr12 expr22 (List.append (List.combine varList1 varList2) list)                                                   
 | _                                                   -> false
 in eqT expr1 expr2 []
 
