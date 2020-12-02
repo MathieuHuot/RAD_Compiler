@@ -58,9 +58,7 @@ let rec forward2AD (expr : sourceSyn) : targetSyn = match expr with
                             let ty = Real in
                             let exprD = forward2AD expr in
                             let e = Apply1(op,Var(y,ty)) in
-                            let de = Apply2(Times,
-                                                  dop (Var(y,ty)) op,
-                                                  Var(dy,ty)) in 
+                            let de = Apply2(Times, dop (Var(y,ty)) op, Var(dy,ty)) in 
                             let d2e = dop2 (Var(y,ty)) (Var(dy,ty)) (Var(d2y,ty)) op in
                             NCase(exprD,[(y,ty);(dy,ty);(d2y,ty)],Tuple([e;de;d2e]))
 | Apply2(op,expr1,expr2)->  let x,dx,d2x = dvar2 (Syntax.Vars.fresh()) in
@@ -70,12 +68,8 @@ let rec forward2AD (expr : sourceSyn) : targetSyn = match expr with
                             let expr2D = forward2AD expr2 in
                             let e = Apply2(op,Var(x,ty),Var(y,ty)) in
                             let de = Apply2(Plus,
-                                            Apply2(Times,
-                                                d1op (Var(x,ty)) (Var(y,ty)) op,
-                                                (Var(dx,ty))),
-                                            Apply2(Times,
-                                                d2op (Var(x,ty)) (Var(y,ty)) op,
-                                                (Var(dy,ty)))) in
+                                            Apply2(Times, d1op (Var(x,ty)) (Var(y,ty)) op, (Var(dx,ty))),
+                                            Apply2(Times, d2op (Var(x,ty)) (Var(y,ty)) op, (Var(dy,ty)))) in
                             let d2e = d2op2 (Var(x,ty)) (Var(dx,ty)) (Var(d2x,ty)) (Var(y,ty)) (Var(dy,ty)) (Var(d2y,ty)) op in
                             NCase(expr1D,[(x,ty);(dx,ty);(d2x,ty)],
                             NCase(expr2D,[(y,ty);(dy,ty);(d2y,ty)],Tuple([e;de;d2e])))

@@ -65,13 +65,13 @@ let printConst (expr:sourceSyn) = match expr with
 
 let prettyPrinter (expr:sourceSyn) = 
 let rec prettyP (expr:terms) = match expr with
-| Var(x,ty)                 ->  printVar (Var(x,ty))
+| Var(x, ty)                ->  printVar (Var(x, ty))
 | Const c                   ->  printConst (Const c)
-| Apply1(op,expr)           ->  printOp1 op
+| Apply1(op, expr)          ->  printOp1 op
                                 ^"("
                                 ^(prettyP expr)
                                 ^")"  
-| Apply2(op,expr1,expr2)    ->  if (isOp2Infix op) 
+| Apply2(op, expr1, expr2)  ->  if (isOp2Infix op) 
                                 then    "("
                                         ^(prettyP expr1)
                                         ^(printOp2 op)
@@ -82,8 +82,8 @@ let rec prettyP (expr:terms) = match expr with
                                         ^", "
                                         ^(prettyP expr2)
                                         ^")"
-| Let(x,ty,expr1,expr2)     ->  klet
-                                ^(printVar (Var(x,ty)))
+| Let(x, ty, expr1, expr2)  ->  klet
+                                ^(printVar (Var(x, ty)))
                                 ^kequal
                                 ^(prettyP expr1)
                                 ^kin
@@ -98,8 +98,8 @@ type types = targetType
 type terms = targetSyn
 
 let printVar = function
-| Var((str,n),_) -> str^(string_of_int n)
-| _              -> failwith "printVar: this is not a variable"
+| Var((str, n),_) -> str^(string_of_int n)
+| _               -> failwith "printVar: this is not a variable"
 
 let printConst = function
 | Const c -> string_of_float c
@@ -111,77 +111,73 @@ let removeLast string =
 
 let prettyPrinter (expr: targetSyn) = 
 let rec prettyP = function
-| Var(x,ty)                     ->  printVar (Var(x,ty))
-| Const c                       ->  printConst (Const c)
-| Apply1(op,expr)               ->  printOp1 op
-                                    ^leftpar^(prettyP expr)
-                                    ^rightpar 
-| Apply2(op,expr1,expr2)        ->  if (isOp2Infix op) 
-                                    then    leftpar
-                                            ^(prettyP expr1)
-                                            ^(printOp2 op)
-                                            ^(prettyP expr2)
-                                            ^rightpar
-                                    else    (printOp2 op)
-                                            ^leftpar
-                                            ^(prettyP expr1)
-                                            ^comma
-                                            ^(prettyP expr2)
-                                            ^rightpar
-| Let(x,ty,expr1,expr2)         ->  klet
-                                    ^(printVar (Var(x,ty)))
-                                    ^kequal
-                                    ^(prettyP expr1)
-                                    ^kin
-                                    ^"\n"
-                                    ^(prettyP expr2)
-| Pair(expr1,expr2)             ->  bra
-                                    ^(prettyP expr1)
-                                    ^comma
-                                    ^(prettyP expr2)
-                                    ^ket
-| Fun(varList,expr)             ->  klambda
-                                    ^(if varList==[] then "" else removeLast (List.fold_left (fun acc (x,ty) -> acc^(printVar (Var(x,ty))^comma2)) "" varList))
-                                    ^kdot
-                                    ^(prettyP expr)
-| App(expr1,exprList)           ->  leftpar
-                                    ^(prettyP expr1)
-                                    ^rightpar
-                                    ^(if exprList==[] then  leftcurlbra^rightcurlbra else
-                                    leftbra
-                                    ^removeLast (removeLast(List.fold_left (fun acc expr -> acc^prettyP expr^comma) "" exprList))
-                                    ^rightbra)
-| Case(expr1,x,ty1,y,ty2,expr2) ->  
-                                      (* kcase
-                                    ^(prettyP expr1)
-                                    ^kof
-                                    ^bra
-                                    ^(printVar (Var (x,ty1)))
-                                    ^comma
-                                    ^(printVar (Var(y,ty2)))
-                                    ^ket
-                                    ^arrow3
-                                    ^"\n"
-                                    ^(prettyP expr2) *)
-                                    klet
-                                    ^(printVar (Var(x,ty1)))
-                                    ^comma
-                                    ^(printVar (Var(y,ty2)))
-                                    ^kequal
-                                    ^prettyP expr1
-                                    ^kin
-                                    ^"\n"
-                                    ^(prettyP expr2)
-| Tuple(exprList)               ->  if exprList==[] then  leftcurlbra^rightcurlbra else
-                                    leftcurlbra
-                                    ^removeLast (List.fold_left (fun acc expr -> acc^prettyP expr^comma2) "" exprList)
-                                    ^rightcurlbra
-| NCase(expr1,varList,expr2)    ->  klet
-                                    ^(if varList==[] then "" else removeLast (List.fold_left (fun acc (x,ty) -> acc^(printVar (Var(x,ty))^comma2)) "" varList))
-                                    ^kequal
-                                    ^prettyP expr1
-                                    ^kin
-                                    ^"\n"
-                                    ^(prettyP expr2)
+| Var(x, ty)                         ->  printVar (Var(x, ty))
+| Const c                            ->  printConst (Const c)
+| Apply1(op, expr)                   ->  
+  printOp1 op
+  ^leftpar^(prettyP expr)
+  ^rightpar 
+| Apply2(op, expr1, expr2)           ->  
+  if (isOp2Infix op) 
+  then  leftpar
+        ^(printOp2 op)
+        ^(prettyP expr2)
+        ^rightpar
+  else  (printOp2 op)
+        ^leftpar
+        ^(prettyP expr1)
+        ^comma
+        ^(prettyP expr2)
+        ^rightpar
+| Let(x, ty, expr1, expr2)           ->  
+  klet
+  ^(printVar (Var(x, ty)))
+  ^kequal
+  ^(prettyP expr1)
+  ^kin
+  ^"\n"
+  ^(prettyP expr2)
+| Pair(expr1, expr2)                 ->  
+  bra
+  ^(prettyP expr1)
+  ^comma
+  ^(prettyP expr2)
+  ^ket
+| Fun(varList, expr)                 ->  
+  klambda
+  ^(if varList==[] then "" else removeLast (List.fold_left (fun acc (x, ty) -> acc^(printVar (Var(x, ty))^comma2)) "" varList))
+  ^kdot
+  ^(prettyP expr)
+| App(expr1, exprList)               ->  
+  leftpar                    
+  ^(prettyP expr1)                           
+  ^rightpar              
+  ^(if exprList==[] then  leftcurlbra^rightcurlbra else                                  
+  leftbra                                  
+  ^removeLast (removeLast(List.fold_left (fun acc expr -> acc^prettyP expr^comma) "" exprList))                              
+  ^rightbra)
+| Case(expr1, x, ty1, y, ty2, expr2) ->                                  
+  klet           
+  ^(printVar (Var(x, ty1)))                              
+  ^comma                              
+  ^(printVar (Var(y, ty2)))                             
+  ^kequal                      
+  ^prettyP expr1                                
+  ^kin                               
+  ^"\n"                               
+  ^(prettyP expr2)
+| Tuple(exprList)                    ->  
+  if exprList==[] then  leftcurlbra^rightcurlbra else                                  
+  leftcurlbra                                   
+  ^removeLast (List.fold_left (fun acc expr -> acc^prettyP expr^comma2) "" exprList)                             
+  ^rightcurlbra
+| NCase(expr1, varList, expr2)       ->  
+  klet
+  ^(if varList==[] then "" else removeLast (List.fold_left (fun acc (x, ty) -> acc^(printVar (Var(x, ty))^comma2)) "" varList))
+  ^kequal
+  ^prettyP expr1
+  ^kin
+  ^"\n"
+  ^(prettyP expr2)
 in Lwt_io.print ((prettyP expr)^"\n")
 end

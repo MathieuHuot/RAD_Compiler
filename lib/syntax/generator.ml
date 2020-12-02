@@ -42,35 +42,35 @@ let rec syngen (context : varSourceContext) (depth : int) : SourceLanguage.sourc
         if depth == max_depth then
         begin
         match (int 2) with
-        | 0 ->  Const(randConst()),context
+        | 0 ->  Const(randConst()), context
         | _ ->  begin
         match context with 
         | []    -> syngen context depth
         | _     -> 
-        let x,ty = randVar(context) in 
-        Var(x,ty),context
+        let x, ty = randVar(context) in 
+        Var(x, ty), context
         end 
         end
         else begin
 match (sourceSynChoice()) with
-| 0 ->  Const(randConst()),context
+| 0 ->  Const(randConst()), context
 | 1 ->  begin
         match context with 
         | []    -> syngen context depth
         | _     -> 
-        let x,ty = randVar(context) in 
-        Var(x,ty),context
+        let x, ty = randVar(context) in 
+        Var(x, ty), context
         end
 | 2 ->  let expr,_ = syngen context (depth+1) in 
-        Apply1(randOp1(),expr),context
+        Apply1(randOp1(), expr), context
 | 3 ->  let expr1,_ = syngen context (depth+1) in
         let expr2,_ = syngen context (depth+1) in
-        Apply2(randOp2(),expr1,expr2),context
+        Apply2(randOp2(), expr1, expr2), context
 | _ ->  let x = Vars.fresh() in
-        let newcontext = (x,SourceLanguage.Real)::context in
+        let newcontext = (x, SourceLanguage.Real)::context in
         let expr1,_ = syngen context (depth+1) in
         let expr2,_ = syngen newcontext (depth+1)  in
-        Let(x,Real,expr1,expr2),context
+        Let(x, Real, expr1, expr2), context
 end
 in 
 let expr,_ = syngen context 0 in expr
@@ -82,35 +82,35 @@ let rec syngen (context : varTargetContext) (depth : int) : TargetLanguage.targe
         if depth == max_depth then
         begin
         match (int 2) with
-        | 0 ->  Const(randConst()),context
+        | 0 ->  Const(randConst()), context
         | _ ->  begin
         match context with 
         | []    -> syngen context depth
         | _     -> 
-        let x,ty = randVar(context) in 
-        Var(x,ty),context
+        let x, ty = randVar(context) in 
+        Var(x, ty), context
         end 
         end
         else begin
         match (targetSynChoice()) with
-        | 0 | 4 | 6 ->  Const(randConst()),context
+        | 0 | 4 | 6 ->  Const(randConst()), context
         | 1 | 7 ->  begin
                 match context with 
                 | []    -> syngen context depth
                 | _     -> 
-                let x,ty = randVar(context) in 
-                Var(x,ty),context
+                let x, ty = randVar(context) in 
+                Var(x, ty), context
                 end
         | 2 ->  let expr,_ = syngen context (depth+1)in 
-                Apply1(randOp1(),expr),context
+                Apply1(randOp1(), expr), context
         | 3 ->  let expr1,_ = syngen context (depth+1) in
                 let expr2,_ = syngen context (depth+1) in
-                Apply2(randOp2(),expr1,expr2),context     
+                Apply2(randOp2(), expr1, expr2), context     
         | _ ->  let x = Vars.fresh() in
-                let newcontext = (x,TargetLanguage.Real)::context in
+                let newcontext = (x, TargetLanguage.Real)::context in
                 let expr1,_ = syngen context (depth+1) in
                 let expr2,_ = syngen newcontext (depth+1) in
-                Let(x,Real,expr1,expr2),context
+                Let(x, Real, expr1, expr2), context
         end
 in 
 let expr,_ = syngen context 0 in expr
