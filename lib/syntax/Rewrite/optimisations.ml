@@ -1,4 +1,16 @@
 (* Module for optimisations. Somewhat similar to generalized folds in Haskell *)
+(* We have an abstract module traverse for traversal of ADT. *)
+(* We instantiate it to our two main ADT: the source and target syntax. *)
+(* Then, every optimisation is enclosed in a module, and is coded as a functor from *)
+(* a traversal module. *)
+
+(* The main optimisations performed are: *)
+(* Constant Propagation *)
+(* Simple Algebraic Simplifications *)
+(* Let Commutativities *) 
+(* Forward Subsitution *)
+(* Common SubExpressions *)
+(* Dead Code Elimination *)
 
   module type Traverse = sig
     type adt
@@ -269,10 +281,21 @@ let rec run expr = match expr with
   | Let(x,_,Var(y,ty),e)  -> Success(subst x ty (Var(y,ty)) e)
   | Case(Pair(expr1,expr2), x3, ty3, x4, ty4, expr) 
     when isVar expr1 || isVar expr2 || isConst expr1 || isConst expr2                                   
-                          -> Success(subst x4 ty4 expr1 (subst x3 ty3 expr2 expr))
+                          -> Success(subst x4 ty4 expr2 (subst x3 ty3 expr1 expr))
   | NCase(Tuple(exprList),varList,expr)
     when List.for_all (fun x -> isVar x || isConst x) exprList
-                          -> Success(simSubst (List.map (fun ((x,y),z) -> x,y,z) (List.combine varList exprList)) expr) 
+                          -> Success(simSubst (List.map (fun ((x,y),z) -> x,y,z) (List.combine varList exprList)) expr)
+  | NCase(Tuple(exprList),varList,expr)
+    when List.exists (fun x -> isVar x || isConst x) exprList 
+                          -> if List.length exprList<>List.length varList 
+                             then failwith "ForwardSubstitution: tuple wrong number of arguments"
+                             else
+                             (* a candidate for forward substitution has been found in exprList *)
+                             (* partition exprList and varList into two lists, one pair for which we can do forward subsitution *)
+                             (* The latter is gathered into context and a simultaneous substitution is performed *)
+                             let exprList1, varList1 = List.split (List.filter (fun (x,_) -> not(isVar x || isConst x)) (List.combine exprList varList)) in
+                             let context = List.map (fun (e,(x,ty)) -> (x,ty,e)) (List.filter (fun (x,_) -> isVar x || isConst x) (List.combine exprList varList)) in
+                             Success(NCase(Tuple(exprList1),varList1, simSubst context expr))
   | _                     -> Tr.traverse expr run 
 end
 
@@ -304,17 +327,16 @@ let rec run expr = match expr with
       for later optimisations like forward substitution *)                               
   | App(Fun(varList,expr),exprList) 
                              -> if not(List.length varList == List.length exprList) 
-                                then failwith "LambdaRemoval: Function applied to wrong number of arguments"; 
-                                Success(List.fold_left2 
-                                        (fun acc (x,ty) expr -> Let(x,ty,expr,acc)) 
-                                        expr 
-                                        (List.rev varList) 
-                                        (List.rev exprList))
+                                then failwith "LambdaRemoval: Function applied to wrong number of arguments" 
+                                else Success(NCase(Tuple(exprList),varList,expr)) 
   (* CBN evaluates a variable which has a function type *)
   | Let(x,ty,expr1,expr2) 
     when isArrow ty          -> Success(subst x ty expr1 expr2)
   | Case(Pair(expr1,expr2),x,ty1,y,ty2,expr3) 
     when isArrow ty2         -> Success(Let(x,ty1,expr1,subst y ty2 expr2 expr3))
+  (* | NCase(Tuple(exprList),varList,expr) 
+    when List.for_all (fun (_,ty) -> isArrow ty) varList 
+                             -> Success(expr)  *)
   | _                        -> Tr.traverse expr run 
 end
 

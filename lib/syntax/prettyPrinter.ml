@@ -120,6 +120,7 @@ let rec prettyP = function
 | Apply2(op, expr1, expr2)           ->  
   if (isOp2Infix op) 
   then  leftpar
+        ^(prettyP expr1)
         ^(printOp2 op)
         ^(prettyP expr2)
         ^rightpar
@@ -152,7 +153,8 @@ let rec prettyP = function
   leftpar                    
   ^(prettyP expr1)                           
   ^rightpar              
-  ^(if exprList==[] then  leftcurlbra^rightcurlbra else                                  
+  ^(if exprList==[] then  leftcurlbra^rightcurlbra 
+  else                                  
   leftbra                                  
   ^removeLast (removeLast(List.fold_left (fun acc expr -> acc^prettyP expr^comma) "" exprList))                              
   ^rightbra)
@@ -167,7 +169,9 @@ let rec prettyP = function
   ^"\n"                               
   ^(prettyP expr2)
 | Tuple(exprList)                    ->  
-  if exprList==[] then  leftcurlbra^rightcurlbra else                                  
+  if exprList==[] 
+  then  leftcurlbra^rightcurlbra 
+  else                                  
   leftcurlbra                                   
   ^removeLast (List.fold_left (fun acc expr -> acc^prettyP expr^comma2) "" exprList)                             
   ^rightcurlbra
