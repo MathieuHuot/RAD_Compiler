@@ -1,4 +1,4 @@
-(* Module for optimisations strategies. Allows to create and combine strategies. Currenlty NOT used *)
+(* Module for optimisations strategies. Allows to create and combine strategies. *)
 
 (* Restricted form of monads where 'a='b *)
 module type MONAD = sig

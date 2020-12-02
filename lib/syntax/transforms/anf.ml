@@ -1,3 +1,6 @@
+(* Module for A-Normal Form *)
+(* Also module for a weak-version of ANF: only assumes that operators are only applied to variables *)
+
 module type Anf = sig
 type ast
 val isInWeakAnf: ast -> bool

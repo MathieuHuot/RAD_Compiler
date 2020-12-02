@@ -1,3 +1,5 @@
+(* Classical forward mode differentiationas a source-code transformation using dual numbers *)
+
 open Syntax.SourceLanguage
 open Syntax.Operators
 open Syntax.TargetLanguage

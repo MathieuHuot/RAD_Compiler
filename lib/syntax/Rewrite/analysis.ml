@@ -1,3 +1,5 @@
+(* Some simple functions about variables in a term *)
+
 open Syntax.TargetLanguage
 
 (* collects all variables -- bound and free -- in expr *)
