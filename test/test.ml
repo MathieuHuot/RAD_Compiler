@@ -273,3 +273,14 @@ TargetPrinter.prettyPrinter(f9);;
 Lwt_io.print "Reduced derivative of term:\n";;
 TargetPrinter.prettyPrinter(f10);;
 Lwt_io.print "\n\n";;
+
+
+let g6 : sourceSyn  = Apply2(Times, Apply2(Plus,Var(x1,Real),Var(x2,Real)),Apply2(Plus,Var(x1,Real),Var(x2,Real)));;
+let g7 =  Transforms.JetAD.SecondOrderForward.hessian [(x1,Real,Var(x1,Real));(x2,Real,Var(x2,Real))] g6;;
+(* let g8 = Array.map (Array.map fullOpti) g7;; *)
+Lwt_io.print "Term:\n";;
+SourcePrinter.prettyPrinter(g6);;
+Lwt_io.print "\n";; 
+Lwt_io.print "Reduced hessian of term:\n";;
+TargetPrinter.prettyPrinter(g7.(0).(0));;
+Lwt_io.print "\n\n";; 

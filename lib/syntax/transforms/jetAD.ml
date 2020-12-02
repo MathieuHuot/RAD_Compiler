@@ -1,7 +1,6 @@
 (* Prototype for Higher-Order Derivatives *)
 
-(* This method computes (1,2) velocities. *)
-(* A better method using (2,2) velocities will be implemented later *)
+(* This method computes (1,2) velocities. *) 
 (* See the paper A Geometric Theory of Higher-Order Automatic Differentiation for more information *)
 module SecondOrderForward = struct
 
@@ -86,16 +85,47 @@ let rec forward2AD (expr : sourceSyn) : targetSyn = match expr with
                             let ty = sourceToTargetType ty in
                             NCase(expr1D,[(y,ty);(dy,ty);(d2y,ty)],expr2D)
 
-(* Compute the list d2 f/dx2 for all variables x from the context *)                           
+(* Compute the list d2f/dx2 for all variables x from the context *)                           
 let secondPartial context expr = 
   let dexpr = forward2AD expr in
+  let optiDexpr = Rewrite.Optimisations.fullOpti dexpr in
   List.map 
       (fun (x,_,_) -> List.fold_left 
       (fun acc (y,ty2,expr2) -> let y,dy,d2y = dvar2 y in
       let f = if (equal x y) then subst dy ty2 (Const(1.)) else subst dy ty2 (Const(0.)) in
-      f (subst d2y ty2 (Const 0.) (subst y ty2 expr2 acc))) dexpr context) 
+      f (subst d2y ty2 (Const 0.) (subst y ty2 expr2 acc))) optiDexpr context) 
       context
+
+(* Compute the list d2f/dxi dxj for all xi,xj in the context *)
+let mixedPartial context expr = 
+  let n = List.length context in
+  let arrayContext = Array.of_list (List.map (fun (x,_,_) -> x) context) in
+  let dexpr = forward2AD expr in 
+  let optiDexpr = Rewrite.Optimisations.fullOpti dexpr in
+  let mixedDerivatives = Array.make_matrix n n (Const 0.) in
+  for i=0 to (n-1) do
+    for j=0 to (n-1) do
+      mixedDerivatives.(i).(j) <- List.fold_left 
+      (fun acc (y,ty2,expr2) -> let y,dy,d2y = dvar2 y in
+      let f = if (equal arrayContext.(i) y) || (equal arrayContext.(j) y) then subst dy ty2 (Const(1.)) else subst dy ty2 (Const(0.)) in
+      f (subst d2y ty2 (Const 0.) (subst y ty2 expr2 acc))) optiDexpr context
+    done
+  done; 
+  mixedDerivatives  
+  
+  (*TODO: currently not working and not optimized *)
+  let hessian context expr = 
+    let mixedDerivatives = mixedPartial context expr in
+    let secondPartial = Array.of_list (secondPartial context expr) in
+    let n = Array.length secondPartial in
+    for i=0 to (n-1) do
+      for j=0 to (n-1) do
+        mixedDerivatives.(i).(j) <- Rewrite.Optimisations.fullOpti (Apply2(Minus,mixedDerivatives.(i).(j),Apply2(Plus,secondPartial.(i),secondPartial.(j))))
+      done
+    done;
+    mixedDerivatives
 end
+
 
 (* To compute v^T H u *)
 (* module ThirdOrderForward = struct
