@@ -168,7 +168,7 @@ let isContextOfValues (cont : context) =
 
 let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
     then failwith "closingTerm: context does not only contain values"
-    else List.fold_left (fun expr1 (x,ty,v) -> subst x ty v expr1) expr cont
+    else simSubst cont expr
 
 let rec freeVars = function
 | Var (x,_)                   -> [x]
@@ -371,12 +371,9 @@ let rec interp expr = match expr with
 | App(expr1,exprList)             ->  begin match (interp expr1) with
     | Fun(varList,expr1)  ->  let vList = List.map interp exprList in
                               if not(List.length varList == List.length vList) 
-                              then failwith "interp: Function applied to wrong number of arguments"; 
-                              interp (List.fold_left2 
-                                          (fun expr (x,ty) v -> subst x ty v expr) 
-                                          expr1 
-                                          varList 
-                                          vList)
+                              then failwith "interp: Function applied to wrong number of arguments"
+                              else
+                              expr1 |> simSubst (List.map (fun ((x,ty),expr) -> x,ty,expr) (List.combine varList vList)) |> interp
     | _                   ->  failwith "interpret: expression should reduce to a function" end
 | Tuple(exprList)                 -> Tuple(List.map interp exprList)
 | NCase(expr1,varList,expr2)      -> begin match (interp expr1) with
@@ -384,8 +381,10 @@ let rec interp expr = match expr with
                          then failwith ("interp: NCase argument should be a tuple of size "
                                         ^(string_of_int (List.length varList))
                                         ^"but is of size"
-                                        ^(string_of_int (List.length exprList))); 
-                         interp (List.fold_left2 (fun expr (x,ty) v -> subst x ty v expr) expr2 varList exprList)
+                                        ^(string_of_int (List.length exprList)))
+                         else               
+                         expr2 |> simSubst (List.map (fun ((x,ty),expr) -> x,ty,expr) (List.combine varList exprList)) |> interp
+
     | _               -> failwith "interpret: expression should reduce to a tuple" end
 | _                               ->  expr
 in interp expr2
