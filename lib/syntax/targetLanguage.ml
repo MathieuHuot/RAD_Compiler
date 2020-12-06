@@ -67,7 +67,7 @@ let rec subst (x:var) xTy expr1 expr2 = match expr2 with
 | Const _                         -> expr2
 | Apply1(op,expr2)                -> Apply1(op,subst x xTy expr1 expr2)
 | Apply2(op,expr2,expr3)          -> Apply2(op,subst x xTy expr1 expr2,subst x xTy expr1 expr3)
-| Let(y,ty,expr2,expr3)           -> if equal x y 
+| Let(y,ty,expr2,expr3)           -> if (equal x y && equalTypes xTy ty)
                                      then failwith "sim: trying to substitute a bound variable"
                                      else Let(y,ty,subst x xTy expr1 expr2, subst x xTy expr1 expr3)
 | Pair(expr2,expr3)               -> Pair(subst x xTy expr1 expr2,subst x xTy expr1 expr3)

@@ -15,9 +15,9 @@ and sourceSyn = Var of var * sourceType
 type context = (var * sourceType * sourceSyn) list
 
 let rec equalTypes ty1 ty2 = match ty1,ty2 with
-| Real,Real                           ->  true
-| Prod(ty11, ty12),Prod(ty21, ty22)   ->  equalTypes ty11 ty21 
-                                        && equalTypes ty12 ty22
+| Real, Real                          ->  true
+| Prod(ty11, ty12), Prod(ty21, ty22)  ->  equalTypes ty11 ty21 
+                                          && equalTypes ty12 ty22
 | _                                   ->  false
 
 let isValue = function
@@ -45,7 +45,7 @@ let rec subst (x: var) ty expr1 expr2 = match expr2 with
 | Const _                   -> expr2
 | Apply1(op, expr2)         -> Apply1(op,subst x ty expr1 expr2)
 | Apply2(op, expr2, expr3)  -> Apply2(op,subst x ty expr1 expr2,subst x ty expr1 expr3)
-| Let(y, ty1, expr2, expr3) -> if equal x y 
+| Let(y, ty1, expr2, expr3) -> if (equal x y && equalTypes ty ty1)
     then failwith "subst: trying to substitute a bound variable"
     else Let(y, ty1, subst x ty expr1 expr2, subst x ty expr1 expr3)
 

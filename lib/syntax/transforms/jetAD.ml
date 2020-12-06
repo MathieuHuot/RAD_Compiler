@@ -105,7 +105,7 @@ let mixedPartial context expr =
       f (subst d2y ty2 (Const 0.) (subst y ty2 expr2 acc))) optiDexpr context
     done
   done; 
-  mixedDerivatives  
+  mixedDerivatives
   
   (*TODO: currently not working and not optimized *)
   let hessian context expr = 
