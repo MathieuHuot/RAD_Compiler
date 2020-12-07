@@ -1,6 +1,9 @@
 random term:
-let y0 = 45.4276323378 in
-99.5191471988
+let y1 = 96.068006579 in
+let y0 = 14.2197188257 in
+let y2 = 92.9345906314 in
+let y3 = 47.5702456483 in
+(y2 * y3)
 end random term
 
 
@@ -15,47 +18,54 @@ end random term
 
 
 Term:
-sin (y2)
+sin (y5)
 Forward derivative of term:
-let y3, dy3 = ⟨y2, dy2⟩ in
-⟨sin (y3), (cos (y3) * dy3)⟩
+let y6, dy6 = ⟨y5, dy5⟩ in
+⟨sin (y6), (cos (y6) * dy6)⟩
 Reduced derivative of term:
-⟨sin (y2), (cos (y2) * dy2)⟩
+⟨sin (y5), (cos (y5) * dy5)⟩
 
 
 Term:
-let y4 = let y5 = 44.7044805706 in
-y5 in
-(32.7225053886 * (71.0930518233 - let y6 = y4 in
-y4))
+exp ((((let y7 = 8.85825793077 in
+32.9444133834 * let y8 = 2.47592903212 in
+y8) - 36.9092217619) + 27.2944540024))
 
 Anf Term:
-let y5 = 44.7044805706 in
-let y4 = y5 in
-let y9 = 32.7225053886 in
-let y7 = 71.0930518233 in
-let y6 = y4 in
-let y8 = y4 in
-let y10 = (y7 - y8) in
-(y9 * y10)
+let y7 = 8.85825793077 in
+let y9 = 32.9444133834 in
+let y8 = 2.47592903212 in
+let y10 = y8 in
+let y11 = (y9 * y10) in
+let y12 = 36.9092217619 in
+let y13 = (y11 - y12) in
+let y14 = 27.2944540024 in
+let y15 = (y13 + y14) in
+exp (y15)
 
 Forward derivative of term:
-let y5, dy5 = ⟨44.7044805706, 0.⟩ in
-let y4, dy4 = ⟨y5, dy5⟩ in
-let y9, dy9 = ⟨32.7225053886, 0.⟩ in
-let y7, dy7 = ⟨71.0930518233, 0.⟩ in
-let y6, dy6 = ⟨y4, dy4⟩ in
-let y8, dy8 = ⟨y4, dy4⟩ in
-let y10, dy10 = let y11, dy11 = ⟨y7, dy7⟩ in
-let y12, dy12 = ⟨y8, dy8⟩ in
-⟨(y11 - y12), ((1. * dy11) + (-1. * dy12))⟩ in
-let y13, dy13 = ⟨y9, dy9⟩ in
-let y14, dy14 = ⟨y10, dy10⟩ in
-⟨(y13 * y14), ((y14 * dy13) + (y13 * dy14))⟩
+let y7, dy7 = ⟨8.85825793077, 0.⟩ in
+let y9, dy9 = ⟨32.9444133834, 0.⟩ in
+let y8, dy8 = ⟨2.47592903212, 0.⟩ in
+let y10, dy10 = ⟨y8, dy8⟩ in
+let y11, dy11 = let y16, dy16 = ⟨y9, dy9⟩ in
+let y17, dy17 = ⟨y10, dy10⟩ in
+⟨(y16 * y17), ((y17 * dy16) + (y16 * dy17))⟩ in
+let y12, dy12 = ⟨36.9092217619, 0.⟩ in
+let y13, dy13 = let y18, dy18 = ⟨y11, dy11⟩ in
+let y19, dy19 = ⟨y12, dy12⟩ in
+⟨(y18 - y19), ((1. * dy18) + (-1. * dy19))⟩ in
+let y14, dy14 = ⟨27.2944540024, 0.⟩ in
+let y15, dy15 = let y20, dy20 = ⟨y13, dy13⟩ in
+let y21, dy21 = ⟨y14, dy14⟩ in
+⟨(y20 + y21), ((1. * dy20) + (1. * dy21))⟩ in
+let y22, dy22 = ⟨y15, dy15⟩ in
+⟨exp (y22), (exp (y22) * dy22)⟩
 
 Reduced derivative of term:
-let y10, dy10 = ⟨(71.0930518233 - 44.7044805706), 0.⟩ in
-⟨(32.7225053886 * y10), (32.7225053886 * dy10)⟩
+let y13, dy13 = ⟨(81.5680295422 - 36.9092217619), 0.⟩ in
+let y15, dy15 = ⟨(y13 + 27.2944540024), dy13⟩ in
+⟨exp (y15), (exp (y15) * dy15)⟩
 
 
 variable:
@@ -63,11 +73,11 @@ x1
 term:
 exp (x1)
 reverse derivative macro of term:
-⟨exp (x1), λy17,y16. (λy15. {y15})[(y17 + (exp (x1) * y16))]⟩
+⟨exp (x1), λy25,y24. (λy23. {y23})[(y25 + (exp (x1) * y24))]⟩
 derivative of term:
-(λy17,y16. (λy15. {y15})[(y17 + (exp (x1) * y16))])[0., 1.]
+(λy25,y24. (λy23. {y23})[(y25 + (exp (x1) * y24))])[0., 1.]
 fully reduced term:
-{y15}
+{y23}
 
 
 term:
@@ -75,68 +85,66 @@ term:
 anf term:
 (x1 + x2)
 reverse derivative macro of term:
-⟨(x1 + x2), λy21,y22,y20. (λy18,y19. {y18,y19})[(y21 + (1. * y20)), (y22 + (1. * y20))]⟩
+⟨(x1 + x2), λy29,y30,y28. (λy26,y27. {y26,y27})[(y29 + (1. * y28)), (y30 + (1. * y28))]⟩
 derivative of term:
-(λy21,y22,y20. (λy18,y19. {y18,y19})[(y21 + (1. * y20)), (y22 + (1. * y20))])[0., 0., 1.]
+(λy29,y30,y28. (λy26,y27. {y26,y27})[(y29 + (1. * y28)), (y30 + (1. * y28))])[0., 0., 1.]
 fully reduced term:
-{y18,y19}
+{y26,y27}
 
 
 Term:
-(30.6676949865 + 76.6353854882)
+cos (18.9988642802)
 
 Anf Term:
-let y23 = 30.6676949865 in
-let y24 = 76.6353854882 in
-(y23 + y24)
+let y31 = 18.9988642802 in
+cos (y31)
 
 Reverse derivative macro of term:
-let y31, dy31 = let y23, dy23 = ⟨30.6676949865, λy25. (λ. {}){}⟩ in
-let y24, dy24 = ⟨76.6353854882, λy27,y26. (dy23)[y27]⟩ in
-⟨(y23 + y24), λy29,y30,y28. (dy24)[(y29 + (1. * y28)), (y30 + (1. * y28))]⟩ in
-(dy31)[0., 0., 1.]
+let y35, dy35 = let y31, dy31 = ⟨18.9988642802, λy32. (λ. {}){}⟩ in
+⟨cos (y31), λy34,y33. (dy31)[(y34 + (-(sin (y31)) * y33))]⟩ in
+(dy35)[0., 1.]
 
 Reduced reverse derivative macro of term:
-let y31, dy31 = ⟨107.303080475, λy29,y30,y28. {}⟩ in
-(dy31)[0., 0., 1.]
+let y35, dy35 = ⟨0.988874199025, λy34,y33. {}⟩ in
+(dy35)[0., 1.]
 
 
 Term:
 -(cos (3.))
 
 Anf Term:
-let y32 = 3. in
-let y33 = cos (y32) in
--(y33)
+let y36 = 3. in
+let y37 = cos (y36) in
+-(y37)
 
 Reverse derivative macro of term:
-let y32, dy32 = ⟨3., λy36,y35. (λy34. {y34})[y36]⟩ in
-let y33, dy33 = ⟨cos (y32), λy38,y39,y37. (dy32)[y38, (y39 + (-(sin (y32)) * y37))]⟩ in
-⟨-(y33), λy41,y42,y43,y40. (dy33)[y41, y42, (y43 + (-1. * y40))]⟩
+let y36, dy36 = ⟨3., λy40,y39. (λy38. {y38})[y40]⟩ in
+let y37, dy37 = ⟨cos (y36), λy42,y43,y41. (dy36)[y42, (y43 + (-(sin (y36)) * y41))]⟩ in
+⟨-(y37), λy45,y46,y47,y44. (dy37)[y45, y46, (y47 + (-1. * y44))]⟩
 
 Reduced reverse derivative macro of term:
-⟨0.9899924966, λy41,y42,y43,y40. {y41}⟩
+⟨0.9899924966, λy45,y46,y47,y44. {y45}⟩
 
 
 Term:
 ((x1 + x2) * (x1 + x2))
 
 Anf Term:
-let y44 = (x1 + x2) in
-let y45 = (x1 + x2) in
-(y44 * y45)
+let y48 = (x1 + x2) in
+let y49 = (x1 + x2) in
+(y48 * y49)
 
 Reverse derivative macro of term:
-let y60, dy60 = let y44, dy44 = ⟨(x1 + x2), λy49,y50,y48. (λy46,y47. {y46,y47})[(y49 + (1. * y48)), (y50 + (1. * y48))]⟩ in
-let y45, dy45 = ⟨(x1 + x2), λy52,y53,y54,y51. (dy44)[(y52 + (1. * y51)), (y53 + (1. * y51)), y54]⟩ in
-⟨(y44 * y45), λy56,y57,y58,y59,y55. (dy45)[y56, y57, (y58 + (y45 * y55)), (y59 + (y44 * y55))]⟩ in
-(dy60)[0., 0., 0., 0., 1.]
+let y64, dy64 = let y48, dy48 = ⟨(x1 + x2), λy53,y54,y52. (λy50,y51. {y50,y51})[(y53 + (1. * y52)), (y54 + (1. * y52))]⟩ in
+let y49, dy49 = ⟨(x1 + x2), λy56,y57,y58,y55. (dy48)[(y56 + (1. * y55)), (y57 + (1. * y55)), y58]⟩ in
+⟨(y48 * y49), λy60,y61,y62,y63,y59. (dy49)[y60, y61, (y62 + (y49 * y59)), (y63 + (y48 * y59))]⟩ in
+(dy64)[0., 0., 0., 0., 1.]
 
 Reduced reverse derivative macro of term:
-let y44 = (x1 + x2) in
-let y45 = y44 in
-let y60, dy60 = ⟨(y44 * y45), λy56,y57,y58,y59,y55. {y46,y47}⟩ in
-(dy60)[0., 0., 0., 0., 1.]
+let y48 = (x1 + x2) in
+let y49 = y48 in
+let y64, dy64 = ⟨(y48 * y49), λy60,y61,y62,y63,y59. {y50,y51}⟩ in
+(dy64)[0., 0., 0., 0., 1.]
 
 
 Term:
@@ -144,23 +152,23 @@ let z1 = (x2 * (x1 + x2)) in
 z1
 
 Weak anf Term:
-let z1 = let y61 = x2 in
-let y62 = (x1 + x2) in
-(y61 * y62) in
+let z1 = let y65 = x2 in
+let y66 = (x1 + x2) in
+(y65 * y66) in
 z1
 
 Reverse derivative macro of term:
-let y83, dy83 = let z1, dz1 = let y61, dy61 = ⟨x2, λy66,y67,y65. (λy63,y64. {y63,y64})[y66, (y67 + y65)]⟩ in
-let y62, dy62 = ⟨(x1 + x2), λy69,y70,y71,y68. (dy61)[(y69 + (1. * y68)), (y70 + (1. * y68)), y71]⟩ in
-⟨(y61 * y62), λy73,y74,y75,y76,y72. (dy62)[y73, y74, (y75 + (y62 * y72)), (y76 + (y61 * y72))]⟩ in
-⟨z1, λy78,y79,y80,y81,y82,y77. (dz1)[y78, y79, y80, y81, (y82 + y77)]⟩ in
-(dy83)[0., 0., 0., 0., 0., 1.]
+let y87, dy87 = let z1, dz1 = let y65, dy65 = ⟨x2, λy70,y71,y69. (λy67,y68. {y67,y68})[y70, (y71 + y69)]⟩ in
+let y66, dy66 = ⟨(x1 + x2), λy73,y74,y75,y72. (dy65)[(y73 + (1. * y72)), (y74 + (1. * y72)), y75]⟩ in
+⟨(y65 * y66), λy77,y78,y79,y80,y76. (dy66)[y77, y78, (y79 + (y66 * y76)), (y80 + (y65 * y76))]⟩ in
+⟨z1, λy82,y83,y84,y85,y86,y81. (dz1)[y82, y83, y84, y85, (y86 + y81)]⟩ in
+(dy87)[0., 0., 0., 0., 0., 1.]
 
 Reduced reverse derivative macro of term:
-let y62 = (x1 + x2) in
-let z1, dz1 = ⟨(x2 * y62), λy73,y74,y75,y76,y72. {y66,y64}⟩ in
-let y83, dy83 = ⟨z1, λy78,y79,y80,y81,y82,y77. (dz1)[y78, y79, y80, y81, (y82 + y77)]⟩ in
-(dy83)[0., 0., 0., 0., 0., 1.]
+let y66 = (x1 + x2) in
+let z1, dz1 = ⟨(x2 * y66), λy77,y78,y79,y80,y76. {y70,y68}⟩ in
+let y87, dy87 = ⟨z1, λy82,y83,y84,y85,y86,y81. (dz1)[y82, y83, y84, y85, (y86 + y81)]⟩ in
+(dy87)[0., 0., 0., 0., 0., 1.]
 
 
 Term:
@@ -172,12 +180,12 @@ let z1 = x1 in
 z1
 
 Reverse derivative macro of term:
-let y90, dy90 = let z1, dz1 = ⟨x1, λy86,y85. (λy84. {y84})[(y86 + y85)]⟩ in
-⟨z1, λy88,y89,y87. (dz1)[y88, (y89 + y87)]⟩ in
-(dy90)[0., 0., 1.]
+let y94, dy94 = let z1, dz1 = ⟨x1, λy90,y89. (λy88. {y88})[(y90 + y89)]⟩ in
+⟨z1, λy92,y93,y91. (dz1)[y92, (y93 + y91)]⟩ in
+(dy94)[0., 0., 1.]
 
 Reduced reverse derivative macro of term:
-{y84}
+{y88}
 
 Term:
 let z1 = let z2 = x1 in
@@ -190,20 +198,20 @@ z2 in
 z1
 
 Reverse derivative macro of term:
-let y101, dy101 = let z1, dz1 = let z2, dz2 = ⟨x1, λy93,y92. (λy91. {y91})[(y93 + y92)]⟩ in
-⟨z2, λy95,y96,y94. (dz2)[y95, (y96 + y94)]⟩ in
-⟨z1, λy98,y99,y100,y97. (dz1)[y98, y99, (y100 + y97)]⟩ in
-(dy101)[0., 0., 0., 1.]
+let y105, dy105 = let z1, dz1 = let z2, dz2 = ⟨x1, λy97,y96. (λy95. {y95})[(y97 + y96)]⟩ in
+⟨z2, λy99,y100,y98. (dz2)[y99, (y100 + y98)]⟩ in
+⟨z1, λy102,y103,y104,y101. (dz1)[y102, y103, (y104 + y101)]⟩ in
+(dy105)[0., 0., 0., 1.]
 
 Reduced reverse derivative macro of term:
-{y91}
+{y95}
 
 
 Term:
 sin (x1)
 Forward derivative of term:
-let y102,dy102,d2y102 = {x1,dx1,d2x1} in
-{sin (y102),(cos (y102) * dy102),(-((sin (y102) * dy102)) + (cos (y102) * d2y102))}
+let y106,dy106,d2y106 = {x1,dx1,d2x1} in
+{sin (y106),(cos (y106) * dy106),(-((sin (y106) * dy106)) + (cos (y106) * d2y106))}
 Gradient of term:
 {{sin (z1),(cos (z1) * 1.),((cos (z1) * 0.) - (sin (z1) * 1.))}}
 Reduced derivative of term:
@@ -214,6 +222,6 @@ Term:
 ((x1 + x2) * (x1 + x2))
 
 Reduced hessian of term:
-({(y104 * y105),((y105 * dy104) + (y104 * dy105)),(((d2y104 * y105) + (y104 * d2y105)) + (2. * (dy104 * dy105)))} - (2. * {(y110 * y111),((y111 * dy110) + (y110 * dy111)),(((d2y110 * y111) + (y110 * d2y111)) + (2. * (dy110 * dy111)))}))
+({(y108 * y109),((y109 * dy108) + (y108 * dy109)),(((d2y108 * y109) + (y108 * d2y109)) + (2. * (dy108 * dy109)))} - (2. * {(y114 * y115),((y115 * dy114) + (y114 * dy115)),(((d2y114 * y115) + (y114 * d2y115)) + (2. * (dy114 * dy115)))}))
 
 
