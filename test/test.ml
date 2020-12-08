@@ -6,7 +6,7 @@ open Transforms.Anf
 open Transforms.ReverseMode
 open Transforms.ForwardMode
 open Rewrite.Optimisations
-open Transforms.JetAD.SecondOrderForward
+open Transforms.JetAD.Jets12
 
 (* Helpers *)
 let rec unfold_right f init = 
@@ -262,7 +262,7 @@ Lwt_io.print "\n\n";;
 let var = "x",1
 let var2 = "z",1
 let f7 : sourceSyn = Apply1(Sin, Var(var,Real));;
-let f8 = forward2AD f7;;
+let f8 = forward12AD f7;;
 let f9 = Tuple(secondPartial [(var,Real,Var(var2,Real))] f7);;
 let f10 = fullOpti f9;;
 Lwt_io.print "Term:\n";;
@@ -277,7 +277,7 @@ Lwt_io.print "\n\n";;
 
 
 let g6 : sourceSyn  = Apply2(Times, Apply2(Plus,Var(x1,Real),Var(x2,Real)),Apply2(Plus,Var(x1,Real),Var(x2,Real)));;
-let g7 =  Transforms.JetAD.SecondOrderForward.hessian [(x1,Real,Var(x1,Real));(x2,Real,Var(x2,Real))] g6;;
+let g7 = hessian [(x1,Real,Var(x1,Real));(x2,Real,Var(x2,Real))] g6;;
 (* let g8 = Array.map (Array.map fullOpti) g7;; *)
 Lwt_io.print "Term:\n";;
 SourcePrinter.prettyPrinter(g6);;

@@ -1,31 +1,53 @@
 (* Prototype for Higher-Order Derivatives *)
 (* See the paper A Geometric Theory of Higher-Order Automatic Differentiation for more information *)
 
-open Syntax.SourceLanguage
 open Syntax.Operators
 open Syntax.TargetLanguage
-open Syntax.Vars
 
 (* Helpers *)
+
+(* partial derivative of unary operator *)
 let dop y (op: op1) = match op with
-| Cos     -> Apply1(Minus, Apply1(Sin, y))
-| Sin     -> Apply1(Cos, y)
-| Exp     -> Apply1(Exp, y)
-| Minus   -> Const (-1.)
-| Power 0 -> Const(0.)
-| Power n -> Apply2(Times, Const(float_of_int (n-1)), Apply1(Power(n-1), y))
+  | Cos     -> Apply1(Minus, Apply1(Sin, y))
+  | Sin     -> Apply1(Cos, y)
+  | Exp     -> Apply1(Exp, y)
+  | Minus   -> Const (-1.)
+  | Power 0 -> Const(0.)
+  | Power n -> Apply2(Times, Const(float_of_int (n-1)), Apply1(Power(n-1), y))
 
+(* first partial derivative of binary operator *)
 let d1op _ y2 (op: op2) = match op with
-| Plus  -> Const(1.)
-| Times -> y2
-| Minus -> Const(1.)
+  | Plus  -> Const(1.)
+  | Times -> y2
+  | Minus -> Const(1.)
 
+(* second partial derivative of binary operator *)
 let d2op y1 _ (op: op2) = match op with
-| Plus  -> Const(1.)
-| Times -> y1
-| Minus -> Const(-1.)
+  | Plus  -> Const(1.)
+  | Times -> y1
+  | Minus -> Const(-1.)
+
+(* second derivative of binary operator *)
+let dop22 x d1x d2x ddx (op: op1) = match op with
+  | Cos     -> Apply2(Minus, Apply1(Minus, Apply2(Times, Apply1(Cos, x), Apply2(Times, d1x, d2x))), Apply2(Times,Apply1(Sin, x), ddx))
+  | Sin     -> Apply2(Plus, Apply1(Minus, Apply2(Times, Apply1(Sin, x), Apply2(Times, d1x, d2x))), Apply2(Times, Apply1(Cos, x), ddx))
+  | Exp     -> Apply2(Plus, Apply2(Times, Apply1(Exp, x), Apply2(Times, d1x, d2x)), Apply2(Times, Apply1(Exp, x), ddx))
+  | Minus   -> Apply1(Minus, ddx)
+  | Power 0 -> Const(0.)
+  | Power 1 -> ddx
+  | Power n -> Apply2(Plus,
+                      Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2),x)), Apply2(Times, d1x, d2x)),
+                      Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1),x)), ddx))
+
+let d2op22 x d1x d2x ddx y d1y d2y ddy (op: op2) = match op with
+  | Plus  -> Apply2(Plus, ddx, ddy)
+  | Minus -> Apply2(Minus, ddx, ddy)
+  | Times -> Apply2(Plus,
+                    Apply2(Plus, Apply2(Times, ddx, y), Apply2(Times, x, ddy)),
+                    Apply2(Plus, Apply2(Times, d1x, d2y), Apply2(Times, d2x, d1y)))
 
 (* This method computes (1,2) velocities. *) 
+(* TODO: might be wrong. need to check *)
 module Jets12 = struct
 
 open Syntax.SourceLanguage
@@ -35,21 +57,22 @@ open Syntax.Vars
 
 let dvar2 var : var * var * var = let str,i = var in var,("d"^str,i),("d2"^str,i) 
 
+(* second derivative of binary operator *)
 let dop2 x dx d2x (op: op1) = match op with
- | Cos     -> Apply2(Minus, Apply1(Minus, Apply2(Times, Apply1(Cos, x), dx)), Apply2(Times, Apply1(Sin, x), d2x))
- | Sin     -> Apply2(Plus, Apply1(Minus, Apply2(Times, Apply1(Sin, x), dx)), Apply2(Times, Apply1(Cos, x), d2x))
- | Exp     -> Apply2(Plus, Apply2(Times, Apply1(Exp, x), dx), Apply2(Times, Apply1(Exp, x), d2x))
- | Minus   -> Apply1(Minus, d2x)
- | Power 0 -> Const(0.)
- | Power 1 -> d2x
- | Power n -> Apply2(Plus,
-                    Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2), x)), dx),
-                    Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1), x)), d2x))
-
+  | Cos     -> Apply2(Minus, Apply1(Minus, Apply2(Times, Apply1(Cos, x), dx)), Apply2(Times, Apply1(Sin, x), d2x))
+  | Sin     -> Apply2(Plus, Apply1(Minus, Apply2(Times, Apply1(Sin, x), dx)), Apply2(Times, Apply1(Cos, x), d2x))
+  | Exp     -> Apply2(Plus, Apply2(Times, Apply1(Exp, x), dx), Apply2(Times, Apply1(Exp, x), d2x))
+  | Minus   -> Apply1(Minus, d2x)
+  | Power 0 -> Const(0.)
+  | Power 1 -> d2x
+  | Power n -> Apply2(Plus,
+                      Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2), x)), dx),
+                      Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1), x)), d2x))
+             
 let d2op2 x dx d2x y dy d2y  (op: op2) = match op with
-| Plus  -> Apply2(Plus, d2x, d2y)
-| Minus -> Apply2(Minus, d2x, d2y)
-| Times -> Apply2(Plus, Apply2(Plus, Apply2(Times, d2x, y), Apply2(Times, x, d2y)), Apply2(Times, Const 2., Apply2(Times, dx, dy)))
+  | Plus  -> Apply2(Plus, d2x, d2y)
+  | Minus -> Apply2(Minus, d2x, d2y)
+  | Times -> Apply2(Plus, Apply2(Plus, Apply2(Times, d2x, y), Apply2(Times, x, d2y)), Apply2(Times, Const 2., Apply2(Times, dx, dy)))
 
 let rec forwardAD12Type (ty : sourceType) : targetType = match ty with
   | Real          -> NProd([Real; Real; Real])
@@ -152,25 +175,6 @@ let rec forwardAD22Type (ty : sourceType) : targetType = match ty with
 
 let dvar22 var : var * var * var * var = let str, i = var in var, ("d1"^str, i), ("d2"^str, i), ("dd"^str, i) 
 
-let dop22 x d1x d2x ddx (op: op1) = match op with
- | Cos     -> Apply2(Minus, Apply1(Minus, Apply2(Times, Apply1(Cos, x), Apply2(Times, d1x, d2x))), Apply2(Times,Apply1(Sin, x), ddx))
- | Sin     -> Apply2(Plus, Apply1(Minus, Apply2(Times, Apply1(Sin, x), Apply2(Times, d1x, d2x))), Apply2(Times, Apply1(Cos, x), ddx))
- | Exp     -> Apply2(Plus, Apply2(Times, Apply1(Exp, x), Apply2(Times, d1x, d2x)), Apply2(Times, Apply1(Exp, x), ddx))
- | Minus   -> Apply1(Minus, ddx)
- | Power 0 -> Const(0.)
- | Power 1 -> ddx
- | Power n -> Apply2(Plus,
-                    Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2),x)), Apply2(Times, d1x, d2x)),
-                    Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1),x)), ddx))
-
-let d2op22 x d1x d2x ddx y d1y d2y ddy (op: op2) = match op with
-| Plus  -> Apply2(Plus, ddx, ddy)
-| Minus -> Apply2(Minus, ddx, ddy)
-| Times -> Apply2(Plus,
-                  Apply2(Plus, Apply2(Times, ddx, y), Apply2(Times, x, ddy)),
-                  Apply2(Plus, Apply2(Times, d1x, d2y), Apply2(Times, d2x, d1y)))
-
-(* This method computes (2,2) velocities. *) 
 let rec forward22AD (expr: sourceSyn) : targetSyn = match expr with
 | Const c               ->  Tuple([Const c; Const 0.; Const 0.; Const 0.])
 | Var(x,ty)             ->  let x, d1x, d2x, ddx = dvar22 x in
@@ -180,9 +184,9 @@ let rec forward22AD (expr: sourceSyn) : targetSyn = match expr with
                             let ty = Real in
                             let exprD = forward22AD expr in
                             let e = Apply1(op, Var(y, ty)) in
-                            let d1e = Apply2(Times, dop (Var(y,ty)) op, Var(d1y,ty)) in
-                            let d2e = Apply2(Times, dop (Var(y,ty)) op, Var(d2y,ty)) in  
-                            let dde = dop22 (Var(y,ty)) (Var(d1y,ty)) (Var(d2y,ty)) (Var(ddy,ty)) op in
+                            let d1e = Apply2(Times, dop (Var(y, ty)) op, Var(d1y, ty)) in
+                            let d2e = Apply2(Times, dop (Var(y, ty)) op, Var(d2y, ty)) in  
+                            let dde = dop22 (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(ddy, ty)) op in
                             NCase(exprD,[(y, ty); (d1y, ty); (d2y, ty); (ddy, ty)], Tuple([e; d1e; d2e; dde]))
 | Apply2(op,expr1,expr2)->  let x, d1x, d2x, ddx = dvar22 (Syntax.Vars.fresh()) in
                             let y, d1y, d2y, ddy = dvar22 (Syntax.Vars.fresh()) in
@@ -191,13 +195,13 @@ let rec forward22AD (expr: sourceSyn) : targetSyn = match expr with
                             let expr2D = forward22AD expr2 in
                             let e = Apply2(op, Var(x, ty), Var(y, ty)) in
                             let d1e = Apply2(Plus,
-                                            Apply2(Times, d1op (Var(x,ty)) (Var(y,ty)) op, (Var(d1x,ty))),
-                                            Apply2(Times, d2op (Var(x,ty)) (Var(y,ty)) op, (Var(d2x,ty)))) in
+                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d1x, ty))),
+                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d2x, ty)))) in
                             let d2e = Apply2(Plus,
-                                            Apply2(Times, d1op (Var(x,ty)) (Var(y,ty)) op, (Var(d1y,ty))),
-                                            Apply2(Times, d2op (Var(x,ty)) (Var(y,ty)) op, (Var(d2y,ty)))) in                
-                            let dde = d2op22 (Var(x,ty)) (Var(d1x,ty)) (Var(d2x,ty)) (Var(ddx,ty)) 
-                                             (Var(y,ty)) (Var(d1y,ty)) (Var(d2y,ty)) (Var(ddy,ty)) 
+                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d1y, ty))),
+                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d2y, ty)))) in                
+                            let dde = d2op22 (Var(x, ty)) (Var(d1x, ty)) (Var(d2x, ty)) (Var(ddx, ty)) 
+                                             (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(ddy, ty)) 
                                              op in
                             NCase(expr1D, [(x, ty); (d1x, ty); (d2x, ty);  (ddx, ty)],
                             NCase(expr2D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], 
@@ -220,6 +224,73 @@ let rec forwardAD33Type (ty : sourceType) : targetType = match ty with
   | Real          -> NProd([Real; Real; Real; Real; Real; Real; Real; Real])
   | Prod(ty1,ty2) -> Prod(forwardAD33Type ty1,forwardAD33Type ty2)
 
-let dvar22 var : var * var * var * var = let str, i = var in var, ("d1"^str, i), ("d2"^str, i), ("dd"^str, i) 
+let dvar33 var : var * var * var * var * var * var * var * var = 
+  let str, i = var in var, 
+                      ("d1"^str, i), ("d2"^str, i), ("d3"^str, i), 
+                      ("dd1"^str, i),  ("dd2"^str, i),  ("dd3"^str, i),  
+                      ("ddd"^str, i)
 
-end
+let dop33 x d1x d2x ddx (op: op1) = match op with
+ | Cos     -> Apply2(Minus, Apply1(Minus, Apply2(Times, Apply1(Cos, x), Apply2(Times, d1x, d2x))), Apply2(Times,Apply1(Sin, x), ddx))
+ | Sin     -> Apply2(Plus, Apply1(Minus, Apply2(Times, Apply1(Sin, x), Apply2(Times, d1x, d2x))), Apply2(Times, Apply1(Cos, x), ddx))
+ | Exp     -> Apply2(Plus, Apply2(Times, Apply1(Exp, x), Apply2(Times, d1x, d2x)), Apply2(Times, Apply1(Exp, x), ddx))
+ | Minus   -> Apply1(Minus, ddx)
+ | Power 0 -> Const(0.)
+ | Power 1 -> ddx
+ | Power n -> Apply2(Plus,
+                    Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2),x)), Apply2(Times, d1x, d2x)),
+                    Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1),x)), ddx))
+
+let rec forward33AD (expr: sourceSyn) : targetSyn = match expr with
+| Const c               ->  Tuple([Const c; Const 0.; Const 0.; Const 0.; Const 0.; Const 0.; Const 0.; Const 0.])
+| Var(x,ty)             ->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = dvar33 x in
+                            let ty = sourceToTargetType ty in
+                            Tuple([Var(x, ty); Var(d1x, ty); Var(d2x, ty); Var(d3x, ty); Var(dd1x, ty); Var(dd2x, ty); Var(dd3x, ty); Var(dddx, ty);])
+| Apply1(op,expr)       ->  let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 (Syntax.Vars.fresh()) in
+                            let ty = Real in
+                            let exprD = forward33AD expr in
+                            let e = Apply1(op, Var(y, ty)) in
+                            let d1e = Apply2(Times, dop (Var(y, ty)) op, Var(d1y, ty)) in
+                            let d2e = Apply2(Times, dop (Var(y, ty)) op, Var(d2y, ty)) in
+                            let d3e = Apply2(Times, dop (Var(y, ty)) op, Var(d3y, ty)) in   
+                            let dd1e = dop22 (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(dd1y, ty)) op in
+                            let dd2e = dop22 (Var(y, ty)) (Var(d2y, ty)) (Var(d3y, ty)) (Var(dd2y, ty)) op in
+                            let dd3e = dop22 (Var(y, ty)) (Var(d3y, ty)) (Var(d1y, ty)) (Var(dd3y, ty)) op in
+                            let ddde = dop33 (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(dddy, ty)) op in
+                            NCase(exprD, 
+                                  [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)],  
+                                  Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde]))
+| Apply2(op,expr1,expr2)->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = dvar33 (Syntax.Vars.fresh()) in
+                            let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 (Syntax.Vars.fresh()) in
+                            let ty = Real in
+                            let expr1D = forward33AD expr1 in
+                            let expr2D = forward33AD expr2 in
+                            let e = Apply2(op, Var(x, ty), Var(y, ty)) in
+                            let d1e = Apply2(Plus,
+                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d1x, ty))),
+                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d1y, ty)))) in
+                            let d2e = Apply2(Plus,
+                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d2x, ty))),
+                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d2y, ty)))) in
+                            let d3e = Apply2(Plus,
+                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d3x, ty))),
+                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d3y, ty)))) in                  
+                            let dd1e = d2op22 (Var(x, ty)) (Var(d1x, ty)) (Var(d2x, ty)) (Var(dd1x, ty)) 
+                                              (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(dd1y, ty)) 
+                                              op in
+                            let dd2e = d2op22 (Var(x, ty)) (Var(d1x, ty)) (Var(d2x, ty)) (Var(dd2x, ty)) 
+                                              (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(dd2y, ty)) 
+                                              op in
+                            let dd3e = d2op22 (Var(x, ty)) (Var(d1x, ty)) (Var(d2x, ty)) (Var(dd3x, ty)) 
+                                              (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(dd3y, ty)) 
+                                              op in
+                            let ddde = Const 0. in   (* TODO *)               
+                            NCase(expr1D, [(x, ty); (d1x, ty); (d2x, ty); (d3x, ty); (dd1x, ty); (dd2x, ty); (dd3x, ty);  (dddx, ty)],
+                            NCase(expr2D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], 
+                            Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde])))
+| Let(y,ty,expr1,expr2) ->  let expr1D = forward33AD expr1 in
+                            let expr2D = forward33AD expr2 in
+                            let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 y in
+                            let ty = sourceToTargetType ty in
+                            NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], expr2D)  
+end                      
