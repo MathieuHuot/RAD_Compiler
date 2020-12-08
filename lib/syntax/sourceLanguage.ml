@@ -49,12 +49,12 @@ let rec subst (x: var) ty expr1 expr2 = match expr2 with
     then failwith "subst: trying to substitute a bound variable"
     else Let(y, ty1, subst x ty expr1 expr2, subst x ty expr1 expr3)
 
-let isInContext (x, ty) context = List.fold_left (fun acc (y, ty2,_) -> acc || (equal x y && equalTypes ty ty2)) false context
+let isInContext (x, ty) context = List.exists (fun (y, ty2,_) -> (equal x y && equalTypes ty ty2)) context
 
-let rec findInContext (x,ty) context = match context with
-  | []                                                    -> failwith "findInContext: variable not found in this context"
-  | (y, ty2, expr)::_ when equal x y && equalTypes ty ty2 -> expr
-  | _::cont                                               -> findInContext (x, ty) cont
+let findInContext (x,ty) context =
+  match List.find_opt (fun (y, ty2,_) -> (equal x y && equalTypes ty ty2)) context with
+  | None                  -> failwith "findInContext: variable not found in this context"
+  | Some (_y, _ty2, expr) -> expr
 
  let rec simSubst context expr = match expr with
   | Var (a, ty1) when isInContext (a, ty1) context          
@@ -87,7 +87,7 @@ let equalTerms expr1 expr2 =
     in eqT expr1 expr2 []
 
 let isContextOfValues (cont: context) = 
-    List.fold_left (fun acc (_,_,v) -> (isValue v) && acc) true cont 
+    List.for_all (fun (_,_,v) -> (isValue v)) cont
 
 let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
     then failwith "closingTerm: context does not only contain values"
@@ -164,7 +164,7 @@ let isWellTyped expr = match (typeSource expr) with
 (* checks whether the context captures all the free variables of an expression*)
 let contextComplete expr context =
     let exprFv = freeVars expr in 
-    List.fold_left (fun acc x -> acc && (List.exists (fun (y,_,_) -> equal y x) context)) true exprFv
+    List.for_all (fun x -> List.exists (fun (y,_,_) -> equal y x) context) exprFv
 
 let interpretOp1 op v = match op with
     | Cos      -> cos(v)
