@@ -174,7 +174,7 @@ let rec run expr = match expr with
   | Apply2(Times,expr1,Apply1(Minus,expr2)) 
       -> Success(Apply1(Minus,Apply2(Times,expr1,expr2)))
   | Apply1(Power n, Apply1(Minus, expr))
-      -> if n mod 2==0 
+      -> if n mod 2=0
       then Success(Apply1(Power n,expr))
       else Success(Apply1(Minus,Apply1(Power n,expr)))
   | Apply1(Power n,Apply1(Exp,expr))
@@ -326,7 +326,7 @@ let rec run expr = match expr with
       let x1 = e1 in let x2 = e2 in ... in let xn = en in e
       for later optimisations like forward substitution *)                               
   | App(Fun(varList,expr),exprList) 
-                             -> if not(List.length varList == List.length exprList) 
+                             -> if not(List.length varList = List.length exprList)
                                 then failwith "LambdaRemoval: Function applied to wrong number of arguments" 
                                 else Success(NCase(Tuple(exprList),varList,expr)) 
   (* CBN evaluates a variable which has a function type *)

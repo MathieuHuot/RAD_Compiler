@@ -29,7 +29,7 @@ let equalOp1 op1 op2 = match op1, op2 with
 | Sin, Sin       -> true
 | Exp, Exp       -> true
 | Minus, Minus   -> true
-| Power n, Power m when n==m 
+| Power n, Power m when n=m
                  -> true
 | _              -> false
 
@@ -72,7 +72,7 @@ let rec findInContext (x,ty) context = match context with
     When an occurence of bound variable is found deeper in the term, we check whether it matches the renaming *)
 let equalTerms expr1 expr2 = 
     let rec eqT expr1 expr2 list = match expr1, expr2 with
-    | Const a,Const b                                          -> a==b
+    | Const a,Const b                                          -> a=b
     | Var (a, ty1), Var (b, ty2)                               -> (equal a b || List.mem  ((a, ty1), (b, ty2)) list)
                                                                   && equalTypes ty1 ty2
     | Apply1(op1, expr11),Apply1(op2, expr22)                  -> equalOp1 op1 op2 

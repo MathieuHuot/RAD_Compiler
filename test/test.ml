@@ -19,7 +19,7 @@ let range n =
   unfold_right irange 0
 
 let genFresh = let n = ref 0 in fun () ->  n := !n+1; "z", !n
-let rec genContext size = if size==0 then [] else genFresh()::genContext (size-1)
+let rec genContext size = if size=0 then [] else genFresh()::genContext (size-1)
 
 (* Random term generator tests *)
 let x=2;;

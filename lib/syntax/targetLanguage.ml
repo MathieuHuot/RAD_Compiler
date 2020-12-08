@@ -36,7 +36,7 @@ let equalOp1 op1 op2 = match op1,op2 with
   | Sin,Sin     -> true
   | Exp,Exp     -> true
   | Minus,Minus -> true
-  | Power n, Power m when n==m
+  | Power n, Power m when n=m
                 -> true
   | _           -> false
 
@@ -118,7 +118,7 @@ let rec findInContext (x,ty) context = match context with
     When an occurence of bound variable is found deeper in the term, we check whether it matches the renaming *)
 let equalTerms expr1 expr2 = 
 let rec eqT expr1 expr2 list = match expr1, expr2 with
-| Const a,Const b                                     -> a==b
+| Const a,Const b                                     -> a=b
 | Var (a,ty1),Var (b,ty2)                             -> (equal a b || List.mem  ((a,ty1),(b,ty2)) list)
                                                          && equalTypes ty1 ty2
 | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 
@@ -307,7 +307,7 @@ let rec typeTarget = function
   | _                                                                         -> None
   end
 | Tuple(exprList)               ->  let lis = List.map typeTarget exprList in 
-                                    if (List.exists (fun ty -> ty == None) lis) 
+                                    if (List.exists (fun ty -> ty = None) lis)
                                     then None
                                     else Some(NProd(List.map (fun x -> match x with | Some(x) -> x | _ -> failwith "") lis))
 | NCase(expr1,varList,expr2)    -> 
@@ -370,14 +370,14 @@ let rec interp expr = match expr with
     | _           -> failwith "interpret: expression should reduce to a pair" end
 | App(expr1,exprList)             ->  begin match (interp expr1) with
     | Fun(varList,expr1)  ->  let vList = List.map interp exprList in
-                              if not(List.length varList == List.length vList) 
+                              if not(List.length varList = List.length vList)
                               then failwith "interp: Function applied to wrong number of arguments"
                               else
                               expr1 |> simSubst (List.map (fun ((x,ty),expr) -> x,ty,expr) (List.combine varList vList)) |> interp
     | _                   ->  failwith "interpret: expression should reduce to a function" end
 | Tuple(exprList)                 -> Tuple(List.map interp exprList)
 | NCase(expr1,varList,expr2)      -> begin match (interp expr1) with
-    | Tuple(exprList) -> if not(List.length varList == List.length exprList) 
+    | Tuple(exprList) -> if not(List.length varList = List.length exprList)
                          then failwith ("interp: NCase argument should be a tuple of size "
                                         ^(string_of_int (List.length varList))
                                         ^"but is of size"

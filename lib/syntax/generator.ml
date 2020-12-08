@@ -26,7 +26,7 @@ let randOp2() = match (randOp2Choice()) with
 
 let rec get_i i list = match list with
 | [] -> failwith "randVar: empty list"
-| x::list ->  if i==0 then x 
+| x::list ->  if i=0 then x
               else get_i (i-1) list 
 
 let randVar context = 
@@ -39,7 +39,7 @@ let randVar context =
 
 let sourceSynGen max_depth context : SourceLanguage.sourceSyn =
 let rec syngen (context : varSourceContext) (depth : int) : SourceLanguage.sourceSyn * varSourceContext =
-        if depth == max_depth then
+        if depth = max_depth then
         begin
         match (int 2) with
         | 0 ->  Const(randConst()), context
@@ -79,7 +79,7 @@ let expr,_ = syngen context 0 in expr
 (* TODO: to generate from the whole syntax, I need to add types *)
 let targetSynGen max_depth context : TargetLanguage.targetSyn =
 let rec syngen (context : varTargetContext) (depth : int) : TargetLanguage.targetSyn * varTargetContext =
-        if depth == max_depth then
+        if depth = max_depth then
         begin
         match (int 2) with
         | 0 ->  Const(randConst()), context
