@@ -14,6 +14,12 @@ and sourceSyn = Var of var * sourceType
 
 type context = (var * sourceType * sourceSyn) list
 
+let rec map f expr = match f expr with
+  | Var (_, _) |Const _ as expr -> expr
+  |Apply1 (op, expr) -> Apply1(op, map f expr)
+  |Apply2 (op, expr1,expr2) -> Apply2(op, map f expr1, map f expr2)
+  |Let (y, ty, expr1, expr2) -> Let (y, ty, map f expr1, map f expr2)
+
 let rec equalTypes ty1 ty2 = match ty1,ty2 with
 | Real, Real                          ->  true
 | Prod(ty11, ty12), Prod(ty21, ty22)  ->  equalTypes ty11 ty21 
@@ -40,31 +46,35 @@ let equalOp2 op1 op2 = match op1, op2 with
 | _              -> false
 
 (* substitute variable x of type ty by expr1 in expr2 *)
-let rec subst (x: var) ty expr1 expr2 = match expr2 with 
-| Var (a, ty1)              -> if equal a x && equalTypes ty1 ty then expr1 else expr2
-| Const _                   -> expr2
-| Apply1(op, expr2)         -> Apply1(op,subst x ty expr1 expr2)
-| Apply2(op, expr2, expr3)  -> Apply2(op,subst x ty expr1 expr2,subst x ty expr1 expr3)
-| Let(y, ty1, expr2, expr3) -> if (equal x y && equalTypes ty ty1)
-    then failwith "subst: trying to substitute a bound variable"
-    else Let(y, ty1, subst x ty expr1 expr2, subst x ty expr1 expr3)
+let subst (x: var) ty expr1 expr2 = map (fun expr ->
+    match expr with
+    | Var (a, ty1)      -> if equal a x && equalTypes ty1 ty then expr1 else expr
+    | Const _           -> expr
+    | Let(y, ty1, _, _) -> if (equal x y && equalTypes ty ty1)
+      then failwith "subst: trying to substitute a bound variable"
+      else expr
+    | _                 -> expr
+  ) expr2
+
 
 let isInContext (x, ty) context = List.exists (fun (y, ty2,_) -> (equal x y && equalTypes ty ty2)) context
 
 let findInContext (x,ty) context =
   match List.find_opt (fun (y, ty2,_) -> (equal x y && equalTypes ty ty2)) context with
-  | None                  -> failwith "findInContext: variable not found in this context"
-  | Some (_y, _ty2, expr) -> expr
+  | None                  -> None
+  | Some (_y, _ty2, expr) -> Some expr
 
- let rec simSubst context expr = match expr with
-  | Var (a, ty1) when isInContext (a, ty1) context          
-                              -> findInContext (a, ty1) context
-  | Apply1(op, expr)          -> Apply1(op, simSubst context expr)
-  | Apply2(op, expr1, expr2)  -> Apply2(op, simSubst context expr1, simSubst context expr2)
-  | Let(y, ty1, expr1, expr2) -> if isInContext (y, ty1) context
+let simSubst context expr = map (fun expr ->
+    match expr with
+  | Var (a, ty1)      -> begin match findInContext (a, ty1) context with
+                           | None -> expr
+                           | Some expr -> expr
+                         end
+  | Let(y, ty1, _, _) -> if isInContext (y, ty1) context
       then failwith "simsubst: trying to substitute a bound variable"
-      else Let(y, ty1, simSubst context expr1, simSubst context expr2)
-  | _                         -> expr
+      else expr
+  | _                 -> expr
+  ) expr
 
 (*  Checks whether two terms are equal up to alpha renaming.
     Two variables match iff they are the same free variable or they are both bound and equal up to renaming.
@@ -125,12 +135,10 @@ let indexOf el lis =
 let canonicalAlphaRename (name: string) expr =
 let freeV = freeVars expr in 
 if varNameNotBound name expr then 
-let rec canRen expr = match expr with
-| Var (s, ty)              -> let i = indexOf s freeV in Var ((name, i), ty)
-| Apply1(op, expr1)        -> Apply1(op, canRen expr1)
-| Apply2(op, expr1, expr2) -> Apply2(op, canRen expr1, canRen expr2)
-| Let(y, ty, expr1, expr2) -> Let(y, ty, canRen expr1, canRen expr2) 
-| _                        -> expr
+let canRen expr = map (fun expr -> match expr with
+      | Var (s, ty)              -> let i = indexOf s freeV in Var ((name, i), ty)
+      | _ -> expr
+    ) expr
 in canRen expr
 else failwith ("canonicalAlphaRename: variable "^name^" is already used as a bound variable, can't rename free vars canonically with "^name)
 
