@@ -5,27 +5,27 @@ type targetType = Real
             | Arrow of (targetType list ) * targetType
             | NProd of targetType tuple 
 
-and targetSyn = Var of Vars.var * targetType
+and targetSyn = Var of Vars.t * targetType
             | Const of float 
             | Apply1 of Operators.op1 * targetSyn 
             | Apply2 of Operators.op2 * targetSyn * targetSyn
-            | Let of Vars.var * targetType * targetSyn * targetSyn
+            | Let of Vars.t * targetType * targetSyn * targetSyn
             | Pair of targetSyn * targetSyn
-            | Fun of ((Vars.var * targetType) list) * targetSyn
+            | Fun of ((Vars.t * targetType) list) * targetSyn
             | App of targetSyn * (targetSyn list)
-            | Case of targetSyn * Vars.var * targetType * Vars.var * targetType * targetSyn
+            | Case of targetSyn * Vars.t * targetType * Vars.t * targetType * targetSyn
             | Tuple of targetSyn tuple
-            | NCase of targetSyn * ((Vars.var * targetType) list) * targetSyn     
+            | NCase of targetSyn * ((Vars.t * targetType) list) * targetSyn     
 
-type context = (Vars.var * targetType * targetSyn) list
+type context = (Vars.t * targetType * targetSyn) list
 
 val isArrow : targetType -> bool
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
 val equalTypes : targetType -> targetType -> bool
 val equalTerms: targetSyn -> targetSyn ->  bool
 val isValue : targetSyn -> bool
-val freeVars : targetSyn -> Vars.var list
-val subst : Vars.var -> targetType -> targetSyn -> targetSyn -> targetSyn
+val freeVars : targetSyn -> Vars.t list
+val subst : Vars.t -> targetType -> targetSyn -> targetSyn -> targetSyn
 val simSubst : context -> targetSyn -> targetSyn
 val canonicalAlphaRename : string -> targetSyn -> targetSyn
 val typeTarget : targetSyn -> targetType option

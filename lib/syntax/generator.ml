@@ -1,8 +1,8 @@
 open Random
 open Operators
 
-type varSourceContext = (Vars.var * SourceLanguage.sourceType) list
-type varTargetContext = (Vars.var * TargetLanguage.targetType) list
+type varSourceContext = (Vars.t * SourceLanguage.sourceType) list
+type varTargetContext = (Vars.t * TargetLanguage.targetType) list
 
 (* Random terms generator for tests *)
 

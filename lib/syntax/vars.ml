@@ -1,8 +1,8 @@
 (* A variable is just given by a name, a number *)
-type var = string * int
+type t = string * int
 
 (* we assume programs don't use the variable name y *)
-let fresh : unit -> var =
+let fresh : unit -> t =
     (* A counter to produce unique numbers *)
     let counter = ref 0 in
     fun () ->

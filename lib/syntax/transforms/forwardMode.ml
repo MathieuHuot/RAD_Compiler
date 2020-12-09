@@ -3,7 +3,6 @@
 open Syntax.SourceLanguage
 open Syntax.Operators
 open Syntax.TargetLanguage
-open Syntax.Vars
 
 let rec forwardADType (ty : sourceType) : targetType = match ty with
 | Real          -> Prod(Real,Real)
@@ -11,7 +10,7 @@ let rec forwardADType (ty : sourceType) : targetType = match ty with
 
 (* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
-let dvar var : var * var = let str, i = var in var, ("d"^str,i) 
+let dvar var : Syntax.Vars.t * Syntax.Vars.t = let str, i = var in var, ("d"^str,i) 
 
 let dop op y = match op with
 | Cos     -> Apply1(Minus,Apply1(Sin,y))
@@ -67,6 +66,6 @@ let grad context expr =
   List.map 
       (fun (x,_,_) -> List.fold_left 
       (fun acc (y,ty2,expr2) -> let y, dy = dvar y in
-      let f z = if (equal x y) then subst dy ty2 (Const(1.)) z else subst dy ty2 (Const(0.)) z in
+      let f z = if (Syntax.Vars.equal x y) then subst dy ty2 (Const(1.)) z else subst dy ty2 (Const(0.)) z in
       f (subst y ty2 expr2 acc)) dexpr context) 
       context 

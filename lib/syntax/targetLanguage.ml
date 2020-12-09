@@ -1,5 +1,4 @@
 open Operators
-open Vars
 
 (* syntax *)
 type 'a tuple = 'a list
@@ -9,19 +8,19 @@ type targetType = Real
                 | Arrow of (targetType list ) * targetType
                 | NProd of targetType tuple
 
-and targetSyn = Var of var * targetType
+and targetSyn = Var of Vars.t * targetType
                 | Const of float 
                 | Apply1 of op1 * targetSyn 
                 | Apply2 of op2 * targetSyn * targetSyn
-                | Let of var * targetType * targetSyn * targetSyn
+                | Let of Vars.t * targetType * targetSyn * targetSyn
                 | Pair of targetSyn * targetSyn
-                | Fun of ((var * targetType) list) * targetSyn
+                | Fun of ((Vars.t * targetType) list) * targetSyn
                 | App of targetSyn * (targetSyn list)
-                | Case of targetSyn * var * targetType * var * targetType * targetSyn
+                | Case of targetSyn * Vars.t * targetType * Vars.t * targetType * targetSyn
                 | Tuple of targetSyn tuple 
-                | NCase of targetSyn * ((var * targetType) list) * targetSyn
+                | NCase of targetSyn * ((Vars.t * targetType) list) * targetSyn
 
-type context = (var * targetType * targetSyn) list
+type context = (Vars.t * targetType * targetSyn) list
 
 let isArrow ty = match ty with
 | Arrow(_,_)  -> true
@@ -62,32 +61,32 @@ let rec equalTypes ty1 ty2 = match ty1,ty2 with
   | _                                     -> false
   
 (* substitute variable x of type xTy by expr1 in expr2 *)
-let rec subst (x:var) xTy expr1 expr2 = match expr2 with 
-| Var(a,ty)                       -> if equal a x && equalTypes ty xTy then expr1 else expr2
+let rec subst (x:Vars.t) xTy expr1 expr2 = match expr2 with 
+| Var(a,ty)                       -> if Vars.equal a x && equalTypes ty xTy then expr1 else expr2
 | Const _                         -> expr2
 | Apply1(op,expr2)                -> Apply1(op,subst x xTy expr1 expr2)
 | Apply2(op,expr2,expr3)          -> Apply2(op,subst x xTy expr1 expr2,subst x xTy expr1 expr3)
-| Let(y,ty,expr2,expr3)           -> if (equal x y && equalTypes xTy ty)
+| Let(y,ty,expr2,expr3)           -> if (Vars.equal x y && equalTypes xTy ty)
                                      then failwith "sim: trying to substitute a bound variable"
                                      else Let(y,ty,subst x xTy expr1 expr2, subst x xTy expr1 expr3)
 | Pair(expr2,expr3)               -> Pair(subst x xTy expr1 expr2,subst x xTy expr1 expr3)
-| Fun(varList,expr2)              -> if (List.exists (fun (y,ty) -> equal x y && equalTypes ty xTy) varList)
+| Fun(varList,expr2)              -> if (List.exists (fun (y,ty) -> Vars.equal x y && equalTypes ty xTy) varList)
                                      then failwith "sim: trying to substitute a bound variable"
                                      else Fun(varList,subst x xTy expr1 expr2)
 | App(expr2,exprList)             -> App(subst x xTy expr1 expr2,List.map (subst x xTy expr1) exprList)
-| Case(expr2,y1,ty1,y2,ty2,expr3) -> if (equal x y1)||(equal x y2)
+| Case(expr2,y1,ty1,y2,ty2,expr3) -> if (Vars.equal x y1)||(Vars.equal x y2)
                                      then failwith "sim: trying to substitute a bound variable"
                                      else Case(subst x xTy expr1 expr2,y1,ty1,y2,ty2,subst x xTy expr1 expr3)
 | Tuple(exprList)                 -> Tuple(List.map (subst x xTy expr1) exprList)
-| NCase(expr2,varList,expr3)      -> if (List.exists (fun (y,ty) -> equal x y && equalTypes ty xTy) varList)
+| NCase(expr2,varList,expr3)      -> if (List.exists (fun (y,ty) -> Vars.equal x y && equalTypes ty xTy) varList)
                                      then failwith "sim: trying to substitute a bound variable"
                                      else NCase(subst x xTy expr1 expr2, varList, subst x xTy expr1 expr3)
 
-let isInContext (x,ty) context = List.fold_left (fun acc (y,ty2,_) -> acc || (equal x y && equalTypes ty ty2)) false context
+let isInContext (x,ty) context = List.fold_left (fun acc (y,ty2,_) -> acc || (Vars.equal x y && equalTypes ty ty2)) false context
 
 let rec findInContext (x,ty) context = match context with
   | []                                                  -> failwith "variable not found in this context"
-  | (y,ty2,expr)::_ when equal x y && equalTypes ty ty2 -> expr
+  | (y,ty2,expr)::_ when Vars.equal x y && equalTypes ty ty2 -> expr
   | _::tl                                               -> findInContext (x,ty) tl
 
  let rec simSubst context expr = match expr with
@@ -119,7 +118,7 @@ let rec findInContext (x,ty) context = match context with
 let equalTerms expr1 expr2 = 
 let rec eqT expr1 expr2 list = match expr1, expr2 with
 | Const a,Const b                                     -> a=b
-| Var (a,ty1),Var (b,ty2)                             -> (equal a b || List.mem  ((a,ty1),(b,ty2)) list)
+| Var (a,ty1),Var (b,ty2)                             -> (Vars.equal a b || List.mem  ((a,ty1),(b,ty2)) list)
                                                          && equalTypes ty1 ty2
 | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 
                                                          && eqT expr11 expr22 list
@@ -179,7 +178,7 @@ let rec freeVars = function
     let expr2Fv = List.filter (fun x -> not (List.mem x expr1Fv)) (freeVars expr2) in 
     List.append expr1Fv expr2Fv
 | Let(y,_,expr1,expr2)        ->
-    let expr1Fv = List.filter (fun x -> not(equal x y)) (freeVars expr1) in 
+    let expr1Fv = List.filter (fun x -> not(Vars.equal x y)) (freeVars expr1) in 
     let expr2Fv = List.filter (fun x -> not(List.mem x expr1Fv)) (freeVars expr2) in 
     List.append expr1Fv expr2Fv
 | App(expr1,exprList)         ->  
@@ -192,12 +191,12 @@ let rec freeVars = function
     lis
 | Fun(varList,expr)           -> let exprFv = freeVars expr in
     List.fold_left 
-    (fun list (y,_) -> List.filter (fun x -> not(equal x y)) list) 
+    (fun list (y,_) -> List.filter (fun x -> not(Vars.equal x y)) list) 
     exprFv 
     varList
 | Case(expr1,y1,_,y2,_,expr2) -> 
     let expr1Fv = freeVars expr1 in 
-    let expr2Fv = List.filter (fun x -> not(equal x y1) && not(equal x y2)) (freeVars expr2) in 
+    let expr2Fv = List.filter (fun x -> not(Vars.equal x y1) && not(Vars.equal x y2)) (freeVars expr2) in 
     List.append 
     expr1Fv 
     (List.filter (fun x -> not(List.mem x expr1Fv)) expr2Fv)
@@ -210,7 +209,7 @@ let rec freeVars = function
     lis
 | NCase(expr1,varList,expr2)  -> 
   let expr1Fv = freeVars expr1 in 
-  let expr2Fv = List.fold_left (fun list (y,_) -> List.filter (fun x -> not(equal x y)) list) (freeVars expr2) varList in 
+  let expr2Fv = List.fold_left (fun list (y,_) -> List.filter (fun x -> not(Vars.equal x y)) list) (freeVars expr2) varList in 
   List.append expr1Fv (List.filter (fun x -> not(List.mem x expr1Fv)) expr2Fv)
 | _ -> [] 
 
@@ -239,7 +238,7 @@ let rec varNameNotBound (name:string) expr = match expr with
 let indexOf el lis = 
   let rec indexAux i = function
     | [] -> failwith "canonicalAlphaRename: Element not found in the list"
-    | hd::tl -> if equal hd el then i else indexAux (i+1) tl
+    | hd::tl -> if Vars.equal hd el then i else indexAux (i+1) tl
   in indexAux 0 lis
 
 let canonicalAlphaRename (name:string) expr =
@@ -326,7 +325,7 @@ let isWellTyped expr = match (typeTarget expr) with
 (* checks whether the context captures all the free variables of an expression*)
 let contextComplete expr context =
   let exprFv = freeVars expr in 
-  List.fold_left (fun acc x -> acc && (List.exists (fun (y,_,_) -> equal y x) context)) true exprFv
+  List.fold_left (fun acc x -> acc && (List.exists (fun (y,_,_) -> Vars.equal y x) context)) true exprFv
 
 let interpretOp1 op expr = match expr with
 | Const v -> 

@@ -1,8 +1,9 @@
 (* Prototype for Higher-Order Derivatives *)
 (* See the paper A Geometric Theory of Higher-Order Automatic Differentiation for more information *)
 
-open Syntax.Operators
-open Syntax.TargetLanguage
+open Syntax
+open Operators
+open TargetLanguage
 
 (* Helpers *)
 
@@ -51,12 +52,10 @@ let d2op22 x d1x d2x ddx y d1y d2y ddy (op: op2) = match op with
 (* This method computes (1,2) velocities. *) 
 module Jets12 = struct
 
-open Syntax.SourceLanguage
-open Syntax.Operators
-open Syntax.TargetLanguage
-open Syntax.Vars
+open SourceLanguage
+open TargetLanguage
 
-let dvar2 var : var * var * var = let str,i = var in var,("d"^str,i),("d2"^str,i) 
+let dvar2 var : Vars.t * Vars.t * Vars.t = let str,i = var in var,("d"^str,i),("d2"^str,i) 
 
 (* second derivative of binary operator *)
 let dop2 x dx d2x (op: op1) = match op with
@@ -84,15 +83,15 @@ let rec forward12AD (expr: sourceSyn) : targetSyn = match expr with
 | Var(x,ty)             ->  let x, dx, d2x = dvar2 x in
                             let ty = sourceToTargetType ty in
                             Tuple([Var(x, ty); Var(dx, ty); Var(d2x, ty)])
-| Apply1(op,expr)       ->  let y, dy, d2y = dvar2 (Syntax.Vars.fresh()) in
+| Apply1(op,expr)       ->  let y, dy, d2y = dvar2 (Vars.fresh()) in
                             let ty = Real in
                             let exprD = forward12AD expr in
                             let e = Apply1(op, Var(y, ty)) in
                             let de = Apply2(Times, dop (Var(y, ty)) op, Var(dy, ty)) in 
                             let d2e = dop2 (Var(y, ty)) (Var(dy, ty)) (Var(d2y, ty)) op in
                             NCase(exprD, [(y, ty); (dy, ty); (d2y, ty)], Tuple([e; de; d2e]))
-| Apply2(op,expr1,expr2)->  let x, dx, d2x = dvar2 (Syntax.Vars.fresh()) in
-                            let y, dy, d2y = dvar2 (Syntax.Vars.fresh()) in
+| Apply2(op,expr1,expr2)->  let x, dx, d2x = dvar2 (Vars.fresh()) in
+                            let y, dy, d2y = dvar2 (Vars.fresh()) in
                             let ty = Real in
                             let expr1D = forward12AD expr1 in
                             let expr2D = forward12AD expr2 in
@@ -117,7 +116,7 @@ let secondPartial context expr =
   List.map 
       (fun (x,_,_) -> List.fold_left 
       (fun acc (y, ty2, expr2) -> let y, dy, d2y = dvar2 y in
-      let f = if (equal x y) then subst dy ty2 (Const(1.)) else subst dy ty2 (Const(0.)) in
+      let f = if (Vars.equal x y) then subst dy ty2 (Const(1.)) else subst dy ty2 (Const(0.)) in
       f (subst d2y ty2 (Const 0.) (subst y ty2 expr2 acc))) optiDexpr context) 
       context
 
@@ -133,7 +132,7 @@ let mixedPartial context expr =
       mixedDerivatives.(i).(j) <- 
         List.fold_left 
           (fun acc (y,ty2,expr2) -> let y,dy,d2y = dvar2 y in
-          let f = if (equal arrayContext.(i) y) || (equal arrayContext.(j) y) 
+          let f = if (Vars.equal arrayContext.(i) y) || (Vars.equal arrayContext.(j) y) 
           then subst dy ty2 (Const(1.)) 
           else subst dy ty2 (Const(0.)) in
           f (subst d2y ty2 (Const 0.) (subst y ty2 expr2 acc))
@@ -164,23 +163,22 @@ end
 (* This method computes (2,2) velocities. *) 
 module Jets22 = struct
 
-open Syntax.SourceLanguage
-open Syntax.Operators
-open Syntax.TargetLanguage
-open Syntax.Vars
+open SourceLanguage
+open Operators
+open TargetLanguage
 
 let rec forwardAD22Type (ty : sourceType) : targetType = match ty with
   | Real          -> NProd([Real;Real;Real;Real])
   | Prod(ty1,ty2) -> Prod(forwardAD22Type ty1,forwardAD22Type ty2)
 
-let dvar22 var : var * var * var * var = let str, i = var in var, ("d1"^str, i), ("d2"^str, i), ("dd"^str, i) 
+let dvar22 var : Vars.t * Vars.t * Vars.t * Vars.t = let str, i = var in var, ("d1"^str, i), ("d2"^str, i), ("dd"^str, i) 
 
 let rec forward22AD (expr: sourceSyn) : targetSyn = match expr with
 | Const c               ->  Tuple([Const c; Const 0.; Const 0.; Const 0.])
 | Var(x,ty)             ->  let x, d1x, d2x, ddx = dvar22 x in
                             let ty = sourceToTargetType ty in
                             Tuple([Var(x, ty); Var(d1x, ty); Var(d2x, ty); Var(ddx, ty)])
-| Apply1(op,expr)       ->  let y, d1y, d2y, ddy = dvar22 (Syntax.Vars.fresh()) in
+| Apply1(op,expr)       ->  let y, d1y, d2y, ddy = dvar22 (Vars.fresh()) in
                             let ty = Real in
                             let exprD = forward22AD expr in
                             let e = Apply1(op, Var(y, ty)) in
@@ -188,8 +186,8 @@ let rec forward22AD (expr: sourceSyn) : targetSyn = match expr with
                             let d2e = Apply2(Times, dop (Var(y, ty)) op, Var(d2y, ty)) in  
                             let dde = dop22 (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(ddy, ty)) op in
                             NCase(exprD,[(y, ty); (d1y, ty); (d2y, ty); (ddy, ty)], Tuple([e; d1e; d2e; dde]))
-| Apply2(op,expr1,expr2)->  let x, d1x, d2x, ddx = dvar22 (Syntax.Vars.fresh()) in
-                            let y, d1y, d2y, ddy = dvar22 (Syntax.Vars.fresh()) in
+| Apply2(op,expr1,expr2)->  let x, d1x, d2x, ddx = dvar22 (Vars.fresh()) in
+                            let y, d1y, d2y, ddy = dvar22 (Vars.fresh()) in
                             (* compared notation to the paper cited above *)
                             (* x is first index, y is second, d1 is for du, d2 for dv, dd for dudv *)
                             let ty = Real in
@@ -219,16 +217,15 @@ end
 (* This method computes (3,3) velocities. *) 
 module Jets33 = struct
 
-open Syntax.SourceLanguage
-open Syntax.Operators
-open Syntax.TargetLanguage
-open Syntax.Vars
+open SourceLanguage
+open Operators
+open TargetLanguage
 
 let rec forwardAD33Type (ty : sourceType) : targetType = match ty with
   | Real          -> NProd([Real; Real; Real; Real; Real; Real; Real; Real])
   | Prod(ty1,ty2) -> Prod(forwardAD33Type ty1,forwardAD33Type ty2)
 
-let dvar33 var : var * var * var * var * var * var * var * var = 
+let dvar33 var : Vars.t * Vars.t * Vars.t * Vars.t * Vars.t * Vars.t * Vars.t * Vars.t = 
   let str, i = var in var, 
                       ("d1"^str, i), ("d2"^str, i), ("d3"^str, i), 
                       ("dd1"^str, i),  ("dd2"^str, i),  ("dd3"^str, i),  
@@ -265,7 +262,7 @@ let rec forward33AD (expr: sourceSyn) : targetSyn = match expr with
 | Var(x,ty)             ->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = dvar33 x in
                             let ty = sourceToTargetType ty in
                             Tuple([Var(x, ty); Var(d1x, ty); Var(d2x, ty); Var(d3x, ty); Var(dd1x, ty); Var(dd2x, ty); Var(dd3x, ty); Var(dddx, ty);])
-| Apply1(op,expr)       ->  let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 (Syntax.Vars.fresh()) in
+| Apply1(op,expr)       ->  let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 (Vars.fresh()) in
                             let ty = Real in
                             let exprD = forward33AD expr in
                             let e = Apply1(op, Var(y, ty)) in
@@ -279,8 +276,8 @@ let rec forward33AD (expr: sourceSyn) : targetSyn = match expr with
                             NCase(exprD, 
                                   [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)],  
                                   Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde]))
-| Apply2(op,expr1,expr2)->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = dvar33 (Syntax.Vars.fresh()) in
-                            let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 (Syntax.Vars.fresh()) in
+| Apply2(op,expr1,expr2)->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = dvar33 (Vars.fresh()) in
+                            let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 (Vars.fresh()) in
                             let ty = Real in
                             let expr1D = forward33AD expr1 in
                             let expr2D = forward33AD expr2 in
@@ -328,9 +325,9 @@ open Syntax.Operators
 open Syntax.TargetLanguage
 open Anf
 
-type context = (Syntax.Vars.var * sourceType) tuple
+type context = (Syntax.Vars.t * sourceType) tuple
 
-let dvar var : Syntax.Vars.var *  Syntax.Vars.var = let str, i = var in (str, i), ("d"^str, i) 
+let dvar var : Syntax.Vars.t *  Syntax.Vars.t = let str, i = var in (str, i), ("d"^str, i) 
 
 let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
 

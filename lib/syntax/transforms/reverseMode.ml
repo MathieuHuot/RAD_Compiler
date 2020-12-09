@@ -5,7 +5,7 @@ open Anf
 open Syntax.SourceLanguage
 open Syntax.TargetLanguage
 
-type context = (Syntax.Vars.var * sourceType) tuple
+type context = (Syntax.Vars.t * sourceType) tuple
 
 let naiveReverseADType (ty: sourceType) (retTy: targetType) =
   let rec nRAD (ty: sourceType) = match ty with
@@ -18,7 +18,7 @@ let semiNaiveReverseADType (ty: sourceType) (retTy: targetType) =
 
 (* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
-let dvar var : Syntax.Vars.var *  Syntax.Vars.var = let str, i = var in (str, i), ("d"^str, i) 
+let dvar var : Syntax.Vars.t *  Syntax.Vars.t = let str, i = var in (str, i), ("d"^str, i) 
 
 let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
 
