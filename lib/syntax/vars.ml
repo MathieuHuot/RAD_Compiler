@@ -13,3 +13,7 @@ let fresh : unit -> t =
     "y", n
 
 let equal var1 var2 = String.equal (fst var1) (fst var2) && snd var1 = snd var2
+
+let to_string (name, id) = name ^ (string_of_int id)
+
+let pp fmt (name, id) = Format.fprintf fmt "%s%i" name id
