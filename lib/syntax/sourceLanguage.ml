@@ -14,10 +14,10 @@ type sourceSyn = Var of Vars.t * sourceType
 type context = (Vars.t * sourceType * sourceSyn) list
 
 let rec map f expr = match f expr with
-  | Var (_, _) |Const _ as expr -> expr
-  |Apply1 (op, expr) -> Apply1(op, map f expr)
-  |Apply2 (op, expr1,expr2) -> Apply2(op, map f expr1, map f expr2)
-  |Let (y, ty, expr1, expr2) -> Let (y, ty, map f expr1, map f expr2)
+  | Var (_, _) | Const _ as expr -> expr
+  | Apply1 (op, expr) -> Apply1(op, map f expr)
+  | Apply2 (op, expr1,expr2) -> Apply2(op, map f expr1, map f expr2)
+  | Let (y, ty, expr1, expr2) -> Let (y, ty, map f expr1, map f expr2)
 
 let rec equalTypes ty1 ty2 = match ty1,ty2 with
 | Real, Real                          ->  true
