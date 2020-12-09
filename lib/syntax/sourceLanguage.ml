@@ -5,7 +5,7 @@ type 'a tuple = 'a list
 
 type sourceType = Real | Prod of sourceType * sourceType
 
-and sourceSyn = Var of Vars.t * sourceType
+type sourceSyn = Var of Vars.t * sourceType
             | Const of float 
             | Apply1 of op1 * sourceSyn 
             | Apply2 of op2 * sourceSyn * sourceSyn 
