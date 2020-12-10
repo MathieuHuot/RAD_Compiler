@@ -20,9 +20,6 @@ let semiNaiveReverseADType (ty: sourceType) (retTy: targetType) =
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
 let dvar var : Syntax.Vars.var *  Syntax.Vars.var = let str, i = var in (str, i), ("d"^str, i) 
 
-(* Returns the target type for a context in the source language *)
-(* let retTypeContext (cont: Syntax.SourceLanguage.context) : targetType = NProd(List.map (fun (_,ty,_) -> sourceToTargetType ty) cont) *)
-
 let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
 
 let getPos (x,ty) list = 
