@@ -1,22 +1,22 @@
 ### Installation
 
 To build the project
-```ocaml
+```bash
 dune build @install
 ```
 
 To run tests and compare them with test.expected
-```ocaml
+```bash
 dune runtest
 ```
 
 To run tests and print them in test.expected
-```ocaml
+```bash
 dune runtest --auto-promote
 ```
 
 To run the project
-```ocaml
+```bash
 dune exec -- ./bin/main.exe
 ```
 Currently print some test in out.txt
