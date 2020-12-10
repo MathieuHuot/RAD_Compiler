@@ -5,7 +5,7 @@ type varSourceContext = (Vars.t * SourceLanguage.sourceType) list
 type varTargetContext = (Vars.t * TargetLanguage.targetType) list
 
 (* Random terms generator for tests *)
-
+let _ = Random.init 0
 let randOp1Choice() = int 4 (* number of unary operators *)
 let randOp2Choice() = int 3 (* number of binary operators *)
 let sourceSynChoice() = int 5 (* number of term constructors for source language *)

@@ -28,7 +28,7 @@ let rec to_string = function
     else Printf.sprintf "(%s %s %s)" (to_string expr1) (to_string_op2 op) (to_string expr2)
   | Let (x, _t, expr1, expr2) -> Printf.sprintf "let %s = %s in\n%s" (Vars.to_string x) (to_string expr1) (to_string expr2)
   | Fun (vars, expr) -> Printf.sprintf "λ%s. %s" (CCList.to_string ~sep:"," (fun (v,_) -> Vars.to_string v) vars) (to_string expr)
-  | App (expr, exprs) -> Printf.sprintf "(%s) {%s}" (to_string expr) (CCList.to_string to_string exprs)
+  | App (expr, exprs) -> Printf.sprintf "(%s)[%s]" (to_string expr) (CCList.to_string to_string exprs)
   | Tuple exprs -> CCList.to_string ~start:"{" ~stop:"}" to_string exprs
   | NCase (expr1, vars, expr2) -> Printf.sprintf "let %s = %s in\n %s" (CCList.to_string ~sep:"," (fun (v,_) -> Vars.to_string v) vars) (to_string expr1) (to_string expr2)
 
@@ -41,9 +41,9 @@ let rec pp fmt = function
     else Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
   | Let (x, _t, expr1, expr2) -> Format.fprintf fmt "let %a = %a in@.%a" Vars.pp x pp expr1 pp expr2
   | Fun (vars, expr) -> Format.fprintf fmt "λ%a. %a" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Vars.pp fmt v)) vars pp expr
-  | App (expr, exprs) -> Format.fprintf fmt "(%a) {%a}" pp expr (CCList.pp pp) exprs
-  | Tuple exprs -> CCList.pp ~pp_start:(fun fmt () -> Format.pp_print_string fmt "{") ~pp_stop:(fun fmt () -> Format.pp_print_string fmt "}") pp fmt exprs
-  | NCase (expr1, vars, expr2) -> Format.fprintf fmt "let %a = %a in@. %a" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Vars.pp fmt v)) vars pp expr1 pp expr2
+  | App (expr, exprs) -> Format.fprintf fmt "(%a)[%a]" pp expr (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ", ") pp) exprs
+  | Tuple exprs -> CCList.pp ~pp_start:(fun fmt () -> Format.pp_print_string fmt "{") ~pp_stop:(fun fmt () -> Format.pp_print_string fmt "}") ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") pp fmt exprs
+  | NCase (expr1, vars, expr2) -> Format.fprintf fmt "let %a = %a in@.%a" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Vars.pp fmt v)) vars pp expr1 pp expr2
 
 let isArrow ty = match ty with
 | Arrow(_,_)  -> true

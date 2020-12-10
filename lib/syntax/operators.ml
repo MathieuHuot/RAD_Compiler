@@ -6,9 +6,9 @@ type op2 = Plus | Times | Minus
 let is_infix _ = true
 
 let to_string_op1 = function
-  | Cos -> "cos"
-  | Sin -> "sin"
-  | Exp -> "exp"
+  | Cos -> "cos "
+  | Sin -> "sin "
+  | Exp -> "exp "
   | Minus -> "-"
   | Power n -> "^" ^ (string_of_int n)
 
