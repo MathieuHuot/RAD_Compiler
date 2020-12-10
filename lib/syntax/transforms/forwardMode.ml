@@ -5,8 +5,8 @@ open Syntax.Operators
 open Syntax.TargetLanguage
 
 let rec forwardADType (ty : sourceType) : targetType = match ty with
-| Real          -> Prod(Real,Real)
-| Prod(ty1,ty2) -> Prod(forwardADType ty1,forwardADType ty2)
+  | Real          -> NProd [Real;Real]
+  | Prod(ty1,ty2) -> NProd [forwardADType ty1;forwardADType ty2]
 
 (* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
@@ -41,7 +41,7 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
                             let exprD = forwardAD expr in
                             let primal = Apply1(op,Var(y,ty)) in
                             let tangent = Apply2(Times, dop op (Var(y,ty)), Var(dy,ty)) in 
-                            Case(exprD,y,ty,dy,ty,Pair(primal,tangent))
+                            NCase(exprD,[(y,ty);(dy,ty)],Pair(primal,tangent))
 | Apply2(op,expr1,expr2)->  let y1, dy1 = dvar (Syntax.Vars.fresh()) in
                             let ty1 = Real in
                             let y2, dy2 = dvar (Syntax.Vars.fresh()) in
@@ -54,12 +54,12 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
                             let tangent = Apply2(Plus,
                                                   Apply2(Times, d1op op y1VarP y2VarP, Var(dy1,ty1)),
                                                   Apply2(Times,d2op op y1VarP y2VarP, Var(dy2,ty2))) in
-                            Case(expr1D,y1,ty1,dy1,ty1,Case(expr2D,y2,ty2,dy2,ty2,Pair(primal,tangent)))
+                            NCase(expr1D,[(y1,ty1);(dy1,ty1)],NCase(expr2D,[(y2,ty2);(dy2,ty2)],Pair(primal,tangent)))
 | Let(y,ty,expr1,expr2) ->  let expr1D = forwardAD expr1 in
                             let expr2D = forwardAD expr2 in
                             let y, dy = dvar y in
                             let ty = sourceToTargetType ty in
-                            Case(expr1D,y,ty,dy,ty,expr2D)
+                            NCase(expr1D,[(y,ty);(dy,ty)],expr2D)
 
 let grad context expr = 
   let dexpr = forwardAD expr in

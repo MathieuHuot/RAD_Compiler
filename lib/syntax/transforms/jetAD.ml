@@ -76,7 +76,7 @@ let d2op2 x dx d2x y dy d2y  (op: op2) = match op with
 
 let rec forwardAD12Type (ty : sourceType) : targetType = match ty with
   | Real          -> NProd([Real; Real; Real])
-  | Prod(ty1,ty2) -> Prod(forwardAD12Type ty1, forwardAD12Type ty2)
+  | Prod(ty1,ty2) -> NProd [forwardAD12Type ty1; forwardAD12Type ty2]
 
 let rec forward12AD (expr: sourceSyn) : targetSyn = match expr with
 | Const c               ->  Tuple([Const c; Const 0.; Const 0.])
@@ -169,7 +169,7 @@ open TargetLanguage
 
 let rec forwardAD22Type (ty : sourceType) : targetType = match ty with
   | Real          -> NProd([Real;Real;Real;Real])
-  | Prod(ty1,ty2) -> Prod(forwardAD22Type ty1,forwardAD22Type ty2)
+  | Prod(ty1,ty2) -> NProd [forwardAD22Type ty1;forwardAD22Type ty2]
 
 let dvar22 var : Vars.t * Vars.t * Vars.t * Vars.t = let str, i = var in var, ("d1"^str, i), ("d2"^str, i), ("dd"^str, i) 
 
@@ -223,7 +223,7 @@ open TargetLanguage
 
 let rec forwardAD33Type (ty : sourceType) : targetType = match ty with
   | Real          -> NProd([Real; Real; Real; Real; Real; Real; Real; Real])
-  | Prod(ty1,ty2) -> Prod(forwardAD33Type ty1,forwardAD33Type ty2)
+  | Prod(ty1,ty2) -> NProd [forwardAD33Type ty1;forwardAD33Type ty2]
 
 let dvar33 var : Vars.t * Vars.t * Vars.t * Vars.t * Vars.t * Vars.t * Vars.t * Vars.t = 
   let str, i = var in var, 

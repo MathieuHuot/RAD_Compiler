@@ -9,12 +9,12 @@ type context = (Syntax.Vars.t * sourceType) tuple
 
 let naiveReverseADType (ty: sourceType) (retTy: targetType) =
   let rec nRAD (ty: sourceType) = match ty with
-  | Real          -> Prod(Real, Arrow([Real],retTy))
-  | Prod(ty1,ty2) -> Prod(nRAD ty1, nRAD ty2)
+    | Real          -> NProd [Real; Arrow([Real],retTy)]
+    | Prod(ty1,ty2) -> NProd [nRAD ty1; nRAD ty2]
   in nRAD ty
 
 let semiNaiveReverseADType (ty: sourceType) (retTy: targetType) = 
-    Prod(sourceToTargetType ty, Arrow([sourceToTargetType ty], retTy))
+  NProd [sourceToTargetType ty; Arrow([sourceToTargetType ty], retTy)]
 
 (* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
@@ -133,7 +133,7 @@ let rec addToPos i list y = match i, list with
                                    let newCont = Var(newContVar, newContType) in
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
-                                   Case(dexpr1, x, sourceToTargetType ty, newContVar, newContType, dexpr2), newNewCont, context
+                                   NCase(dexpr1, [(x, sourceToTargetType ty); (newContVar, newContType)], dexpr2), newNewCont, context
 
 let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
@@ -157,9 +157,9 @@ let grad (context: context) (expr: sourceSyn) : targetSyn =
     let sensitivities = initialize_rad tyList in
     begin 
     match typeTarget dexpr with
-    | Some(Prod(ty1,ty2)) ->
+      | Some(NProd [ty1;ty2]) ->
       let x,dx= dvar (Syntax.Vars.fresh()) in
-      Case(dexpr,x,ty1,dx,ty2,App(Var(dx,ty2),sensitivities))
+      NCase(dexpr,[(x,ty1);(dx,ty2)],App(Var(dx,ty2),sensitivities))
     | _                   -> failwith "grad: should return a pair"
     end
     | _ -> failwith "grad: continuation should have a function type"

@@ -1,7 +1,6 @@
 type 'a tuple = 'a list
 
 type targetType = Real 
-            | Prod of targetType * targetType
             | Arrow of (targetType list ) * targetType
             | NProd of targetType tuple 
 
@@ -13,7 +12,6 @@ and targetSyn = Var of Vars.t * targetType
             | Pair of targetSyn * targetSyn
             | Fun of ((Vars.t * targetType) list) * targetSyn
             | App of targetSyn * (targetSyn list)
-            | Case of targetSyn * Vars.t * targetType * Vars.t * targetType * targetSyn
             | Tuple of targetSyn tuple
             | NCase of targetSyn * ((Vars.t * targetType) list) * targetSyn     
 
