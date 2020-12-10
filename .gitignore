@@ -13,3 +13,4 @@ _build/
 *.cmti
 **.DS_Store
 **.merlin
+out.txt
