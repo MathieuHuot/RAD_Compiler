@@ -2,8 +2,13 @@ open Syntax
 open Transforms
 
 let _ =
+  let file = Unix.openfile "out.txt" [Unix.O_WRONLY; Unix.O_CREAT] 0o644 in  
+  let oc = Unix.out_channel_of_descr file in
+  set_binary_mode_out oc false;
+  let out = Format.formatter_of_out_channel oc in
+  Random.self_init ();
   let _x = 2 in
-  Format.printf "random term:@.%a@.end random term@.@.@." SourceLanguage.pp
+  Format.fprintf out "random term:@.%a@.end random term@.@.@." SourceLanguage.pp
     (Anf.SourceAnf.anf (Generator.sourceSynGen 10 []));
 
   (* Some terms for tests *)
@@ -33,7 +38,7 @@ let _ =
 
   (* Interpreters tests*)
   let printVal expr context =
-    Format.printf "%a@." TargetLanguage.pp
+    Format.fprintf out "%a@." TargetLanguage.pp
       (TargetLanguage.interpret expr context)
   in
   printVal (TargetLanguage.Const 7.) [];
@@ -44,7 +49,7 @@ let _ =
   printVal f5 [ ((x1, TargetLanguage.Real), TargetLanguage.Const 2.) ];
   printVal f5 [ ((x1, TargetLanguage.Real), TargetLanguage.Const 8.283185307) ];
   printVal f6 ([] : Syntax.TargetLanguage.context);
-  Format.printf "@.@.";
+  Format.fprintf out "@.@.";
 
   (* forward mode tests *)
   let f7 =
@@ -54,7 +59,7 @@ let _ =
   in
   let f8 = ForwardMode.forwardAD f7 in
   let f9 = Rewrite.Optimisations.fullOpti f8 in
-  Format.printf
+  Format.fprintf out
     "Term:@.%a@.Forward derivative of term:@.%a@.Reduced derivative of \
      term:@.%a@.@.@."
     SourceLanguage.pp f7 TargetLanguage.pp f8 TargetLanguage.pp f9;
@@ -63,7 +68,7 @@ let _ =
   let f7 = Anf.SourceAnf.anf f6 in
   let f8 = ForwardMode.forwardAD f7 in
   let f9 = Rewrite.Optimisations.fullOpti f8 in
-  Format.printf
+  Format.fprintf out
     "Term:@.%a@.@.Anf Term:@.%a@.@.Forward derivative of term:@.%a@.@.Reduced \
      derivative of term:@.%a@.@.@."
     SourceLanguage.pp f6 SourceLanguage.pp f7 TargetLanguage.pp f8
@@ -84,7 +89,7 @@ let _ =
   in
   let f14 = Rewrite.Optimisations.fullOpti f13 in
 
-  Format.printf
+  Format.fprintf out
     "variable:@.%a@.term:@.%a@.reverse derivative macro of \
      term:@.%a@.derivative of term:@.%a@.fully reduced term:@.%a@.@.@."
     SourceLanguage.pp var11 SourceLanguage.pp f11 TargetLanguage.pp f12
@@ -111,7 +116,7 @@ let _ =
   in
   let f25 = Rewrite.Optimisations.fullOpti f24 in
 
-  Format.printf
+  Format.fprintf out
     "term:@.%a@.anf term:@.%a@.reverse derivative macro of \
      term:@.%a@.derivative of term:@.%a@.fully reduced term:@.%a@.@.@."
     SourceLanguage.pp f21 SourceLanguage.pp f22 TargetLanguage.pp f23
@@ -121,7 +126,7 @@ let _ =
   let g7 = Anf.SourceAnf.anf g6 in
   let g8 = Transforms.ReverseMode.grad [] g7 in
   let g9 = Rewrite.Optimisations.fullOpti g8 in
-  Format.printf
+  Format.fprintf out
     "Term:@.%a@.@.Anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
     SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
@@ -137,7 +142,7 @@ let _ =
     Transforms.ReverseMode.semiNaiveReverseAD [ (x12, SourceLanguage.Real) ] g7
   in
   let g9 = Rewrite.Optimisations.fullOpti g8 in
-  Format.printf
+  Format.fprintf out
     "Term:@.%a@.@.Anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
     SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
@@ -158,7 +163,7 @@ let _ =
   let g7 = Anf.SourceAnf.anf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in
   let g9 = Rewrite.Optimisations.fullOpti g8 in
-  Format.printf
+  Format.fprintf out
     "Term:@.%a@.@.Anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
     SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
@@ -180,7 +185,7 @@ let _ =
   let g7 = Anf.SourceAnf.weakAnf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in
   let g9 = Rewrite.Optimisations.fullOpti g8 in
-  Format.printf
+  Format.fprintf out
     "Term:@.%a@.@.Weak anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
     SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
@@ -196,7 +201,7 @@ let _ =
   let g7 = Anf.SourceAnf.weakAnf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real) ] g7 in
   let g9 = Rewrite.Optimisations.fullOpti g8 in
-  Format.printf
+  Format.fprintf out
     "Term:@.%a@.@.Weak anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
     SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
@@ -216,7 +221,7 @@ let _ =
   let g7 = Anf.SourceAnf.weakAnf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real) ] g7 in
   let g9 = Rewrite.Optimisations.fullOpti g8 in
-  Format.printf
+  Format.fprintf out
     "Term:@.%a@.@.Weak anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
     SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
@@ -239,7 +244,7 @@ let _ =
          f7)
   in
   let f10 = Rewrite.Optimisations.fullOpti f9 in
-  Format.printf
+  Format.fprintf out
     "Term:@.%a@.Forward derivative of term:@.%a@.Gradient of \
      term:@.%a@.Reduced derivative of term:@.%a@.@.@."
     SourceLanguage.pp f7 TargetLanguage.pp f8 TargetLanguage.pp f9
@@ -266,6 +271,7 @@ let _ =
       g6
   in
   (* let g8 = Array.map (Array.map Rewrite.Optimisations.fullOpti) g7 in *)
-  Format.printf "Term:@.%a@.@.Reduced hession of term:@.%a@.@.@."
+  Format.fprintf out "Term:@.%a@.@.Reduced hession of term:@.%a@.@.@."
     SourceLanguage.pp g6 TargetLanguage.pp
-    g7.(0).(0)
+    g7.(0).(0);
+  Unix.close file
