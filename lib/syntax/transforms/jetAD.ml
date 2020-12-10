@@ -326,7 +326,6 @@ module CoJets12 = struct
 open Syntax.SourceLanguage
 open Syntax.Operators
 open Syntax.TargetLanguage
-open Syntax.Vars
 open Anf
 
 type context = (Syntax.Vars.var * sourceType) tuple
