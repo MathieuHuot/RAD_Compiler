@@ -138,12 +138,6 @@ let rec prettyP = function
   ^kin
   ^"\n"
   ^(prettyP expr2)
-| Pair(expr1, expr2)                 ->  
-  bra
-  ^(prettyP expr1)
-  ^comma
-  ^(prettyP expr2)
-  ^ket
 | Fun(varList, expr)                 ->  
   klambda
   ^(if varList=[] then "" else removeLast (List.fold_left (fun acc (x, ty) -> acc^(printVar (Var(x, ty))^comma2)) "" varList))

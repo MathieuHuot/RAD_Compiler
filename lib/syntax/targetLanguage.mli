@@ -9,7 +9,6 @@ and targetSyn = Var of Vars.t * targetType
             | Apply1 of Operators.op1 * targetSyn 
             | Apply2 of Operators.op2 * targetSyn * targetSyn
             | Let of Vars.t * targetType * targetSyn * targetSyn
-            | Pair of targetSyn * targetSyn
             | Fun of ((Vars.t * targetType) list) * targetSyn
             | App of targetSyn * (targetSyn list)
             | Tuple of targetSyn tuple

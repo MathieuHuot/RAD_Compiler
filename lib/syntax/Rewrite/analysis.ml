@@ -7,8 +7,7 @@ let rec allVars = function
 | Const _                     -> []
 | Var (x,_)                   -> [x]
 | Apply1(_,expr)              -> allVars expr
-| Apply2(_,expr1,expr2)
-| Pair(expr1,expr2)           -> 
+| Apply2(_,expr1,expr2)       -> 
     let expr1Fv = allVars expr1 in 
     let expr2Fv = List.filter (fun x -> not (List.mem x expr1Fv)) (allVars expr2) in 
     List.append expr1Fv expr2Fv
@@ -42,7 +41,6 @@ let listUnusedVars expr =
     | Apply1(_, expr)                      -> aux expr
     | Apply2(_, expr1, expr2)              -> aux expr1 @ aux expr2
     | Let(x, ty, expr1, expr2)             -> (if (List.mem x (freeVars expr2)) then [] else [(x,ty)]) @ aux expr1 @ aux expr2  
-    | Pair(expr1, expr2)                   -> aux expr1 @ aux expr2   
     | Tuple(exprList)                      -> List.flatten (List.map aux exprList)
     | App(expr, exprList)                  -> aux expr @ List.flatten (List.map aux exprList)
     | Fun(_, expr)                         -> aux expr

@@ -32,16 +32,16 @@ let d2op op y1 _ = match op with
 
 (* Simple forward AD transformation. does not assume any ANF *)
 let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
-| Const c               ->  Pair(Const c, Const 0.)
+| Const c               ->  Tuple [Const c; Const 0.]
 | Var(x,ty)             ->  let x, dx = dvar x in
-                            Pair( Var(x,sourceToTargetType ty), 
-                                  Var(dx,sourceToTargetType ty))
+                            Tuple [ Var(x,sourceToTargetType ty);
+                                    Var(dx,sourceToTargetType ty);]
 | Apply1(op,expr)       ->  let y, dy = dvar (Syntax.Vars.fresh()) in
                             let ty = Real in
                             let exprD = forwardAD expr in
                             let primal = Apply1(op,Var(y,ty)) in
                             let tangent = Apply2(Times, dop op (Var(y,ty)), Var(dy,ty)) in 
-                            NCase(exprD,[(y,ty);(dy,ty)],Pair(primal,tangent))
+                            NCase(exprD,[(y,ty);(dy,ty)],Tuple [primal;tangent])
 | Apply2(op,expr1,expr2)->  let y1, dy1 = dvar (Syntax.Vars.fresh()) in
                             let ty1 = Real in
                             let y2, dy2 = dvar (Syntax.Vars.fresh()) in
@@ -54,7 +54,7 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
                             let tangent = Apply2(Plus,
                                                   Apply2(Times, d1op op y1VarP y2VarP, Var(dy1,ty1)),
                                                   Apply2(Times,d2op op y1VarP y2VarP, Var(dy2,ty2))) in
-                            NCase(expr1D,[(y1,ty1);(dy1,ty1)],NCase(expr2D,[(y2,ty2);(dy2,ty2)],Pair(primal,tangent)))
+                            NCase(expr1D,[(y1,ty1);(dy1,ty1)],NCase(expr2D,[(y2,ty2);(dy2,ty2)],Tuple [primal;tangent]))
 | Let(y,ty,expr1,expr2) ->  let expr1D = forwardAD expr1 in
                             let expr2D = forwardAD expr2 in
                             let y, dy = dvar y in

@@ -12,7 +12,6 @@ and targetSyn = Var of Vars.t * targetType
                 | Apply1 of op1 * targetSyn 
                 | Apply2 of op2 * targetSyn * targetSyn
                 | Let of Vars.t * targetType * targetSyn * targetSyn
-                | Pair of targetSyn * targetSyn
                 | Fun of ((Vars.t * targetType) list) * targetSyn
                 | App of targetSyn * (targetSyn list)
                 | Tuple of targetSyn tuple 
@@ -28,7 +27,6 @@ let rec to_string = function
     if is_infix op then Printf.sprintf "(%s %s %s)" (to_string expr1) (to_string_op2 op) (to_string expr2)
     else Printf.sprintf "(%s %s %s)" (to_string expr1) (to_string_op2 op) (to_string expr2)
   | Let (x, _t, expr1, expr2) -> Printf.sprintf "let %s = %s in\n%s" (Vars.to_string x) (to_string expr1) (to_string expr2)
-  | Pair (expr1, expr2) -> Printf.sprintf "⟨%s, %s⟩" (to_string expr1) (to_string expr2)
   | Fun (vars, expr) -> Printf.sprintf "λ%s. %s" (CCList.to_string ~sep:"," (fun (v,_) -> Vars.to_string v) vars) (to_string expr)
   | App (expr, exprs) -> Printf.sprintf "(%s) {%s}" (to_string expr) (CCList.to_string to_string exprs)
   | Tuple exprs -> CCList.to_string ~start:"{" ~stop:"}" to_string exprs
@@ -42,7 +40,6 @@ let rec pp fmt = function
     if is_infix op then Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
     else Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
   | Let (x, _t, expr1, expr2) -> Format.fprintf fmt "let %a = %a in@.%a" Vars.pp x pp expr1 pp expr2
-  | Pair (expr1, expr2) -> Format.fprintf fmt "⟨%a, %a⟩" pp expr1 pp expr2
   | Fun (vars, expr) -> Format.fprintf fmt "λ%a. %a" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Vars.pp fmt v)) vars pp expr
   | App (expr, exprs) -> Format.fprintf fmt "(%a) {%a}" pp expr (CCList.pp pp) exprs
   | Tuple exprs -> CCList.pp ~pp_start:(fun fmt () -> Format.pp_print_string fmt "{") ~pp_stop:(fun fmt () -> Format.pp_print_string fmt "}") pp fmt exprs
@@ -93,7 +90,6 @@ let rec subst (x:Vars.t) xTy expr1 expr2 = match expr2 with
 | Let(y,ty,expr2,expr3)           -> if (Vars.equal x y && equalTypes xTy ty)
                                      then failwith "sim: trying to substitute a bound variable"
                                      else Let(y,ty,subst x xTy expr1 expr2, subst x xTy expr1 expr3)
-| Pair(expr2,expr3)               -> Pair(subst x xTy expr1 expr2,subst x xTy expr1 expr3)
 | Fun(varList,expr2)              -> if (List.exists (fun (y,ty) -> Vars.equal x y && equalTypes ty xTy) varList)
                                      then failwith "sim: trying to substitute a bound variable"
                                      else Fun(varList,subst x xTy expr1 expr2)
@@ -115,7 +111,6 @@ let findInContext v context = List.assoc v context
   | Let(y,ty1,expr1,expr2)          -> if isInContext (y,ty1) context
       then failwith "simsubst: trying to substitute a bound variable"
       else Let(y,ty1,simSubst context expr1,simSubst context expr2)
-  | Pair(expr1,expr2)               -> Pair(simSubst context expr1, simSubst context expr2)
   | Fun(varList,expr2)              -> if (List.exists (fun (y,ty) -> isInContext (y,ty) context) varList)
                                        then failwith "simsubst: trying to substitute a bound variable"
                                        else Fun(varList,simSubst context expr2)
@@ -145,8 +140,6 @@ let rec eqT expr1 expr2 list = match expr1, expr2 with
                                                          &&  eqT expr12 expr22 (((x,ty1),(y,ty2))::list)
 | App(expr11,exprList1),App(expr21,exprList2)         -> eqT expr11 expr21 list
                                                          &&  List.for_all2 (fun x y -> eqT x y list) exprList1 exprList2
-| Pair(expr11,expr12), Pair(expr21,expr22)            -> eqT expr11 expr21 list
-                                                         && eqT expr12 expr22 list
 | Fun(varList1,expr1),Fun(varList2,expr2)             -> if List.length varList1 <> List.length varList2 
                                                          then false 
                                                          else
@@ -167,7 +160,6 @@ in eqT expr1 expr2 []
 
 let rec isValue = function
 | Const _           -> true
-| Pair(expr1,expr2) -> isValue expr1 && isValue expr2
 | Fun(_,_)          -> true
 | Tuple(exprList)   -> List.for_all isValue exprList
 | _                 -> false
@@ -182,8 +174,7 @@ let closingTerm expr (cont : context) = if not(isContextOfValues cont)
 let rec freeVars = function
 | Var (x,_)                   -> [x]
 | Apply1(_,expr)              -> freeVars expr
-| Apply2(_,expr1,expr2)
-| Pair(expr1,expr2)           -> 
+| Apply2(_,expr1,expr2)       -> 
     let expr1Fv = freeVars expr1 in 
     let expr2Fv = List.filter (fun x -> not (List.mem x expr1Fv)) (freeVars expr2) in 
     List.append expr1Fv expr2Fv
@@ -222,8 +213,7 @@ let rec varNameNotBound (name:string) expr = match expr with
                                               && (varNameNotBound name expr1) 
                                               && (varNameNotBound name expr2)
 | Apply1(_,expr)                          ->  (varNameNotBound name expr)
-| Apply2(_,expr1,expr2)
-| Pair(expr1,expr2)                       ->  (varNameNotBound name expr1) 
+| Apply2(_,expr1,expr2)                   ->  (varNameNotBound name expr1) 
                                               && (varNameNotBound name expr2)
 | App(expr1,exprList)                     ->  (varNameNotBound name expr1) 
                                               && List.for_all (varNameNotBound name) exprList
@@ -249,7 +239,6 @@ let rec canRen expr = match expr with
 | Apply1(op,expr1)                -> Apply1(op,canRen expr1)
 | Apply2(op,expr1,expr2)          -> Apply2(op,canRen expr1,canRen expr2)
 | Let(y,ty,expr1,expr2)           -> Let(y,ty,canRen expr1,canRen expr2)
-| Pair(expr1,expr2)               -> Pair(canRen expr1,canRen expr2)
 | App(expr1,exprList)             -> App(canRen expr1,List.map canRen exprList) 
 | Fun(varList,expr)               -> Fun(varList,canRen expr)
 | Tuple(exprList)                 -> Tuple(List.map canRen exprList)
@@ -277,11 +266,6 @@ let rec typeTarget = function
     | (Some ty1, Some ty2) when equalTypes ty1 ty   -> Some ty2
     | (_,_)                                         -> None
     end
-| Pair(expr1,expr2)             -> begin
-  match typeTarget expr1,typeTarget expr2 with 
-    | (Some ty1,Some ty2) -> Some(NProd [ty1;ty2])
-    | _                   -> None
-  end
 | Fun(varList,expr)             -> begin
   match typeTarget expr with
   | None      -> None
@@ -356,7 +340,6 @@ let rec interp expr = match expr with
                                   interpretOp2 op val1 val2
 | Let(x,ty,expr1,expr2)           ->  let v = interp expr1 in 
                                   interp (subst x ty v expr2)
-| Pair(expr1,expr2)               ->  Pair(interp expr1,interp expr2)
 | App(expr1,exprList)             ->  begin match (interp expr1) with
     | Fun(varList,expr1)  ->  let vList = List.map interp exprList in
                               if not(List.length varList = List.length vList)

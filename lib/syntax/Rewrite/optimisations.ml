@@ -75,13 +75,6 @@
                                               | Failure _, Success (s2)   -> Success(Let(x,ty,expr1,s2))
                                               | _                         -> Failure strat
                                               end
-    | Pair(expr1, expr2)                   -> begin 
-                                              match strat expr1, strat expr2 with 
-                                              | Success(s1), Success (s2) -> Success(Pair(s1,s2))
-                                              | Success(s1), Failure _    -> Success(Pair(s1,expr2))
-                                              | Failure _, Success (s2)   -> Success(Pair(expr1,s2))
-                                              | _                         -> Failure strat
-                                              end
     | Tuple(exprList)                      -> let sList = List.map strat exprList in
                                               (* If no success is found, failure *)
                                               if not(List.exists (fun x -> match x with Success _ -> true | _ -> false) sList)
