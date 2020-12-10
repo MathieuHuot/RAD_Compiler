@@ -11,7 +11,7 @@ type sourceSyn = Var of Vars.t * sourceType
             | Apply2 of op2 * sourceSyn * sourceSyn 
             | Let of Vars.t * sourceType * sourceSyn * sourceSyn
 
-type context = (Vars.t * sourceType * sourceSyn) list
+type context = ((Vars.t * sourceType), sourceSyn) CCList.Assoc.t
 
 let rec to_string = function
   | Var (v, _) -> Vars.to_string v
@@ -74,12 +74,9 @@ let subst (x: Vars.t) ty expr1 expr2 = map (fun expr ->
   ) expr2
 
 
-let isInContext (x, ty) context = List.exists (fun (y, ty2,_) -> (Vars.equal x y && equalTypes ty ty2)) context
+let isInContext v context = List.mem_assoc v context
 
-let findInContext (x,ty) context =
-  match List.find_opt (fun (y, ty2,_) -> (Vars.equal x y && equalTypes ty ty2)) context with
-  | None                  -> None
-  | Some (_y, _ty2, expr) -> Some expr
+let findInContext v context = List.assoc_opt v context
 
 let simSubst context expr = map (fun expr ->
     match expr with
@@ -113,12 +110,12 @@ let equalTerms expr1 expr2 =
     | _                                                        -> false
     in eqT expr1 expr2 []
 
-let isContextOfValues (cont: context) = 
-    List.for_all (fun (_,_,v) -> (isValue v)) cont
+let isContextOfValues (cont: context) =
+    List.for_all (fun (_,v) -> (isValue v)) cont
 
 let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
     then failwith "closingTerm: context does not only contain values"
-    else List.fold_left (fun expr1 (x,ty,v) -> subst x ty v expr1) expr cont
+    else List.fold_left (fun expr1 ((x,ty),v) -> subst x ty v expr1) expr cont
 
 let rec freeVars = function
 | Var (x,_)              -> [x]
@@ -189,7 +186,7 @@ let isWellTyped expr = match (typeSource expr) with
 (* checks whether the context captures all the free variables of an expression*)
 let contextComplete expr context =
     let exprFv = freeVars expr in 
-    List.for_all (fun x -> List.exists (fun (y,_,_) -> Vars.equal y x) context) exprFv
+    List.for_all (fun x -> List.exists (fun ((y,_),_) -> Vars.equal y x) context) exprFv
 
 let interpretOp1 op v = match op with
     | Cos      -> cos(v)

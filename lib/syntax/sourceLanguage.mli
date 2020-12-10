@@ -8,7 +8,7 @@ type sourceSyn = Var of Vars.t * sourceType
             | Apply2 of Operators.op2 * sourceSyn * sourceSyn 
             | Let of Vars.t * sourceType * sourceSyn * sourceSyn
 
-type context = (Vars.t * sourceType * sourceSyn) list
+type context = ((Vars.t * sourceType), sourceSyn) CCList.Assoc.t
 
 val to_string : sourceSyn -> string
 val pp : Format.formatter -> sourceSyn -> unit
