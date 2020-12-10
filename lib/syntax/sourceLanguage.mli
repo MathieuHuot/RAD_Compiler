@@ -10,6 +10,9 @@ type sourceSyn = Var of Vars.t * sourceType
 
 type context = (Vars.t * sourceType * sourceSyn) list
 
+val to_string : sourceSyn -> string
+val pp : Format.formatter -> sourceSyn -> unit
+
 val isValue : sourceSyn -> bool
 val equalTypes : sourceType -> sourceType -> bool
 val equalTerms : sourceSyn -> sourceSyn ->  bool

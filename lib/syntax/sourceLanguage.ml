@@ -13,6 +13,24 @@ type sourceSyn = Var of Vars.t * sourceType
 
 type context = (Vars.t * sourceType * sourceSyn) list
 
+let rec to_string = function
+  | Var (v, _) -> Vars.to_string v
+  | Const c -> string_of_float c
+  | Apply1 (op, expr) -> Printf.sprintf "%s(%s)" (to_string_op1 op) (to_string expr)
+  | Apply2 (op, expr1, expr2) ->
+    if is_infix op then Printf.sprintf "(%s %s %s)" (to_string expr1) (to_string_op2 op) (to_string expr2)
+    else Printf.sprintf "(%s %s %s)" (to_string expr1) (to_string_op2 op) (to_string expr2)
+  | Let (x, _t, expr1, expr2) -> Printf.sprintf "let %s = %s in\n%s" (Vars.to_string x) (to_string expr1) (to_string expr2)
+
+let rec pp fmt = function
+  | Var (a, _) -> Vars.pp fmt a
+  | Const c -> Format.pp_print_float fmt c
+  | Apply1 (op, expr) -> Format.fprintf fmt "%a(%a)" pp_op1 op pp expr
+  | Apply2 (op, expr1, expr2) ->
+    if is_infix op then Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
+    else Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
+  | Let (x, _t, expr1, expr2) -> Format.fprintf fmt "let %a = %a in@.%a" Vars.pp x pp expr1 pp expr2
+
 let rec map f expr = match f expr with
   | Var (_, _) | Const _ as expr -> expr
   | Apply1 (op, expr) -> Apply1(op, map f expr)

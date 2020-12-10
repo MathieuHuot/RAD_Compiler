@@ -19,6 +19,9 @@ and targetSyn = Var of Vars.t * targetType
 
 type context = (Vars.t * targetType * targetSyn) list
 
+val to_string : targetSyn -> string
+val pp : Format.formatter -> targetSyn -> unit
+
 val isArrow : targetType -> bool
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
 val equalTypes : targetType -> targetType -> bool
