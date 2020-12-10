@@ -17,7 +17,7 @@ and targetSyn = Var of Vars.t * targetType
             | Tuple of targetSyn tuple
             | NCase of targetSyn * ((Vars.t * targetType) list) * targetSyn     
 
-type context = (Vars.t * targetType * targetSyn) list
+type context = ((Vars.t * targetType), targetSyn) CCList.Assoc.t
 
 val to_string : targetSyn -> string
 val pp : Format.formatter -> targetSyn -> unit

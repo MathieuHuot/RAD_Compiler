@@ -50,9 +50,9 @@ printVal (Const 7.) [] ;;
 printVal f1 [];;
 printVal f3 [];;
 printVal f4 [];;
-printVal f5 [(x1,Real,Const 0.)];;
-printVal f5 [(x1,Real,Const 2.)];;
-printVal f5 [(x1,Real,Const 8.283185307)];;
+printVal f5 [((x1,Real),Const 0.)];;
+printVal f5 [((x1,Real),Const 2.)];;
+printVal f5 [((x1,Real),Const 8.283185307)];;
 printVal f6 ([] : Syntax.TargetLanguage.context);; 
 Lwt_io.print "\n\n";;
 

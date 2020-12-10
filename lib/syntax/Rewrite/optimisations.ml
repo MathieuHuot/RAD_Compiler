@@ -284,7 +284,7 @@ let rec run expr = match expr with
                           -> Success(subst x4 ty4 expr2 (subst x3 ty3 expr1 expr))
   | NCase(Tuple(exprList),varList,expr)
     when List.for_all (fun x -> isVar x || isConst x) exprList
-                          -> Success(simSubst (List.map (fun ((x,y),z) -> x,y,z) (List.combine varList exprList)) expr)
+                          -> Success(simSubst (List.combine varList exprList) expr)
   | NCase(Tuple(exprList),varList,expr)
     when List.exists (fun x -> isVar x || isConst x) exprList 
                           -> if List.length exprList<>List.length varList 
@@ -294,7 +294,7 @@ let rec run expr = match expr with
                              (* partition exprList and varList into two lists, one pair for which we can do forward subsitution *)
                              (* The latter is gathered into context and a simultaneous substitution is performed *)
                              let exprList1, varList1 = List.split (List.filter (fun (x,_) -> not(isVar x || isConst x)) (List.combine exprList varList)) in
-                             let context = List.map (fun (e,(x,ty)) -> (x,ty,e)) (List.filter (fun (x,_) -> isVar x || isConst x) (List.combine exprList varList)) in
+                             let context = List.filter (fun (_,x) -> isVar x || isConst x) (List.combine varList exprList) in
                              Success(NCase(Tuple(exprList1),varList1, simSubst context expr))
   | _                     -> Tr.traverse expr run 
 end

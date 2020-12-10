@@ -20,7 +20,7 @@ and targetSyn = Var of Vars.t * targetType
                 | Tuple of targetSyn tuple 
                 | NCase of targetSyn * ((Vars.t * targetType) list) * targetSyn
 
-type context = (Vars.t * targetType * targetSyn) list
+type context = ((Vars.t * targetType), targetSyn) CCList.Assoc.t
 
 let rec to_string = function
   | Var (v, _) -> Vars.to_string v
@@ -114,12 +114,9 @@ let rec subst (x:Vars.t) xTy expr1 expr2 = match expr2 with
                                      then failwith "sim: trying to substitute a bound variable"
                                      else NCase(subst x xTy expr1 expr2, varList, subst x xTy expr1 expr3)
 
-let isInContext (x,ty) context = List.fold_left (fun acc (y,ty2,_) -> acc || (Vars.equal x y && equalTypes ty ty2)) false context
+let isInContext v context = List.mem_assoc v context
 
-let rec findInContext (x,ty) context = match context with
-  | []                                                  -> failwith "variable not found in this context"
-  | (y,ty2,expr)::_ when Vars.equal x y && equalTypes ty ty2 -> expr
-  | _::tl                                               -> findInContext (x,ty) tl
+let findInContext v context = List.assoc v context
 
  let rec simSubst context expr = match expr with
   | Var (a,ty1) when isInContext (a,ty1) context          
@@ -195,7 +192,7 @@ let rec isValue = function
 | _                 -> false
 
 let isContextOfValues (cont : context) = 
-    List.fold_left (fun acc (_,_,v) -> (isValue v) && acc) true cont 
+    List.fold_left (fun acc (_,v) -> (isValue v) && acc) true cont 
 
 let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
     then failwith "closingTerm: context does not only contain values"
@@ -357,7 +354,7 @@ let isWellTyped expr = match (typeTarget expr) with
 (* checks whether the context captures all the free variables of an expression*)
 let contextComplete expr context =
   let exprFv = freeVars expr in 
-  List.fold_left (fun acc x -> acc && (List.exists (fun (y,_,_) -> Vars.equal y x) context)) true exprFv
+  List.fold_left (fun acc x -> acc && (List.exists (fun ((y,_),_) -> Vars.equal y x) context)) true exprFv
 
 let interpretOp1 op expr = match expr with
 | Const v -> 
@@ -404,7 +401,7 @@ let rec interp expr = match expr with
                               if not(List.length varList = List.length vList)
                               then failwith "interp: Function applied to wrong number of arguments"
                               else
-                              expr1 |> simSubst (List.map (fun ((x,ty),expr) -> x,ty,expr) (List.combine varList vList)) |> interp
+                              expr1 |> simSubst (List.combine varList vList) |> interp
     | _                   ->  failwith "interpret: expression should reduce to a function" end
 | Tuple(exprList)                 -> Tuple(List.map interp exprList)
 | NCase(expr1,varList,expr2)      -> begin match (interp expr1) with
@@ -414,7 +411,7 @@ let rec interp expr = match expr with
                                         ^"but is of size"
                                         ^(string_of_int (List.length exprList)))
                          else               
-                         expr2 |> simSubst (List.map (fun ((x,ty),expr) -> x,ty,expr) (List.combine varList exprList)) |> interp
+                         expr2 |> simSubst (List.combine varList exprList) |> interp
 
     | _               -> failwith "interpret: expression should reduce to a tuple" end
 | _                               ->  expr

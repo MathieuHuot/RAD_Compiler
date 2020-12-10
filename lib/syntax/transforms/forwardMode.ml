@@ -64,8 +64,8 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
 let grad context expr = 
   let dexpr = forwardAD expr in
   List.map 
-      (fun (x,_,_) -> List.fold_left 
-      (fun acc (y,ty2,expr2) -> let y, dy = dvar y in
+      (fun ((x,_),_) -> List.fold_left 
+      (fun acc ((y,ty2),expr2) -> let y, dy = dvar y in
       let f z = if (Syntax.Vars.equal x y) then subst dy ty2 (Const(1.)) z else subst dy ty2 (Const(0.)) z in
       f (subst y ty2 expr2 acc)) dexpr context) 
       context 

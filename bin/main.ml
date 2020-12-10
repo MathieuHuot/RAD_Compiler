@@ -42,9 +42,9 @@ let _ =
   printVal f1 [];
   printVal f3 [];
   printVal f4 [];
-  printVal f5 [ (x1, TargetLanguage.Real, TargetLanguage.Const 0.) ];
-  printVal f5 [ (x1, TargetLanguage.Real, TargetLanguage.Const 2.) ];
-  printVal f5 [ (x1, TargetLanguage.Real, TargetLanguage.Const 8.283185307) ];
+  printVal f5 [ ((x1, TargetLanguage.Real), TargetLanguage.Const 0.) ];
+  printVal f5 [ ((x1, TargetLanguage.Real), TargetLanguage.Const 2.) ];
+  printVal f5 [ ((x1, TargetLanguage.Real), TargetLanguage.Const 8.283185307) ];
   printVal f6 ([] : Syntax.TargetLanguage.context);
   Format.printf "@.@.";
 
