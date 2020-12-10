@@ -7,18 +7,19 @@ dune build @install
 
 To run tests and compare them with test.expected
 ```ocaml
-dune build @runtest
+dune runtest
 ```
 
 To run tests and print them in test.expected
 ```ocaml
-dune build @runtest --auto-promote
+dune runtest --auto-promote
 ```
 
 To run the project
 ```ocaml
-dune exec ./bin.exe 
+dune exec -- ./bin/main.exe
 ```
+Currently print some test in out.txt
 
 ### Content
 

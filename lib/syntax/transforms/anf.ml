@@ -95,9 +95,6 @@ let rec isInWeakAnf expr = match expr with
   | Let(_,_,expr1,expr2) -> isInWeakAnf expr1 && isInWeakAnf expr2
   | Apply1(_,_)          -> isImmediate expr 
   | Apply2(_,_,_)        -> isImmediate expr
-  | Case(expr1,_,_,_,_,expr2) 
-                         -> isInWeakAnf expr1 && isInWeakAnf expr2
-  | Pair(expr1,expr2)    -> isInWeakAnf expr1 && isInWeakAnf expr2
   | Tuple(exprList)      -> List.for_all isInWeakAnf exprList
   | Fun(_,expr)          -> isInWeakAnf expr
   | App(expr,exprList)   -> isInWeakAnf expr && List.for_all isInWeakAnf exprList
@@ -124,9 +121,6 @@ let rec weakAnf expr = match expr with
       let newVar2 = Var(m,ty2) in 
       Let(n,ty1,expr1Anf,Let(m,ty2,expr2Anf,Apply2(op,newVar1, newVar2)))
   | Let(x,ty,expr1,expr2)  -> Let(x,ty, weakAnf expr1, weakAnf expr2)
-  | Pair(expr1,expr2)      -> Pair(weakAnf expr1,weakAnf expr2)
-  | Case(expr1,x1,ty1,x2,ty2,expr2) 
-                           -> Case(weakAnf expr1,x1,ty1,x2,ty2,weakAnf expr2)
   | Tuple(exprList)        -> Tuple(List.map weakAnf exprList)
   | Fun(varList,expr)      -> Fun(varList,weakAnf expr)
   | App(expr,exprList)     -> App(weakAnf expr, List.map weakAnf exprList)

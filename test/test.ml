@@ -50,9 +50,9 @@ printVal (Const 7.) [] ;;
 printVal f1 [];;
 printVal f3 [];;
 printVal f4 [];;
-printVal f5 [(x1,Real,Const 0.)];;
-printVal f5 [(x1,Real,Const 2.)];;
-printVal f5 [(x1,Real,Const 8.283185307)];;
+printVal f5 [((x1,Real),Const 0.)];;
+printVal f5 [((x1,Real),Const 2.)];;
+printVal f5 [((x1,Real),Const 8.283185307)];;
 printVal f6 ([] : Syntax.TargetLanguage.context);; 
 Lwt_io.print "\n\n";;
 
@@ -119,7 +119,7 @@ let var11 : sourceSyn = Var(x11,Real);;
 let f11 : sourceSyn = Apply1(Exp, var11);;
 let cst1 : targetSyn list = [Const(0.);Const(1.)]
 let f12 = semiNaiveReverseAD [(x11,Real)] f11;;
-let f13 = match f12 with | Pair(_,x)-> App(x,cst1) | _ -> failwith "f12 wrong format" ;;
+let f13 = match f12 with | Tuple [_;x]-> App(x,cst1) | _ -> failwith "f12 wrong format" ;;
 let f14 = fullOpti f13;;
 
 Lwt_io.print "variable:\n";;
@@ -140,7 +140,7 @@ let f21 : sourceSyn = Apply2(Plus, var11,var12);;
 let f22 = SourceAnf.anf f21;;
 let f23 = semiNaiveReverseAD [(x11,Real);(x12,Real)] f21;;
 let cst2 : targetSyn list = [Const(0.);Const(0.);Const(1.)]
-let f24 = match f23 with | Pair(_,x)-> App(x,cst2) | _ -> failwith "f12 wrong format" ;;
+let f24 = match f23 with | Tuple [_;x]-> App(x,cst2) | _ -> failwith "f12 wrong format" ;;
 let f25 = fullOpti f24;;
 
 Lwt_io.print "term:\n";;

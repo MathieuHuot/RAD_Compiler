@@ -75,13 +75,6 @@
                                               | Failure _, Success (s2)   -> Success(Let(x,ty,expr1,s2))
                                               | _                         -> Failure strat
                                               end
-    | Pair(expr1, expr2)                   -> begin 
-                                              match strat expr1, strat expr2 with 
-                                              | Success(s1), Success (s2) -> Success(Pair(s1,s2))
-                                              | Success(s1), Failure _    -> Success(Pair(s1,expr2))
-                                              | Failure _, Success (s2)   -> Success(Pair(expr1,s2))
-                                              | _                         -> Failure strat
-                                              end
     | Tuple(exprList)                      -> let sList = List.map strat exprList in
                                               (* If no success is found, failure *)
                                               if not(List.exists (fun x -> match x with Success _ -> true | _ -> false) sList)
@@ -108,13 +101,6 @@
                                               match strat expr with 
                                               | Success(s) -> Success(Fun(varList,s)) 
                                               | Failure _ -> Failure strat 
-                                              end
-    | Case(expr1, x1, ty1, x2, ty2, expr2) -> begin 
-                                              match strat expr1, strat expr2 with 
-                                              | Success(s1), Success (s2) -> Success(Case(s1, x1, ty1, x2, ty2, s2))
-                                              | Success(s1), Failure _    -> Success(Case(s1, x1, ty1, x2, ty2, expr2))
-                                              | Failure _, Success (s2)   -> Success(Case(expr1, x1, ty1, x2, ty2, s2))
-                                              | _                         -> Failure strat
                                               end
     | NCase(expr1, varList, expr2)         -> begin 
                                               match strat expr1, strat expr2 with 
@@ -159,8 +145,6 @@ let rec run expr = match expr with
       -> Success(Apply2(Minus,expr1,expr2))
   | Apply2(Times,Const(-1.),expr)  
       -> Success(Apply1(Minus,expr))
-  | Case(Pair(Const c,Const d), x1, ty1, x2, ty2, expr)
-      -> Success(subst x2 ty2 (Const d) (subst x1 ty1 (Const c) expr))
   | Apply1(Minus,Apply1(Minus,expr))
       -> Success(expr)
   | Apply1(Minus,Const c)          
@@ -244,20 +228,10 @@ open Strategies.Strategy
 let rec run expr = match expr with
   | Let(x,ty1,Let(y,ty2,expr1,expr2),expr3)   
       -> Success(Let(y,ty2, expr1,Let(x,ty1, expr2, expr3)))
-  | Case(Let(x1,ty1,expr1,expr2),x2,ty2,x3,ty3,expr3)
-      -> Success(Let(x1,ty1,expr1,Case(expr2,x2,ty2,x3,ty3,expr3)))
-  | Case(Case(expr1,x1,ty1,x2,ty2,expr2),x3,ty3,x4,ty4,expr3)
-      -> Success(Case(expr1,x1,ty1,x2,ty2,Case(expr2,x3,ty3,x4,ty4,expr3)))
   | NCase(NCase(expr1,varList1,expr2),varList2,expr3)
       -> Success(NCase(expr1,varList1,NCase(expr2,varList2,expr3)))
   | NCase(Let(x1,ty1,expr1,expr2),varList,expr3)
       -> Success(Let(x1,ty1,expr1,NCase(expr2,varList,expr3)))
-  | NCase(Case(expr1,x1,ty1,x2,ty2,expr2),varList,expr3) 
-      -> Success(Case(expr1,x1,ty1,x2,ty2,NCase(expr2,varList,expr3)))
-  | Case(NCase(expr1,varList,expr2),x1,ty1,x2,ty2,expr3)
-      -> Success(NCase(expr1,varList,Case(expr2,x1,ty1,x2,ty2,expr3)))
-  | Let(x,ty,Case(expr1,x1,ty1,x2,ty2,expr2),expr3)
-      -> Success(Case(expr1,x1,ty1,x2,ty2,Let(x,ty,expr2,expr3)))
   | Let(x,ty,NCase(expr1,varList,expr2),expr3)
       -> Success(NCase(expr1,varList,Let(x,ty,expr2,expr3)))
   | _ -> Tr.traverse expr run 
@@ -279,12 +253,9 @@ let isConst expr = match expr with
 
 let rec run expr = match expr with
   | Let(x,_,Var(y,ty),e)  -> Success(subst x ty (Var(y,ty)) e)
-  | Case(Pair(expr1,expr2), x3, ty3, x4, ty4, expr) 
-    when isVar expr1 || isVar expr2 || isConst expr1 || isConst expr2                                   
-                          -> Success(subst x4 ty4 expr2 (subst x3 ty3 expr1 expr))
   | NCase(Tuple(exprList),varList,expr)
     when List.for_all (fun x -> isVar x || isConst x) exprList
-                          -> Success(simSubst (List.map (fun ((x,y),z) -> x,y,z) (List.combine varList exprList)) expr)
+                          -> Success(simSubst (List.combine varList exprList) expr)
   | NCase(Tuple(exprList),varList,expr)
     when List.exists (fun x -> isVar x || isConst x) exprList 
                           -> if List.length exprList<>List.length varList 
@@ -294,7 +265,7 @@ let rec run expr = match expr with
                              (* partition exprList and varList into two lists, one pair for which we can do forward subsitution *)
                              (* The latter is gathered into context and a simultaneous substitution is performed *)
                              let exprList1, varList1 = List.split (List.filter (fun (x,_) -> not(isVar x || isConst x)) (List.combine exprList varList)) in
-                             let context = List.map (fun (e,(x,ty)) -> (x,ty,e)) (List.filter (fun (x,_) -> isVar x || isConst x) (List.combine exprList varList)) in
+                             let context = List.filter (fun (_,x) -> isVar x || isConst x) (List.combine varList exprList) in
                              Success(NCase(Tuple(exprList1),varList1, simSubst context expr))
   | _                     -> Tr.traverse expr run 
 end
@@ -332,11 +303,6 @@ let rec run expr = match expr with
   (* CBN evaluates a variable which has a function type *)
   | Let(x,ty,expr1,expr2) 
     when isArrow ty          -> Success(subst x ty expr1 expr2)
-  | Case(Pair(expr1,expr2),x,ty1,y,ty2,expr3) 
-    when isArrow ty2         -> Success(Let(x,ty1,expr1,subst y ty2 expr2 expr3))
-  (* | NCase(Tuple(exprList),varList,expr) 
-    when List.for_all (fun (_,ty) -> isArrow ty) varList 
-                             -> Success(expr)  *)
   | _                        -> Tr.traverse expr run 
 end
 
@@ -353,9 +319,6 @@ let run expr =
     match expr with
     | Let(x, ty,_,expr) 
       when (List.mem (x,ty) unusedVars)    -> tryStrat (aux unusedVars) expr
-    | Case(_, x1, ty1, x2, ty2, expr2) 
-      when (List.mem (x1,ty1) unusedVars) 
-      && (List.mem (x2,ty2) unusedVars)    -> tryStrat (aux unusedVars) expr2
     | NCase(_,varList, expr)
       when List.for_all (fun y -> List.mem y unusedVars) varList
                                            -> Success(expr)

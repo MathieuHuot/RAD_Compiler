@@ -5,20 +5,20 @@ open Anf
 open Syntax.SourceLanguage
 open Syntax.TargetLanguage
 
-type context = (Syntax.Vars.var * sourceType) tuple
+type context = (Syntax.Vars.t * sourceType) tuple
 
 let naiveReverseADType (ty: sourceType) (retTy: targetType) =
   let rec nRAD (ty: sourceType) = match ty with
-  | Real          -> Prod(Real, Arrow([Real],retTy))
-  | Prod(ty1,ty2) -> Prod(nRAD ty1, nRAD ty2)
+    | Real          -> NProd [Real; Arrow([Real],retTy)]
+    | Prod(ty1,ty2) -> NProd [nRAD ty1; nRAD ty2]
   in nRAD ty
 
 let semiNaiveReverseADType (ty: sourceType) (retTy: targetType) = 
-    Prod(sourceToTargetType ty, Arrow([sourceToTargetType ty], retTy))
+  NProd [sourceToTargetType ty; Arrow([sourceToTargetType ty], retTy)]
 
 (* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
-let dvar var : Syntax.Vars.var *  Syntax.Vars.var = let str, i = var in (str, i), ("d"^str, i) 
+let dvar var : Syntax.Vars.t *  Syntax.Vars.t = let str, i = var in (str, i), ("d"^str, i) 
 
 let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
 
@@ -43,7 +43,7 @@ let rec addToPos i list y = match i, list with
                                     let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                  
                                     let newContVarList =  List.append newVarList [(newVar,newTy)] in
                                     let newCont = Fun(newContVarList, App(cont, varToSyn newVarList)) in
-                                    Pair(Const c, newCont), newCont, context
+                                    Tuple [Const c; newCont], newCont, context
                                     | _ -> failwith "rad: the continuation should be a function"
                                     end
     | Var(x, ty)                -> begin
@@ -59,7 +59,7 @@ let rec addToPos i list y = match i, list with
                                                           )
                                                       ) 
                                     in
-                                    Pair(Var(x, new_ty), newCont), newCont, context
+                                    Tuple [Var(x, new_ty); newCont], newCont, context
                                     | _ -> failwith "rad: the continuation should be a function"
                                     end
     | Apply1(op, expr)          -> begin
@@ -86,7 +86,7 @@ let rec addToPos i list y = match i, list with
                                                           )
                                                       ) 
                                     in
-                                    Pair(Apply1(op, Var(x,new_ty)), newCont), newCont, context
+                                    Tuple [Apply1(op, Var(x,new_ty)); newCont], newCont, context
                                     | _,_ -> failwith "rad: the continuation should be a function"
                                     end
     | Apply2(op, expr1, expr2)  -> begin
@@ -122,7 +122,7 @@ let rec addToPos i list y = match i, list with
                                                           )
                                                       ) 
                                     in
-                                    Pair(Apply2(op, Var(x1, new_ty1), Var(x2, new_ty2)), newCont), newCont, context
+                                    Tuple [Apply2(op, Var(x1, new_ty1), Var(x2, new_ty2)); newCont], newCont, context
                                     | _,_,_ -> failwith "rad: the continuation should be a function"
                                     end
     | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = rad context cont expr1 in  
@@ -133,7 +133,7 @@ let rec addToPos i list y = match i, list with
                                    let newCont = Var(newContVar, newContType) in
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
-                                   Case(dexpr1, x, sourceToTargetType ty, newContVar, newContType, dexpr2), newNewCont, context
+                                   NCase(dexpr1, [(x, sourceToTargetType ty); (newContVar, newContType)], dexpr2), newNewCont, context
 
 let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
@@ -157,9 +157,9 @@ let grad (context: context) (expr: sourceSyn) : targetSyn =
     let sensitivities = initialize_rad tyList in
     begin 
     match typeTarget dexpr with
-    | Some(Prod(ty1,ty2)) ->
+      | Some(NProd [ty1;ty2]) ->
       let x,dx= dvar (Syntax.Vars.fresh()) in
-      Case(dexpr,x,ty1,dx,ty2,App(Var(dx,ty2),sensitivities))
+      NCase(dexpr,[(x,ty1);(dx,ty2)],App(Var(dx,ty2),sensitivities))
     | _                   -> failwith "grad: should return a pair"
     end
     | _ -> failwith "grad: continuation should have a function type"

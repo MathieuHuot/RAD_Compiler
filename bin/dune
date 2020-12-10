@@ -1,6 +1,6 @@
 (executable
  (name main)
- (libraries lwt.unix syntax transforms))
+ (libraries syntax transforms))
 
 (install
  (section bin)
