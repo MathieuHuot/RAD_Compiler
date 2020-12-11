@@ -4,15 +4,25 @@ type targetType = Real
             | Arrow of (targetType list ) * targetType
             | NProd of targetType tuple 
 
-and targetSyn = Var of Vars.t * targetType
-            | Const of float 
-            | Apply1 of Operators.op1 * targetSyn 
-            | Apply2 of Operators.op2 * targetSyn * targetSyn
-            | Let of Vars.t * targetType * targetSyn * targetSyn
-            | Fun of ((Vars.t * targetType) list) * targetSyn
-            | App of targetSyn * (targetSyn list)
-            | Tuple of targetSyn tuple
-            | NCase of targetSyn * ((Vars.t * targetType) list) * targetSyn     
+and targetSyn =
+  |Var of Vars.t * targetType
+  (* x *)
+  | Const of float
+  (* 1. | 0.2039 *)
+  | Apply1 of Operators.op1 * targetSyn
+  (* op1 (expr) *)
+  | Apply2 of Operators.op2 * targetSyn * targetSyn
+  (* op2 (expr1, expr2) *)
+  | Let of Vars.t * targetType * targetSyn * targetSyn
+  (* let x = expr1 in expr2 *)
+  | Fun of ((Vars.t * targetType) list) * targetSyn
+  (* fun x1,x2,… -> expr *)
+  | App of targetSyn * (targetSyn list)
+  (* expr1 (expr2) *)
+  | Tuple of targetSyn tuple
+  (* (expr1, expr2, … ) *)
+  | NCase of targetSyn * ((Vars.t * targetType) list) * targetSyn
+  (* let x1,x2,x3,… = expr1 in expr2 *)
 
 type context = ((Vars.t * targetType), targetSyn) CCList.Assoc.t
 
