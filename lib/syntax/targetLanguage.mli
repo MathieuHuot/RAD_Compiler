@@ -1,7 +1,7 @@
 type 'a tuple = 'a list
 
 type targetType = Real 
-            | Arrow of (targetType list ) * targetType
+            | Arrow of targetType * targetType
             | NProd of targetType tuple 
 
 and targetSyn =
@@ -30,6 +30,7 @@ val to_string : targetSyn -> string
 val pp : Format.formatter -> targetSyn -> unit
 
 val isArrow : targetType -> bool
+val unfold_arrow : targetType -> targetType list * targetType
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
 val equalTypes : targetType -> targetType -> bool
 val equalTerms: targetSyn -> targetSyn ->  bool
@@ -38,6 +39,6 @@ val freeVars : targetSyn -> Vars.t list
 val subst : Vars.t -> targetType -> targetSyn -> targetSyn -> targetSyn
 val simSubst : context -> targetSyn -> targetSyn
 val canonicalAlphaRename : string -> targetSyn -> targetSyn
-val typeTarget : targetSyn -> targetType option
+val typeTarget : targetSyn -> (targetType, string) result
 val isWellTyped : targetSyn -> bool
 val interpret : targetSyn -> context -> targetSyn

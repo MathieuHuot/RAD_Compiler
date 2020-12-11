@@ -3,18 +3,18 @@ open Operators
 (* syntax *)
 type 'a tuple = 'a list
 
-type targetType = Real 
-                | Arrow of (targetType list ) * targetType
+type targetType = Real
+                | Arrow of targetType * targetType
                 | NProd of targetType tuple
 
 and targetSyn = Var of Vars.t * targetType
-                | Const of float 
-                | Apply1 of op1 * targetSyn 
+                | Const of float
+                | Apply1 of op1 * targetSyn
                 | Apply2 of op2 * targetSyn * targetSyn
                 | Let of Vars.t * targetType * targetSyn * targetSyn
                 | Fun of ((Vars.t * targetType) list) * targetSyn
                 | App of targetSyn * (targetSyn list)
-                | Tuple of targetSyn tuple 
+                | Tuple of targetSyn tuple
                 | NCase of targetSyn * ((Vars.t * targetType) list) * targetSyn
 
 type context = ((Vars.t * targetType), targetSyn) CCList.Assoc.t
@@ -49,6 +49,14 @@ let isArrow ty = match ty with
 | Arrow(_,_)  -> true
 | _           -> false
 
+let unfold_arrow t =
+  let rec unfold l = function
+    | (Real | NProd _) as t -> (l, t)
+    | Arrow (ta, te) -> unfold (ta :: l) te
+  in
+  let l, ret_type = unfold [] t in
+  (List.rev l, ret_type)
+
 let rec sourceToTargetType (ty : SourceLanguage.sourceType) : targetType = match ty with
 | Real          -> Real
 | Prod(ty1,ty2) -> NProd [sourceToTargetType ty1;sourceToTargetType ty2]
@@ -69,18 +77,16 @@ let equalOp2 op1 op2 = match op1,op2 with
   | _           -> false
 
 let rec equalTypes ty1 ty2 = match ty1,ty2 with
-  | Real,Real                             -> true
-  | Arrow(tyList1,ty1),Arrow(tyList2,ty2) -> if List.length tyList1 <> List.length tyList2 
-                                             then false
-                                             else
-                                             equalTypes ty1 ty2 
-                                             && List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2
-  | NProd(tyList1), NProd(tyList2)        -> if List.length tyList1 <> List.length tyList2 
-                                             then false
-                                             else
-                                             List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2 
-  | _                                     -> false
-  
+  | Real, Real-> true
+  | Arrow(arg_type1, ret_type1), Arrow(arg_type2, ret_type2) ->
+    equalTypes arg_type1 arg_type2 && equalTypes ret_type1 ret_type2
+  | NProd(tyList1), NProd(tyList2) ->
+    if List.length tyList1 <> List.length tyList2
+    then false
+    else
+      List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2
+  | _  -> false
+
 (* substitute variable x of type xTy by expr1 in expr2 *)
 let rec subst (x:Vars.t) xTy expr1 expr2 = match expr2 with 
 | Var(a,ty)                       -> if Vars.equal a x && equalTypes ty xTy then expr1 else expr2
@@ -249,54 +255,55 @@ else failwith ("canonicalAlphaRename: variable "^name^" is already used as a bou
 
 (* simple typecheker *)
 let rec typeTarget = function
-| Const _                       -> Some Real
-| Var(_,ty)                     -> Some ty
-| Apply1(_,expr)                -> begin 
-    match typeTarget expr with 
-    | Some Real -> Some Real 
-    | _         -> None
-    end
-| Apply2(_,expr1,expr2)         -> begin
-    match typeTarget expr1,typeTarget expr2 with 
-    | (Some Real,Some Real) -> Some Real
-    | _                     -> None
-    end
-| Let(_,ty,expr1,expr2)         -> begin
-    match typeTarget expr1,typeTarget expr2 with 
-    | (Some ty1, Some ty2) when equalTypes ty1 ty   -> Some ty2
-    | (_,_)                                         -> None
-    end
-| Fun(varList,expr)             -> begin
-  match typeTarget expr with
-  | None      -> None
-  | Some ty1  -> Some(Arrow(List.map snd varList,ty1)) 
-  end
-| App(expr1,exprList)           ->  begin
-  match typeTarget expr1,List.map typeTarget exprList with 
-  | Some Arrow(tyList1,ty1), tyList2 
-    when List.for_all2 
-        (fun ty11 ty2 -> match ty2 with | Some ty22 -> equalTypes ty11 ty22 
-                                        | _         -> false ) 
-          tyList1 
-          tyList2  
-        -> Some ty1 
-  | _   -> None
-  end
-| Tuple(exprList)               ->  let lis = List.map typeTarget exprList in 
-                                    if (List.exists (fun ty -> ty = None) lis)
-                                    then None
-                                    else Some(NProd(List.map (fun x -> match x with | Some(x) -> x | _ -> failwith "") lis))
-| NCase(expr1,varList,expr2)    -> 
-  begin
-  match typeTarget expr1,typeTarget expr2 with
-  | Some NProd(tyList), Some ty when List.for_all2 equalTypes tyList (List.map snd varList) -> Some ty
-  | _ -> None
-  end
+  | Const _ -> Result.Ok Real
+  | Var (_, t) -> Result.Ok t
+  | Apply1 (_, expr) -> (
+      CCResult.(
+        typeTarget expr >>= function
+        | Real -> Ok Real
+        | _ -> Error "Argument of Apply1 should be a Real"))
+  | Apply2 (_, expr1, expr2) -> (
+      CCResult.(
+        typeTarget expr1 >>= function
+        | Real -> (
+            typeTarget expr2 >>= function
+            | Real -> Ok Real
+            | _ -> Error "Argumentt 2 of Apply2 should be a Real")
+        | _ -> Error "Argument 1 of Apply2 should be a Real"))
+  | Let (_, t, expr1, expr2) ->
+    CCResult.(
+      typeTarget expr1 >>= fun t1 ->
+      if t = t1 then typeTarget expr2
+      else
+        Error
+          "in Let binding type of the variable does not correspond to the \
+           type of the expression")
+  | Fun (l, expr) ->
+    CCResult.(
+      typeTarget expr >|= fun texp ->
+      List.fold_right (fun (_, tv) t -> Arrow (tv, t)) l texp)
+  | App (exp, l) ->
+    CCResult.(
+      typeTarget exp >|= unfold_arrow >>= fun (args_type, ret_type) ->
+      if List.compare_lengths args_type l <> 0 then
+        Error "Wrong number of arguments in App"
+      else
+        List.map typeTarget l |> flatten_l >>= fun l ->
+        if CCList.equal equalTypes args_type l then Ok ret_type
+        else Error "Type mismatch with arguments type")
+  | Tuple l ->
+    CCResult.(List.map typeTarget l |> flatten_l >>= fun l -> Ok (NProd l))
+  | NCase (expr1, l, expr2) -> (
+      CCResult.(
+        typeTarget expr1 >>= function
+        | NProd tl ->
+          if List.for_all2 equalTypes tl (List.map snd l) then
+            typeTarget expr2
+          else Error "NCase: type mismatch"
+        | _ -> Error "NCase: expression 1 should have type Prod"))
 
-let isWellTyped expr = match (typeTarget expr) with
-| None      -> false
-| Some _    -> true
- 
+let isWellTyped expr = typeTarget expr |> Result.is_ok
+
 (* interpreter *)
 
 (* checks whether the context captures all the free variables of an expression*)
