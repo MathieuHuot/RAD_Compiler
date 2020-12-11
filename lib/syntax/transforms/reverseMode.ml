@@ -9,12 +9,12 @@ type context = (Syntax.Vars.t * sourceType) tuple
 
 let naiveReverseADType (ty: sourceType) (retTy: targetType) =
   let rec nRAD (ty: sourceType) = match ty with
-    | Real          -> NProd [Real; Arrow([Real],retTy)]
+    | Real          -> NProd [Real; Arrow(Real,retTy)]
     | Prod(ty1,ty2) -> NProd [nRAD ty1; nRAD ty2]
   in nRAD ty
 
 let semiNaiveReverseADType (ty: sourceType) (retTy: targetType) = 
-  NProd [sourceToTargetType ty; Arrow([sourceToTargetType ty], retTy)]
+  NProd [sourceToTargetType ty; Arrow(sourceToTargetType ty, retTy)]
 
 (* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
@@ -38,7 +38,8 @@ let rec addToPos i list y = match i, list with
   let rec rad (context: context) (cont : targetSyn)  (expr : sourceSyn) : targetSyn * targetSyn * context = match expr with
     | Const c                   -> begin
                                     match typeTarget cont with 
-                                    | Some(Arrow(tyList,_)) ->
+                                    | Result.Ok (Arrow(_,_) as ty_cont) ->
+                                    let tyList,_ = unfold_arrow ty_cont in
                                     let newVar,newTy = (Syntax.Vars.fresh(), Real) in 
                                     let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                  
                                     let newContVarList =  List.append newVarList [(newVar,newTy)] in
@@ -48,7 +49,8 @@ let rec addToPos i list y = match i, list with
                                     end
     | Var(x, ty)                -> begin
                                     match typeTarget cont with 
-                                    | Some(Arrow(tyList,_)) ->
+                                    | Result.Ok(Arrow(_,_) as ty_cont) ->
+                                    let tyList,_ = unfold_arrow ty_cont in
                                     let new_var, new_ty = Syntax.Vars.fresh(), sourceToTargetType ty in  
                                     let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                          
                                     let newContVarList = List.append newVarList [(new_var, new_ty)] in
@@ -64,7 +66,8 @@ let rec addToPos i list y = match i, list with
                                     end
     | Apply1(op, expr)          -> begin
                                     match typeTarget cont,expr with 
-                                    | Some(Arrow(tyList,_)), Var(x, ty) ->
+                                    | Result.Ok(Arrow(_,_) as ty_cont), Var(x, ty) ->
+                                    let tyList,_ = unfold_arrow ty_cont in
                                     let new_ty = sourceToTargetType ty in
                                     let pos_x = getPos (x, ty) context in
                                     let new_var = Syntax.Vars.fresh() in 
@@ -91,7 +94,8 @@ let rec addToPos i list y = match i, list with
                                     end
     | Apply2(op, expr1, expr2)  -> begin
                                     match typeTarget cont,expr1,expr2 with 
-                                    | Some(Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
+                                    | Result.Ok(Arrow(_,_) as ty_cont), Var(x1, ty1), Var(x2, ty2) ->
+                                    let tyList,_ = unfold_arrow ty_cont in
                                     let new_ty1 = sourceToTargetType ty1 in
                                     let pos_x1 = getPos (x1, ty1) context in
                                     let new_ty2 = sourceToTargetType ty2 in
@@ -128,8 +132,8 @@ let rec addToPos i list y = match i, list with
     | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = rad context cont expr1 in  
                                    let _, newContVar = dvar x in
                                    match typeTarget cont with
-                                    | None              -> failwith "rad: continuation ill-typed" 
-                                    | Some(newContType) ->
+                                    | Result.Error s    -> failwith (Printf.sprintf "rad: continuation ill-typed:%s" s)
+                                    | Result.Ok(newContType) ->
                                    let newCont = Var(newContVar, newContType) in
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
@@ -152,12 +156,13 @@ let grad (context: context) (expr: sourceSyn) : targetSyn =
   let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = rad context id_cont (SourceAnf.weakAnf expr) in
   match typeTarget cont with
-    | None                  -> failwith "grad: continuation ill-typed" 
-    | Some(Arrow(tyList,_)) -> 
+    | Result.Error s        -> failwith (Printf.sprintf "grad: continuation ill-typed: %s" s)
+    | Result.Ok(Arrow(_,_) as ty_cont) ->
+    let tyList,_ = unfold_arrow ty_cont in
     let sensitivities = initialize_rad tyList in
     begin 
     match typeTarget dexpr with
-      | Some(NProd [ty1;ty2]) ->
+      | Result.Ok(NProd [ty1;ty2]) ->
       let x,dx= dvar (Syntax.Vars.fresh()) in
       NCase(dexpr,[(x,ty1);(dx,ty2)],App(Var(dx,ty2),sensitivities))
     | _                   -> failwith "grad: should return a pair"
