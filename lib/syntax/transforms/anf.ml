@@ -29,10 +29,9 @@ let rec isInAnf expr = match expr with
   | _                     -> true
 
 let rec isInWeakAnf expr = match expr with
-  | Let(_,_,expr1,expr2) -> isInWeakAnf expr1 && isInWeakAnf expr2
-  | Apply1(_,_)          -> isImmediate expr 
-  | Apply2(_,_,_)        -> isImmediate expr
-  | _                    -> true
+  | Let(_,_,expr1,expr2)        -> isInWeakAnf expr1 && isInWeakAnf expr2
+  | Apply1(_,_) | Apply2(_,_,_) -> isImmediate expr 
+  | _                           -> true
 
 let rec weakAnf expr = match expr with
   | Const _                -> expr
@@ -80,16 +79,22 @@ let isVar (expr : targetSyn) = match expr with
   | Var _ -> true
   | _     -> false
 
-let isImmediate expr = match expr with
+let rec isImmediate expr = match expr with
   | Const _                  -> true
   | Var _                    -> true
   | Apply1(_,expr1)          -> isVar expr1 
   | Apply2(_,expr1,expr2)    -> isVar expr1 && isVar expr2
+  | Tuple(exprList)          -> List.for_all isImmediate exprList
   | _                        -> failwith "isImmediate: wrong expression format"
 
 let rec isInAnf expr = match expr with
-  | Let(_,_,expr1,expr2)  -> isImmediate expr1 && isInAnf expr2
-  | _                     -> true
+  | Let(_,_,expr1,expr2)        -> isImmediate expr1 && isInAnf expr2
+  | NCase(expr1,_,expr2)        -> isImmediate expr1 && isInAnf expr2
+  | Apply1(_,_) | Apply2(_,_,_) -> isImmediate expr  
+  | Fun(_,expr)                 -> isInAnf expr
+  | App(_,_)                    -> false
+  | Tuple(exprList)             -> List.for_all isInAnf exprList
+  | _                           -> true
 
 let rec isInWeakAnf expr = match expr with
   | Let(_,_,expr1,expr2) -> isInWeakAnf expr1 && isInWeakAnf expr2
