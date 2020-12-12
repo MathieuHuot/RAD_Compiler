@@ -13,10 +13,14 @@ module Op = struct
           return Sin;
           return Exp;
           return (Minus : op1);
-          map power small_nat;
+          map power (int_bound 5);
         ])
 
   let gen2 = QCheck.Gen.(oneofl [ Plus; Times; (Minus : op2) ])
+
+  let shrink_op1 op =
+    let open QCheck.Iter in
+    match op with Power n -> QCheck.Shrink.int n >|= power | _ -> empty
 end
 
 module T = struct
@@ -81,7 +85,7 @@ module T = struct
           match t with
           | Real -> (
               match n with
-              | 0 -> map const pfloat
+              | 0 -> map const (float_bound_exclusive 100.)
               | n ->
                   let let_gen =
                     let newVar = Vars.fresh () in
@@ -100,7 +104,7 @@ module T = struct
                           (self (n / 2, context, Real))
                           (self (n / 2, context, Real)) );
                       (2, let_gen);
-                      (1, map const pfloat);
+                      (1, map const (float_bound_exclusive 100.));
                     ])
           | Arrow (argTy, retTy) ->
               let argsTy, retType =
@@ -124,7 +128,10 @@ module T = struct
     let open QCheck.Iter in
     match expr with
     | Var (_, _) | Const _ -> empty
-    | Apply1 (op, expr) -> return expr <+> (shrink_term expr >|= apply1 op)
+    | Apply1 (op, expr) ->
+        return expr
+        <+> (shrink_term expr >|= apply1 op)
+        <+> (Op.shrink_op1 op >|= fun op -> apply1 op expr)
     | Apply2 (op, expr1, expr2) ->
         of_list [ expr1; expr2 ]
         <+> (shrink_term expr1 >|= fun expr -> apply2 op expr expr2)
