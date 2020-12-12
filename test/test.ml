@@ -197,116 +197,33 @@ module T = struct
       test_isInWeakAnf_weakAnf;
     ]
 
-  let test_opti_LR =
-    QCheck.Test.make ~count:1000 ~name:"Opt LR" arbitrary_closed_term
-      (fun expr ->
+  let test_opti opti opti_name =
+    QCheck.Test.make ~count:1000 ~name:("Opt " ^ opti_name)
+      arbitrary_closed_term (fun expr ->
         equalTerms
           (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.LR.run expr))
+             Rewrite.(
+               Strategies.Strategy.run (Strategies.Strategy.tryStrat opti expr))
              [])
           (interpret expr []))
 
-  let test_opti_FS =
-    QCheck.Test.make ~count:1000 ~name:"Opt FS" arbitrary_closed_term
-      (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.FS.run expr))
-             [])
-          (interpret expr []))
-
-  let test_opti_LS =
-    QCheck.Test.make ~count:1000 ~name:"Opt LS" arbitrary_closed_term
-      (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.LS.run expr))
-             [])
-          (interpret expr []))
-
-  let test_opti_LC =
-    QCheck.Test.make ~count:1000 ~name:"Opt LC" arbitrary_closed_term
-      (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.LC.run expr))
-             [])
-          (interpret expr []))
-
-  let test_opti_RF =
-    QCheck.Test.make ~count:1000 ~name:"Opt RF" arbitrary_closed_term
-      (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.RF.run expr))
-             [])
-          (interpret expr []))
-
-  let test_opti_TS =
-    QCheck.Test.make ~count:1000 ~name:"Opt TS" arbitrary_closed_term
-      (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.TS.run expr))
-             [])
-          (interpret expr []))
-
-  let test_opti_ZS =
-    QCheck.Test.make ~count:1000 ~name:"Opt ZS" arbitrary_closed_term
-      (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.ZS.run expr))
-             [])
-          (interpret expr []))
-
-  let test_opti_SAS =
-    QCheck.Test.make ~count:1000 ~name:"Opt SAS" arbitrary_closed_term
-      (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.SAS.run expr))
-             [])
-          (interpret expr []))
-
-  let test_opti_CP =
-    QCheck.Test.make ~count:1000 ~name:"Opt CP" arbitrary_closed_term
-      (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.CP.run expr))
-             [])
-          (interpret expr []))
-
-  let test_opti_DVE =
-    QCheck.Test.make ~count:1000 ~name:"Opt DVE" arbitrary_closed_term
-      (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(Strategies.Strategy.run (Optimisations.DVE.run expr))
-             [])
-          (interpret expr []))
+  let opti_list =
+    [
+      (Rewrite.Optimisations.LR.run, "LR");
+      (Rewrite.Optimisations.FS.run, "FS");
+      (Rewrite.Optimisations.LS.run, "LS");
+      (Rewrite.Optimisations.LC.run, "LC");
+      (Rewrite.Optimisations.RF.run, "RF");
+      (Rewrite.Optimisations.TS.run, "TS");
+      (Rewrite.Optimisations.ZS.run, "ZS");
+      (Rewrite.Optimisations.SAS.run, "SAS");
+      (Rewrite.Optimisations.CP.run, "CP");
+      (Rewrite.Optimisations.DVE.run, "DVE");
+    ]
 
   let test_opti_list =
-    [
-      test_opti_LR;
-      test_opti_FS;
-      test_opti_LS;
-      test_opti_LC;
-      test_opti_RF;
-      test_opti_TS;
-      test_opti_ZS;
-      test_opti_SAS;
-      test_opti_CP;
-      test_opti_DVE;
-    ]
+    List.map (fun (opti, opti_name) -> test_opti opti opti_name) opti_list
 end
-
-(*
-(both for source and target languages) 
-interp opti random term == interp term for every opti individually
-interp ForwardMode.grad random term == interp ReverseMode.grad term
-*)
 
 let () =
   let target = List.map QCheck_alcotest.to_alcotest T.test_list in
