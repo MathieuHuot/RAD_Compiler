@@ -214,7 +214,7 @@ module T = struct
             []
         in
         let e2 = interpret expr [] in
-        if equalTerms e1 e2 then true
+        if weakEqualTerms e1 e2 then true
         else failwith (Printf.sprintf "%s\n\n%s" (to_string e1) (to_string e2)))
 
   let opti_list =
