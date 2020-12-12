@@ -85,7 +85,7 @@ module T = struct
           match t with
           | Real -> (
               match n with
-              | 0 -> map const (float_bound_exclusive 100.)
+              | 0 -> map const (float_bound_exclusive 1.)
               | n ->
                   let let_gen =
                     let newVar = Vars.fresh () in
@@ -104,7 +104,7 @@ module T = struct
                           (self (n / 2, context, Real))
                           (self (n / 2, context, Real)) );
                       (2, let_gen);
-                      (1, map const (float_bound_exclusive 100.));
+                      (1, map const (float_bound_exclusive 1.));
                     ])
           | Arrow (argTy, retTy) ->
               let argsTy, retType =
@@ -207,12 +207,15 @@ module T = struct
   let test_opti opti opti_name =
     QCheck.Test.make ~count:1000 ~name:("Opt " ^ opti_name)
       arbitrary_closed_term (fun expr ->
-        equalTerms
-          (interpret
-             Rewrite.(
-               Strategies.Strategy.run (Strategies.Strategy.tryStrat opti expr))
-             [])
-          (interpret expr []))
+        let e1 =
+          interpret
+            Rewrite.(
+              Strategies.Strategy.run (Strategies.Strategy.tryStrat opti expr))
+            []
+        in
+        let e2 = interpret expr [] in
+        if equalTerms e1 e2 then true
+        else failwith (Printf.sprintf "%s\n\n%s" (to_string e1) (to_string e2)))
 
   let opti_list =
     [
