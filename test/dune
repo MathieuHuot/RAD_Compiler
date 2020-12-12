@@ -1,3 +1,3 @@
 (test
 (name test)
-(libraries alcotest qcheck-core qcheck-alcotest syntax))
+(libraries alcotest qcheck-core qcheck-alcotest syntax transforms))
