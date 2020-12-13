@@ -185,8 +185,8 @@ let rec freeVars = function
     let expr2Fv = List.filter (fun x -> not (List.mem x expr1Fv)) (freeVars expr2) in 
     List.append expr1Fv expr2Fv
 | Let(y,_,expr1,expr2)        ->
-    let expr1Fv = List.filter (fun x -> not(Vars.equal x y)) (freeVars expr1) in 
-    let expr2Fv = List.filter (fun x -> not(List.mem x expr1Fv)) (freeVars expr2) in 
+    let expr1Fv = freeVars expr1 in 
+    let expr2Fv = List.filter (fun x -> not(Vars.equal x y) && not(List.mem x expr1Fv)) (freeVars expr2) in 
     List.append expr1Fv expr2Fv
 | App(expr1,exprList)         ->  
     let expr1Fv = freeVars expr1 in 

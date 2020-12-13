@@ -142,5 +142,5 @@ module CTS = CompleteTraversalStrat(EvStrat)
 
 let anf expr = 
   let expr1 = weakAnf expr in
-  Strategy.run (CTS.tryAll letCommutativity expr1)
+  Strategy.run (Strategy.iterate 1000 (Strategy.tryStrat letCommutativity) expr1)
 end

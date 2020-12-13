@@ -127,7 +127,7 @@ let rec freeVars = function
 | Let(y,_,expr1, expr2)  -> 
     let expr1Fv = freeVars expr1 in 
     let expr2Fv = freeVars expr2 in 
-    List.append expr1Fv (List.filter (fun x -> not(Vars.equal x y) && not(List.mem y expr1Fv)) expr2Fv) 
+    List.append expr1Fv (List.filter (fun x -> not(Vars.equal x y) && not(List.mem x expr1Fv)) expr2Fv) 
 | _                      -> []
 
 let rec varNameNotBound (name:string) expr = match expr with
