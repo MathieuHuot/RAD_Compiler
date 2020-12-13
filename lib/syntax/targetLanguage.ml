@@ -164,6 +164,39 @@ let rec eqT expr1 expr2 list = match expr1, expr2 with
 | _                                                   -> false
 in eqT expr1 expr2 []
 
+let weakEqualTerms expr1 expr2 = 
+let rec eqT expr1 expr2 list = match expr1, expr2 with
+| Const a,Const b                                     -> CCFloat.(abs (a - b) < 0.00001 || a = nan || b = nan || a = infinity || b = infinity)
+| Var (a,ty1),Var (b,ty2)                             -> (Vars.equal a b || List.mem  ((a,ty1),(b,ty2)) list)
+                                                         && equalTypes ty1 ty2
+| Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 
+                                                         && eqT expr11 expr22 list
+| Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 
+                                                         &&  eqT expr11 expr21 list 
+                                                         &&  eqT expr12 expr22 list
+| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> equalTypes ty1 ty2 
+                                                         && eqT expr11 expr21 list
+                                                         &&  eqT expr12 expr22 (((x,ty1),(y,ty2))::list)
+| App(expr11,exprList1),App(expr21,exprList2)         -> eqT expr11 expr21 list
+                                                         &&  List.for_all2 (fun x y -> eqT x y list) exprList1 exprList2
+| Fun(varList1,expr1),Fun(varList2,expr2)             -> if List.length varList1 <> List.length varList2 
+                                                         then false 
+                                                         else
+                                                         eqT expr1 expr2 (List.append (List.combine varList1 varList2) list) 
+                                                         && List.for_all2 (fun (_,ty1) (_,ty2) -> equalTypes ty1 ty2) varList1 varList2
+| Tuple(exprList1), Tuple(exprList2)                  -> if List.length exprList1 <> List.length exprList2 
+                                                         then false 
+                                                         else
+                                                         List.for_all2 (fun expr1 expr2 -> eqT expr1 expr2 list) exprList1 exprList2
+| NCase(expr11,varList1,expr12), NCase(expr21,varList2,expr22)
+                                                      -> if List.length varList1 <> List.length varList2 
+                                                         then false 
+                                                         else
+                                                         eqT expr11 expr21 list 
+                                                         && eqT expr12 expr22 (List.append (List.combine varList1 varList2) list)                                                   
+| _                                                   -> false
+in eqT expr1 expr2 []
+
 let rec isValue = function
 | Const _           -> true
 | Fun(_,_)          -> true

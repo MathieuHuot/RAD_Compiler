@@ -34,6 +34,7 @@ val unfold_arrow : targetType -> targetType list * targetType
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
 val equalTypes : targetType -> targetType -> bool
 val equalTerms: targetSyn -> targetSyn ->  bool
+val weakEqualTerms: targetSyn -> targetSyn ->  bool
 val isValue : targetSyn -> bool
 val freeVars : targetSyn -> Vars.t list
 val subst : Vars.t -> targetType -> targetSyn -> targetSyn -> targetSyn
