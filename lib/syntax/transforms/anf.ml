@@ -22,7 +22,7 @@ let isImmediate expr = match expr with
   | Var _                    -> true
   | Apply1(_,expr1)          -> isVar expr1 
   | Apply2(_,expr1,expr2)    -> isVar expr1 && isVar expr2
-  | _                        -> failwith "isImmediate: wrong expression format"
+  | _                        -> false
 
 let rec isInAnf expr = match expr with
   | Let(_,_,expr1,expr2)  -> isImmediate expr1 && isInAnf expr2
@@ -85,7 +85,7 @@ let rec isImmediate expr = match expr with
   | Apply1(_,expr1)          -> isVar expr1 
   | Apply2(_,expr1,expr2)    -> isVar expr1 && isVar expr2
   | Tuple(exprList)          -> List.for_all isImmediate exprList
-  | _                        -> failwith "isImmediate: wrong expression format"
+  | _                        -> false
 
 let rec isInAnf expr = match expr with
   | Let(_,_,expr1,expr2)        -> isImmediate expr1 && isInAnf expr2
