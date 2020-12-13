@@ -158,7 +158,10 @@ in eqT expr1 expr2 []
 
 let weakEqualTerms expr1 expr2 = 
 let rec eqT expr1 expr2 list = match expr1, expr2 with
-| Const a,Const b                                     -> CCFloat.(abs (a - b) < 0.00001 || a = nan || b = nan || a = infinity || b = infinity)
+| Const a,Const b                                     -> CCFloat.(abs (a - b) < 0.00001
+                                                                  || (a = nan && b = nan)
+                                                                  || (a = neg_infinity && b = neg_infinity)
+                                                                  || (a = infinity && b = infinity))
 | Var (a,ty1),Var (b,ty2)                             -> (Vars.equal a b || List.mem  ((a,ty1),(b,ty2)) list)
                                                          && equalTypes ty1 ty2
 | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 
