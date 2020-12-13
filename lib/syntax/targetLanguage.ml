@@ -4,7 +4,7 @@ open Operators
 type 'a tuple = 'a list
 
 type targetType = Real
-                | Arrow of targetType * targetType
+                | Arrow of targetType tuple * targetType
                 | NProd of targetType tuple
 
 and targetSyn = Var of Vars.t * targetType
@@ -49,14 +49,6 @@ let isArrow ty = match ty with
 | Arrow(_,_)  -> true
 | _           -> false
 
-let unfold_arrow t =
-  let rec unfold l = function
-    | (Real | NProd _) as t -> (l, t)
-    | Arrow (ta, te) -> unfold (ta :: l) te
-  in
-  let l, ret_type = unfold [] t in
-  (List.rev l, ret_type)
-
 let rec sourceToTargetType (ty : SourceLanguage.sourceType) : targetType = match ty with
 | Real          -> Real
 | Prod(ty1,ty2) -> NProd [sourceToTargetType ty1;sourceToTargetType ty2]
@@ -78,8 +70,8 @@ let equalOp2 op1 op2 = match op1,op2 with
 
 let rec equalTypes ty1 ty2 = match ty1,ty2 with
   | Real, Real-> true
-  | Arrow(arg_type1, ret_type1), Arrow(arg_type2, ret_type2) ->
-    equalTypes arg_type1 arg_type2 && equalTypes ret_type1 ret_type2
+  | Arrow(tyList1, ret_type1), Arrow(tyList2, ret_type2) ->
+    CCList.equal equalTypes tyList1 tyList2 && equalTypes ret_type1 ret_type2
   | NProd(tyList1), NProd(tyList2) ->
     if List.length tyList1 <> List.length tyList2
     then false
@@ -314,16 +306,18 @@ let rec typeTarget = function
   | Fun (l, expr) ->
     CCResult.(
       typeTarget expr >|= fun texp ->
-      List.fold_right (fun (_, tv) t -> Arrow (tv, t)) l texp)
-  | App (exp, l) ->
+      Arrow (List.map snd l, texp))
+  | App (expr, l) ->
     CCResult.(
-      typeTarget exp >|= unfold_arrow >>= fun (args_type, ret_type) ->
-      if List.compare_lengths args_type l <> 0 then
-        Error "Wrong number of arguments in App"
-      else
-        List.map typeTarget l |> flatten_l >>= fun l ->
-        if CCList.equal equalTypes args_type l then Ok ret_type
-        else Error "Type mismatch with arguments type")
+      typeTarget expr >>= function
+      | Arrow (tyList, retType) ->
+        if List.compare_lengths tyList l <> 0 then
+          Error "Wrong number of arguments in App"
+        else
+          List.map typeTarget l |> flatten_l >>= fun l ->
+          if CCList.equal equalTypes tyList l then Ok retType
+          else Error "Type mismatch with arguments type"
+      | _ -> Error "Wrong number of arguments in App")
   | Tuple l ->
     CCResult.(List.map typeTarget l |> flatten_l >>= fun l -> Ok (NProd l))
   | NCase (expr1, l, expr2) -> (

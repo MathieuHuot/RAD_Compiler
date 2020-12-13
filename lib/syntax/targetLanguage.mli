@@ -1,7 +1,7 @@
 type 'a tuple = 'a list
 
 type targetType = Real 
-            | Arrow of targetType * targetType
+            | Arrow of targetType list * targetType
             | NProd of targetType tuple 
 
 and targetSyn =
@@ -30,7 +30,6 @@ val to_string : targetSyn -> string
 val pp : Format.formatter -> targetSyn -> unit
 
 val isArrow : targetType -> bool
-val unfold_arrow : targetType -> targetType list * targetType
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
 val equalTypes : targetType -> targetType -> bool
 val equalTerms: targetSyn -> targetSyn ->  bool

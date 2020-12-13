@@ -41,7 +41,10 @@ module T = struct
              | n ->
                  frequency
                    [
-                     (2, map2 arrow (self (n / 2)) (self (n / 2)));
+                     ( 2,
+                       map2 arrow
+                         (list_size (int_bound 20) (self (n / 2)))
+                         (self (n / 2)) );
                      ( 2,
                        int_range 0 20 >>= fun i ->
                        map nprod (list_size (return i) (self (n / max 1 i))) );
@@ -65,17 +68,6 @@ module T = struct
   let tuple l = Tuple l
 
   let ncase exp1 l exp2 = NCase (exp1, l, exp2)
-
-  let partial_unfold_arrow l t =
-    QCheck.Gen.(
-      fix
-        (fun self (l, t) ->
-          match t with
-          | Arrow (arg_ty, ret_ty) ->
-              frequency
-                [ (1, return (List.rev l, t)); (1, self (arg_ty :: l, ret_ty)) ]
-          | _ -> return (List.rev l, t))
-        (l, t))
 
   let closed_term_gen ty_gen =
     QCheck.Gen.(
@@ -106,11 +98,8 @@ module T = struct
                       (2, let_gen);
                       (1, map const (float_bound_exclusive 1.));
                     ])
-          | Arrow (argTy, retTy) ->
-              let argsTy, retType =
-                generate1 (partial_unfold_arrow [ argTy ] retTy)
-              in
-              let argsList = List.map (fun tv -> (Vars.fresh (), tv)) argsTy in
+          | Arrow (tyList, retType) ->
+              let argsList = List.map (fun tv -> (Vars.fresh (), tv)) tyList in
               let newContext = argsList @ context in
               map
                 (fun expr -> func argsList expr)

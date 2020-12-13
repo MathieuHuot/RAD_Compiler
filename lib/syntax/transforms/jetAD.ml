@@ -347,8 +347,7 @@ let rec addToPos i list y = match i, list with
 let rec reverse12 (context: context) (cont : targetSyn)  (expr : sourceSyn) : targetSyn * targetSyn * context = match expr with
   | Const c                   -> begin
                                   match typeTarget cont with 
-                                  | Result.Ok(Arrow(_,_) as ty_cont) ->
-                                  let tyList,_ = unfold_arrow ty_cont in
+                                  | Result.Ok(Arrow(tyList,_)) ->
                                   let newVar,newTy = (Syntax.Vars.fresh(), Real) in 
                                   let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                  
                                   let newContVarList =  List.append newVarList [(newVar,newTy)] in
@@ -358,8 +357,7 @@ let rec reverse12 (context: context) (cont : targetSyn)  (expr : sourceSyn) : ta
                                   end
   | Var(x, ty)                -> begin
                                   match typeTarget cont with 
-                                  | Result.Ok(Arrow(_,_) as ty_cont) ->
-                                  let tyList,_ = unfold_arrow ty_cont in
+                                  | Result.Ok(Arrow(tyList,_)) ->
                                   let new_var, new_ty = Syntax.Vars.fresh(), sourceToTargetType ty in  
                                   let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                          
                                   let newContVarList = List.append newVarList [(new_var, new_ty)] in
@@ -375,8 +373,7 @@ let rec reverse12 (context: context) (cont : targetSyn)  (expr : sourceSyn) : ta
                                   end
   | Apply1(op, expr)          -> begin
                                   match typeTarget cont,expr with
-                                  | Result.Ok(Arrow(_,_) as ty_cont), Var(x, ty) ->
-                                  let tyList,_ = unfold_arrow ty_cont in
+                                  | Result.Ok(Arrow(tyList,_)), Var(x, ty) ->
                                   let new_ty = sourceToTargetType ty in
                                   let pos_x = getPos (x, ty) context in
                                   let new_var = Syntax.Vars.fresh() in 
@@ -403,8 +400,7 @@ let rec reverse12 (context: context) (cont : targetSyn)  (expr : sourceSyn) : ta
                                   end
   | Apply2(op, expr1, expr2)  -> begin
                                   match typeTarget cont,expr1,expr2 with 
-                                  | Result.Ok(Arrow(_,_) as ty_cont), Var(x1, ty1), Var(x2, ty2) ->
-                                  let tyList,_ = unfold_arrow ty_cont in
+                                  | Result.Ok(Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
                                   let new_ty1 = sourceToTargetType ty1 in
                                   let pos_x1 = getPos (x1, ty1) context in
                                   let new_ty2 = sourceToTargetType ty2 in
@@ -466,8 +462,7 @@ let grad (context: context) (expr: sourceSyn) : targetSyn =
   let dexpr, cont, _ = reverse12 context id_cont (SourceAnf.weakAnf expr) in
   match typeTarget cont with
     | Result.Error s                   -> failwith (Printf.sprintf "grad: continuation ill-typed: %s" s)
-    | Result.Ok(Arrow(_,_) as ty_cont) ->
-    let tyList,_ = unfold_arrow ty_cont in
+    | Result.Ok(Arrow(tyList,_)) ->
     let sensitivities = initialize_rad tyList in
     begin 
     match typeTarget dexpr with
