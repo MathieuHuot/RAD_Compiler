@@ -303,13 +303,13 @@ let rec run expr = match expr with
   (* CBN evaluates a variable which has a function type *)
   | Let(x,ty,expr1,expr2) 
     when isArrow ty          -> Success(subst x ty expr1 expr2)
-  | NCase(Tuple(exprList),varList,expr) when List.exists (fun (_,ty) -> isArrow ty) varList 
+  (* | NCase(Tuple(exprList),varList,expr) when List.exists (fun (_,ty) -> isArrow ty) varList 
                              -> let list = List.combine varList exprList in
                                 let arrowList, nonArrowList = List.partition (fun ((_,ty),_) -> isArrow ty) list in
                                 let var2, expr2 = List.split nonArrowList in
-                                Success(NCase(Tuple(expr2),var2, simSubst arrowList expr))
+                                Success(NCase(Tuple(expr2),var2, simSubst arrowList expr)) *)
   | _                        -> Tr.traverse expr run 
-end
+end 
 
 module DeadVarsElim: Optim =
 functor (Tr : Traverse with type adt = Syntax.TargetLanguage.targetSyn) ->
@@ -336,6 +336,21 @@ let run expr =
   in aux unusedVars expr
   end
 
+module OneCaseRemoval: Optim =
+functor (Tr : Traverse with type adt = Syntax.TargetLanguage.targetSyn) ->
+struct
+open Syntax.TargetLanguage
+open Strategies.Strategy
+
+let rec run expr = match expr with
+  | Tuple(exprList) 
+    when List.length exprList = 1  -> Success(List.hd exprList)
+  | NCase(expr1, varList, expr2) 
+    when List.length varList = 1   -> let x, ty = List.hd varList in 
+                                      Success(Let(x, ty, expr1, expr2))
+  | _                              -> Tr.traverse expr run 
+end
+
 module EvStrat : Strategies.EvalStrat with type adt = Syntax.TargetLanguage.targetSyn = struct
   open Strategies.Strategy
   open Syntax.TargetLanguage
@@ -361,10 +376,11 @@ module TS = TrigoSimplification(TargetTr)
 module ZS = ZeroSimplification(TargetTr)
 module SAS = SimpleAlgebraicSimplifications(TargetTr)
 module CP = ConstantPropagation(TargetTr)
+module OCR = OneCaseRemoval(TargetTr)
 open Strategies.Strategy
 
 let fullOpti (expr: Syntax.TargetLanguage.targetSyn) = 
   run (
-    let num_iter = 400 in 
-    (iterate num_iter (tryStratList [FS.run; LR.run; FS.run])   
-    >> iterate num_iter (tryStratList [LS.run; LC.run; RF.run; TS.run; ZS.run; SAS.run; FS.run; LR.run; CP.run; DVE.run])) expr) 
+    let num_iter = 200 in 
+    (iterate num_iter (tryStratList [FS.run; LR.run; OCR.run])   
+    >> iterate num_iter (tryStratList [LS.run; LC.run; RF.run; TS.run; ZS.run; SAS.run; FS.run; LR.run; CP.run; DVE.run; OCR.run])) expr) 
