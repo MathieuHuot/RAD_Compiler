@@ -45,6 +45,6 @@ let listUnusedVars expr =
     | App(expr, exprList)                  -> aux expr @ List.flatten (List.map aux exprList)
     | Fun(_, expr)                         -> aux expr
     | NCase(expr1,varList, expr2)          -> aux expr1
-                                              @(let fv = freeVars expr2 in List.filter (fun (y,_) -> List.mem y fv) varList)
+                                              @(let fv = freeVars expr2 in List.filter (fun (y,_) -> not(List.mem y fv)) varList)
                                               @aux expr2
   in aux expr

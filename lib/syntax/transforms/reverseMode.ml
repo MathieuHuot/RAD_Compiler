@@ -150,8 +150,6 @@ let rec initialize_rad list = match list with
 let grad (context: context) (expr: sourceSyn) : targetSyn =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
   let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
-  Format.printf "%a@.@." Syntax.SourceLanguage.pp (SourceAnf.weakAnf expr);
-  Format.printf "%a@.@." Syntax.TargetLanguage.pp id_cont;
   let dexpr, cont, _ = rad context id_cont (SourceAnf.anf expr) in
   match typeTarget cont with
     | Result.Error s        -> failwith (Printf.sprintf "grad: continuation ill-typed: %s" s)
