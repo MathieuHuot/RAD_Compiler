@@ -320,7 +320,7 @@ let rec typeTarget = function
           List.map typeTarget l |> flatten_l >>= fun l ->
           if CCList.equal equalTypes tyList l then Ok retType
           else Error "Type mismatch with arguments type"
-      | _ -> Error "Wrong number of arguments in App")
+      | _ -> Error "App: expr should be of Arrow type")
   | Tuple l ->
     CCResult.(List.map typeTarget l |> flatten_l >>= fun l -> Ok (NProd l))
   | NCase (expr1, l, expr2) -> (
