@@ -302,7 +302,7 @@ let rec typeTarget = function
   | Let (_, t, expr1, expr2) ->
     CCResult.(
       typeTarget expr1 >>= fun t1 ->
-      if t = t1 then typeTarget expr2
+      if equalTypes t t1 then typeTarget expr2
       else
         Error
           "in Let binding type of the variable does not correspond to the \
