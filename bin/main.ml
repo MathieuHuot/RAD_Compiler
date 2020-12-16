@@ -2,6 +2,7 @@ open Syntax
 open Transforms
 
 let _ =
+  CCIO.File.(remove_noerr (make "out.txt"));
   let file = Unix.openfile "out.txt" [Unix.O_WRONLY; Unix.O_CREAT] 0o644 in  
   let oc = Unix.out_channel_of_descr file in
   set_binary_mode_out oc false;
