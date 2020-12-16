@@ -1,3 +1,4 @@
+open Containers
 open Syntax
 
 module VarSet = CCSet.Make (struct
@@ -130,7 +131,8 @@ module T = struct
 
   let rec complet_to_type context n (targetTy : targetType) (term : targetSyn)
       (ty : targetType) =
-    if n <= 0 then None
+    if equalTypes targetTy ty then Some term
+    else if n <= 0 then None
     else
       match (targetTy, ty) with
       | Real, Real -> Some term
@@ -143,7 +145,7 @@ module T = struct
                  List.map
                    (fun t ->
                      QCheck.Gen.generate1
-                       (closed_term_gen context (n - List.length l) t))
+                       (term_gen context (n - List.length l) t))
                    l ))
             ty
       | NProd targetList, NProd termList ->
@@ -207,7 +209,7 @@ module T = struct
             let v, t, _ = QCheck.Gen.(generate1 (oneofl l)) in
             complet_to_type context n targetTy (Var (v, t)) t)
 
-  and closed_term_gen context (n : int) targetTy =
+  and term_gen context (n : int) targetTy =
     QCheck.Gen.(
       sized_size (return n) @@ fun i ->
       fix
@@ -271,35 +273,31 @@ module T = struct
         <+> (shrink_term expr1 >|= fun expr -> apply2 op expr expr2)
         <+> (shrink_term expr2 >|= fun expr -> apply2 op expr1 expr)
     | Let (x, t, expr1, expr2) ->
-        return expr1
-        <+> (shrink_term expr1 >|= fun expr -> clet x t expr expr2)
+        shrink_term expr1
+        >|= (fun expr -> clet x t expr expr2)
         <+> (shrink_term expr2 >|= fun expr -> clet x t expr1 expr)
     | Fun (vars, expr) -> shrink_term expr >|= fun expr -> func vars expr
     | App (expr, exprs) ->
-        return expr <+> of_list exprs
-        <+> (shrink_term expr >|= fun expr -> app expr exprs)
+        shrink_term expr
+        >|= (fun expr -> app expr exprs)
         <+> ( QCheck.Shrink.list_elems shrink_term exprs >|= fun exprs ->
               app expr exprs )
-    | Tuple exprs ->
-        of_list exprs <+> (QCheck.Shrink.list_elems shrink_term exprs >|= tuple)
+    | Tuple exprs -> QCheck.Shrink.list_elems shrink_term exprs >|= tuple
     | NCase (expr1, vars, expr2) ->
-        return expr1
-        <+> (shrink_term expr1 >|= fun expr -> ncase expr vars expr2)
+        shrink_term expr1
+        >|= (fun expr -> ncase expr vars expr2)
         <+> (shrink_term expr2 >|= fun expr -> ncase expr1 vars expr)
 
   let arbitrary_closed_term =
     QCheck.make
-      (closed_term_gen [] QCheck.Gen.(generate1 (int_bound 30)) Real)
-      ~print:to_string
-
-  (*~shrink:shrink_term*)
+      QCheck.Gen.(int_bound 20 >>= fun i -> term_gen [] i Real)
+      ~print:to_string ~shrink:shrink_term
 
   let arbitrary_term =
     QCheck.make
-      (closed_term_gen
-         (List.init 10 (fun i -> (("x", i), Real)))
-         QCheck.Gen.(generate1 (int_bound 30))
-         Real)
+      QCheck.Gen.(
+        int_bound 20 >>= fun i ->
+        term_gen (List.init 10 (fun i -> (("x", i), Real))) i Real)
       ~print:to_string ~shrink:shrink_term
 
   let test_isWellTyped =
@@ -343,10 +341,10 @@ module T = struct
     [
       test_isWellTyped;
       test_equalTerms;
-        test_interpret;
-        test_anf;
-        test_weakAnf;
-        test_isInWeakAnf_weakAnf;
+      test_interpret;
+      test_anf;
+      test_weakAnf;
+      test_isInWeakAnf_weakAnf;
     ]
 
   let test_opti opti opti_name =
@@ -396,10 +394,6 @@ module T = struct
       opti_list
 end
 
-(*let () =
-  Format.printf "%a@." TargetLanguage.pp
-    (QCheck.Gen.generate1 T.(closed_term_gen [] 20 Real))*)
-
 let () =
   let target = List.map QCheck_alcotest.to_alcotest T.test_list in
   let target_opti = List.map QCheck_alcotest.to_alcotest T.test_opti_list in
@@ -410,5 +404,5 @@ let () =
     [
       ("Target Language", target);
       ("Opti Target Language", target_opti);
-        ("Opti Free Vars Target Language", target_opti_freeVar)
+      ("Opti Free Vars Target Language", target_opti_freeVar);
     ]
