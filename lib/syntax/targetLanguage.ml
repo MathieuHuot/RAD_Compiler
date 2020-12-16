@@ -158,7 +158,7 @@ in eqT expr1 expr2 []
 
 let weakEqualTerms expr1 expr2 = 
 let rec eqT expr1 expr2 list = match expr1, expr2 with
-| Const a,Const b                                     -> CCFloat.(abs (a - b) < 0.00001
+| Const a,Const b                                     -> CCFloat.(abs (a - b) <= 0.00001 * abs a
                                                                   || (a = nan && b = nan)
                                                                   || (a = -.nan && b = -.nan)
                                                                   || (a = neg_infinity && b = neg_infinity)
