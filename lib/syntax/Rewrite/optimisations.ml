@@ -303,11 +303,11 @@ let rec run expr = match expr with
   (* CBN evaluates a variable which has a function type *)
   | Let(x,ty,expr1,expr2) 
     when isArrow ty          -> Success(subst x ty expr1 expr2)
-  (* | NCase(Tuple(exprList),varList,expr) when List.exists (fun (_,ty) -> isArrow ty) varList 
+  | NCase(Tuple(exprList),varList,expr) when List.exists (fun (_,ty) -> isArrow ty) varList 
                              -> let list = List.combine varList exprList in
                                 let arrowList, nonArrowList = List.partition (fun ((_,ty),_) -> isArrow ty) list in
                                 let var2, expr2 = List.split nonArrowList in
-                                Success(NCase(Tuple(expr2),var2, simSubst arrowList expr)) *)
+                                Success(NCase(Tuple(expr2),var2, simSubst arrowList expr))
   | _                        -> Tr.traverse expr run 
 end 
 
@@ -323,7 +323,7 @@ let run expr =
   let rec aux unusedVars expr =
     match expr with
     | Let(x, ty,_,expr) 
-      when (List.mem (x,ty) unusedVars)    -> tryStrat (aux unusedVars) expr
+      when (List.mem (x,ty) unusedVars)    -> Success(expr)
     | NCase(_,varList, expr)
       when List.for_all (fun y -> List.mem y unusedVars) varList
                                            -> Success(expr)
@@ -384,3 +384,63 @@ let fullOpti (expr: Syntax.TargetLanguage.targetSyn) =
     let num_iter = 200 in 
     (iterate num_iter (tryStratList [FS.run; LR.run; OCR.run])   
     >> iterate num_iter (tryStratList [LS.run; LC.run; RF.run; TS.run; ZS.run; SAS.run; FS.run; LR.run; CP.run; DVE.run; OCR.run])) expr) 
+
+let oneCaseRem (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat OCR.run) expr
+    ) 
+    
+let constProp (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat CP.run) expr
+    ) 
+    
+let simpleAlgSimpl (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat SAS.run) expr
+    ) 
+    
+let zeroSimpl (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat ZS.run) expr
+    ) 
+
+let realFact (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat TS.run) expr
+    ) 
+
+let letComm (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat LC.run) expr
+    ) 
+
+let forwSubst (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat FS.run) expr
+    ) 
+
+let letSimpl (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat LS.run) expr
+    ) 
+    
+let lambdaRem (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat LR.run) expr
+    ) 
+    
+let deadVarElim (expr: Syntax.TargetLanguage.targetSyn) = 
+  run (
+    let num_iter = 200 in 
+    iterate num_iter (tryStrat DVE.run) expr
+    )     

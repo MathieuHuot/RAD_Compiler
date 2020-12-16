@@ -148,45 +148,25 @@ let _ =
     SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
     TargetLanguage.pp g9;
 
+  
   let g6 =
-    SourceLanguage.Apply2
-      ( Operators.Times,
-        SourceLanguage.Apply2
-          ( Operators.Plus,
-            SourceLanguage.Var (x1, SourceLanguage.Real),
-            SourceLanguage.Var (x2, SourceLanguage.Real) ),
-        SourceLanguage.Apply2
-          ( Operators.Plus,
-            SourceLanguage.Var (x1, SourceLanguage.Real),
-            SourceLanguage.Var (x2, SourceLanguage.Real) ) )
+      SourceLanguage.Let
+        ( ("z", 1),
+          SourceLanguage.Real,
+          SourceLanguage.Apply2
+            ( Times,
+              SourceLanguage.Var (x2, SourceLanguage.Real),
+              SourceLanguage.Apply2
+                ( Plus,
+                  SourceLanguage.Var (x1, SourceLanguage.Real),
+                  SourceLanguage.Var (x2, SourceLanguage.Real) ) ),
+          SourceLanguage.Var (("z", 1), SourceLanguage.Real) )
   in
-  let g7 = Anf.SourceAnf.anf g6 in
-  let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in
+  let g7 = Anf.SourceAnf.weakAnf g6 in
+  let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in  
   let g9 = Rewrite.Optimisations.fullOpti g8 in
   Format.fprintf out
     "Term:@.%a@.@.Anf Term:@.%a@.@.Reverse derivative macro of \
-     term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
-    SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
-    TargetLanguage.pp g9;
-
-  let g6 =
-    SourceLanguage.Let
-      ( ("z", 1),
-        SourceLanguage.Real,
-        SourceLanguage.Apply2
-          ( Times,
-            SourceLanguage.Var (x2, SourceLanguage.Real),
-            SourceLanguage.Apply2
-              ( Plus,
-                SourceLanguage.Var (x1, SourceLanguage.Real),
-                SourceLanguage.Var (x2, SourceLanguage.Real) ) ),
-        SourceLanguage.Var (("z", 1), SourceLanguage.Real) )
-  in
-  let g7 = Anf.SourceAnf.weakAnf g6 in
-  let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in
-  let g9 = Rewrite.Optimisations.fullOpti g8 in
-  Format.fprintf out
-    "Term:@.%a@.@.Weak anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
     SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
     TargetLanguage.pp g9;
@@ -206,6 +186,57 @@ let _ =
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
     SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
     TargetLanguage.pp g9;
+
+  let g6 =
+    SourceLanguage.Apply2
+      ( Operators.Times,
+        SourceLanguage.Apply2
+          ( Operators.Plus,
+            SourceLanguage.Var (x1, SourceLanguage.Real),
+            SourceLanguage.Var (x2, SourceLanguage.Real) ),
+        SourceLanguage.Apply2
+          ( Operators.Plus,
+            SourceLanguage.Var (x1, SourceLanguage.Real),
+            SourceLanguage.Var (x2, SourceLanguage.Real) ) )
+  in
+  let g7 = Anf.SourceAnf.anf g6 in
+  let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in
+  let g9 = Rewrite.Optimisations.fullOpti g8 in
+  let g10 = Rewrite.Optimisations.lambdaRem g8 in
+  let g11 = Rewrite.Optimisations.forwSubst g10 in
+  let g12 = Rewrite.Optimisations.oneCaseRem g11 in
+  let g13 =  Rewrite.Optimisations.letComm g12 in
+  let g14 = Rewrite.Optimisations.forwSubst g13 in
+  let g15 = Rewrite.Optimisations.lambdaRem g14 in
+  let g16 = Rewrite.Optimisations.simpleAlgSimpl g15 in
+  let g17 = Rewrite.Optimisations.forwSubst g16 in
+  let g18 = Rewrite.Optimisations.zeroSimpl g17 in
+  let g19 = Rewrite.Optimisations.simpleAlgSimpl g18 in
+  let g20 = Rewrite.Optimisations.forwSubst g19 in
+  let g21 =  Rewrite.Optimisations.deadVarElim g20 in
+  Format.fprintf out
+    "Term:@.%a@.
+      Weak anf Term:@.%a@.
+      Reverse derivative macro of term:@.%a@.
+      Reduced reverse derivative macro of term:@.%a@.@.
+      LambdaRemoval of term:@.%a@.
+      ForwardSubstitution of term:@.%a@.
+      OneCaseRemoval of term:@.%a@.
+      LetCommutativity of term:@.%a@.
+      ForwardSubstitution of term:@.%a@.
+      LambdaRemoval of term:@.%a@.
+      SimpleAlgebraicSimpl of term:@.%a@.
+      ForwardSubstitution of term:@.%a@.
+      ZeroSimpl of term:@.%a@.
+      SimpleAlgebraicSimpl of term:@.%a@.
+      ForwardSubstitution of term:@.%a@.
+      DeadVarElim of term:@.%a@.@.@."
+    SourceLanguage.pp g6 SourceLanguage.pp g7 TargetLanguage.pp g8
+    TargetLanguage.pp g9 TargetLanguage.pp g10 TargetLanguage.pp g11
+    TargetLanguage.pp g12 TargetLanguage.pp g13 TargetLanguage.pp g14
+    TargetLanguage.pp g15 TargetLanguage.pp g16 TargetLanguage.pp g17
+    TargetLanguage.pp g18 TargetLanguage.pp g19  TargetLanguage.pp g20 
+    TargetLanguage.pp g21;
 
   let g6 =
     SourceLanguage.Let
@@ -270,7 +301,6 @@ let _ =
       ]
       g6
   in
-  (* let g8 = Array.map (Array.map Rewrite.Optimisations.fullOpti) g7 in *)
   Format.fprintf out "Term:@.%a@.@.Reduced hession of term:@.%a@.@.@."
     SourceLanguage.pp g6 TargetLanguage.pp
     g7.(0).(0);
