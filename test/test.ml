@@ -242,7 +242,29 @@ module T = struct
                 (self (n / 4, context, varType))
                 (self (3 * n / 4, newContext, targetTy))
             in
-            let gen_list = [ let_gen ] in
+            let fun_gen =
+              list_size (int_bound n) (type_gen n) >>= fun l ->
+              let l = List.map (fun t -> (Vars.fresh (), t)) l in
+              let newContext = l @ context in
+              map2
+                (fun args expr -> App (Fun (l, expr), args))
+                (flatten_l
+                @@ List.map
+                     (fun (_, t) ->
+                       self (n / max 2 (List.length l), context, t))
+                     l)
+                (self (n / max 2 (List.length l), newContext, targetTy))
+            in
+            let ncase_gen =
+              list_size (int_bound n) (type_gen n) >>= fun tyList ->
+              let l = List.map (fun t -> (Vars.fresh (), t)) tyList in
+              let newContext = l @ context in
+              map2
+                (fun tuple expr -> NCase (tuple, l, expr))
+                (self (n / max 2 (List.length l), context, NProd tyList))
+                (self (n / max 2 (List.length l), newContext, targetTy))
+            in
+            let gen_list = [ let_gen; fun_gen; ncase_gen ] in
             let gen_list =
               match get_from_context context n targetTy with
               | None -> gen_list
@@ -393,6 +415,10 @@ module T = struct
       (fun (opti, opti_name) -> test_opti_freeVar opti opti_name)
       opti_list
 end
+
+let () =
+  Format.printf "%a@." TargetLanguage.pp
+    (QCheck.Gen.generate1 (T.term_gen [] 20 TargetLanguage.Real))
 
 let () =
   let target = List.map QCheck_alcotest.to_alcotest T.test_list in
