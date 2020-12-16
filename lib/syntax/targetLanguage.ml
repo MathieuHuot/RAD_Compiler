@@ -1,5 +1,11 @@
 open Operators
 
+module VarSet = CCSet.Make (struct
+  type t = Vars.t
+
+  let compare x y = CCPair.compare CCString.compare CCInt.compare x y
+end)
+
 (* syntax *)
 type 'a tuple = 'a list
 
@@ -51,9 +57,11 @@ let rec pp fmt = function
     else Format.fprintf fmt "@[(%a %a %a)@]" pp expr1 pp_op2 op pp expr2
   | Let (x, _t, expr1, expr2) -> Format.fprintf fmt "@[<hv>let %a =@;<1 2>@[%a@]@ in@ %a@]" Vars.pp x pp expr1 pp expr2
   | Fun (vars, expr) -> Format.fprintf fmt "@[λ%a.@;<1 2>%a@]" (CCList.pp (fun fmt (v,_) -> Vars.pp fmt v)) vars pp expr
-  | App (expr, exprs) -> Format.fprintf fmt "@[(%a)[@;<1 2>@[%a@]@,]@]" pp expr (CCList.pp pp) exprs
+  | App (expr, exprs) -> Format.fprintf fmt "@[(%a)[@;<0 2>@[%a@]]@]" pp expr (CCList.pp pp) exprs
   | Tuple exprs -> CCList.pp ~pp_start:(fun fmt () -> Format.fprintf fmt "@[{@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@ }@]") pp fmt exprs
   | NCase (expr1, vars, expr2) -> Format.fprintf fmt "@[<hv>lets %a =@;<1 2>@[%a@]@ in@ %a@]" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Vars.pp fmt v)) vars pp expr1 pp expr2
+
+let to_string = CCFormat.to_string pp
 
 let isArrow ty = match ty with
 | Arrow(_,_)  -> true
@@ -68,8 +76,7 @@ let equalOp1 op1 op2 = match op1,op2 with
   | Sin,Sin     -> true
   | Exp,Exp     -> true
   | Minus,Minus -> true
-  | Power n, Power m when n=m
-                -> true
+  | Power n, Power m -> n = m
   | _           -> false
 
 let equalOp2 op1 op2 = match op1,op2 with
@@ -83,10 +90,7 @@ let rec equalTypes ty1 ty2 = match ty1,ty2 with
   | Arrow(tyList1, ret_type1), Arrow(tyList2, ret_type2) ->
     CCList.equal equalTypes tyList1 tyList2 && equalTypes ret_type1 ret_type2
   | NProd(tyList1), NProd(tyList2) ->
-    if List.length tyList1 <> List.length tyList2
-    then false
-    else
-      List.for_all2 (fun ty11 ty22 -> equalTypes ty11 ty22 ) tyList1 tyList2
+    CCList.equal equalTypes tyList1 tyList2
   | _  -> false
 
 (* substitute variable x of type xTy by expr1 in expr2 *)
@@ -109,11 +113,10 @@ let rec subst (x:Vars.t) xTy expr1 expr2 = match expr2 with
 
 let isInContext v context = List.mem_assoc v context
 
-let findInContext v context = List.assoc v context
+let findInContext v context = List.assoc_opt v context
 
  let rec simSubst context expr = match expr with
-  | Var (a,ty1) when isInContext (a,ty1) context          
-                                    -> findInContext (a,ty1) context
+  | Var (a,ty1)                     -> CCOpt.get_or ~default:expr (findInContext (a,ty1) context)
   | Apply1(op,expr)                 -> Apply1(op,simSubst context expr)
   | Apply2(op,expr1,expr2)          -> Apply2(op,simSubst context expr1,simSubst context expr2)
   | Let(y,ty1,expr1,expr2)          -> if isInContext (y,ty1) context
@@ -127,15 +130,15 @@ let findInContext v context = List.assoc v context
   | NCase(expr1,varList,expr2)      -> if (List.exists (fun (y,ty) -> isInContext (y,ty) context) varList)
                                        then failwith "simsubst: trying to substitute a bound variable"
                                        else NCase(simSubst context expr1,varList,simSubst context expr2)
-  | _                               -> expr 
+  | Const _                         -> expr
 
 (*  Checks whether two terms are equal up to alpha renaming.
     Two variables match iff they are the same free variable or they are both bound and equal up to renaming.
     This renaming is checked by carrying an explicit list of pairs of bound variables found so far in the term. 
     When an occurence of bound variable is found deeper in the term, we check whether it matches the renaming *)
-let equalTerms expr1 expr2 = 
+let equalTerms ?(eq = Float.equal) expr1 expr2 = 
 let rec eqT expr1 expr2 list = match expr1, expr2 with
-| Const a,Const b                                     -> a=b
+| Const a,Const b                                     -> eq a b
 | Var (a,ty1),Var (b,ty2)                             -> (Vars.equal a b || List.mem  ((a,ty1),(b,ty2)) list)
                                                          && equalTypes ty1 ty2
 | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 
@@ -166,42 +169,15 @@ let rec eqT expr1 expr2 list = match expr1, expr2 with
 | _                                                   -> false
 in eqT expr1 expr2 []
 
-let weakEqualTerms expr1 expr2 = 
-let rec eqT expr1 expr2 list = match expr1, expr2 with
-| Const a,Const b                                     -> CCFloat.(abs (a - b) <= 0.00001 * abs a
-                                                                  || (a = nan && b = nan)
-                                                                  || (a = -.nan && b = -.nan)
-                                                                  || (a = neg_infinity && b = neg_infinity)
-                                                                  || (a = infinity && b = infinity))
-| Var (a,ty1),Var (b,ty2)                             -> (Vars.equal a b || List.mem  ((a,ty1),(b,ty2)) list)
-                                                         && equalTypes ty1 ty2
-| Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2 
-                                                         && eqT expr11 expr22 list
-| Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2 
-                                                         &&  eqT expr11 expr21 list 
-                                                         &&  eqT expr12 expr22 list
-| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> equalTypes ty1 ty2 
-                                                         && eqT expr11 expr21 list
-                                                         &&  eqT expr12 expr22 (((x,ty1),(y,ty2))::list)
-| App(expr11,exprList1),App(expr21,exprList2)         -> eqT expr11 expr21 list
-                                                         &&  List.for_all2 (fun x y -> eqT x y list) exprList1 exprList2
-| Fun(varList1,expr1),Fun(varList2,expr2)             -> if List.length varList1 <> List.length varList2 
-                                                         then false 
-                                                         else
-                                                         eqT expr1 expr2 (List.append (List.combine varList1 varList2) list) 
-                                                         && List.for_all2 (fun (_,ty1) (_,ty2) -> equalTypes ty1 ty2) varList1 varList2
-| Tuple(exprList1), Tuple(exprList2)                  -> if List.length exprList1 <> List.length exprList2 
-                                                         then false 
-                                                         else
-                                                         List.for_all2 (fun expr1 expr2 -> eqT expr1 expr2 list) exprList1 exprList2
-| NCase(expr11,varList1,expr12), NCase(expr21,varList2,expr22)
-                                                      -> if List.length varList1 <> List.length varList2 
-                                                         then false 
-                                                         else
-                                                         eqT expr11 expr21 list 
-                                                         && eqT expr12 expr22 (List.append (List.combine varList1 varList2) list)                                                   
-| _                                                   -> false
-in eqT expr1 expr2 []
+let weakEqualTerms =
+  equalTerms ~eq:(fun x y ->
+      CCFloat.(
+        equal x y
+        || equal_precision ~epsilon:(0.00001 * abs x) x y
+        || (x = nan && y = nan)
+        || (x = -nan && y = -nan)
+        || (x = neg_infinity && y = neg_infinity)
+        || (x = infinity && y = infinity)))
 
 let rec isValue = function
 | Const _           -> true
@@ -209,49 +185,36 @@ let rec isValue = function
 | Tuple(exprList)   -> List.for_all isValue exprList
 | _                 -> false
 
-let isContextOfValues (cont : context) = 
-    List.fold_left (fun acc (_,v) -> (isValue v) && acc) true cont 
+let isContextOfValues (cont : context) = List.for_all (fun (_,v) -> isValue v) cont
 
 let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
     then failwith "closingTerm: context does not only contain values"
     else simSubst cont expr
 
 let rec freeVars = function
-| Var (x,_)                   -> [x]
+| Var (x,_)                   -> VarSet.singleton x
 | Apply1(_,expr)              -> freeVars expr
-| Apply2(_,expr1,expr2)       -> 
-    let expr1Fv = freeVars expr1 in 
-    let expr2Fv = List.filter (fun x -> not (List.mem x expr1Fv)) (freeVars expr2) in 
-    List.append expr1Fv expr2Fv
+| Apply2(_,expr1,expr2)       ->
+    VarSet.union (freeVars expr1) (freeVars expr2)
 | Let(y,_,expr1,expr2)        ->
-    let expr1Fv = freeVars expr1 in 
-    let expr2Fv = List.filter (fun x -> not(Vars.equal x y) && not(List.mem x expr1Fv)) (freeVars expr2) in 
-    List.append expr1Fv expr2Fv
-| App(expr1,exprList)         ->  
-    let expr1Fv = freeVars expr1 in 
+    let expr1Fv = freeVars expr1 in
+    let expr2Fv = VarSet.filter (fun x -> not(Vars.equal x y)) (freeVars expr2) in
+    VarSet.union expr1Fv expr2Fv
+| App(expr1,exprList)         ->
+    let expr1Fv = freeVars expr1 in
     let lis = List.map freeVars exprList in
-    List.fold_left 
-    (fun currentList newList ->  List.append  currentList 
-                                              (List.filter (fun x -> not(List.mem x currentList)) newList)) 
-    expr1Fv 
-    lis
-| Fun(varList,expr)           -> let exprFv = freeVars expr in
-    List.fold_left 
-    (fun list (y,_) -> List.filter (fun x -> not(Vars.equal x y)) list) 
-    exprFv 
-    varList
-| Tuple(exprList)             -> 
+    List.fold_left VarSet.union expr1Fv lis
+| Fun(varList,expr)           ->
+    let exprFv = freeVars expr in
+    VarSet.(diff exprFv (of_list (List.map fst varList)))
+| Tuple(exprList)             ->
     let lis = List.map freeVars exprList in
-    List.fold_left 
-    (fun currentList newList ->  List.append  currentList 
-                                              (List.filter (fun x -> not(List.mem x currentList)) newList)) 
-    [] 
-    lis
-| NCase(expr1,varList,expr2)  -> 
-  let expr1Fv = freeVars expr1 in 
-  let expr2Fv = List.fold_left (fun list (y,_) -> List.filter (fun x -> not(Vars.equal x y)) list) (freeVars expr2) varList in 
-  List.append expr1Fv (List.filter (fun x -> not(List.mem x expr1Fv)) expr2Fv)
-| _ -> [] 
+    List.fold_left VarSet.union VarSet.empty lis
+| NCase(expr1,varList,expr2)  ->
+  let expr1Fv = freeVars expr1 in
+  let expr2Fv = VarSet.(diff (freeVars expr2) (of_list (List.map fst varList))) in
+  VarSet.union expr1Fv expr2Fv
+| _ -> VarSet.empty
 
 let rec varNameNotBound (name:string) expr = match expr with
 | Let((str,_),_,expr1,expr2)              ->  str<> name 
@@ -277,7 +240,7 @@ let indexOf el lis =
   in indexAux 0 lis
 
 let canonicalAlphaRename (name:string) expr =
-let freeV = freeVars expr in 
+let freeV = VarSet.to_list (freeVars expr) in 
 if varNameNotBound name expr then 
 let rec canRen expr = match expr with
 | Var (s,ty)                      -> let i = indexOf s freeV in Var ((name,i),ty)
@@ -350,7 +313,7 @@ let isWellTyped expr = typeTarget expr |> Result.is_ok
 (* checks whether the context captures all the free variables of an expression*)
 let contextComplete expr context =
   let exprFv = freeVars expr in 
-  List.fold_left (fun acc x -> acc && (List.exists (fun ((y,_),_) -> Vars.equal y x) context)) true exprFv
+  VarSet.for_all (fun x -> (List.exists (fun ((y,_),_) -> Vars.equal y x) context)) exprFv
 
 let interpretOp1 op expr = match expr with
 | Const v -> 

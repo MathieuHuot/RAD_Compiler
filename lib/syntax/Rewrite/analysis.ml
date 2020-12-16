@@ -40,11 +40,11 @@ let listUnusedVars expr =
     | Const _                              -> []
     | Apply1(_, expr)                      -> aux expr
     | Apply2(_, expr1, expr2)              -> aux expr1 @ aux expr2
-    | Let(x, ty, expr1, expr2)             -> (if (List.mem x (freeVars expr2)) then [] else [(x,ty)]) @ aux expr1 @ aux expr2  
+    | Let(x, ty, expr1, expr2)             -> (if (VarSet.mem x (freeVars expr2)) then [] else [(x,ty)]) @ aux expr1 @ aux expr2
     | Tuple(exprList)                      -> List.flatten (List.map aux exprList)
     | App(expr, exprList)                  -> aux expr @ List.flatten (List.map aux exprList)
     | Fun(_, expr)                         -> aux expr
     | NCase(expr1,varList, expr2)          -> aux expr1
-                                              @(let fv = freeVars expr2 in List.filter (fun (y,_) -> not(List.mem y fv)) varList)
+                                              @(let fv = freeVars expr2 in List.filter (fun (y,_) -> not(VarSet.mem y fv)) varList)
                                               @aux expr2
   in aux expr
