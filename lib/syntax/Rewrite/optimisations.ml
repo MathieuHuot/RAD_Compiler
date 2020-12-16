@@ -320,7 +320,7 @@ open Strategies.Strategy
 (* dead code elimination of a list of unused variables *)
 let run expr =
   let unusedVars = Analysis.listUnusedVars expr in
-  let rec aux unusedVars expr =
+   let rec aux unusedVars expr =
     match expr with
     | Let(x, ty,_,expr) 
       when (List.mem (x,ty) unusedVars)    -> Success(expr)
@@ -329,7 +329,7 @@ let run expr =
                                            -> Success(expr)
     | NCase(Tuple(exprList),varList,expr)  -> let list = List.combine exprList varList in
                                               (* remove each expr bound to an unused var *) 
-                                              let filteredList = List.filter (fun (_,y) -> List.mem y unusedVars) list in
+                                              let filteredList = List.filter (fun (_,y) -> not (List.mem y unusedVars)) list in
                                               let filtExpr, filtVars = List.split filteredList in
                                               Success(NCase(Tuple(filtExpr), filtVars, expr))
     | _                                    -> Tr.traverse expr (aux unusedVars)
