@@ -19,6 +19,8 @@ and targetSyn = Var of Vars.t * targetType
 
 type context = ((Vars.t * targetType), targetSyn) CCList.Assoc.t
 
+let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
+
 let rec type_to_string = function
   | Real -> "Real"
   |Arrow (l, t) ->

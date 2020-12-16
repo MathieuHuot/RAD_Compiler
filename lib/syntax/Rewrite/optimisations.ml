@@ -270,6 +270,7 @@ let rec run expr = match expr with
   | _                     -> Tr.traverse expr run 
 end
 
+(* optimisation for common sub-expressions simplifications *)
 module LetSimplification: Optim = 
 functor (Tr : Traverse with type adt = Syntax.TargetLanguage.targetSyn) ->
 struct

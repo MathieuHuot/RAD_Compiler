@@ -318,8 +318,12 @@ end
 (* It computes the whole hessian in one pass on a function Real^n -> Real *)
 (* Similarly to reverse-mode computing the whole gradient in one pass *)
 (* Reverse-mode can be seen as (1,1)-covelocities *)
+(* Be Careful, this implementation is memory intensive !! It seems that an implementation of
+   (1,2)-covelocities  cannot be easily turned to a "local" implementation, as opposed to the other approaches we've seen so far.
+   This might be for deep theoretical reasons (again, see the paper by Betancourt). 
+   The best way to compute the whole hessian of a functin real^n -> real might be to use mixed methods, implemented below. *)
 module CoJets12 = struct
-
+(*TODO: currently not implemented *)
 open Syntax.SourceLanguage
 open Syntax.Operators
 open Syntax.TargetLanguage
@@ -327,9 +331,7 @@ open Anf
 
 type context = (Syntax.Vars.t * sourceType) tuple
 
-let dvar var : Syntax.Vars.t *  Syntax.Vars.t = let str, i = var in (str, i), ("d"^str, i) 
-
-let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
+let dvar var : Syntax.Vars.t *  Syntax.Vars.t = let str, i = var in (str, i), ("d"^str, i)
 
 let getPos (x,ty) list = 
   let rec aux pos list = match list with
@@ -473,3 +475,149 @@ let grad (context: context) (expr: sourceSyn) : targetSyn =
     end
     | _ -> failwith "grad: continuation should have a function type"
 end
+
+(* This method computes mixed mode differentiation. It computes the gradient of a diretional derivative in one pass. 
+    That is something of the form Hv. This is probably the best method for evaluating the whole Hessian if needed, and a very efficient way 
+    to compute a whole column of the hessian in linear time.
+    It works by first pushing a velocity forward to get something of the form <Grad f, v>, and then computing the gradient of this in a reverse pass. *)
+module MixedJets = struct
+  open Syntax.SourceLanguage
+  open Syntax.Operators
+  open Syntax.TargetLanguage
+  open Anf
+  
+  type context = (Syntax.Vars.t * sourceType) tuple
+  
+  let dvar var : Syntax.Vars.t * Syntax.Vars.t * Syntax.Vars.t = let str, i = var in (str, i), ("d"^str, i), ("D"^str,i) 
+  
+  let dop2 y (op: op1) = match op with
+    | Cos     -> Apply1(Minus, Apply1(Sin, y))
+    | Sin     -> Apply1(Cos, y)
+    | Exp     -> Apply1(Exp, y)
+    | Minus   -> Const (-1.)
+    | Power 0 -> Const(0.)
+    | Power n -> Apply2(Times, Const(float_of_int (n-1)), Apply1(Power(n-1), y))
+
+  let getPos (x,ty) list = 
+    let rec aux pos list = match list with
+    | [] -> failwith "getPos: element not found"
+    | (y,ty2)::tl -> if Syntax.Vars.equal x y && Syntax.SourceLanguage.equalTypes ty ty2 
+                      then pos 
+                      else aux (pos+1) tl
+    in aux 0 list
+  
+  let rec addToPos i y list = match i, list with
+    | _,[]      -> failwith "addToPos: no element at this position in the list"
+    | 0,x::tl   -> (Apply2(Plus, x, y))::tl
+    | _,x::tl   -> x::(addToPos (i-1) y tl) 
+  
+  let rec reverse12 (context: context) (cont : targetSyn)  (expr : sourceSyn) : targetSyn * targetSyn * context = match expr with
+    | Const c                   -> begin
+                                    match typeTarget cont with 
+                                    | Result.Ok(Arrow(tyList,_)) ->
+                                    let newVar1, newTy1 = (Syntax.Vars.fresh(), Real) in
+                                    let newVar2, newTy2 = (Syntax.Vars.fresh(), Real) in
+                                    let newVarList1 = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in
+                                    let newVarList2 = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in
+                                    let newVarList = newVarList1@newVarList2 in                   
+                                    let newContVarList = newVarList1@[(newVar1,newTy1)]@newVarList2@[(newVar2,newTy2)] in
+                                    let newCont = Fun(newContVarList, App(cont, varToSyn newVarList)) in
+                                    Tuple[Const c; Const 0.; newCont], newCont, context
+                                    | _ -> failwith "rad: the continuation should be a function"
+                                    end
+    | Var(x, ty)                -> begin
+                                    match typeTarget cont with 
+                                    | Result.Ok(Arrow(tyList,_)) ->
+                                    let x, dx, _ = dvar x in
+                                    let newVar1, newTy1 = (Syntax.Vars.fresh(), sourceToTargetType ty) in
+                                    let newVar2, newTy2 = (Syntax.Vars.fresh(), sourceToTargetType ty) in
+                                    let n = List.length tyList in
+                                    let newVarList1 = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in
+                                    let newVarList2 = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in
+                                    let newVarList = newVarList1@newVarList2 in                    
+                                    let newContVarList = newVarList1@[(newVar1,newTy1)]@newVarList2@[(newVar2,newTy2)] in
+                                    let pos_x = getPos (x,ty) context in
+                                    let newCont = Fun(newContVarList, 
+                                                      App(cont,
+                                                          addToPos (pos_x+n) (Var(newVar2, newTy2))
+                                                          (addToPos pos_x (Var(newVar1, newTy1)) (varToSyn newVarList)) 
+                                                          )
+                                                      ) 
+                                    in
+                                    Tuple[Var(x, newTy1); Var(dx, newTy1); newCont], newCont, context
+                                    | _ -> failwith "rad: the continuation should be a function"
+                                    end
+    | Apply1(op, expr)          -> begin
+                                    match typeTarget cont,expr with
+                                    | Result.Ok(Arrow(tyList,_)), Var(x, ty) ->
+                                    let x, dx, _ = dvar x in
+                                    let newVar1, newTy1 = (Syntax.Vars.fresh(), sourceToTargetType ty) in
+                                    let newVar2, newTy2 = (Syntax.Vars.fresh(), sourceToTargetType ty) in
+                                    let n = List.length tyList in
+                                    let newVarList1 = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in
+                                    let newVarList2 = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in
+                                    let newVarList = newVarList1@newVarList2 in  
+                                    let pos_x = getPos (x, ty) context in                      
+                                    let newContVarList = newVarList1@[(newVar1,newTy1)]@newVarList2@[(newVar2,newTy2)] in
+                                    let partialOp = fun z -> Apply2(Times, dop (Var(x, newTy1)) op, z) in
+                                    let partial2op = Apply2(Times, Apply2(Times, dop2 (Var(x,newTy1)) op, Var(newVar1, newTy1)), Var(dx, newTy1)) in
+                                    let newCont = Fun(newContVarList, 
+                                                      App(cont,
+                                                           addToPos (pos_x+n) partial2op
+                                                          (addToPos (pos_x+n) (partialOp (Var (newVar2, newTy2)))
+                                                          (addToPos pos_x (partialOp (Var (newVar1, newTy1))) (varToSyn newVarList)))
+                                                          )
+                                                      )
+                                    in
+                                    let tangent = Apply2(Times, dop (Var(x, newTy1)) op, Var(dx, newTy1)) in 
+                                    Tuple[Apply1(op, Var(x,newTy1)); tangent; newCont], newCont, context
+                                    | _,_ -> failwith "rad: the continuation should be a function"
+                                    end
+    | Apply2(op, expr1, expr2)  -> begin
+                                    match typeTarget cont,expr1,expr2 with 
+                                    | Result.Ok(Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
+                                    let x1, dx1, _ = dvar x1 in
+                                    let x2, dx2, _ = dvar x2 in
+                                    let newVar1, newTy1 = (Syntax.Vars.fresh(), sourceToTargetType ty1) in
+                                    let newVar2, newTy2 = (Syntax.Vars.fresh(), sourceToTargetType ty1) in
+                                    let n = List.length tyList in
+                                    let newVarList1 = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in
+                                    let newVarList2 = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in
+                                    let newVarList = newVarList1@newVarList2 in  
+                                    let newContVarList = newVarList1@[(newVar1,newTy1)]@newVarList2@[(newVar2,newTy2)] in
+                                    let pos_x1 = getPos (x1, ty1) context in
+                                    let pos_x2 = getPos (x2, ty2) context in
+                                    let partial1Op = fun z -> Apply2(Times, d1op (Var(x1, newTy1)) (Var(x2, newTy2)) op, z) in
+                                    let partial2Op = fun z -> Apply2(Times, d2op (Var(x1, newTy1)) (Var(x2, newTy2)) op, z) in 
+                                    (* TODO: im here, need to add 4 second order terms *) 
+                                    let newCont = Fun(newContVarList, 
+                                                      App(cont,
+                                                          (addToPos (pos_x1+n)  (partial1Op (Var(newVar2, Real)))
+                                                          (addToPos (pos_x2+n)  (partial2Op (Var(newVar2, Real)))
+                                                          (addToPos pos_x1  (partial1Op (Var(newVar1, Real)))
+                                                          (addToPos (pos_x2) (partial2Op (Var (newVar1, Real)))
+                                                           (varToSyn newVarList)))))
+                                                          )
+                                                      ) 
+                                    in
+                                    let tangent = Apply2(Plus,
+                                                          Apply2(Times, d1op (Var(x1, newTy1)) (Var(x2, newTy2)) op, Var(dx1, newTy1)),
+                                                          Apply2(Times, d2op (Var(x1, newTy1)) (Var(x2, newTy2)) op, Var(dx2, newTy2)))  in
+                                    Tuple[Apply2(op, Var(x1, newTy1), Var(x2, newTy2)); tangent ; newCont], newCont, context
+                                    | _,_,_ -> failwith "rad: the continuation should be a function"
+                                    end
+    | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = reverse12 context cont expr1 in  
+                                   let x, dx, newContVar = dvar x in
+                                   match typeTarget cont with 
+                                    | Result.Error s         -> failwith (Printf.sprintf "rad: continuation ill-typed: %s" s) 
+                                    | Result.Ok(newContType) ->
+                                   let newCont = Var(newContVar, newContType) in
+                                   let newContext = context @ [(x,ty)] in
+                                   let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
+                                   NCase(dexpr1, [(x, sourceToTargetType ty); (dx, sourceToTargetType ty) ; (newContVar, newContType)], dexpr2), newNewCont, context
+  
+  let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
+    let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
+    let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
+    expr |> SourceAnf.weakAnf |> reverse12 context id_cont |> fun (a,_,_) -> a
+end  
