@@ -1,12 +1,6 @@
 open Containers
 open Syntax
 
-module VarSet = CCSet.Make (struct
-  type t = Vars.t
-
-  let compare x y = CCPair.compare CCString.compare CCInt.compare x y
-end)
-
 module Op = struct
   open Operators
 
@@ -385,12 +379,12 @@ module T = struct
   let test_opti_freeVar opti opti_name =
     QCheck.Test.make ~count:1000 ~name:("Opt " ^ opti_name) arbitrary_term
       (fun expr ->
-        let fv = freeVars expr |> VarSet.of_list in
+        let fv = freeVars expr in
         let e1 =
           Rewrite.(
             Strategies.Strategy.run (Strategies.Strategy.tryStrat opti expr))
         in
-        let fv1 = freeVars e1 |> VarSet.of_list in
+        let fv1 = freeVars e1 in
         VarSet.subset fv1 fv)
 
   let opti_list =

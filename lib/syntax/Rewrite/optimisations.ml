@@ -281,7 +281,7 @@ let rec run expr = match expr with
   | Let(x1,ty1,e0,Let(x2,ty2,e1,e2)) 
     when (equalTerms e0 e1) -> Success(Let(x1,ty1,e0,Let(x2,ty2,Var(x1,ty1),e2)))
   (* let x=e0 in let y=e1 in e2 -> let y=e1 in let x=e0 in e2 (x not a FV in e1) *)
-  | Let(x1,ty1,e0,Let(x2,ty2,e1,e2)) when not(List.mem x1 (freeVars e1)) 
+  | Let(x1,ty1,e0,Let(x2,ty2,e1,e2)) when not(VarSet.mem x1 (freeVars e1)) 
                             -> Success(Let(x2,ty2,e1,Let(x1,ty1,e0,e2)))
   | _                       -> Tr.traverse expr run 
 end

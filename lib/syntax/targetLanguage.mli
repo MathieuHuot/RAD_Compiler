@@ -1,3 +1,7 @@
+module VarSet : sig
+  include CCSet.S with type elt = Vars.t
+end
+
 type 'a tuple = 'a list
 
 type targetType = Real 
@@ -32,10 +36,10 @@ val pp : Format.formatter -> targetSyn -> unit
 val isArrow : targetType -> bool
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
 val equalTypes : targetType -> targetType -> bool
-val equalTerms: targetSyn -> targetSyn ->  bool
+val equalTerms: ?eq:(float -> float -> bool) -> targetSyn -> targetSyn ->  bool
 val weakEqualTerms: targetSyn -> targetSyn ->  bool
 val isValue : targetSyn -> bool
-val freeVars : targetSyn -> Vars.t list
+val freeVars : targetSyn -> VarSet.t
 val subst : Vars.t -> targetType -> targetSyn -> targetSyn -> targetSyn
 val simSubst : context -> targetSyn -> targetSyn
 val canonicalAlphaRename : string -> targetSyn -> targetSyn
