@@ -1,5 +1,11 @@
 open Syntax
 
+module VarSet = CCSet.Make (struct
+  type t = Vars.t
+
+  let compare x y = CCPair.compare CCString.compare CCInt.compare x y
+end)
+
 module Op = struct
   open Operators
 
@@ -107,19 +113,19 @@ module T = struct
         | [] -> None
         | h :: t -> Some (1 + List.fold_left min h t))
 
-  let random_closest_type targetType tyList =
+  let random_closest_type targetTy tyList =
     let open QCheck.Gen in
     List.mapi
       (fun i ty ->
-        match dist_to_type targetType ty with
+        match dist_to_type targetTy ty with
         | None -> None
         | Some d -> Some (ty, i, d))
       tyList
     |> CCList.keep_some
     |> function
     | [] -> None
-    | (_, _, d) :: t as l ->
-        let d_min = List.fold_left (fun x (_, _, d) -> min x d) d t in
+    | (_, _, d) :: tl as l ->
+        let d_min = List.fold_left (fun x (_, _, d) -> min x d) d tl in
         Some (generate1 (oneofl (List.filter (fun (_, _, d) -> d = d_min) l)))
 
   let rec complet_to_type context n (targetTy : targetType) (term : targetSyn)
@@ -140,20 +146,28 @@ module T = struct
                        (closed_term_gen context (n - List.length l) t))
                    l ))
             ty
-      | NProd l1, NProd l2 ->
+      | NProd targetList, NProd termList ->
           CCOpt.(
-            List.map (fun ty -> random_closest_type ty l2) l1 |> sequence_l
-            >|= fun l ->
-            let newVars = List.map (fun t -> (Vars.fresh (), t)) l2 in
-            NCase
-              ( term,
-                newVars,
-                Tuple
-                  (List.map
-                     (fun (_, i, _) ->
-                       let v, t = CCList.get_at_idx_exn i newVars in
-                       Var (v, t))
-                     l) ))
+            List.map
+              (fun t ->
+                match random_closest_type t termList with
+                | None -> None
+                | Some x -> Some (t, x))
+              targetList
+            |> sequence_l
+            >>= fun l ->
+            let newVars = List.map (fun t -> (Vars.fresh (), t)) termList in
+            List.map
+              (fun (targetTy, (_, i, _)) ->
+                let v, t = CCList.get_at_idx_exn i newVars in
+                complet_to_type context
+                  (n - List.length targetList)
+                  targetTy
+                  (Var (v, t))
+                  t)
+              l
+            |> sequence_l
+            >|= fun l -> NCase (term, newVars, Tuple l))
       | _, NProd typeList ->
           CCOpt.(
             random_closest_type targetTy typeList >>= fun (t, i, _) ->
@@ -163,7 +177,6 @@ module T = struct
                  ( term,
                    newVars,
                    let v, ty = CCList.get_at_idx_exn i newVars in
-                   assert (equalTypes t ty);
                    Var (v, ty) ))
               t)
       | Arrow (_, _), Real -> None
@@ -194,13 +207,13 @@ module T = struct
             let v, t, _ = QCheck.Gen.(generate1 (oneofl l)) in
             complet_to_type context n targetTy (Var (v, t)) t)
 
-  and closed_term_gen context (n : int) ty_gen =
+  and closed_term_gen context (n : int) targetTy =
     QCheck.Gen.(
       sized_size (return n) @@ fun i ->
       fix
-        (fun self (n, context, t) ->
+        (fun self (n, context, targetTy) ->
           if n <= 0 then
-            match t with
+            match targetTy with
             | Real -> map const (float_bound_exclusive 1.)
             | Arrow (tyList, retType) ->
                 let argsList =
@@ -220,20 +233,20 @@ module T = struct
           else
             let let_gen =
               let newVar = Vars.fresh () in
-              let ty = generate1 (type_gen (n / 10)) in
-              let newContext = (newVar, ty) :: context in
+              let varType = generate1 (type_gen (n / 10)) in
+              let newContext = (newVar, varType) :: context in
               map2
-                (fun expr1 expr2 -> clet newVar ty expr1 expr2)
-                (self (n / 4, context, ty))
-                (self (3 * n / 4, newContext, t))
+                (fun expr1 expr2 -> clet newVar varType expr1 expr2)
+                (self (n / 4, context, varType))
+                (self (3 * n / 4, newContext, targetTy))
             in
             let gen_list = [ let_gen ] in
             let gen_list =
-              match get_from_context context n t with
+              match get_from_context context n targetTy with
               | None -> gen_list
               | Some term -> return term :: gen_list
             in
-            match t with
+            match targetTy with
             | Real ->
                 oneof
                   (map2 apply1 Op.gen1 (self (n - 1, context, Real))
@@ -243,7 +256,7 @@ module T = struct
                   :: map const (float_bound_exclusive 1.)
                   :: gen_list)
             | _ -> oneof gen_list)
-        (i, context, ty_gen))
+        (i, context, targetTy))
 
   let rec shrink_term expr =
     let open QCheck.Iter in
@@ -277,10 +290,20 @@ module T = struct
   let arbitrary_closed_term =
     QCheck.make
       (closed_term_gen [] QCheck.Gen.(generate1 (int_bound 30)) Real)
+      ~print:to_string
+
+  (*~shrink:shrink_term*)
+
+  let arbitrary_term =
+    QCheck.make
+      (closed_term_gen
+         (List.init 10 (fun i -> (("x", i), Real)))
+         QCheck.Gen.(generate1 (int_bound 30))
+         Real)
       ~print:to_string ~shrink:shrink_term
 
   let test_isWellTyped =
-    QCheck.Test.make ~count:10000 ~name:"isWellTyped" arbitrary_closed_term
+    QCheck.Test.make ~count:1000 ~name:"isWellTyped" arbitrary_closed_term
       (fun term ->
         match typeTarget term with
         | Result.Ok _ -> true
@@ -319,11 +342,11 @@ module T = struct
   let test_list =
     [
       test_isWellTyped;
-      test_equalTerms;
-      test_interpret;
-      test_anf;
-      test_weakAnf;
-      test_isInWeakAnf_weakAnf;
+      (*test_equalTerms;
+        test_interpret;
+        test_anf;
+        test_weakAnf;
+        test_isInWeakAnf_weakAnf;*)
     ]
 
   let test_opti opti opti_name =
@@ -338,6 +361,17 @@ module T = struct
         let e2 = interpret expr [] in
         if weakEqualTerms e1 e2 then true
         else failwith (Printf.sprintf "%s\n\n%s" (to_string e1) (to_string e2)))
+
+  let test_opti_freeVar opti opti_name =
+    QCheck.Test.make ~count:1000 ~name:("Opt " ^ opti_name) arbitrary_term
+      (fun expr ->
+        let fv = freeVars expr |> VarSet.of_list in
+        let e1 =
+          Rewrite.(
+            Strategies.Strategy.run (Strategies.Strategy.tryStrat opti expr))
+        in
+        let fv1 = freeVars e1 |> VarSet.of_list in
+        VarSet.subset fv1 fv)
 
   let opti_list =
     [
@@ -355,6 +389,11 @@ module T = struct
 
   let test_opti_list =
     List.map (fun (opti, opti_name) -> test_opti opti opti_name) opti_list
+
+  let test_opti_freeVar_list =
+    List.map
+      (fun (opti, opti_name) -> test_opti_freeVar opti opti_name)
+      opti_list
 end
 
 (*let () =
@@ -363,6 +402,13 @@ end
 
 let () =
   let target = List.map QCheck_alcotest.to_alcotest T.test_list in
-  let target_opti = List.map QCheck_alcotest.to_alcotest T.test_opti_list in
+  let _target_opti = List.map QCheck_alcotest.to_alcotest T.test_opti_list in
+  let _target_opti_freeVar =
+    List.map QCheck_alcotest.to_alcotest T.test_opti_freeVar_list
+  in
   Alcotest.run "Main test"
-    [ ("Target Language", target); ("Opti Target Language", target_opti) ]
+    [
+      ("Target Language", target);
+      (*("Opti Target Language", target_opti);
+        ("Opti Free Vars Target Language", target_opti_freeVar)*)
+    ]
