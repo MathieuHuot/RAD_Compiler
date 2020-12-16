@@ -342,11 +342,11 @@ module T = struct
   let test_list =
     [
       test_isWellTyped;
-      (*test_equalTerms;
+      test_equalTerms;
         test_interpret;
         test_anf;
         test_weakAnf;
-        test_isInWeakAnf_weakAnf;*)
+        test_isInWeakAnf_weakAnf;
     ]
 
   let test_opti opti opti_name =
@@ -402,13 +402,13 @@ end
 
 let () =
   let target = List.map QCheck_alcotest.to_alcotest T.test_list in
-  let _target_opti = List.map QCheck_alcotest.to_alcotest T.test_opti_list in
-  let _target_opti_freeVar =
+  let target_opti = List.map QCheck_alcotest.to_alcotest T.test_opti_list in
+  let target_opti_freeVar =
     List.map QCheck_alcotest.to_alcotest T.test_opti_freeVar_list
   in
   Alcotest.run "Main test"
     [
       ("Target Language", target);
-      (*("Opti Target Language", target_opti);
-        ("Opti Free Vars Target Language", target_opti_freeVar)*)
+      ("Opti Target Language", target_opti);
+        ("Opti Free Vars Target Language", target_opti_freeVar)
     ]
