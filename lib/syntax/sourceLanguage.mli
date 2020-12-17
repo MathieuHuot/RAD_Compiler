@@ -1,16 +1,25 @@
+type 'a tuple = 'a list
+
 type sourceType = Real | Prod of sourceType * sourceType
 
-and synSource = Var of Vars.var * sourceType
+type sourceSyn = Var of Vars.t * sourceType
             | Const of float 
-            | Apply1 of Operators.op1 * synSource 
-            | Apply2 of Operators.op2 * synSource * synSource 
-            | Let of Vars.var * sourceType * synSource * synSource
+            | Apply1 of Operators.op1 * sourceSyn 
+            | Apply2 of Operators.op2 * sourceSyn * sourceSyn 
+            | Let of Vars.t * sourceType * sourceSyn * sourceSyn
 
-type context = (Vars.var * sourceType * synSource) list
+type context = ((Vars.t * sourceType), sourceSyn) CCList.Assoc.t
 
-val isValue : synSource -> bool
-val freeVars: synSource -> Vars.var list
-val canonicalAlphaRename: string -> synSource -> synSource
-val typeSource: synSource -> sourceType
-val isWellTyped: synSource -> bool
-val interpreter: synSource -> context -> float 
+val to_string : sourceSyn -> string
+val pp : Format.formatter -> sourceSyn -> unit
+
+val isValue : sourceSyn -> bool
+val equalTypes : sourceType -> sourceType -> bool
+val equalTerms : sourceSyn -> sourceSyn ->  bool
+val subst : Vars.t -> sourceType -> sourceSyn -> sourceSyn -> sourceSyn
+val simSubst : context -> sourceSyn -> sourceSyn
+val freeVars : sourceSyn -> Vars.t list
+val canonicalAlphaRename : string -> sourceSyn -> sourceSyn
+val typeSource : sourceSyn -> sourceType option
+val isWellTyped : sourceSyn -> bool
+val interpret : sourceSyn -> context -> float

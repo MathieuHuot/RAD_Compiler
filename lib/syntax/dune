@@ -1,3 +1,3 @@
 (library
 (name syntax)
-(libraries lwt.unix))
+(libraries lwt.unix containers))

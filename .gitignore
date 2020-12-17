@@ -6,8 +6,11 @@
 *.cmx
 *.o
 *.d
-_build
+_build/
 *.db
 *.a
 *.cmxa
 *.cmti
+**.DS_Store
+**.merlin
+out.txt
