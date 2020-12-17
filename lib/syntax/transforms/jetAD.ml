@@ -484,7 +484,6 @@ module MixedJets = struct
   open Syntax.SourceLanguage
   open Syntax.Operators
   open Syntax.TargetLanguage
-  open Anf
   
   type context = (Syntax.Vars.t * sourceType) tuple
   
@@ -497,6 +496,30 @@ module MixedJets = struct
     | Minus   -> Const (-1.)
     | Power 0 -> Const(0.)
     | Power n -> Apply2(Times, Const(float_of_int (n-1)), Apply1(Power(n-1), y))
+
+  (* \partial^2 op / partial x1 partial x1 *)
+  let d11op _ _ (op: op2) = match op with
+    | Plus  -> Const 0.
+    | Minus -> Const 0.
+    | Times -> Const 0.
+
+  (* partial^2 op / partial x1 partial x2 *)
+  let d12op _ _ (op: op2) = match op with
+    | Plus  -> Const 0.
+    | Minus -> Const 0.
+    | Times -> Const 1.
+    
+  (* partial^2 op / partial x2 partial x1 *) 
+  let d21op _ _ (op: op2) = match op with
+    | Plus  -> Const 0.
+    | Minus -> Const 0.
+    | Times -> Const 1.
+
+  (* partial^2 op / partial x2 partial x2 *)  
+  let d22op _ _ (op: op2) = match op with
+    | Plus  -> Const 0.
+    | Minus -> Const 0.
+    | Times -> Const 0.
 
   let getPos (x,ty) list = 
     let rec aux pos list = match list with
@@ -589,17 +612,20 @@ module MixedJets = struct
                                     let pos_x2 = getPos (x2, ty2) context in
                                     let partial1Op = fun z -> Apply2(Times, d1op (Var(x1, newTy1)) (Var(x2, newTy2)) op, z) in
                                     let partial2Op = fun z -> Apply2(Times, d2op (Var(x1, newTy1)) (Var(x2, newTy2)) op, z) in 
-                                    (* TODO: im here, need to add several second order terms *) 
-                                    let newCont = Fun(newContVarList, 
-                                                      App(cont,
-                                                          (addToPos (pos_x1+n)  (partial1Op (Var(newVar2, Real)))
-                                                          (addToPos (pos_x2+n)  (partial2Op (Var(newVar2, Real)))
-                                                          (addToPos pos_x1  (partial1Op (Var(newVar1, Real)))
-                                                          (addToPos (pos_x2) (partial2Op (Var (newVar1, Real)))
-                                                           (varToSyn newVarList)))))
-                                                          )
-                                                      ) 
+                                    let secondPartialOp = fun dx -> fun z -> fun partial -> Apply2(Times,Apply2(Times,partial,dx),z) in
+                                    let addFirstDerivatives =  varToSyn newVarList
+                                                              |> addToPos (pos_x2) (partial2Op (Var (newVar1, Real)))
+                                                              |> addToPos pos_x1  (partial1Op (Var(newVar1, Real)))
+                                                              |> addToPos (pos_x2+n)  (partial2Op (Var(newVar2, Real)))
+                                                              |> addToPos (pos_x1+n)  (partial1Op (Var(newVar2, Real)))
                                     in
+                                    let addSecondDerivatives =  addFirstDerivatives 
+                                                              |> addToPos (pos_x2+n) (secondPartialOp (Var(dx1,newTy1)) (Var(newVar1, Real)) (d11op (Var(x1,newTy1)) (Var(x2,newTy2)) op))
+                                                              |> addToPos (pos_x2+n) (secondPartialOp (Var(dx2,newTy2)) (Var(newVar1, Real)) (d12op (Var(x1,newTy1)) (Var(x2,newTy2)) op))
+                                                              |> addToPos (pos_x1+n) (secondPartialOp (Var(dx1,newTy1)) (Var(newVar1, Real)) (d21op (Var(x1,newTy1)) (Var(x2,newTy2)) op))
+                                                              |> addToPos (pos_x1+n) (secondPartialOp (Var(dx2,newTy2)) (Var(newVar1, Real)) (d22op (Var(x1,newTy1)) (Var(x2,newTy2)) op))
+                                    in
+                                    let newCont = Fun(newContVarList, App(cont, addSecondDerivatives)) in
                                     let tangent = Apply2(Plus,
                                                           Apply2(Times, d1op (Var(x1, newTy1)) (Var(x2, newTy2)) op, Var(dx1, newTy1)),
                                                           Apply2(Times, d2op (Var(x1, newTy1)) (Var(x2, newTy2)) op, Var(dx2, newTy2)))  in
@@ -615,10 +641,4 @@ module MixedJets = struct
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
                                    NCase(dexpr1, [(x, sourceToTargetType ty); (dx, sourceToTargetType ty) ; (newContVar, newContType)], dexpr2), newNewCont, context
-  
-  (* TODO: *)
-  let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
-    let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
-    let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
-    expr |> SourceAnf.weakAnf |> reverse12 context id_cont |> fun (a,_,_) -> a
 end  
