@@ -27,27 +27,6 @@ type context = ((Vars.t * targetType), targetSyn) CCList.Assoc.t
 
 let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
 
-let rec type_to_string = function
-  | Real -> "Real"
-  |Arrow (l, t) ->
-    Printf.sprintf "(%s) -> %s" (CCList.to_string type_to_string l) (type_to_string t)
-  |NProd l ->
-    Printf.sprintf "{%s}" (CCList.to_string ~sep:"*" type_to_string l)
-
-let rec to_string = function
-  | Var (v, t) -> Printf.sprintf "(%s:%s)" (Vars.to_string v) (type_to_string t)
-  | Const c -> string_of_float c
-  | Apply1 (op, expr) -> Printf.sprintf "%s(%s)" (to_string_op1 op) (to_string expr)
-  | Apply2 (op, expr1, expr2) ->
-    if is_infix op then Printf.sprintf "(%s %s %s)" (to_string expr1) (to_string_op2 op) (to_string expr2)
-    else Printf.sprintf "(%s %s %s)" (to_string expr1) (to_string_op2 op) (to_string expr2)
-  | Let (x, t, expr1, expr2) ->
-    Printf.sprintf "let (%s:%s) = %s in\n%s" (Vars.to_string x) (type_to_string t) (to_string expr1) (to_string expr2)
-  | Fun (vars, expr) -> Printf.sprintf "λ%s. %s" (CCList.to_string ~sep:"," (fun (v,_) -> Vars.to_string v) vars) (to_string expr)
-  | App (expr, exprs) -> Printf.sprintf "(%s)[%s]" (to_string expr) (CCList.to_string to_string exprs)
-  | Tuple exprs -> CCList.to_string ~start:"{" ~stop:"}" to_string exprs
-  | NCase (expr1, vars, expr2) -> Printf.sprintf "lets %s = %s in\n %s" (CCList.to_string ~sep:"," (fun (v,_) -> Vars.to_string v) vars) (to_string expr1) (to_string expr2)
-
 let rec pp fmt = function
   | Var (v, _) -> Vars.pp fmt v
   | Const c -> Format.pp_print_float fmt c

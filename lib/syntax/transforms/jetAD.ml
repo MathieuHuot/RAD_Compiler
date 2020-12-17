@@ -589,7 +589,7 @@ module MixedJets = struct
                                     let pos_x2 = getPos (x2, ty2) context in
                                     let partial1Op = fun z -> Apply2(Times, d1op (Var(x1, newTy1)) (Var(x2, newTy2)) op, z) in
                                     let partial2Op = fun z -> Apply2(Times, d2op (Var(x1, newTy1)) (Var(x2, newTy2)) op, z) in 
-                                    (* TODO: im here, need to add 4 second order terms *) 
+                                    (* TODO: im here, need to add several second order terms *) 
                                     let newCont = Fun(newContVarList, 
                                                       App(cont,
                                                           (addToPos (pos_x1+n)  (partial1Op (Var(newVar2, Real)))
@@ -616,6 +616,7 @@ module MixedJets = struct
                                    let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
                                    NCase(dexpr1, [(x, sourceToTargetType ty); (dx, sourceToTargetType ty) ; (newContVar, newContType)], dexpr2), newNewCont, context
   
+  (* TODO: *)
   let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
     let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
     let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
