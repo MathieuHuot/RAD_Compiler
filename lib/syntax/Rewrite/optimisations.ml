@@ -321,7 +321,7 @@ open Strategies.Strategy
 
 (* dead code elimination of a list of unused variables *)
 let run expr =
-  let unusedVars = Analysis.listUnusedVars expr in
+  let unusedVars = listUnusedVars expr in
    let rec aux unusedVars expr =
     match expr with
     | Let(x, ty,_,expr) 

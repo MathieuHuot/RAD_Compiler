@@ -44,6 +44,7 @@ val equalTerms: ?eq:(float -> float -> bool) -> targetSyn -> targetSyn ->  bool
 val weakEqualTerms: targetSyn -> targetSyn ->  bool
 val isValue : targetSyn -> bool
 val freeVars : targetSyn -> VarSet.t
+val listUnusedVars : targetSyn -> (Vars.t * targetType) list
 val subst : Vars.t -> targetType -> targetSyn -> targetSyn -> targetSyn
 val simSubst : context -> targetSyn -> targetSyn
 val canonicalAlphaRename : string -> targetSyn -> targetSyn

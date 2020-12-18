@@ -202,6 +202,14 @@ let freeVars expr =
   VarSet.(diff set (of_list (List.map fst varList)))
 | _                  -> set) expr VarSet.empty
 
+(* collects the list of unused bound variables *)
+let listUnusedVars expr =
+  fold (fun expr l -> match expr with
+    | Let(x, ty, _, expr2)             -> (if (VarSet.mem x (freeVars expr2)) then [] else [(x,ty)]) @ l
+    | NCase(_,varList, expr2)          -> (let fv = freeVars expr2 in List.filter (fun (y,_) -> not(VarSet.mem y fv)) varList) @ l
+    | _ -> l)
+  expr []
+
 let rec varNameNotBound (name:string) expr = match expr with
 | Let((str,_),_,expr1,expr2)              ->  str<> name 
                                               && (varNameNotBound name expr1) 
