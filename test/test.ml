@@ -290,8 +290,7 @@ module T = struct
         <+> (shrink_term expr2 >|= fun expr -> apply2 op expr1 expr)
     | Let (x, t, expr1, expr2) ->
         return (subst x t expr1 expr2)
-        <+> shrink_term expr1
-        >|= (fun expr -> clet x t expr expr2)
+        <+> (shrink_term expr1 >|= fun expr -> clet x t expr expr2)
         <+> (shrink_term expr2 >|= fun expr -> clet x t expr1 expr)
     | Fun (vars, expr) -> shrink_term expr >|= fun expr -> func vars expr
     | App (expr, exprs) ->
@@ -301,8 +300,7 @@ module T = struct
               return (simSubst (List.combine varList exprs) expr)
             else empty
         | _ -> empty)
-        <+> shrink_term expr
-        >|= (fun expr -> app expr exprs)
+        <+> (shrink_term expr >|= fun expr -> app expr exprs)
         <+> ( QCheck.Shrink.list_elems shrink_term exprs >|= fun exprs ->
               app expr exprs )
     | Tuple exprs -> QCheck.Shrink.list_elems shrink_term exprs >|= tuple
@@ -313,8 +311,7 @@ module T = struct
               return (simSubst (List.combine vars l) expr2)
             else empty
         | _ -> empty)
-        <+> shrink_term expr1
-        >|= (fun expr -> ncase expr vars expr2)
+        <+> (shrink_term expr1 >|= fun expr -> ncase expr vars expr2)
         <+> (shrink_term expr2 >|= fun expr -> ncase expr1 vars expr)
 
   let arbitrary_closed_term =
@@ -610,10 +607,13 @@ module S = struct
 end
 
 let () =
-  Format.printf "%a@." TargetLanguage.pp
-    (QCheck.Gen.generate1 (T.term_gen [] 20 TargetLanguage.Real))
+  let term = QCheck.Gen.generate1 (T.term_gen [] 10 TargetLanguage.Real) in
+  Format.printf "%a@." TargetLanguage.pp term;
+  T.shrink_term term
+    (Format.printf "========================================@.%a@."
+       TargetLanguage.pp)
 
-let () =
+(*let () =
   let target = List.map QCheck_alcotest.to_alcotest T.test_list in
   let target_opti = List.map QCheck_alcotest.to_alcotest T.test_opti_list in
   let target_opti_freeVar =
@@ -626,4 +626,4 @@ let () =
       ("Opti Target Language", target_opti);
       ("Opti Free Vars Target Language", target_opti_freeVar);
       ("Source Language", source);
-    ]
+    ]*)
