@@ -317,39 +317,39 @@ module T = struct
       ~print:to_string ~shrink:shrink_term
 
   let test_isWellTyped =
-    QCheck.Test.make ~count:1000 ~name:"isWellTyped" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"isWellTyped" arbitrary_closed_term
       (fun term ->
         match typeTarget term with
         | Result.Ok _ -> true
         | Result.Error s -> failwith s)
 
   let test_equalTerms =
-    QCheck.Test.make ~count:1000 ~name:"equalTerms" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"equalTerms" arbitrary_closed_term
       (fun expr -> equalTerms expr expr)
 
   let test_interpret =
-    QCheck.Test.make ~count:1000 ~name:"interp" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"interp" arbitrary_closed_term
       (fun expr -> match interpret expr [] with Const _ -> true | _ -> false)
 
   let test_anf =
-    QCheck.Test.make ~count:1000 ~name:"anf" arbitrary_closed_term (fun expr ->
+    QCheck.Test.make ~count:100 ~name:"anf" arbitrary_closed_term (fun expr ->
         equalTerms
           (interpret (Transforms.Anf.TargetAnf.anf expr) [])
           (interpret expr []))
 
   let test_weakAnf =
-    QCheck.Test.make ~count:1000 ~name:"weakAnf" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"weakAnf" arbitrary_closed_term
       (fun expr ->
         equalTerms
           (interpret (Transforms.Anf.TargetAnf.weakAnf expr) [])
           (interpret expr []))
 
   let test_isInAnf_anf =
-    QCheck.Test.make ~count:1000 ~name:"isInAnf.anf" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"isInAnf.anf" arbitrary_closed_term
       (fun expr -> Transforms.Anf.TargetAnf.(isInAnf (anf expr)))
 
   let test_isInWeakAnf_weakAnf =
-    QCheck.Test.make ~count:1000 ~name:"isInWeakAnf.weakAnf"
+    QCheck.Test.make ~count:100 ~name:"isInWeakAnf.weakAnf"
       arbitrary_closed_term (fun expr ->
         Transforms.Anf.TargetAnf.(isInWeakAnf (weakAnf expr)))
 
@@ -364,8 +364,8 @@ module T = struct
     ]
 
   let test_opti opti opti_name =
-    QCheck.Test.make ~count:1000 ~name:("Opt " ^ opti_name)
-      arbitrary_closed_term (fun expr ->
+    QCheck.Test.make ~count:100 ~name:("Opt " ^ opti_name) arbitrary_closed_term
+      (fun expr ->
         let e1 =
           interpret
             Rewrite.(
@@ -377,7 +377,7 @@ module T = struct
         else failwith (Printf.sprintf "%s\n\n%s" (to_string e1) (to_string e2)))
 
   let test_opti_freeVar opti opti_name =
-    QCheck.Test.make ~count:1000 ~name:("Opt " ^ opti_name) arbitrary_term
+    QCheck.Test.make ~count:100 ~name:("Opt " ^ opti_name) arbitrary_term
       (fun expr ->
         let fv = freeVars expr in
         let e1 =
@@ -550,38 +550,38 @@ module S = struct
       ~print:to_string ~shrink:shrink_term
 
   let test_isWellTyped =
-    QCheck.Test.make ~count:1000 ~name:"isWellTyped" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"isWellTyped" arbitrary_closed_term
       isWellTyped
 
   let test_equalTerms =
-    QCheck.Test.make ~count:1000 ~name:"equalTerms" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"equalTerms" arbitrary_closed_term
       (fun expr -> equalTerms expr expr)
 
   let test_interpret =
-    QCheck.Test.make ~count:1000 ~name:"interp" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"interp" arbitrary_closed_term
       (fun expr ->
         ignore (interpret expr []);
         true)
 
   let test_anf =
-    QCheck.Test.make ~count:1000 ~name:"anf" arbitrary_closed_term (fun expr ->
+    QCheck.Test.make ~count:100 ~name:"anf" arbitrary_closed_term (fun expr ->
         Float.equal
           (interpret (Transforms.Anf.SourceAnf.anf expr) [])
           (interpret expr []))
 
   let test_weakAnf =
-    QCheck.Test.make ~count:1000 ~name:"weakAnf" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"weakAnf" arbitrary_closed_term
       (fun expr ->
         Float.equal
           (interpret (Transforms.Anf.SourceAnf.weakAnf expr) [])
           (interpret expr []))
 
   let test_isInAnf_anf =
-    QCheck.Test.make ~count:1000 ~name:"isInAnf.anf" arbitrary_closed_term
+    QCheck.Test.make ~count:100 ~name:"isInAnf.anf" arbitrary_closed_term
       (fun expr -> Transforms.Anf.SourceAnf.(isInAnf (anf expr)))
 
   let test_isInWeakAnf_weakAnf =
-    QCheck.Test.make ~count:1000 ~name:"isInWeakAnf.weakAnf"
+    QCheck.Test.make ~count:100 ~name:"isInWeakAnf.weakAnf"
       arbitrary_closed_term (fun expr ->
         Transforms.Anf.SourceAnf.(isInWeakAnf (weakAnf expr)))
 
