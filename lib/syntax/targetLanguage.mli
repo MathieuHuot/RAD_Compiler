@@ -49,4 +49,5 @@ val simSubst : context -> targetSyn -> targetSyn
 val canonicalAlphaRename : string -> targetSyn -> targetSyn
 val typeTarget : targetSyn -> (targetType, string) result
 val isWellTyped : targetSyn -> bool
+val strict_interpret : targetSyn -> context -> targetSyn
 val interpret : targetSyn -> context -> targetSyn

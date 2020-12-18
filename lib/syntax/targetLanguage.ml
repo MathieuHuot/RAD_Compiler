@@ -295,7 +295,7 @@ let contextComplete expr context =
   VarSet.for_all (fun x -> (List.exists (fun ((y,_),_) -> Vars.equal y x) context)) exprFv
 
 let interpretOp1 op expr = match expr with
-| Const v -> 
+| Const v ->
   begin
   match op with
   | Cos     -> Const(cos(v))
@@ -304,31 +304,39 @@ let interpretOp1 op expr = match expr with
   | Minus   -> Const(-.v)
   | Power n -> Const(v ** float_of_int n)
   end
-| _       -> failwith "interpretOp1: the operand of a unary operator is not a real value"
-  
+| expr -> Apply1 (op, expr)
+
 let interpretOp2 op expr1 expr2 = match expr1, expr2 with
-| (Const v1,Const v2) -> 
+| (Const v1,Const v2) ->
   begin
   match op with
   | Plus  -> Const(v1+.v2)
   | Times -> Const(v1*.v2)
   | Minus -> Const(v1-.v2)
   end
-| _                   -> failwith "interpretOp2: one operand of a binary operator is not a real value"
+| expr1, expr2 -> Apply2(op, expr1, expr2)
 
 (* assumes the context captures all free vars, and is only given values *)
-let interpret expr context = 
+let strict_interpret expr context =
 if not(isWellTyped expr) then failwith "interpret: the term is ill-typed";
 if not(contextComplete expr context) then failwith "interpret: the context does not capture all free vars";
-let expr2 = closingTerm expr context in 
+let expr2 = closingTerm expr context in
 let rec interp expr = match expr with
 | expr when isValue(expr)         ->  expr
-| Apply1(op,expr)                 ->  let v = interp expr in 
-                                  interpretOp1 op v
-| Apply2(op,expr1,expr2)          ->  let val1 = interp expr1 in 
-                                  let val2 = interp expr2 in 
-                                  interpretOp2 op val1 val2
-| Let(x,ty,expr1,expr2)           ->  let v = interp expr1 in 
+| Apply1(op,expr)                 -> begin
+                                  let v = interp expr in
+                                  match interpretOp1 op v with
+                                  | Const _ as expr -> expr
+                                  | _       -> failwith "interpretOp1: the operand of a unary operator is not a real value"
+                                  end
+| Apply2(op,expr1,expr2)          -> begin
+                                  let val1 = interp expr1 in
+                                  let val2 = interp expr2 in
+                                  match interpretOp2 op val1 val2 with
+                                  | Const _ as expr -> expr
+                                  | _ -> failwith "interpretOp2: one operand of a binary operator is not a real value"
+                                  end
+| Let(x,ty,expr1,expr2)           ->  let v = interp expr1 in
                                   interp (subst x ty v expr2)
 | App(expr1,exprList)             ->  begin match (interp expr1) with
     | Fun(varList,expr1)  ->  let vList = List.map interp exprList in
@@ -344,9 +352,38 @@ let rec interp expr = match expr with
                                         ^(string_of_int (List.length varList))
                                         ^"but is of size"
                                         ^(string_of_int (List.length exprList)))
-                         else               
+                         else
                          expr2 |> simSubst (List.combine varList exprList) |> interp
 
     | _               -> failwith "interpret: expression should reduce to a tuple" end
 | _                               ->  expr
+in interp expr2
+
+let interpret expr context =
+let expr2 = simSubst context expr in
+let rec interp expr = match expr with
+| Apply1(op,expr)                 ->  let v = interp expr in
+                                  interpretOp1 op v
+| Apply2(op,expr1,expr2)          ->  let val1 = interp expr1 in
+                                  let val2 = interp expr2 in
+                                  interpretOp2 op val1 val2
+| Let(x,ty,expr1,expr2)           ->  let v = interp expr1 in
+                                  interp (subst x ty v expr2)
+| App(expr1,exprList)             ->  begin
+  let vList = List.map interp exprList in
+  match (interp expr1) with
+    | Fun(varList,expr1) -> if not(List.length varList = List.length vList)
+                            then App (Fun(varList, interp expr1), vList)
+                            else
+                            expr1 |> simSubst (List.combine varList vList) |> interp
+    | expr               ->  App (expr, vList) end
+| Tuple(exprList)                 -> Tuple(List.map interp exprList)
+| NCase(expr1,varList,expr2)      -> begin match (interp expr1) with
+    | Tuple(exprList) as expr -> if not(List.length varList = List.length exprList)
+                                 then NCase(expr, varList, interp expr2)
+                                 else
+                                 expr2 |> simSubst (List.combine varList exprList) |> interp
+
+    | expr                    -> NCase(expr, varList, interp expr2) end
+| expr                               ->  expr
 in interp expr2
