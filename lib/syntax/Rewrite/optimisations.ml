@@ -200,7 +200,7 @@ let rec run expr = match expr with
   | Apply1(Sin,Apply1(Minus,expr)) -> Success(Apply1(Minus,Apply1(Sin,expr)))
   | Apply1(Cos,Apply1(Minus,expr)) -> Success(Apply1(Cos,expr))
   | Apply2(Plus,Apply1(Power 2,Apply1(Sin,expr1)),Apply1(Power 2,Apply1(Cos,expr2))) 
-    when equalTerms expr1 expr2    -> Success(Const 1.) 
+    when equal expr1 expr2    -> Success(Const 1.) 
   | _                              -> Tr.traverse expr run 
 end
 
@@ -212,10 +212,10 @@ open Strategies.Strategy
 
 let rec run expr = match expr with
   | Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) 
-    when equalTerms expr1 expr3   -> Success(Apply2(Times,expr1,Apply2(Plus,expr2,expr4)))
+    when equal expr1 expr3   -> Success(Apply2(Times,expr1,Apply2(Plus,expr2,expr4)))
   | Apply2(Plus,Apply2(Times,expr1,expr2),Apply2(Times,expr3,expr4)) 
-    when equalTerms expr2 expr4   -> Success(Apply2(Times,Apply2(Plus,expr1,expr3),expr2))
-  | Apply2(Plus,expr1,expr2) when equalTerms expr1 expr2 
+    when equal expr2 expr4   -> Success(Apply2(Times,Apply2(Plus,expr1,expr3),expr2))
+  | Apply2(Plus,expr1,expr2) when equal expr1 expr2 
                                   -> Success(Apply2(Times,Const 2.,expr1))
   | _                             -> Tr.traverse expr run 
 end
@@ -281,7 +281,7 @@ open Strategies.Strategy
 let rec run expr = match expr with
   (* let x=e1 in let y=e1 in e2 -> let x=e0 in let y=x in e2 *)
   | Let(x1,ty1,e0,Let(x2,ty2,e1,e2)) 
-    when (equalTerms e0 e1) -> Success(Let(x1,ty1,e0,Let(x2,ty2,Var(x1,ty1),e2)))
+    when (equal e0 e1) -> Success(Let(x1,ty1,e0,Let(x2,ty2,Var(x1,ty1),e2)))
   (* let x=e0 in let y=e1 in e2 -> let y=e1 in let x=e0 in e2 (x not a FV in e1) *)
   | Let(x1,ty1,e0,Let(x2,ty2,e1,e2)) when not(VarSet.mem x1 (freeVars e1)) 
                             -> Success(Let(x2,ty2,e1,Let(x1,ty1,e0,e2)))
@@ -304,10 +304,10 @@ let rec run expr = match expr with
                                 else Success(NCase(Tuple(exprList),varList,expr)) 
   (* CBN evaluates a variable which has a function type *)
   | Let(x,ty,expr1,expr2) 
-    when isArrow ty          -> Success(subst x ty expr1 expr2)
-  | NCase(Tuple(exprList),varList,expr) when List.exists (fun (_,ty) -> isArrow ty) varList 
+    when Type.isArrow ty          -> Success(subst x ty expr1 expr2)
+  | NCase(Tuple(exprList),varList,expr) when List.exists (fun (_,ty) -> Type.isArrow ty) varList 
                              -> let list = List.combine varList exprList in
-                                let arrowList, nonArrowList = List.partition (fun ((_,ty),_) -> isArrow ty) list in
+                                let arrowList, nonArrowList = List.partition (fun ((_,ty),_) -> Type.isArrow ty) list in
                                 let var2, expr2 = List.split nonArrowList in
                                 Success(NCase(Tuple(expr2),var2, simSubst arrowList expr))
   | _                        -> Tr.traverse expr run 

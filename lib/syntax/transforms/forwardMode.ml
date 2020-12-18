@@ -4,7 +4,7 @@ open Syntax.SourceLanguage
 open Syntax.Operators
 open Syntax.TargetLanguage
 
-let rec forwardADType (ty : sourceType) : targetType = match ty with
+let rec forwardADType (ty : sourceType) : Type.t = match ty with
   | Real          -> NProd [Real;Real]
   | Prod(ty1,ty2) -> NProd [forwardADType ty1;forwardADType ty2]
 
@@ -34,18 +34,18 @@ let d2op op y1 _ = match op with
 let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
 | Const c               ->  Tuple [Const c; Const 0.]
 | Var(x,ty)             ->  let x, dx = dvar x in
-                            Tuple [ Var(x,sourceToTargetType ty);
-                                    Var(dx,sourceToTargetType ty);]
+                            Tuple [ Var(x,Type.sourceToTarget ty);
+                                    Var(dx,Type.sourceToTarget ty);]
 | Apply1(op,expr)       ->  let y, dy = dvar (Syntax.Vars.fresh()) in
-                            let ty = Real in
+                            let ty = Type.Real in
                             let exprD = forwardAD expr in
                             let primal = Apply1(op,Var(y,ty)) in
                             let tangent = Apply2(Times, dop op (Var(y,ty)), Var(dy,ty)) in 
                             NCase(exprD,[(y,ty);(dy,ty)],Tuple [primal;tangent])
 | Apply2(op,expr1,expr2)->  let y1, dy1 = dvar (Syntax.Vars.fresh()) in
-                            let ty1 = Real in
+                            let ty1 = Type.Real in
                             let y2, dy2 = dvar (Syntax.Vars.fresh()) in
-                            let ty2 = Real in
+                            let ty2 = Type.Real in
                             let y1VarP = Var(y1,ty1) in
                             let y2VarP = Var(y2,ty2) in
                             let expr1D = forwardAD expr1 in
@@ -58,7 +58,7 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
 | Let(y,ty,expr1,expr2) ->  let expr1D = forwardAD expr1 in
                             let expr2D = forwardAD expr2 in
                             let y, dy = dvar y in
-                            let ty = sourceToTargetType ty in
+                            let ty = Type.sourceToTarget ty in
                             NCase(expr1D,[(y,ty);(dy,ty)],expr2D)
 
 let grad context expr = 

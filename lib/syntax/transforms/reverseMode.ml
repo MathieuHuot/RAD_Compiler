@@ -25,8 +25,8 @@ let rec addToPos i list y = match i, list with
   let rec rad (context: context) (cont : targetSyn)  (expr : sourceSyn) : targetSyn * targetSyn * context = match expr with
     | Const c                   -> begin
                                     match typeTarget cont with 
-                                    | Result.Ok (Arrow(tyList,_)) ->
-                                    let newVar,newTy = (Syntax.Vars.fresh(), Real) in 
+                                    | Result.Ok (Type.Arrow(tyList,_)) ->
+                                    let newVar,newTy = (Syntax.Vars.fresh(), Type.Real) in 
                                     let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                  
                                     let newContVarList =  List.append newVarList [(newVar,newTy)] in
                                     let newCont = Fun(newContVarList, App(cont, varToSyn newVarList)) in
@@ -36,7 +36,7 @@ let rec addToPos i list y = match i, list with
     | Var(x, ty)                -> begin
                                     match typeTarget cont with 
                                     | Result.Ok(Arrow(tyList,_)) ->
-                                    let new_var, new_ty = Syntax.Vars.fresh(), sourceToTargetType ty in  
+                                    let new_var, new_ty = Syntax.Vars.fresh(), Type.sourceToTarget ty in  
                                     let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                          
                                     let newContVarList = List.append newVarList [(new_var, new_ty)] in
                                     let pos_x = getPos (x,ty) context in
@@ -51,8 +51,8 @@ let rec addToPos i list y = match i, list with
                                     end
     | Apply1(op, expr)          -> begin
                                     match typeTarget cont,expr with 
-                                    | Result.Ok(Arrow(tyList,_)), Var(x, ty) ->
-                                    let new_ty = sourceToTargetType ty in
+                                    | Result.Ok(Type.Arrow(tyList,_)), Var(x, ty) ->
+                                    let new_ty = Type.sourceToTarget ty in
                                     let pos_x = getPos (x, ty) context in
                                     let new_var = Syntax.Vars.fresh() in 
                                     let newVarList = (List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList)  in                         
@@ -79,9 +79,9 @@ let rec addToPos i list y = match i, list with
     | Apply2(op, expr1, expr2)  -> begin
                                     match typeTarget cont,expr1,expr2 with 
                                     | Result.Ok(Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
-                                    let new_ty1 = sourceToTargetType ty1 in
+                                    let new_ty1 = Type.sourceToTarget ty1 in
                                     let pos_x1 = getPos (x1, ty1) context in
-                                    let new_ty2 = sourceToTargetType ty2 in
+                                    let new_ty2 = Type.sourceToTarget ty2 in
                                     let pos_x2 = getPos (x2, ty2) context in
                                     let new_var = Syntax.Vars.fresh() in 
                                     let newVarList = (List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList) in                         
@@ -120,10 +120,10 @@ let rec addToPos i list y = match i, list with
                                    let newCont = Var(newContVar, newContType) in
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
-                                   NCase(dexpr1, [(x, sourceToTargetType ty); (newContVar, newContType)], dexpr2), newNewCont, context
+                                   NCase(dexpr1, [(x, Type.sourceToTarget ty); (newContVar, newContType)], dexpr2), newNewCont, context
 
 let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), Type.sourceToTarget ty) context in 
   let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
   expr |> SourceAnf.weakAnf |> rad context id_cont |> fun (a,_,_) -> a
 
@@ -135,7 +135,7 @@ let rec initialize_rad list = match list with
  | _::tl -> (Const 0.)::initialize_rad tl
 
 let grad (context: context) (expr: sourceSyn) : targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), sourceToTargetType ty) context in 
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), Type.sourceToTarget ty) context in 
   let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = rad context id_cont (SourceAnf.anf expr) in
   match typeTarget cont with

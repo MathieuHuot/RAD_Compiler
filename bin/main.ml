@@ -15,13 +15,13 @@ let _ =
   (* Some terms for tests *)
   let x1 = ("x", 1) in
   let x2 = ("x", 2) in
-  let var1 = TargetLanguage.Var (x1, TargetLanguage.Real) in
-  let var2 = TargetLanguage.Var (x2, TargetLanguage.Real) in
+  let var1 = TargetLanguage.Var (x1, TargetLanguage.Type.Real) in
+  let var2 = TargetLanguage.Var (x2, TargetLanguage.Type.Real) in
   let f1 = TargetLanguage.Apply1 (Cos, TargetLanguage.Const 7.) in
   let _f2 =
     TargetLanguage.Let
       ( x1,
-        TargetLanguage.Real,
+        TargetLanguage.Type.Real,
         TargetLanguage.Apply2 (Plus, TargetLanguage.Const 5., var2),
         TargetLanguage.Apply1 (Sin, var1) )
   in
@@ -34,7 +34,7 @@ let _ =
   let f6 = TargetLanguage.Apply1 (Cos, TargetLanguage.Const 0.716814692820) in
   let _f7 =
     TargetLanguage.Apply1
-      (Sin, TargetLanguage.Var (Vars.fresh (), TargetLanguage.Real))
+      (Sin, TargetLanguage.Var (Vars.fresh (), TargetLanguage.Type.Real))
   in
 
   (* Interpreters tests*)
@@ -46,9 +46,9 @@ let _ =
   printVal f1 [];
   printVal f3 [];
   printVal f4 [];
-  printVal f5 [ ((x1, TargetLanguage.Real), TargetLanguage.Const 0.) ];
-  printVal f5 [ ((x1, TargetLanguage.Real), TargetLanguage.Const 2.) ];
-  printVal f5 [ ((x1, TargetLanguage.Real), TargetLanguage.Const 8.283185307) ];
+  printVal f5 [ ((x1, TargetLanguage.Type.Real), TargetLanguage.Const 0.) ];
+  printVal f5 [ ((x1, TargetLanguage.Type.Real), TargetLanguage.Const 2.) ];
+  printVal f5 [ ((x1, TargetLanguage.Type.Real), TargetLanguage.Const 8.283185307) ];
   printVal f6 ([] : Syntax.TargetLanguage.context);
   Format.fprintf out "@.@.";
 
@@ -270,8 +270,8 @@ let _ =
       (Transforms.JetAD.Jets12.secondPartial
          [
            ( var,
-             TargetLanguage.Real,
-             TargetLanguage.Var (var2, TargetLanguage.Real) );
+             TargetLanguage.Type.Real,
+             TargetLanguage.Var (var2, TargetLanguage.Type.Real) );
          ]
          f7)
   in
@@ -297,8 +297,8 @@ let _ =
   let g7 =
     Transforms.JetAD.Jets12.hessian
       [
-        (x1, TargetLanguage.Real, TargetLanguage.Var (x1, TargetLanguage.Real));
-        (x2, TargetLanguage.Real, TargetLanguage.Var (x2, TargetLanguage.Real));
+        (x1, TargetLanguage.Type.Real, TargetLanguage.Var (x1, TargetLanguage.Type.Real));
+        (x2, TargetLanguage.Type.Real, TargetLanguage.Var (x2, TargetLanguage.Type.Real));
       ]
       g6
   in

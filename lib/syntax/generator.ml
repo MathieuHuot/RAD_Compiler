@@ -2,7 +2,7 @@ open Random
 open Operators
 
 type varSourceContext = (Vars.t * SourceLanguage.sourceType) list
-type varTargetContext = (Vars.t * TargetLanguage.targetType) list
+type varTargetContext = (Vars.t * TargetLanguage.Type.t) list
 
 (* Random terms generator for tests *)
 let _ = Random.init 0
@@ -107,7 +107,7 @@ let rec syngen (context : varTargetContext) (depth : int) : TargetLanguage.targe
                 let expr2,_ = syngen context (depth+1) in
                 Apply2(randOp2(), expr1, expr2), context     
         | _ ->  let x = Vars.fresh() in
-                let newcontext = (x, TargetLanguage.Real)::context in
+                let newcontext = (x, TargetLanguage.Type.Real)::context in
                 let expr1,_ = syngen context (depth+1) in
                 let expr2,_ = syngen newcontext (depth+1) in
                 Let(x, Real, expr1, expr2), context
