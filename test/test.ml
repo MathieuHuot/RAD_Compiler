@@ -443,9 +443,7 @@ module S = struct
   let find_by_ty ty = List.find_opt (fun (_, t) -> equalTypes t ty)
 
   let dist_to_type (targetTy : sourceType) (ty : sourceType) =
-    match (targetTy, ty) with
-    | Real, Real -> Some 0
-    | _ -> None
+    match (targetTy, ty) with Real, Real -> Some 0 | _ -> None
 
   let random_closest_type targetTy tyList =
     let open QCheck.Gen in
@@ -466,10 +464,7 @@ module S = struct
       (ty : sourceType) =
     if equalTypes targetTy ty then Some term
     else if n <= 0 then None
-    else
-      match (targetTy, ty) with
-      | Real, Real -> Some term
-      | _ -> None
+    else match (targetTy, ty) with Real, Real -> Some term | _ -> None
 
   and get_from_context context n targetTy =
     List.filter_map
@@ -496,7 +491,7 @@ module S = struct
           if n <= 0 then
             match targetTy with
             | Real -> map const (float_bound_exclusive 1.)
-            | Prod (_x1,_x2) -> failwith "Prod: not implemented"
+            | Prod (_x1, _x2) -> failwith "Prod: not implemented"
           else
             let let_gen =
               let newVar = Vars.fresh () in
@@ -564,7 +559,9 @@ module S = struct
 
   let test_interpret =
     QCheck.Test.make ~count:1000 ~name:"interp" arbitrary_closed_term
-      (fun expr -> ignore(interpret expr []); true)
+      (fun expr ->
+        ignore (interpret expr []);
+        true)
 
   let test_anf =
     QCheck.Test.make ~count:1000 ~name:"anf" arbitrary_closed_term (fun expr ->
@@ -597,7 +594,6 @@ module S = struct
       test_weakAnf;
       test_isInWeakAnf_weakAnf;
     ]
-
 end
 
 let () =
