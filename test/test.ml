@@ -289,18 +289,31 @@ module T = struct
         <+> (shrink_term expr1 >|= fun expr -> apply2 op expr expr2)
         <+> (shrink_term expr2 >|= fun expr -> apply2 op expr1 expr)
     | Let (x, t, expr1, expr2) ->
-        shrink_term expr1
+        return (subst x t expr1 expr2)
+        <+> shrink_term expr1
         >|= (fun expr -> clet x t expr expr2)
         <+> (shrink_term expr2 >|= fun expr -> clet x t expr1 expr)
     | Fun (vars, expr) -> shrink_term expr >|= fun expr -> func vars expr
     | App (expr, exprs) ->
-        shrink_term expr
+        (match expr with
+        | Fun (varList, expr) ->
+            if CCList.compare_lengths varList exprs = 0 then
+              return (simSubst (List.combine varList exprs) expr)
+            else empty
+        | _ -> empty)
+        <+> shrink_term expr
         >|= (fun expr -> app expr exprs)
         <+> ( QCheck.Shrink.list_elems shrink_term exprs >|= fun exprs ->
               app expr exprs )
     | Tuple exprs -> QCheck.Shrink.list_elems shrink_term exprs >|= tuple
     | NCase (expr1, vars, expr2) ->
-        shrink_term expr1
+        (match expr1 with
+        | Tuple l ->
+            if CCList.compare_lengths l vars = 0 then
+              return (simSubst (List.combine vars l) expr2)
+            else empty
+        | _ -> empty)
+        <+> shrink_term expr1
         >|= (fun expr -> ncase expr vars expr2)
         <+> (shrink_term expr2 >|= fun expr -> ncase expr1 vars expr)
 
