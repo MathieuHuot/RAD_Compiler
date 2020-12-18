@@ -8,21 +8,49 @@ end)
 (* syntax *)
 type 'a tuple = 'a list
 
-type targetType = Real
-                | Arrow of targetType tuple * targetType
-                | NProd of targetType tuple
+module Type = struct
+  type t = Real | Arrow of t tuple * t | NProd of t tuple
 
-and targetSyn = Var of Vars.t * targetType
+  let rec pp fmt = function
+    | Real -> Format.fprintf fmt "real"
+    | Arrow (l, t) ->
+        Format.fprintf fmt "%a@ ->@ (%a)"
+          (CCList.pp
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt "@ ->@ ")
+             (fun fmt -> Format.fprintf fmt "(%a)" pp))
+          l pp t
+    | NProd _l -> Format.fprintf fmt ""
+
+  let to_string = CCFormat.to_string pp
+
+  let isArrow ty = match ty with Arrow (_, _) -> true | _ -> false
+
+  let rec sourceToTarget (ty : SourceLanguage.sourceType) : t =
+    match ty with
+    | Real -> Real
+    | Prod (ty1, ty2) ->
+        NProd [ sourceToTarget ty1; sourceToTarget ty2 ]
+
+  let rec equal ty1 ty2 =
+    match (ty1, ty2) with
+    | Real, Real -> true
+    | Arrow (tyList1, ret_type1), Arrow (tyList2, ret_type2) ->
+        CCList.equal equal tyList1 tyList2 && equal ret_type1 ret_type2
+    | NProd tyList1, NProd tyList2 -> CCList.equal equal tyList1 tyList2
+    | _ -> false
+end
+
+type targetSyn = Var of Vars.t * Type.t
                 | Const of float
                 | Apply1 of op1 * targetSyn
                 | Apply2 of op2 * targetSyn * targetSyn
-                | Let of Vars.t * targetType * targetSyn * targetSyn
-                | Fun of ((Vars.t * targetType) list) * targetSyn
+                | Let of Vars.t * Type.t * targetSyn * targetSyn
+                | Fun of ((Vars.t * Type.t) list) * targetSyn
                 | App of targetSyn * (targetSyn list)
                 | Tuple of targetSyn tuple
-                | NCase of targetSyn * ((Vars.t * targetType) list) * targetSyn
+                | NCase of targetSyn * ((Vars.t * Type.t) list) * targetSyn
 
-type context = ((Vars.t * targetType), targetSyn) CCList.Assoc.t
+type context = ((Vars.t * Type.t), targetSyn) CCList.Assoc.t
 
 let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
 
@@ -41,14 +69,6 @@ let rec pp fmt = function
 
 let to_string = CCFormat.to_string pp
 
-let isArrow ty = match ty with
-| Arrow(_,_)  -> true
-| _           -> false
-
-let rec sourceToTargetType (ty : SourceLanguage.sourceType) : targetType = match ty with
-| Real          -> Real
-| Prod(ty1,ty2) -> NProd [sourceToTargetType ty1;sourceToTargetType ty2]
-
 let equalOp1 op1 op2 = match op1,op2 with
   | Cos,Cos     -> true
   | Sin,Sin     -> true
@@ -62,14 +82,6 @@ let equalOp2 op1 op2 = match op1,op2 with
   | Times,Times -> true
   | Minus,Minus -> true
   | _           -> false
-
-let rec equalTypes ty1 ty2 = match ty1,ty2 with
-  | Real, Real-> true
-  | Arrow(tyList1, ret_type1), Arrow(tyList2, ret_type2) ->
-    CCList.equal equalTypes tyList1 tyList2 && equalTypes ret_type1 ret_type2
-  | NProd(tyList1), NProd(tyList2) ->
-    CCList.equal equalTypes tyList1 tyList2
-  | _  -> false
 
 let rec map f expr = match f expr with
   | Var (_, _) | Const _ as expr -> expr
@@ -96,14 +108,14 @@ let rec fold f expr a =
 (* substitute variable x of type xTy by expr1 in expr2 *)
 let subst (x:Vars.t) xTy expr1 expr2 =
   map (function
-      | Var(a,ty) as expr         -> if Vars.equal a x && equalTypes ty xTy then expr1 else expr
-      | Let(y,ty,_,_) as expr     -> if (Vars.equal x y && equalTypes xTy ty)
+      | Var(a,ty) as expr         -> if Vars.equal a x && Type.equal ty xTy then expr1 else expr
+      | Let(y,ty,_,_) as expr     -> if (Vars.equal x y && Type.equal xTy ty)
         then failwith "sim: trying to substitute a bound variable"
         else expr
-      | Fun(varList,_) as expr    -> if (List.exists (fun (y,ty) -> Vars.equal x y && equalTypes ty xTy) varList)
+      | Fun(varList,_) as expr    -> if (List.exists (fun (y,ty) -> Vars.equal x y && Type.equal ty xTy) varList)
         then failwith "sim: trying to substitute a bound variable"
         else expr
-      | NCase(_,varList,_) as expr -> if (List.exists (fun (y,ty) -> Vars.equal x y && equalTypes ty xTy) varList)
+      | NCase(_,varList,_) as expr -> if (List.exists (fun (y,ty) -> Vars.equal x y && Type.equal ty xTy) varList)
         then failwith "sim: trying to substitute a bound variable"
         else expr
       | expr -> expr
@@ -111,7 +123,7 @@ let subst (x:Vars.t) xTy expr1 expr2 =
 
 let isInContext v context = List.mem_assoc v context
 
-let findInContext v context = CCList.Assoc.get ~eq:(CCPair.equal Vars.equal equalTypes) v context
+let findInContext v context = CCList.Assoc.get ~eq:(CCPair.equal Vars.equal Type.equal) v context
 
 let simSubst context expr =
   map (function
@@ -132,9 +144,9 @@ let simSubst context expr =
     Two variables match iff they are the same free variable or they are both bound and equal up to renaming.
     This renaming is checked by carrying an explicit list of pairs of bound variables found so far in the term.
     When an occurence of bound variable is found deeper in the term, we check whether it matches the renaming *)
-let equalTerms ?(eq = Float.equal) expr1 expr2 =
+let equal ?(eq = Float.equal) expr1 expr2 =
 let module PVTSet = CCSet.Make (struct
-  type t = (Vars.t * targetType) * (Vars.t * targetType)
+  type t = (Vars.t * Type.t) * (Vars.t * Type.t)
   let compare = CCPair.compare
   (CCPair.compare (CCPair.compare CCString.compare CCInt.compare) compare)
   (CCPair.compare (CCPair.compare CCString.compare CCInt.compare) compare)
@@ -143,13 +155,13 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
 | Const a,Const b                                     -> eq a b
 | Var (a,ty1),Var (b,ty2)                             -> (Vars.equal a b
                                                           || PVTSet.mem  ((a,ty1),(b,ty2)) alpha_set)
-                                                         && equalTypes ty1 ty2
+                                                         && Type.equal ty1 ty2
 | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2
                                                          && eqT expr11 expr22 alpha_set
 | Apply2(op1,expr11,expr12),Apply2(op2,expr21,expr22) -> equalOp2 op1 op2
                                                          &&  eqT expr11 expr21 alpha_set
                                                          &&  eqT expr12 expr22 alpha_set
-| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> equalTypes ty1 ty2
+| Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> Type.equal ty1 ty2
                                                          && eqT expr11 expr21 alpha_set
                                                          &&  eqT expr12 expr22 (PVTSet.add ((x,ty1),(y,ty2)) alpha_set)
 | App(expr11,exprList1),App(expr21,exprList2)         -> eqT expr11 expr21 alpha_set
@@ -158,7 +170,7 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
                                                          then false
                                                          else
                                                          eqT expr1 expr2 (PVTSet.add_list alpha_set (List.combine varList1 varList2))
-                                                         && List.for_all2 (fun (_,ty1) (_,ty2) -> equalTypes ty1 ty2) varList1 varList2
+                                                         && List.for_all2 (fun (_,ty1) (_,ty2) -> Type.equal ty1 ty2) varList1 varList2
 | Tuple(exprList1), Tuple(exprList2)                  -> CCList.equal (fun expr1 expr2 -> eqT expr1 expr2 alpha_set) exprList1 exprList2
 | NCase(expr11,varList1,expr12), NCase(expr21,varList2,expr22)
                                                       -> if CCList.compare_lengths varList1 varList2<> 0
@@ -169,8 +181,8 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
 | _                                                   -> false
 in eqT expr1 expr2 PVTSet.empty
 
-let weakEqualTerms =
-  equalTerms ~eq:(fun x y ->
+let weakEqual =
+  equal ~eq:(fun x y ->
       CCFloat.(
         equal x y
         || equal_precision ~epsilon:(0.00001 * abs x) x y
@@ -244,25 +256,25 @@ else failwith (Printf.sprintf "canonicalAlphaRename: variable %s is already used
 
 (* simple typecheker *)
 let rec typeTarget = function
-  | Const _ -> Result.Ok Real
+  | Const _ -> Result.Ok Type.Real
   | Var (_, t) -> Result.Ok t
   | Apply1 (_, expr) -> (
       CCResult.(
         typeTarget expr >>= function
-        | Real -> Ok Real
-        | _ -> Error "Argument of Apply1 should be a Real"))
+        | Type.Real -> Ok Type.Real
+        | _ -> Error "Argument of Apply1 should be a Type.Real"))
   | Apply2 (_, expr1, expr2) -> (
       CCResult.(
         typeTarget expr1 >>= function
-        | Real -> (
+        | Type.Real -> (
             typeTarget expr2 >>= function
-            | Real -> Ok Real
-            | _ -> Error "Argumentt 2 of Apply2 should be a Real")
-        | _ -> Error "Argument 1 of Apply2 should be a Real"))
+            | Type.Real -> Ok Type.Real
+            | _ -> Error "Argumentt 2 of Apply2 should be a Type.Real")
+        | _ -> Error "Argument 1 of Apply2 should be a Type.Real"))
   | Let (_, t, expr1, expr2) ->
     CCResult.(
       typeTarget expr1 >>= fun t1 ->
-      if equalTypes t t1 then typeTarget expr2
+      if Type.equal t t1 then typeTarget expr2
       else
         Error
           "in Let binding type of the variable does not correspond to the \
@@ -270,25 +282,25 @@ let rec typeTarget = function
   | Fun (l, expr) ->
     CCResult.(
       typeTarget expr >|= fun texp ->
-      Arrow (List.map snd l, texp))
+      Type.Arrow (List.map snd l, texp))
   | App (expr, l) ->
     CCResult.(
       typeTarget expr >>= function
-      | Arrow (tyList, retType) ->
+      | Type.Arrow (tyList, retType) ->
         if List.compare_lengths tyList l <> 0 then
           Error "Wrong number of arguments in App"
         else
           List.map typeTarget l |> flatten_l >>= fun l ->
-          if CCList.equal equalTypes tyList l then Ok retType
+          if CCList.equal Type.equal tyList l then Ok retType
           else Error "Type mismatch with arguments type"
-      | _ -> Error "App: expr should be of Arrow type")
+      | _ -> Error "App: expr should be of Type.Arrow type")
   | Tuple l ->
-    CCResult.(List.map typeTarget l |> flatten_l >>= fun l -> Ok (NProd l))
+    CCResult.(List.map typeTarget l |> flatten_l >>= fun l -> Ok (Type.NProd l))
   | NCase (expr1, l, expr2) -> (
       CCResult.(
         typeTarget expr1 >>= function
-        | NProd tl ->
-          if List.for_all2 equalTypes tl (List.map snd l) then
+        | Type.NProd tl ->
+          if List.for_all2 Type.equal tl (List.map snd l) then
             typeTarget expr2
           else Error "NCase: type mismatch"
         | _ -> Error "NCase: expression 1 should have type Prod"))

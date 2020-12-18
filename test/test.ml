@@ -27,18 +27,18 @@ end
 module T = struct
   open TargetLanguage
 
-  let real = Real
+  let real = Type.Real
 
-  let arrow t1 t2 = Arrow (t1, t2)
+  let arrow t1 t2 = Type.Arrow (t1, t2)
 
-  let nprod l = NProd l
+  let nprod l = Type.NProd l
 
   let type_gen depth =
     QCheck.Gen.(
       sized_size (int_bound depth)
       @@ fix (fun self n ->
              match n with
-             | 0 -> return Real
+             | 0 -> return Type.Real
              | n ->
                  frequency
                    [
@@ -49,7 +49,7 @@ module T = struct
                      ( 2,
                        int_range 0 20 >>= fun i ->
                        map nprod (list_repeat i (self (n / max 2 i))) );
-                     (1, return Real);
+                     (1, return Type.Real);
                    ]))
 
   let var x t = Var (x, t)
@@ -70,9 +70,9 @@ module T = struct
 
   let ncase exp1 l exp2 = NCase (exp1, l, exp2)
 
-  let find_by_ty ty = List.find_opt (fun (_, t) -> equalTypes t ty)
+  let find_by_ty ty = List.find_opt (fun (_, t) -> Type.equal t ty)
 
-  let rec dist_to_type (targetTy : targetType) (ty : targetType) =
+  let rec dist_to_type (targetTy : Type.t) (ty : Type.t) =
     match (targetTy, ty) with
     | Real, Real -> Some 0
     | Real, Arrow (l, ty) ->
@@ -123,9 +123,9 @@ module T = struct
         let d_min = List.fold_left (fun x (_, _, d) -> min x d) d tl in
         Some (generate1 (oneofl (List.filter (fun (_, _, d) -> d = d_min) l)))
 
-  let rec complet_to_type context n (targetTy : targetType) (term : targetSyn)
-      (ty : targetType) =
-    if equalTypes targetTy ty then Some term
+  let rec complet_to_type context n (targetTy : Type.t) (term : targetSyn)
+      (ty : Type.t) =
+    if Type.equal targetTy ty then Some term
     else if n <= 0 then None
     else
       match (targetTy, ty) with
@@ -210,7 +210,7 @@ module T = struct
         (fun self (n, context, targetTy) ->
           if n <= 0 then
             match targetTy with
-            | Real -> map const (float_bound_exclusive 1.)
+            | Type.Real -> map const (float_bound_exclusive 1.)
             | Arrow (tyList, retType) ->
                 let argsList =
                   List.map (fun tv -> (Vars.fresh (), tv)) tyList
@@ -323,7 +323,7 @@ module T = struct
     QCheck.make
       QCheck.Gen.(
         int_bound 20 >>= fun i ->
-        term_gen (List.init 10 (fun i -> (("x", i), Real))) i Real)
+        term_gen (List.init 10 (fun i -> (("x", i), Type.Real))) i Real)
       ~print:to_string ~shrink:shrink_term
 
   let test_isWellTyped =
@@ -333,9 +333,9 @@ module T = struct
         | Result.Ok _ -> true
         | Result.Error s -> failwith s)
 
-  let test_equalTerms =
-    QCheck.Test.make ~count:100 ~name:"equalTerms" arbitrary_closed_term
-      (fun expr -> equalTerms expr expr)
+  let test_equal =
+    QCheck.Test.make ~count:100 ~name:"equal" arbitrary_closed_term (fun expr ->
+        equal expr expr)
 
   let test_interpret =
     QCheck.Test.make ~count:100 ~name:"interp" arbitrary_closed_term
@@ -343,14 +343,14 @@ module T = struct
 
   let test_anf =
     QCheck.Test.make ~count:100 ~name:"anf" arbitrary_closed_term (fun expr ->
-        equalTerms
+        equal
           (interpret (Transforms.Anf.TargetAnf.anf expr) [])
           (interpret expr []))
 
   let test_weakAnf =
     QCheck.Test.make ~count:100 ~name:"weakAnf" arbitrary_closed_term
       (fun expr ->
-        equalTerms
+        equal
           (interpret (Transforms.Anf.TargetAnf.weakAnf expr) [])
           (interpret expr []))
 
@@ -366,7 +366,7 @@ module T = struct
   let test_list =
     [
       test_isWellTyped;
-      test_equalTerms;
+      test_equal;
       test_interpret;
       test_anf;
       test_weakAnf;
@@ -383,7 +383,7 @@ module T = struct
             []
         in
         let e2 = interpret expr [] in
-        if weakEqualTerms e1 e2 then true
+        if weakEqual e1 e2 then true
         else failwith (Printf.sprintf "%s\n\n%s" (to_string e1) (to_string e2)))
 
   let test_opti_freeVar opti opti_name =
@@ -607,13 +607,10 @@ module S = struct
 end
 
 let () =
-  let term = QCheck.Gen.generate1 (T.term_gen [] 10 TargetLanguage.Real) in
-  Format.printf "%a@." TargetLanguage.pp term;
-  T.shrink_term term
-    (Format.printf "========================================@.%a@."
-       TargetLanguage.pp)
+  let term = QCheck.Gen.generate1 (T.term_gen [] 10 TargetLanguage.Type.Real) in
+  Format.printf "%a@." TargetLanguage.pp term
 
-(*let () =
+let () =
   let target = List.map QCheck_alcotest.to_alcotest T.test_list in
   let target_opti = List.map QCheck_alcotest.to_alcotest T.test_opti_list in
   let target_opti_freeVar =
@@ -626,4 +623,4 @@ let () =
       ("Opti Target Language", target_opti);
       ("Opti Free Vars Target Language", target_opti_freeVar);
       ("Source Language", source);
-    ]*)
+    ]
