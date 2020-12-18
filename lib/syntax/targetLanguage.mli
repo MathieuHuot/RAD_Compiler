@@ -33,6 +33,10 @@ type context = ((Vars.t * targetType), targetSyn) CCList.Assoc.t
 val varToSyn : (Vars.t * targetType) tuple -> targetSyn tuple
 val to_string : targetSyn -> string
 val pp : Format.formatter -> targetSyn -> unit
+
+val map : (targetSyn -> targetSyn) -> targetSyn -> targetSyn
+val fold : (targetSyn -> 'a -> 'a) -> targetSyn -> 'a -> 'a
+
 val isArrow : targetType -> bool
 val sourceToTargetType : SourceLanguage.sourceType -> targetType
 val equalTypes : targetType -> targetType -> bool
