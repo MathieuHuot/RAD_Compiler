@@ -373,13 +373,18 @@ module T = struct
       test_isInWeakAnf_weakAnf;
     ]
 
+  let check_opt_applies opti expr =
+    let open Rewrite.Strategies.Strategy in
+    match opti expr with Success _ -> true | _ -> false
+
   let test_opti opti opti_name =
-    QCheck.Test.make ~count:100 ~name:("Opt " ^ opti_name) arbitrary_closed_term
-      (fun expr ->
+    QCheck.Test.make ~count:100 ~max_gen:500 ~name:("Opt " ^ opti_name)
+      arbitrary_closed_term (fun expr ->
         let e1 =
           interpret
-            Rewrite.(
-              Strategies.Strategy.run (Strategies.Strategy.tryStrat opti expr))
+            (match opti expr with
+            | Rewrite.Strategies.Strategy.Success expr -> expr
+            | Rewrite.Strategies.Strategy.Failure _ -> QCheck.assume_fail ())
             []
         in
         let e2 = interpret expr [] in
@@ -387,12 +392,13 @@ module T = struct
         else failwith (Printf.sprintf "%s\n\n%s" (to_string e1) (to_string e2)))
 
   let test_opti_freeVar opti opti_name =
-    QCheck.Test.make ~count:100 ~name:("Opt " ^ opti_name) arbitrary_term
-      (fun expr ->
+    QCheck.Test.make ~count:100 ~max_gen:500 ~name:("Opt " ^ opti_name)
+      arbitrary_term (fun expr ->
         let fv = freeVars expr in
         let e1 =
-          Rewrite.(
-            Strategies.Strategy.run (Strategies.Strategy.tryStrat opti expr))
+          match opti expr with
+          | Rewrite.Strategies.Strategy.Success expr -> expr
+          | Rewrite.Strategies.Strategy.Failure _ -> QCheck.assume_fail ()
         in
         let fv1 = freeVars e1 in
         VarSet.subset fv1 fv)
