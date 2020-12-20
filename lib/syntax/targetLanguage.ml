@@ -11,19 +11,22 @@ type 'a tuple = 'a list
 module Type = struct
   type t = Real | Arrow of t tuple * t | NProd of t tuple
 
-  let rec pp fmt = function
-    | Real -> Format.fprintf fmt "real"
-    | Arrow (l, t) ->
-        Format.fprintf fmt "%a@ ->@ (%a)"
-          (CCList.pp
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "@ ->@ ")
-             (fun fmt -> Format.fprintf fmt "(%a)" pp))
-          l pp t
-    | NProd _l -> Format.fprintf fmt ""
+let rec pp fmt = function
+  | Real -> Format.fprintf fmt "real"
+  | Arrow (l, t) ->
+      Format.fprintf fmt "%a@ ->@ (%a)"
+        (CCList.pp
+           ~pp_sep:(fun fmt () -> Format.fprintf fmt "@ ->@ ")
+           (fun fmt -> Format.fprintf fmt "(%a)" pp))
+        l pp t
+  | NProd l ->
+      Format.fprintf fmt "(%a)"
+        (CCList.pp ~pp_sep:(fun fmt () -> Format.fprintf fmt "@ *@ ") pp)
+        l
 
   let to_string = CCFormat.to_string pp
 
-  let isArrow ty = match ty with Arrow (_, _) -> true | _ -> false
+  let isArrow ty = match ty with Arrow _ -> true | _ -> false
 
   let rec sourceToTarget (ty : SourceLanguage.sourceType) : t =
     match ty with
