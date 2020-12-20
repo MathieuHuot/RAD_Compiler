@@ -225,22 +225,16 @@ let listUnusedVars expr =
     | _ -> l)
   expr []
 
-let rec varNameNotBound (name:string) expr = match expr with
-| Let((str,_),_,expr1,expr2)              ->  str<> name 
-                                              && (varNameNotBound name expr1) 
-                                              && (varNameNotBound name expr2)
-| Apply1(_,expr)                          ->  (varNameNotBound name expr)
-| Apply2(_,expr1,expr2)                   ->  (varNameNotBound name expr1) 
-                                              && (varNameNotBound name expr2)
-| App(expr1,exprList)                     ->  (varNameNotBound name expr1) 
-                                              && List.for_all (varNameNotBound name) exprList
-| Fun(varList,expr)                       ->  (varNameNotBound name expr) 
-                                              && List.for_all (fun ((str,_),_) -> str<>name) varList
-| Tuple(exprList)                         ->  List.for_all (varNameNotBound name) exprList
-| NCase(expr1,varList,expr2)              ->  varNameNotBound name expr1
-                                              && List.for_all (fun ((str,_),_) -> str<>name) varList
-                                              && varNameNotBound name expr2
-| _                                       ->  true 
+let varNameNotBound (name : string) expr =
+  let aux = function
+    | Let ((str, _), _, _, _) -> str <> name
+    | Fun (varList, _) ->
+        List.for_all (fun ((str, _), _) -> str <> name) varList
+    | NCase (_, varList, _) ->
+        List.for_all (fun ((str, _), _) -> str <> name) varList
+    | _ -> true
+  in
+  fold (fun expr b -> b && aux expr) expr true
 
 let indexOf el lis = 
   let rec indexAux i = function
