@@ -10,20 +10,25 @@ To run tests and compare them with test.expected
 dune runtest
 ```
 
-To run tests and print them in test.expected
-```bash
-dune runtest --auto-promote
-```
-
 To run the project
 ```bash
 dune exec -- ./bin/main.exe
 ```
 Currently print some test in out.txt
 
-To run tests and print the results with small example when failing
+To run tests
+```bash
+dune runtest
+```
+
+To run tests and print counter example for all failing test or to run multiple time test.
 ```bash
 dune exec -- ./test/test.exe -e
+```
+
+To build the doc
+```bash
+dune build @doc-private
 ```
 
 ### Content
