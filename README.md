@@ -30,10 +30,11 @@ To build the doc
 ```bash
 dune build @doc-private
 ```
+Main page of the module Syntax is `_build/default/_doc/_html/syntax@4c5eccf64a65/Syntax/index.html`
 
 ### Content
 
-This project provides efficient purely functionnal forward-mode and reverse mode automatic differentiation.
+This project provides efficient purely functional forward-mode and reverse mode automatic differentiation.
 Currently, the input and output are an AST in OCaml.
 
 ### Detail of the source code
