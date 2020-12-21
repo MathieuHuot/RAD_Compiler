@@ -152,10 +152,10 @@ module T = struct
               targetList
             |> sequence_l
             >>= fun l ->
-            let newVars = List.map (fun t -> (Vars.fresh (), t)) termList in
+            let newVar = List.map (fun t -> (Var.fresh (), t)) termList in
             List.map
               (fun (targetTy, (_, i, _)) ->
-                let v, t = CCList.get_at_idx_exn i newVars in
+                let v, t = CCList.get_at_idx_exn i newVar in
                 complet_to_type context
                   (n - List.length targetList)
                   targetTy
@@ -163,16 +163,16 @@ module T = struct
                   t)
               l
             |> sequence_l
-            >|= fun l -> NCase (term, newVars, Tuple l))
+            >|= fun l -> NCase (term, newVar, Tuple l))
       | _, NProd typeList ->
           CCOpt.(
             random_closest_type targetTy typeList >>= fun (t, i, _) ->
-            let newVars = List.map (fun t -> (Vars.fresh (), t)) typeList in
+            let newVar = List.map (fun t -> (Var.fresh (), t)) typeList in
             complet_to_type context (n - 1) targetTy
               (NCase
                  ( term,
-                   newVars,
-                   let v, ty = CCList.get_at_idx_exn i newVars in
+                   newVar,
+                   let v, ty = CCList.get_at_idx_exn i newVar in
                    Var (v, ty) ))
               t)
       | Arrow (_, _), Real -> None
@@ -213,7 +213,7 @@ module T = struct
             | Type.Real -> map const (float_bound_exclusive 1.)
             | Arrow (tyList, retType) ->
                 let argsList =
-                  List.map (fun tv -> (Vars.fresh (), tv)) tyList
+                  List.map (fun tv -> (Var.fresh (), tv)) tyList
                 in
                 let newContext = argsList @ context in
                 map
@@ -228,7 +228,7 @@ module T = struct
                         tyList))
           else
             let let_gen =
-              let newVar = Vars.fresh () in
+              let newVar = Var.fresh () in
               let varType = generate1 (type_gen (n / 10)) in
               let newContext = (newVar, varType) :: context in
               map2
@@ -238,7 +238,7 @@ module T = struct
             in
             let fun_gen =
               list_size (int_bound n) (type_gen n) >>= fun l ->
-              let l = List.map (fun t -> (Vars.fresh (), t)) l in
+              let l = List.map (fun t -> (Var.fresh (), t)) l in
               let newContext = l @ context in
               map2
                 (fun args expr -> App (Fun (l, expr), args))
@@ -251,7 +251,7 @@ module T = struct
             in
             let ncase_gen =
               list_size (int_bound n) (type_gen n) >>= fun tyList ->
-              let l = List.map (fun t -> (Vars.fresh (), t)) tyList in
+              let l = List.map (fun t -> (Var.fresh (), t)) tyList in
               let newContext = l @ context in
               map2
                 (fun tuple expr -> NCase (tuple, l, expr))
@@ -394,13 +394,13 @@ module T = struct
   let test_opti_freeVar opti opti_name =
     QCheck.Test.make ~count:100 ~max_gen:500 ~name:("Opt " ^ opti_name)
       arbitrary_term (fun expr ->
-        let fv = freeVars expr in
+        let fv = freeVar expr in
         let e1 =
           match opti expr with
           | Rewrite.Strategies.Strategy.Success expr -> expr
           | Rewrite.Strategies.Strategy.Failure _ -> QCheck.assume_fail ()
         in
-        let fv1 = freeVars e1 in
+        let fv1 = freeVar e1 in
         VarSet.subset fv1 fv)
 
   let opti_list =
@@ -510,7 +510,7 @@ module S = struct
             | Prod (_x1, _x2) -> failwith "Prod: not implemented"
           else
             let let_gen =
-              let newVar = Vars.fresh () in
+              let newVar = Var.fresh () in
               let varType = generate1 (type_gen (n / 10)) in
               let newContext = (newVar, varType) :: context in
               map2
@@ -627,6 +627,6 @@ let () =
     [
       ("Target Language", target);
       ("Opti Target Language", target_opti);
-      ("Opti Free Vars Target Language", target_opti_freeVar);
+      ("Opti Free Var Target Language", target_opti_freeVar);
       ("Source Language", source);
     ]

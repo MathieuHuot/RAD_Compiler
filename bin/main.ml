@@ -34,7 +34,7 @@ let _ =
   let f6 = Target.Apply1 (Cos, Target.Const 0.716814692820) in
   let _f7 =
     Target.Apply1
-      (Sin, Target.Var (Vars.fresh (), Target.Type.Real))
+      (Sin, Target.Var (Var.fresh (), Target.Type.Real))
   in
 
   (* Interpreters tests*)
@@ -56,7 +56,7 @@ let _ =
   let f7 =
     Source.Apply1
       ( Operators.Sin,
-        Source.Var (Syntax.Vars.fresh (), Source.Real) )
+        Source.Var (Syntax.Var.fresh (), Source.Real) )
   in
   let f8 = ForwardMode.forwardAD f7 in
   let f9 = Rewrite.Optimisations.fullOpti f8 in

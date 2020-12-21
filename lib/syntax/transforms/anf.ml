@@ -38,17 +38,17 @@ let rec weakAnf expr = match expr with
   | Var _                  -> expr
   | Apply1(op,expr1)       -> if isImmediate expr then expr else 
       let exprAnf = weakAnf expr1 in
-      let n = Syntax.Vars.fresh() in
+      let n = Syntax.Var.fresh() in
       let ty = Real in
       let newVar = Var(n,ty) in
       Let(n,ty,exprAnf,Apply1(op,newVar))
   | Apply2(op,expr1,expr2) -> if isImmediate expr then expr else
       let expr1Anf = weakAnf expr1 in 
       let expr2Anf = weakAnf expr2 in 
-      let n = Syntax.Vars.fresh() in
+      let n = Syntax.Var.fresh() in
       let ty1 = Real in
       let newVar1 = Var(n,ty1) in 
-      let m = Syntax.Vars.fresh() in 
+      let m = Syntax.Var.fresh() in 
       let ty2 = Real in
       let newVar2 = Var(m,ty2) in 
       Let(n,ty1,expr1Anf,Let(m,ty2,expr2Anf,Apply2(op,newVar1, newVar2)))
@@ -111,17 +111,17 @@ let rec weakAnf expr = match expr with
   | Var _                  -> expr
   | Apply1(op,expr1)       -> if isImmediate expr then expr else 
       let exprAnf = weakAnf expr1 in
-      let n = Syntax.Vars.fresh() in
+      let n = Syntax.Var.fresh() in
       let ty = Type.Real in
       let newVar = Var(n,ty) in
       Let(n,ty,exprAnf,Apply1(op,newVar))
   | Apply2(op,expr1,expr2) -> if isImmediate expr then expr else
       let expr1Anf = weakAnf expr1 in 
       let expr2Anf = weakAnf expr2 in 
-      let n = Syntax.Vars.fresh() in
+      let n = Syntax.Var.fresh() in
       let ty1 = Type.Real in
       let newVar1 = Var(n,ty1) in 
-      let m = Syntax.Vars.fresh() in 
+      let m = Syntax.Var.fresh() in 
       let ty2 = Type.Real in
       let newVar2 = Var(m,ty2) in 
       Let(n,ty1,expr1Anf,Let(m,ty2,expr2Anf,Apply2(op,newVar1, newVar2)))

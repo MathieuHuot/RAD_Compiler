@@ -5,14 +5,14 @@ open Anf
 open Syntax.Source
 open Syntax.Target
 
-type context = (Syntax.Vars.t * sourceType) tuple
+type context = (Syntax.Var.t * sourceType) tuple
 
-let dvar var : Syntax.Vars.t * Syntax.Vars.t = let str, i = var in (str, i), ("d"^str, i)
+let dvar var : Syntax.Var.t * Syntax.Var.t = let str, i = var in (str, i), ("d"^str, i)
 
 let getPos (x,ty) list = 
   let rec aux pos list = match list with
   | [] -> failwith "getPos: element not found"
-  | (y,ty2)::tl -> if Syntax.Vars.equal x y && Syntax.Source.equalTypes ty ty2 
+  | (y,ty2)::tl -> if Syntax.Var.equal x y && Syntax.Source.equalTypes ty ty2 
                     then pos 
                     else aux (pos+1) tl
   in aux 0 list
@@ -26,8 +26,8 @@ let rec addToPos i list y = match i, list with
     | Const c                   -> begin
                                     match typeTarget cont with 
                                     | Result.Ok (Type.Arrow(tyList,_)) ->
-                                    let newVar,newTy = (Syntax.Vars.fresh(), Type.Real) in 
-                                    let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                  
+                                    let newVar,newTy = (Syntax.Var.fresh(), Type.Real) in 
+                                    let newVarList = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in                  
                                     let newContVarList =  List.append newVarList [(newVar,newTy)] in
                                     let newCont = Fun(newContVarList, App(cont, varToSyn newVarList)) in
                                     Tuple [Const c; newCont], newCont, context
@@ -36,8 +36,8 @@ let rec addToPos i list y = match i, list with
     | Var(x, ty)                -> begin
                                     match typeTarget cont with 
                                     | Result.Ok(Arrow(tyList,_)) ->
-                                    let new_var, new_ty = Syntax.Vars.fresh(), Type.sourceToTarget ty in  
-                                    let newVarList = List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList in                          
+                                    let new_var, new_ty = Syntax.Var.fresh(), Type.sourceToTarget ty in  
+                                    let newVarList = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in                          
                                     let newContVarList = List.append newVarList [(new_var, new_ty)] in
                                     let pos_x = getPos (x,ty) context in
                                     let newCont = Fun(newContVarList, 
@@ -54,8 +54,8 @@ let rec addToPos i list y = match i, list with
                                     | Result.Ok(Type.Arrow(tyList,_)), Var(x, ty) ->
                                     let new_ty = Type.sourceToTarget ty in
                                     let pos_x = getPos (x, ty) context in
-                                    let new_var = Syntax.Vars.fresh() in 
-                                    let newVarList = (List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList)  in                         
+                                    let new_var = Syntax.Var.fresh() in 
+                                    let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList)  in                         
                                     let newContVarList =  List.append newVarList [(new_var, new_ty)] in
                                     let dop y = begin match op with
                                       | Cos     -> Apply1(Minus,Apply1(Sin, y))
@@ -83,8 +83,8 @@ let rec addToPos i list y = match i, list with
                                     let pos_x1 = getPos (x1, ty1) context in
                                     let new_ty2 = Type.sourceToTarget ty2 in
                                     let pos_x2 = getPos (x2, ty2) context in
-                                    let new_var = Syntax.Vars.fresh() in 
-                                    let newVarList = (List.map (fun ty -> Syntax.Vars.fresh(), ty) tyList) in                         
+                                    let new_var = Syntax.Var.fresh() in 
+                                    let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList) in                         
                                     let newContVarList =  List.append newVarList [(new_var, Real)] in
                                     let d1op _ y2 = begin
                                       match op with
@@ -123,7 +123,7 @@ let rec addToPos i list y = match i, list with
                                    NCase(dexpr1, [(x, Type.sourceToTarget ty); (newContVar, newContType)], dexpr2), newNewCont, context
 
 let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), Type.sourceToTarget ty) context in 
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Type.sourceToTarget ty) context in 
   let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
   expr |> SourceAnf.weakAnf |> rad context id_cont |> fun (a,_,_) -> a
 
@@ -135,7 +135,7 @@ let rec initialize_rad list = match list with
  | _::tl -> (Const 0.)::initialize_rad tl
 
 let grad (context: context) (expr: sourceSyn) : targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Vars.fresh(), Type.sourceToTarget ty) context in 
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Type.sourceToTarget ty) context in 
   let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = rad context id_cont (SourceAnf.anf expr) in
   match typeTarget cont with
@@ -145,7 +145,7 @@ let grad (context: context) (expr: sourceSyn) : targetSyn =
     begin 
     match typeTarget dexpr with
       | Result.Ok(NProd [ty1;ty2]) ->
-      let x,dx= dvar (Syntax.Vars.fresh()) in
+      let x,dx= dvar (Syntax.Var.fresh()) in
       NCase(dexpr,[(x,ty1);(dx,ty2)],App(Var(dx,ty2),sensitivities))
     | _                   -> failwith "grad: should return a pair"
     end
