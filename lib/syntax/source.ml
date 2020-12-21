@@ -5,31 +5,31 @@ type 'a tuple = 'a list
 
 type sourceType = Real | Prod of sourceType * sourceType
 
-type sourceSyn = Var of Vars.t * sourceType
+type sourceSyn = Var of Var.t * sourceType
             | Const of float 
             | Apply1 of op1 * sourceSyn 
             | Apply2 of op2 * sourceSyn * sourceSyn 
-            | Let of Vars.t * sourceType * sourceSyn * sourceSyn
+            | Let of Var.t * sourceType * sourceSyn * sourceSyn
 
-type context = ((Vars.t * sourceType), sourceSyn) CCList.Assoc.t
+type context = ((Var.t * sourceType), sourceSyn) CCList.Assoc.t
 
 let rec to_string = function
-  | Var (v, _) -> Vars.to_string v
+  | Var (v, _) -> Var.to_string v
   | Const c -> string_of_float c
   | Apply1 (op, expr) -> Printf.sprintf "%s(%s)" (to_string_op1 op) (to_string expr)
   | Apply2 (op, expr1, expr2) ->
     if is_infix op then Printf.sprintf "(%s %s %s)" (to_string expr1) (to_string_op2 op) (to_string expr2)
     else Printf.sprintf "(%s %s %s)" (to_string expr1) (to_string_op2 op) (to_string expr2)
-  | Let (x, _t, expr1, expr2) -> Printf.sprintf "let %s = %s in\n%s" (Vars.to_string x) (to_string expr1) (to_string expr2)
+  | Let (x, _t, expr1, expr2) -> Printf.sprintf "let %s = %s in\n%s" (Var.to_string x) (to_string expr1) (to_string expr2)
 
 let rec pp fmt = function
-  | Var (a, _) -> Vars.pp fmt a
+  | Var (a, _) -> Var.pp fmt a
   | Const c -> Format.pp_print_float fmt c
   | Apply1 (op, expr) -> Format.fprintf fmt "%a(%a)" pp_op1 op pp expr
   | Apply2 (op, expr1, expr2) ->
     if is_infix op then Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
     else Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
-  | Let (x, _t, expr1, expr2) -> Format.fprintf fmt "let %a = %a in@.%a" Vars.pp x pp expr1 pp expr2
+  | Let (x, _t, expr1, expr2) -> Format.fprintf fmt "let %a = %a in@.%a" Var.pp x pp expr1 pp expr2
 
 let rec map f expr = match f expr with
   | Var (_, _) | Const _ as expr -> expr
@@ -63,11 +63,11 @@ let equalOp2 op1 op2 = match op1, op2 with
 | _              -> false
 
 (* substitute variable x of type ty by expr1 in expr2 *)
-let subst (x: Vars.t) ty expr1 expr2 = map (fun expr ->
+let subst (x: Var.t) ty expr1 expr2 = map (fun expr ->
     match expr with
-    | Var (a, ty1)      -> if Vars.equal a x && equalTypes ty1 ty then expr1 else expr
+    | Var (a, ty1)      -> if Var.equal a x && equalTypes ty1 ty then expr1 else expr
     | Const _           -> expr
-    | Let(y, ty1, _, _) -> if (Vars.equal x y && equalTypes ty ty1)
+    | Let(y, ty1, _, _) -> if (Var.equal x y && equalTypes ty ty1)
       then failwith "subst: trying to substitute a bound variable"
       else expr
     | _                 -> expr
@@ -97,7 +97,7 @@ let simSubst context expr = map (fun expr ->
 let equalTerms expr1 expr2 = 
     let rec eqT expr1 expr2 list = match expr1, expr2 with
     | Const a,Const b                                          -> a=b
-    | Var (a, ty1), Var (b, ty2)                               -> (Vars.equal a b || List.mem  ((a, ty1), (b, ty2)) list)
+    | Var (a, ty1), Var (b, ty2)                               -> (Var.equal a b || List.mem  ((a, ty1), (b, ty2)) list)
                                                                   && equalTypes ty1 ty2
     | Apply1(op1, expr11),Apply1(op2, expr22)                  -> equalOp1 op1 op2 
                                                                   && eqT expr11 expr22 list
@@ -117,17 +117,17 @@ let closingTerm expr (cont : context) = if not(isContextOfValues cont)
     then failwith "closingTerm: context does not only contain values"
     else List.fold_left (fun expr1 ((x,ty),v) -> subst x ty v expr1) expr cont
 
-let rec freeVars = function
+let rec freeVar = function
 | Var (x,_)              -> [x]
-| Apply1(_,expr)         -> freeVars expr
+| Apply1(_,expr)         -> freeVar expr
 | Apply2(_,expr1, expr2) -> 
-    let expr1Fv = freeVars expr1 in 
-    let expr2Fv = freeVars expr2 in 
+    let expr1Fv = freeVar expr1 in 
+    let expr2Fv = freeVar expr2 in 
     List.append expr1Fv (List.filter (fun x -> not (List.mem x expr1Fv)) expr2Fv)
 | Let(y,_,expr1, expr2)  -> 
-    let expr1Fv = freeVars expr1 in 
-    let expr2Fv = freeVars expr2 in 
-    List.append expr1Fv (List.filter (fun x -> not(Vars.equal x y) && not(List.mem x expr1Fv)) expr2Fv) 
+    let expr1Fv = freeVar expr1 in 
+    let expr2Fv = freeVar expr2 in 
+    List.append expr1Fv (List.filter (fun x -> not(Var.equal x y) && not(List.mem x expr1Fv)) expr2Fv) 
 | _                      -> []
 
 let rec varNameNotBound (name:string) expr = match expr with
@@ -143,11 +143,11 @@ let rec varNameNotBound (name:string) expr = match expr with
 let indexOf el lis = 
   let rec index_rec i = function
     | [] -> failwith "canonicalAlphaRename: Element not found in the list"
-    | hd::tl -> if Vars.equal hd el then i else index_rec (i+1) tl
+    | hd::tl -> if Var.equal hd el then i else index_rec (i+1) tl
   in index_rec 0 lis
 
 let canonicalAlphaRename (name: string) expr =
-let freeV = freeVars expr in 
+let freeV = freeVar expr in 
 if varNameNotBound name expr then 
 let canRen expr = map (fun expr -> match expr with
       | Var (s, ty)              -> let i = indexOf s freeV in Var ((name, i), ty)
@@ -185,8 +185,8 @@ let isWellTyped expr = match (typeSource expr) with
     
 (* checks whether the context captures all the free variables of an expression*)
 let contextComplete expr context =
-    let exprFv = freeVars expr in 
-    List.for_all (fun x -> List.exists (fun ((y,_),_) -> Vars.equal y x) context) exprFv
+    let exprFv = freeVar expr in 
+    List.for_all (fun x -> List.exists (fun ((y,_),_) -> Var.equal y x) context) exprFv
 
 let interpretOp1 op v = match op with
     | Cos      -> cos(v)

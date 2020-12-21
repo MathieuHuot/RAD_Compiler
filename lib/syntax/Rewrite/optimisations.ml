@@ -283,7 +283,7 @@ let rec run expr = match expr with
   | Let(x1,ty1,e0,Let(x2,ty2,e1,e2)) 
     when (equal e0 e1) -> Success(Let(x1,ty1,e0,Let(x2,ty2,Var(x1,ty1),e2)))
   (* let x=e0 in let y=e1 in e2 -> let y=e1 in let x=e0 in e2 (x not a FV in e1) *)
-  | Let(x1,ty1,e0,Let(x2,ty2,e1,e2)) when not(VarSet.mem x1 (freeVars e1)) 
+  | Let(x1,ty1,e0,Let(x2,ty2,e1,e2)) when not(VarSet.mem x1 (freeVar e1)) 
                             -> Success(Let(x2,ty2,e1,Let(x1,ty1,e0,e2)))
   | _                       -> Tr.traverse expr run 
 end
@@ -313,7 +313,7 @@ let rec run expr = match expr with
   | _                        -> Tr.traverse expr run 
 end 
 
-module DeadVarsElim: Optim =
+module DeadVarElim: Optim =
 functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
 struct
 open Syntax.Target
@@ -321,21 +321,21 @@ open Strategies.Strategy
 
 (* dead code elimination of a list of unused variables *)
 let run expr =
-  let unusedVars = listUnusedVars expr in
-   let rec aux unusedVars expr =
+  let unusedVar = listUnusedVar expr in
+   let rec aux unusedVar expr =
     match expr with
     | Let(x, ty,_,expr) 
-      when (List.mem (x,ty) unusedVars)    -> Success(expr)
+      when (List.mem (x,ty) unusedVar)    -> Success(expr)
     | NCase(_,varList, expr)
-      when List.for_all (fun y -> List.mem y unusedVars) varList
+      when List.for_all (fun y -> List.mem y unusedVar) varList
                                            -> Success(expr)
     | NCase(Tuple(exprList),varList,expr)  -> let list = List.combine exprList varList in
                                               (* remove each expr bound to an unused var *) 
-                                              let filteredList = List.filter (fun (_,y) -> not (List.mem y unusedVars)) list in
-                                              let filtExpr, filtVars = List.split filteredList in
-                                              Success(NCase(Tuple(filtExpr), filtVars, expr))
-    | _                                    -> Tr.traverse expr (aux unusedVars)
-  in aux unusedVars expr
+                                              let filteredList = List.filter (fun (_,y) -> not (List.mem y unusedVar)) list in
+                                              let filtExpr, filtVar = List.split filteredList in
+                                              Success(NCase(Tuple(filtExpr), filtVar, expr))
+    | _                                    -> Tr.traverse expr (aux unusedVar)
+  in aux unusedVar expr
   end
 
 module OneCaseRemoval: Optim =
@@ -368,7 +368,7 @@ module EvStrat : Strategies.EvalStrat with type adt = Syntax.Target.targetSyn = 
 end
 
 module CTS = Strategies.CompleteTraversalStrat(EvStrat)
-module DVE = DeadVarsElim(TargetTr)
+module DVE = DeadVarElim(TargetTr)
 module LR = LambdaRemoval(TargetTr)
 module LS = LetSimplification(TargetTr)
 module FS = ForwardSubstitution(TargetTr)

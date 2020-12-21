@@ -10,7 +10,7 @@ let rec forwardADType (ty : sourceType) : Type.t = match ty with
 
 (* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
-let dvar var : Syntax.Vars.t * Syntax.Vars.t = let str, i = var in var, ("d"^str,i) 
+let dvar var : Syntax.Var.t * Syntax.Var.t = let str, i = var in var, ("d"^str,i) 
 
 let dop op y = match op with
 | Cos     -> Apply1(Minus,Apply1(Sin,y))
@@ -36,15 +36,15 @@ let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
 | Var(x,ty)             ->  let x, dx = dvar x in
                             Tuple [ Var(x,Type.sourceToTarget ty);
                                     Var(dx,Type.sourceToTarget ty);]
-| Apply1(op,expr)       ->  let y, dy = dvar (Syntax.Vars.fresh()) in
+| Apply1(op,expr)       ->  let y, dy = dvar (Syntax.Var.fresh()) in
                             let ty = Type.Real in
                             let exprD = forwardAD expr in
                             let primal = Apply1(op,Var(y,ty)) in
                             let tangent = Apply2(Times, dop op (Var(y,ty)), Var(dy,ty)) in 
                             NCase(exprD,[(y,ty);(dy,ty)],Tuple [primal;tangent])
-| Apply2(op,expr1,expr2)->  let y1, dy1 = dvar (Syntax.Vars.fresh()) in
+| Apply2(op,expr1,expr2)->  let y1, dy1 = dvar (Syntax.Var.fresh()) in
                             let ty1 = Type.Real in
-                            let y2, dy2 = dvar (Syntax.Vars.fresh()) in
+                            let y2, dy2 = dvar (Syntax.Var.fresh()) in
                             let ty2 = Type.Real in
                             let y1VarP = Var(y1,ty1) in
                             let y2VarP = Var(y2,ty2) in
@@ -66,6 +66,6 @@ let grad context expr =
   List.map 
       (fun ((x,_),_) -> List.fold_left 
       (fun acc ((y,ty2),expr2) -> let y, dy = dvar y in
-      let f z = if (Syntax.Vars.equal x y) then subst dy ty2 (Const(1.)) z else subst dy ty2 (Const(0.)) z in
+      let f z = if (Syntax.Var.equal x y) then subst dy ty2 (Const(1.)) z else subst dy ty2 (Const(0.)) z in
       f (subst y ty2 expr2 acc)) dexpr context) 
       context 
