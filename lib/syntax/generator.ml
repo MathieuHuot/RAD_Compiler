@@ -1,8 +1,8 @@
 open Random
 open Operators
 
-type varSourceContext = (Vars.t * SourceLanguage.sourceType) list
-type varTargetContext = (Vars.t * TargetLanguage.Type.t) list
+type varSourceContext = (Vars.t * Source.sourceType) list
+type varTargetContext = (Vars.t * Target.Type.t) list
 
 (* Random terms generator for tests *)
 let _ = Random.init 0
@@ -37,8 +37,8 @@ let randVar context =
         get_i i context
         end
 
-let sourceSynGen max_depth context : SourceLanguage.sourceSyn =
-let rec syngen (context : varSourceContext) (depth : int) : SourceLanguage.sourceSyn * varSourceContext =
+let sourceSynGen max_depth context : Source.sourceSyn =
+let rec syngen (context : varSourceContext) (depth : int) : Source.sourceSyn * varSourceContext =
         if depth = max_depth then
         begin
         match (int 2) with
@@ -67,7 +67,7 @@ match (sourceSynChoice()) with
         let expr2,_ = syngen context (depth+1) in
         Apply2(randOp2(), expr1, expr2), context
 | _ ->  let x = Vars.fresh() in
-        let newcontext = (x, SourceLanguage.Real)::context in
+        let newcontext = (x, Source.Real)::context in
         let expr1,_ = syngen context (depth+1) in
         let expr2,_ = syngen newcontext (depth+1)  in
         Let(x, Real, expr1, expr2), context
@@ -77,8 +77,8 @@ let expr,_ = syngen context 0 in expr
 
 (* experimental: can't generate from the whole syntax, for simple tests only *)
 (* TODO: to generate from the whole syntax, I need to add types *)
-let targetSynGen max_depth context : TargetLanguage.targetSyn =
-let rec syngen (context : varTargetContext) (depth : int) : TargetLanguage.targetSyn * varTargetContext =
+let targetSynGen max_depth context : Target.targetSyn =
+let rec syngen (context : varTargetContext) (depth : int) : Target.targetSyn * varTargetContext =
         if depth = max_depth then
         begin
         match (int 2) with
@@ -107,7 +107,7 @@ let rec syngen (context : varTargetContext) (depth : int) : TargetLanguage.targe
                 let expr2,_ = syngen context (depth+1) in
                 Apply2(randOp2(), expr1, expr2), context     
         | _ ->  let x = Vars.fresh() in
-                let newcontext = (x, TargetLanguage.Type.Real)::context in
+                let newcontext = (x, Target.Type.Real)::context in
                 let expr1,_ = syngen context (depth+1) in
                 let expr2,_ = syngen newcontext (depth+1) in
                 Let(x, Real, expr1, expr2), context

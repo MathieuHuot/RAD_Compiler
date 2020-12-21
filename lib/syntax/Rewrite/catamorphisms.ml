@@ -9,8 +9,8 @@ module type Traverse = sig
   val traverse: adt -> (return -> return -> return) -> (adt -> return) -> return
 end
 
-module SourceTr : Traverse with type adt = Syntax.SourceLanguage.sourceSyn and type return = bool = struct
-open Syntax.SourceLanguage
+module SourceTr : Traverse with type adt = Syntax.Source.sourceSyn and type return = bool = struct
+open Syntax.Source
 type adt = sourceSyn
 type return = bool
 
@@ -35,9 +35,9 @@ end
       val cata: Tr.adt -> (Tr.adt -> Tr.return) -> Tr.return end *)
 
   module SourceForAll =  
-  functor (Tr: Traverse with type adt = Syntax.SourceLanguage.sourceSyn and type return = bool) ->
+  functor (Tr: Traverse with type adt = Syntax.Source.sourceSyn and type return = bool) ->
   struct
-  open Syntax.SourceLanguage
+  open Syntax.Source
    
   let traverse = Tr.traverse
 
@@ -48,9 +48,9 @@ end
   end
   
   module SourceExists =  
-  functor (Tr: Traverse with type adt = Syntax.SourceLanguage.sourceSyn and type return = bool) ->
+  functor (Tr: Traverse with type adt = Syntax.Source.sourceSyn and type return = bool) ->
   struct
-  open Syntax.SourceLanguage
+  open Syntax.Source
   
   let traverse = Tr.traverse
 

@@ -25,7 +25,7 @@ module Op = struct
 end
 
 module T = struct
-  open TargetLanguage
+  open Target
 
   let real = Type.Real
 
@@ -427,7 +427,7 @@ module T = struct
 end
 
 module S = struct
-  open SourceLanguage
+  open Source
 
   let real = Real
 
@@ -613,8 +613,8 @@ module S = struct
 end
 
 let () =
-  let term = QCheck.Gen.generate1 (T.term_gen [] 10 TargetLanguage.Type.Real) in
-  Format.printf "%a@." TargetLanguage.pp term
+  let term = QCheck.Gen.generate1 (T.term_gen [] 10 Target.Type.Real) in
+  Format.printf "%a@." Target.pp term
 
 let () =
   let target = List.map QCheck_alcotest.to_alcotest T.test_list in

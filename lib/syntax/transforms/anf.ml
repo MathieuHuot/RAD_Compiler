@@ -9,8 +9,8 @@ val weakAnf: ast -> ast
 val anf: ast -> ast
 end
 
-module SourceAnf: Anf with type ast = Syntax.SourceLanguage.sourceSyn = struct
-open Syntax.SourceLanguage
+module SourceAnf: Anf with type ast = Syntax.Source.sourceSyn = struct
+open Syntax.Source
 type ast = sourceSyn
 
 let isVar (expr : sourceSyn) = match expr with
@@ -71,8 +71,8 @@ let anf expr =
   letNormalisation expr1
 end
 
-module TargetAnf: Anf with type ast = Syntax.TargetLanguage.targetSyn = struct
-  open Syntax.TargetLanguage
+module TargetAnf: Anf with type ast = Syntax.Target.targetSyn = struct
+  open Syntax.Target
   type ast = targetSyn
 
 let isVar (expr : targetSyn) = match expr with
