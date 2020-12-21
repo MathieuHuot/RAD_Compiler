@@ -1,3 +1,3 @@
-val forwardADType : Syntax.SourceLanguage.sourceType -> Syntax.TargetLanguage.Type.t
-val forwardAD : Syntax.SourceLanguage.sourceSyn -> Syntax.TargetLanguage.targetSyn
-val grad :  Syntax.TargetLanguage.context -> Syntax.SourceLanguage.sourceSyn -> Syntax.TargetLanguage.targetSyn list
+val forwardADType : Syntax.Source.sourceType -> Syntax.Target.Type.t
+val forwardAD : Syntax.Source.sourceSyn -> Syntax.Target.targetSyn
+val grad :  Syntax.Target.context -> Syntax.Source.sourceSyn -> Syntax.Target.targetSyn list

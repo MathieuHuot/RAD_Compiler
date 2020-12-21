@@ -1,4 +1,4 @@
-type context = (Syntax.Vars.t * Syntax.SourceLanguage.sourceType) Syntax.SourceLanguage.tuple
+type context = (Syntax.Vars.t * Syntax.Source.sourceType) Syntax.Source.tuple
 
-val semiNaiveReverseAD : context -> Syntax.SourceLanguage.sourceSyn -> Syntax.TargetLanguage.targetSyn
-val grad : context -> Syntax.SourceLanguage.sourceSyn -> Syntax.TargetLanguage.targetSyn
+val semiNaiveReverseAD : context -> Syntax.Source.sourceSyn -> Syntax.Target.targetSyn
+val grad : context -> Syntax.Source.sourceSyn -> Syntax.Target.targetSyn

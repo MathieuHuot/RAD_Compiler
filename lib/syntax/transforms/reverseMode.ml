@@ -2,8 +2,8 @@
    The reverse pass is done using a continuation *)
 
 open Anf
-open Syntax.SourceLanguage
-open Syntax.TargetLanguage
+open Syntax.Source
+open Syntax.Target
 
 type context = (Syntax.Vars.t * sourceType) tuple
 
@@ -12,7 +12,7 @@ let dvar var : Syntax.Vars.t * Syntax.Vars.t = let str, i = var in (str, i), ("d
 let getPos (x,ty) list = 
   let rec aux pos list = match list with
   | [] -> failwith "getPos: element not found"
-  | (y,ty2)::tl -> if Syntax.Vars.equal x y && Syntax.SourceLanguage.equalTypes ty ty2 
+  | (y,ty2)::tl -> if Syntax.Vars.equal x y && Syntax.Source.equalTypes ty ty2 
                     then pos 
                     else aux (pos+1) tl
   in aux 0 list

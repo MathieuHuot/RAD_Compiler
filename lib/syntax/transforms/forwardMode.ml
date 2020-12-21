@@ -1,8 +1,8 @@
 (* Classical forward mode differentiationas a source-code transformation using dual numbers *)
 
-open Syntax.SourceLanguage
+open Syntax.Source
 open Syntax.Operators
-open Syntax.TargetLanguage
+open Syntax.Target
 
 let rec forwardADType (ty : sourceType) : Type.t = match ty with
   | Real          -> NProd [Real;Real]

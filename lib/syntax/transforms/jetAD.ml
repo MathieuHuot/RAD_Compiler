@@ -3,7 +3,7 @@
 
 open Syntax
 open Operators
-open TargetLanguage
+open Target
 
 (* Helpers *)
 
@@ -52,8 +52,8 @@ let d2op22 x d1x d2x ddx y d1y d2y ddy (op: op2) = match op with
 (* This method computes (1,2) velocities. *) 
 module Jets12 = struct
 
-open SourceLanguage
-open TargetLanguage
+open Source
+open Target
 
 let dvar2 var : Vars.t * Vars.t * Vars.t = let str,i = var in var,("d"^str,i),("d2"^str,i) 
 
@@ -163,9 +163,9 @@ end
 (* This method computes (2,2) velocities. *) 
 module Jets22 = struct
 
-open SourceLanguage
+open Source
 open Operators
-open TargetLanguage
+open Target
 
 let rec forwardAD22Type (ty : sourceType) : Type.t = match ty with
   | Real          -> NProd([Real;Real;Real;Real])
@@ -217,9 +217,9 @@ end
 (* This method computes (3,3) velocities. *) 
 module Jets33 = struct
 
-open SourceLanguage
+open Source
 open Operators
-open TargetLanguage
+open Target
 
 let rec forwardAD33Type (ty : sourceType) : Type.t = match ty with
   | Real          -> NProd([Real; Real; Real; Real; Real; Real; Real; Real])
@@ -324,9 +324,9 @@ end
    The best way to compute the whole hessian of a functin real^n -> real might be to use mixed methods, implemented below. *)
 module CoJets12 = struct
 (*TODO: currently not implemented *)
-open Syntax.SourceLanguage
+open Syntax.Source
 open Syntax.Operators
-open Syntax.TargetLanguage
+open Syntax.Target
 open Anf
 
 type context = (Syntax.Vars.t * sourceType) tuple
@@ -336,7 +336,7 @@ let dvar var : Syntax.Vars.t *  Syntax.Vars.t = let str, i = var in (str, i), ("
 let getPos (x,ty) list = 
   let rec aux pos list = match list with
   | [] -> failwith "getPos: element not found"
-  | (y,ty2)::tl -> if Syntax.Vars.equal x y && Syntax.SourceLanguage.equalTypes ty ty2 
+  | (y,ty2)::tl -> if Syntax.Vars.equal x y && Syntax.Source.equalTypes ty ty2 
                     then pos 
                     else aux (pos+1) tl
   in aux 0 list
@@ -481,9 +481,9 @@ end
     to compute a whole column of the hessian in linear time.
     It works by first pushing a velocity forward to get something of the form <Grad f, v>, and then computing the gradient of this in a reverse pass. *)
 module MixedJets = struct
-  open Syntax.SourceLanguage
+  open Syntax.Source
   open Syntax.Operators
-  open Syntax.TargetLanguage
+  open Syntax.Target
   
   type context = (Syntax.Vars.t * sourceType) tuple
   
@@ -524,7 +524,7 @@ module MixedJets = struct
   let getPos (x,ty) list = 
     let rec aux pos list = match list with
     | [] -> failwith "getPos: element not found"
-    | (y,ty2)::tl -> if Syntax.Vars.equal x y && Syntax.SourceLanguage.equalTypes ty ty2 
+    | (y,ty2)::tl -> if Syntax.Vars.equal x y && Syntax.Source.equalTypes ty ty2 
                       then pos 
                       else aux (pos+1) tl
     in aux 0 list
