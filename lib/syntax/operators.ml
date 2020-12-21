@@ -1,7 +1,12 @@
-(* the following operators take real arguments and return reals *)
+(** Module defining the different operator in the language
+
+The following operators take real arguments and return reals *)
 
 type op1 = Cos  | Sin | Exp | Minus | Power of int
+(** Unary operators *)
+
 type op2 = Plus | Times | Minus
+(**Binary operators *)
 
 let is_infix _ = true
 
