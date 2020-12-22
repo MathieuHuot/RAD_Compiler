@@ -3,111 +3,109 @@
 
 open Syntax
 open Operators
-open Target
 
 (* Helpers *)
 
 (* partial derivative of unary operator *)
 let dop y (op: op1) = match op with
-  | Cos     -> Apply1(Minus, Apply1(Sin, y))
-  | Sin     -> Apply1(Cos, y)
-  | Exp     -> Apply1(Exp, y)
-  | Minus   -> Const (-1.)
-  | Power 0 -> Const(0.)
-  | Power n -> Apply2(Times, Const(float_of_int (n-1)), Apply1(Power(n-1), y))
+  | Cos     -> Target.Apply1(Minus, Target.Apply1(Sin, y))
+  | Sin     -> Target.Apply1(Cos, y)
+  | Exp     -> Target.Apply1(Exp, y)
+  | Minus   -> Target.Const (-1.)
+  | Power 0 -> Target.Const(0.)
+  | Power n -> Target.Apply2(Times, Target.Const(float_of_int (n-1)), Target.Apply1(Power(n-1), y))
 
 (* first partial derivative of binary operator *)
 let d1op _ y2 (op: op2) = match op with
-  | Plus  -> Const(1.)
+  | Plus  -> Target.Const(1.)
   | Times -> y2
-  | Minus -> Const(1.)
+  | Minus -> Target.Const(1.)
 
 (* second partial derivative of binary operator *)
 let d2op y1 _ (op: op2) = match op with
-  | Plus  -> Const(1.)
+  | Plus  -> Target.Const(1.)
   | Times -> y1
-  | Minus -> Const(-1.)
+  | Minus -> Target.Const(-1.)
 
 (* second derivative of binary operator *)
 let dop22 x d1x d2x ddx (op: op1) = match op with
-  | Cos     -> Apply2(Minus, Apply1(Minus, Apply2(Times, Apply1(Cos, x), Apply2(Times, d1x, d2x))), Apply2(Times,Apply1(Sin, x), ddx))
-  | Sin     -> Apply2(Plus, Apply1(Minus, Apply2(Times, Apply1(Sin, x), Apply2(Times, d1x, d2x))), Apply2(Times, Apply1(Cos, x), ddx))
-  | Exp     -> Apply2(Plus, Apply2(Times, Apply1(Exp, x), Apply2(Times, d1x, d2x)), Apply2(Times, Apply1(Exp, x), ddx))
-  | Minus   -> Apply1(Minus, ddx)
-  | Power 0 -> Const(0.)
+  | Cos     -> Target.Apply2(Minus, Target.Apply1(Minus, Target.Apply2(Times, Target.Apply1(Cos, x), Target.Apply2(Times, d1x, d2x))), Target.Apply2(Times,Target.Apply1(Sin, x), ddx))
+  | Sin     -> Target.Apply2(Plus, Target.Apply1(Minus, Target.Apply2(Times, Target.Apply1(Sin, x), Target.Apply2(Times, d1x, d2x))), Target.Apply2(Times, Target.Apply1(Cos, x), ddx))
+  | Exp     -> Target.Apply2(Plus, Target.Apply2(Times, Target.Apply1(Exp, x), Target.Apply2(Times, d1x, d2x)), Target.Apply2(Times, Target.Apply1(Exp, x), ddx))
+  | Minus   -> Target.Apply1(Minus, ddx)
+  | Power 0 -> Target.Const(0.)
   | Power 1 -> ddx
-  | Power n -> Apply2(Plus,
-                      Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2),x)), Apply2(Times, d1x, d2x)),
-                      Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1),x)), ddx))
+  | Power n -> Target.Apply2(Plus,
+                      Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int(n*(n-1))), Target.Apply1(Power(n-2),x)), Target.Apply2(Times, d1x, d2x)),
+                      Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int n), Target.Apply1(Power(n-1),x)), ddx))
 
 let d2op22 x d1x d2x ddx y d1y d2y ddy (op: op2) = match op with
-  | Plus  -> Apply2(Plus, ddx, ddy)
-  | Minus -> Apply2(Minus, ddx, ddy)
-  | Times -> Apply2(Plus,
-                    Apply2(Plus, Apply2(Times, ddx, y), Apply2(Times, x, ddy)),
-                    Apply2(Plus,
-                            Apply2(Plus, Apply2(Times, d1x, d2x), Apply2(Times, d1x, d2y)),
-                            Apply2(Plus, Apply2(Times, d1y, d2x), Apply2(Times, d1y, d2y))))
+  | Plus  -> Target.Apply2(Plus, ddx, ddy)
+  | Minus -> Target.Apply2(Minus, ddx, ddy)
+  | Times -> Target.Apply2(Plus,
+                    Target.Apply2(Plus, Target.Apply2(Times, ddx, y), Target.Apply2(Times, x, ddy)),
+                    Target.Apply2(Plus,
+                            Target.Apply2(Plus, Target.Apply2(Times, d1x, d2x), Target.Apply2(Times, d1x, d2y)),
+                            Target.Apply2(Plus, Target.Apply2(Times, d1y, d2x), Target.Apply2(Times, d1y, d2y))))
 
 (* This method computes (1,2) velocities. *) 
 module Jets12 = struct
 
 open Source
-open Target
 
 let dvar2 var : Var.t * Var.t * Var.t = let str,i = var in var,("d"^str,i),("d2"^str,i) 
 
 (* second derivative of binary operator *)
 let dop2 x dx d2x (op: op1) = match op with
-  | Cos     -> Apply2(Minus, Apply1(Minus, Apply2(Times, Apply1(Cos, x), dx)), Apply2(Times, Apply1(Sin, x), d2x))
-  | Sin     -> Apply2(Plus, Apply1(Minus, Apply2(Times, Apply1(Sin, x), dx)), Apply2(Times, Apply1(Cos, x), d2x))
-  | Exp     -> Apply2(Plus, Apply2(Times, Apply1(Exp, x), dx), Apply2(Times, Apply1(Exp, x), d2x))
-  | Minus   -> Apply1(Minus, d2x)
-  | Power 0 -> Const(0.)
+  | Cos     -> Target.Apply2(Minus, Target.Apply1(Minus, Target.Apply2(Times, Target.Apply1(Cos, x), dx)), Target.Apply2(Times, Target.Apply1(Sin, x), d2x))
+  | Sin     -> Target.Apply2(Plus, Target.Apply1(Minus, Target.Apply2(Times, Target.Apply1(Sin, x), dx)), Target.Apply2(Times, Target.Apply1(Cos, x), d2x))
+  | Exp     -> Target.Apply2(Plus, Target.Apply2(Times, Target.Apply1(Exp, x), dx), Target.Apply2(Times, Target.Apply1(Exp, x), d2x))
+  | Minus   -> Target.Apply1(Minus, d2x)
+  | Power 0 -> Target.Const(0.)
   | Power 1 -> d2x
-  | Power n -> Apply2(Plus,
-                      Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2), x)), dx),
-                      Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1), x)), d2x))
+  | Power n -> Target.Apply2(Plus,
+                      Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int(n*(n-1))), Target.Apply1(Power(n-2), x)), dx),
+                      Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int n), Target.Apply1(Power(n-1), x)), d2x))
              
 let d2op2 x dx d2x y dy d2y  (op: op2) = match op with
-  | Plus  -> Apply2(Plus, d2x, d2y)
-  | Minus -> Apply2(Minus, d2x, d2y)
-  | Times -> Apply2(Plus, Apply2(Plus, Apply2(Times, d2x, y), Apply2(Times, x, d2y)), Apply2(Times, Const 2., Apply2(Times, dx, dy)))
+  | Plus  -> Target.Apply2(Plus, d2x, d2y)
+  | Minus -> Target.Apply2(Minus, d2x, d2y)
+  | Times -> Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2x, y), Target.Apply2(Times, x, d2y)), Target.Apply2(Times, Target.Const 2., Target.Apply2(Times, dx, dy)))
 
-let rec forwardAD12Type (ty : sourceType) : Type.t = match ty with
-  | Real          -> NProd([Real; Real; Real])
-  | Prod(ty1,ty2) -> NProd [forwardAD12Type ty1; forwardAD12Type ty2]
+let rec forwardAD12Type (ty : sourceType) : Target.Type.t = match ty with
+  | Real          -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real])
+  | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD12Type ty1; forwardAD12Type ty2]
 
-let rec forward12AD (expr: sourceSyn) : targetSyn = match expr with
-| Const c               ->  Tuple([Const c; Const 0.; Const 0.])
+let rec forward12AD (expr: sourceSyn) : Target.targetSyn = match expr with
+| Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.])
 | Var(x,ty)             ->  let x, dx, d2x = dvar2 x in
-                            let ty = Type.sourceToTarget ty in
-                            Tuple([Var(x, ty); Var(dx, ty); Var(d2x, ty)])
+                            let ty = Target.Type.sourceToTarget ty in
+                            Target.Tuple([Target.Var(x, ty); Target.Var(dx, ty); Target.Var(d2x, ty)])
 | Apply1(op,expr)       ->  let y, dy, d2y = dvar2 (Var.fresh()) in
-                            let ty = Type.Real in
+                            let ty = Target.Type.Real in
                             let exprD = forward12AD expr in
-                            let e = Apply1(op, Var(y, ty)) in
-                            let de = Apply2(Times, dop (Var(y, ty)) op, Var(dy, ty)) in 
-                            let d2e = dop2 (Var(y, ty)) (Var(dy, ty)) (Var(d2y, ty)) op in
-                            NCase(exprD, [(y, ty); (dy, ty); (d2y, ty)], Tuple([e; de; d2e]))
+                            let e = Target.Apply1(op, Target.Var(y, ty)) in
+                            let de = Target.Apply2(Times, dop (Target.Var(y, ty)) op, Target.Var(dy, ty)) in 
+                            let d2e = dop2 (Target.Var(y, ty)) (Target.Var(dy, ty)) (Target.Var(d2y, ty)) op in
+                            Target.NCase(exprD, [(y, ty); (dy, ty); (d2y, ty)], Target.Tuple([e; de; d2e]))
 | Apply2(op,expr1,expr2)->  let x, dx, d2x = dvar2 (Var.fresh()) in
                             let y, dy, d2y = dvar2 (Var.fresh()) in
-                            let ty = Type.Real in
+                            let ty = Target.Type.Real in
                             let expr1D = forward12AD expr1 in
                             let expr2D = forward12AD expr2 in
-                            let e = Apply2(op, Var(x, ty), Var(y, ty)) in
-                            let de = Apply2(Plus,
-                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(dx, ty))),
-                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(dy, ty)))) in
-                            let d2e = d2op2 (Var(x, ty)) (Var(dx, ty)) (Var(d2x, ty)) (Var(y, ty)) (Var(dy, ty)) (Var(d2y, ty)) op in
-                            NCase(expr1D, [(x, ty); (dx, ty); (d2x, ty)],
-                            NCase(expr2D, [(y, ty); (dy, ty); (d2y, ty)], 
-                            Tuple([e; de; d2e])))
+                            let e = Target.Apply2(op, Target.Var(x, ty), Target.Var(y, ty)) in
+                            let de = Target.Apply2(Plus,
+                                            Target.Apply2(Times, d1op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(dx, ty))),
+                                            Target.Apply2(Times, d2op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(dy, ty)))) in
+                            let d2e = d2op2 (Target.Var(x, ty)) (Target.Var(dx, ty)) (Target.Var(d2x, ty)) (Target.Var(y, ty)) (Target.Var(dy, ty)) (Target.Var(d2y, ty)) op in
+                            Target.NCase(expr1D, [(x, ty); (dx, ty); (d2x, ty)],
+                            Target.NCase(expr2D, [(y, ty); (dy, ty); (d2y, ty)], 
+                            Target.Tuple([e; de; d2e])))
 | Let(y,ty,expr1,expr2) ->  let expr1D = forward12AD expr1 in
                             let expr2D = forward12AD expr2 in
                             let y, dy, d2y = dvar2 y in
-                            let ty = Type.sourceToTarget ty in
-                            NCase(expr1D, [(y, ty); (dy, ty); (d2y, ty)], expr2D)
+                            let ty = Target.Type.sourceToTarget ty in
+                            Target.NCase(expr1D, [(y, ty); (dy, ty); (d2y, ty)], expr2D)
 
 (* Compute the list d2f/dx2 for all variables x from the context *)                           
 let secondPartial context expr = 
@@ -116,8 +114,8 @@ let secondPartial context expr =
   List.map 
       (fun (x,_,_) -> List.fold_left 
       (fun acc (y, ty2, expr2) -> let y, dy, d2y = dvar2 y in
-      let f = if (Var.equal x y) then subst dy ty2 (Const(1.)) else subst dy ty2 (Const(0.)) in
-      f (subst d2y ty2 (Const 0.) (subst y ty2 expr2 acc))) optiDexpr context) 
+      let f = if (Var.equal x y) then Target.subst dy ty2 (Target.Const(1.)) else Target.subst dy ty2 (Target.Const(0.)) in
+      f (Target.subst d2y ty2 (Target.Const 0.) (Target.subst y ty2 expr2 acc))) optiDexpr context) 
       context
 
 (* Compute the list d2f/dxi dxj for all xi,xj in the context *)
@@ -126,16 +124,16 @@ let mixedPartial context expr =
   let arrayContext = Array.of_list (List.map (fun (x,_,_) -> x) context) in
   let dexpr = forward12AD expr in 
   let optiDexpr = Rewrite.Optimisations.fullOpti dexpr in
-  let mixedDerivatives = Array.make_matrix n n (Const 0.) in
+  let mixedDerivatives = Array.make_matrix n n (Target.Const 0.) in
   for i=0 to (n-1) do
     for j=0 to (n-1) do
       mixedDerivatives.(i).(j) <- 
         List.fold_left 
           (fun acc (y,ty2,expr2) -> let y,dy,d2y = dvar2 y in
           let f = if (Var.equal arrayContext.(i) y) || (Var.equal arrayContext.(j) y) 
-          then subst dy ty2 (Const(1.)) 
-          else subst dy ty2 (Const(0.)) in
-          f (subst d2y ty2 (Const 0.) (subst y ty2 expr2 acc))
+          then Target.subst dy ty2 (Target.Const(1.)) 
+          else Target.subst dy ty2 (Target.Const(0.)) in
+          f (Target.subst d2y ty2 (Target.Const 0.) (Target.subst y ty2 expr2 acc))
           ) 
           optiDexpr 
           context
@@ -152,8 +150,8 @@ let mixedPartial context expr =
       for j=0 to (n-1) do
         mixedDerivatives.(i).(j) <- 
           Rewrite.Optimisations.fullOpti 
-          (Apply2(Minus, mixedDerivatives.(i).(j), 
-                        Apply2(Plus, secondPartial.(i), secondPartial.(j)))
+          (Target.Apply2(Minus, mixedDerivatives.(i).(j), 
+                        Target.Apply2(Plus, secondPartial.(i), secondPartial.(j)))
           )
       done
     done;
@@ -165,52 +163,51 @@ module Jets22 = struct
 
 open Source
 open Operators
-open Target
 
-let rec forwardAD22Type (ty : sourceType) : Type.t = match ty with
-  | Real          -> NProd([Real;Real;Real;Real])
-  | Prod(ty1,ty2) -> NProd [forwardAD22Type ty1;forwardAD22Type ty2]
+let rec forwardAD22Type (ty : sourceType) : Target.Type.t = match ty with
+  | Real          -> Target.Type.NProd([Target.Type.Real;Target.Type.Real;Target.Type.Real;Target.Type.Real])
+  | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD22Type ty1;forwardAD22Type ty2]
 
 let dvar22 var : Var.t * Var.t * Var.t * Var.t = let str, i = var in var, ("d1"^str, i), ("d2"^str, i), ("dd"^str, i) 
 
-let rec forward22AD (expr: sourceSyn) : targetSyn = match expr with
-| Const c               ->  Tuple([Const c; Const 0.; Const 0.; Const 0.])
+let rec forward22AD (expr: sourceSyn) : Target.targetSyn = match expr with
+| Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.])
 | Var(x,ty)             ->  let x, d1x, d2x, ddx = dvar22 x in
-                            let ty = Type.sourceToTarget ty in
-                            Tuple([Var(x, ty); Var(d1x, ty); Var(d2x, ty); Var(ddx, ty)])
+                            let ty = Target.Type.sourceToTarget ty in
+                            Target.Tuple([Target.Var(x, ty); Target.Var(d1x, ty); Target.Var(d2x, ty); Target.Var(ddx, ty)])
 | Apply1(op,expr)       ->  let y, d1y, d2y, ddy = dvar22 (Var.fresh()) in
-                            let ty = Type.Real in
+                            let ty = Target.Type.Real in
                             let exprD = forward22AD expr in
-                            let e = Apply1(op, Var(y, ty)) in
-                            let d1e = Apply2(Times, dop (Var(y, ty)) op, Var(d1y, ty)) in
-                            let d2e = Apply2(Times, dop (Var(y, ty)) op, Var(d2y, ty)) in  
-                            let dde = dop22 (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(ddy, ty)) op in
-                            NCase(exprD,[(y, ty); (d1y, ty); (d2y, ty); (ddy, ty)], Tuple([e; d1e; d2e; dde]))
+                            let e = Target.Apply1(op, Target.Var(y, ty)) in
+                            let d1e = Target.Apply2(Times, dop (Target.Var(y, ty)) op, Target.Var(d1y, ty)) in
+                            let d2e = Target.Apply2(Times, dop (Target.Var(y, ty)) op, Target.Var(d2y, ty)) in  
+                            let dde = dop22 (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(ddy, ty)) op in
+                            Target.NCase(exprD,[(y, ty); (d1y, ty); (d2y, ty); (ddy, ty)], Target.Tuple([e; d1e; d2e; dde]))
 | Apply2(op,expr1,expr2)->  let x, d1x, d2x, ddx = dvar22 (Var.fresh()) in
                             let y, d1y, d2y, ddy = dvar22 (Var.fresh()) in
                             (* compared notation to the paper cited above *)
                             (* x is first index, y is second, d1 is for du, d2 for dv, dd for dudv *)
-                            let ty = Type.Real in
+                            let ty = Target.Type.Real in
                             let expr1D = forward22AD expr1 in
                             let expr2D = forward22AD expr2 in
-                            let e = Apply2(op, Var(x, ty), Var(y, ty)) in
-                            let d1e = Apply2(Plus,
-                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d1x, ty))),
-                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d1y, ty)))) in
-                            let d2e = Apply2(Plus,
-                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d2x, ty))),
-                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d2y, ty)))) in                
-                            let dde = d2op22 (Var(x, ty)) (Var(d1x, ty)) (Var(d2x, ty)) (Var(ddx, ty)) 
-                                             (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(ddy, ty)) 
+                            let e = Target.Apply2(op, Target.Var(x, ty), Target.Var(y, ty)) in
+                            let d1e = Target.Apply2(Plus,
+                                            Target.Apply2(Times, d1op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d1x, ty))),
+                                            Target.Apply2(Times, d2op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d1y, ty)))) in
+                            let d2e = Target.Apply2(Plus,
+                                            Target.Apply2(Times, d1op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d2x, ty))),
+                                            Target.Apply2(Times, d2op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d2y, ty)))) in                
+                            let dde = d2op22 (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(ddx, ty)) 
+                                             (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(ddy, ty)) 
                                              op in
-                            NCase(expr1D, [(x, ty); (d1x, ty); (d2x, ty);  (ddx, ty)],
-                            NCase(expr2D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], 
-                            Tuple([e; d1e; d2e; dde])))
+                            Target.NCase(expr1D, [(x, ty); (d1x, ty); (d2x, ty);  (ddx, ty)],
+                            Target.NCase(expr2D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], 
+                            Target.Tuple([e; d1e; d2e; dde])))
 | Let(y,ty,expr1,expr2) ->  let expr1D = forward22AD expr1 in
                             let expr2D = forward22AD expr2 in
                             let y, d1y, d2y, ddy = dvar22 y in
-                            let ty = Type.sourceToTarget ty in
-                            NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], expr2D)  
+                            let ty = Target.Type.sourceToTarget ty in
+                            Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], expr2D)  
 end
 
 
@@ -219,11 +216,10 @@ module Jets33 = struct
 
 open Source
 open Operators
-open Target
 
-let rec forwardAD33Type (ty : sourceType) : Type.t = match ty with
-  | Real          -> NProd([Real; Real; Real; Real; Real; Real; Real; Real])
-  | Prod(ty1,ty2) -> NProd [forwardAD33Type ty1;forwardAD33Type ty2]
+let rec forwardAD33Type (ty : sourceType) : Target.Type.t = match ty with
+  | Real          -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real])
+  | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD33Type ty1;forwardAD33Type ty2]
 
 let dvar33 var : Var.t * Var.t * Var.t * Var.t * Var.t * Var.t * Var.t * Var.t = 
   let str, i = var in var, 
@@ -233,84 +229,84 @@ let dvar33 var : Var.t * Var.t * Var.t * Var.t * Var.t * Var.t * Var.t * Var.t =
 
 (* third derivative of unary operator *) 
 let dop33 x d1x d2x ddx (op: op1) = match op with
-  | Cos     -> Apply2(Minus, Apply1(Minus, Apply2(Times, Apply1(Cos, x), Apply2(Times, d1x, d2x))), Apply2(Times,Apply1(Sin, x), ddx))
-  | Sin     -> Apply2(Plus, Apply1(Minus, Apply2(Times, Apply1(Sin, x), Apply2(Times, d1x, d2x))), Apply2(Times, Apply1(Cos, x), ddx))
-  | Exp     -> Apply2(Plus, Apply2(Times, Apply1(Exp, x), Apply2(Times, d1x, d2x)), Apply2(Times, Apply1(Exp, x), ddx))
-  | Minus   -> Apply1(Minus, ddx)
-  | Power 0 -> Const(0.)
+  | Cos     -> Target.Apply2(Minus, Target.Apply1(Minus, Target.Apply2(Times, Target.Apply1(Cos, x), Target.Apply2(Times, d1x, d2x))), Target.Apply2(Times,Target.Apply1(Sin, x), ddx))
+  | Sin     -> Target.Apply2(Plus, Target.Apply1(Minus, Target.Apply2(Times, Target.Apply1(Sin, x), Target.Apply2(Times, d1x, d2x))), Target.Apply2(Times, Target.Apply1(Cos, x), ddx))
+  | Exp     -> Target.Apply2(Plus, Target.Apply2(Times, Target.Apply1(Exp, x), Target.Apply2(Times, d1x, d2x)), Target.Apply2(Times, Target.Apply1(Exp, x), ddx))
+  | Minus   -> Target.Apply1(Minus, ddx)
+  | Power 0 -> Target.Const(0.)
   | Power 1 -> ddx
-  | Power n -> Apply2(Plus,
-                      Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2),x)), Apply2(Times, d1x, d2x)),
-                      Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1),x)), ddx))
+  | Power n -> Target.Apply2(Plus,
+                      Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int(n*(n-1))), Target.Apply1(Power(n-2),x)), Target.Apply2(Times, d1x, d2x)),
+                      Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int n), Target.Apply1(Power(n-1),x)), ddx))
 
 (* third derivative of binary operator *)                     
 let d2op33 x d1x d2x d3x dd1x dd2x dd3x dddx y d1y d2y d3y dd1y dd2y dd3y dddy (op: op2) = match op with
-  | Plus  -> Apply2(Plus, dddx, dddy)
-  | Minus -> Apply2(Minus, dddx, dddy)
-  | Times -> Apply2(Plus,
-                    Apply2(Plus, Apply2(Times, dddx, y), Apply2(Times, x, dddy)),
-                    Apply2(Plus,
-                            Apply2(Plus, 
-                                    Apply2(Plus, Apply2(Plus, Apply2(Times, d2x, dd3x), Apply2(Times, d1x, dd2x)), Apply2(Times, d3x, dd1x)), 
-                                    Apply2(Plus, Apply2(Plus, Apply2(Times, d2x, dd3y), Apply2(Times, d1x, dd2y)), Apply2(Times, d3x, dd1y))),
-                            Apply2(Plus, 
-                                    Apply2(Plus, Apply2(Plus, Apply2(Times, d2y, dd3x), Apply2(Times, d1y, dd2x)), Apply2(Times, d3y, dd1x)), 
-                                    Apply2(Plus, Apply2(Plus, Apply2(Times, d2y, dd3y), Apply2(Times, d1y, dd2y)), Apply2(Times, d3y, dd1y)))))
+  | Plus  -> Target.Apply2(Plus, dddx, dddy)
+  | Minus -> Target.Apply2(Minus, dddx, dddy)
+  | Times -> Target.Apply2(Plus,
+                    Target.Apply2(Plus, Target.Apply2(Times, dddx, y), Target.Apply2(Times, x, dddy)),
+                    Target.Apply2(Plus,
+                            Target.Apply2(Plus, 
+                                    Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2x, dd3x), Target.Apply2(Times, d1x, dd2x)), Target.Apply2(Times, d3x, dd1x)), 
+                                    Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2x, dd3y), Target.Apply2(Times, d1x, dd2y)), Target.Apply2(Times, d3x, dd1y))),
+                            Target.Apply2(Plus, 
+                                    Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3x), Target.Apply2(Times, d1y, dd2x)), Target.Apply2(Times, d3y, dd1x)), 
+                                    Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3y), Target.Apply2(Times, d1y, dd2y)), Target.Apply2(Times, d3y, dd1y)))))
 
-let rec forward33AD (expr: sourceSyn) : targetSyn = match expr with
-| Const c               ->  Tuple([Const c; Const 0.; Const 0.; Const 0.; Const 0.; Const 0.; Const 0.; Const 0.])
+let rec forward33AD (expr: sourceSyn) : Target.targetSyn = match expr with
+| Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.])
 | Var(x,ty)             ->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = dvar33 x in
-                            let ty = Type.sourceToTarget ty in
-                            Tuple([Var(x, ty); Var(d1x, ty); Var(d2x, ty); Var(d3x, ty); Var(dd1x, ty); Var(dd2x, ty); Var(dd3x, ty); Var(dddx, ty);])
+                            let ty = Target.Type.sourceToTarget ty in
+                            Target.Tuple([Target.Var(x, ty); Target.Var(d1x, ty); Target.Var(d2x, ty); Target.Var(d3x, ty); Target.Var(dd1x, ty); Target.Var(dd2x, ty); Target.Var(dd3x, ty); Target.Var(dddx, ty);])
 | Apply1(op,expr)       ->  let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 (Var.fresh()) in
-                            let ty = Type.Real in
+                            let ty = Target.Type.Real in
                             let exprD = forward33AD expr in
-                            let e = Apply1(op, Var(y, ty)) in
-                            let d1e = Apply2(Times, dop (Var(y, ty)) op, Var(d1y, ty)) in
-                            let d2e = Apply2(Times, dop (Var(y, ty)) op, Var(d2y, ty)) in
-                            let d3e = Apply2(Times, dop (Var(y, ty)) op, Var(d3y, ty)) in   
-                            let dd1e = dop22 (Var(y, ty)) (Var(d2y, ty)) (Var(d1y, ty)) (Var(dd1y, ty)) op in
-                            let dd2e = dop22 (Var(y, ty)) (Var(d2y, ty)) (Var(d3y, ty)) (Var(dd2y, ty)) op in
-                            let dd3e = dop22 (Var(y, ty)) (Var(d1y, ty)) (Var(d3y, ty)) (Var(dd3y, ty)) op in
-                            let ddde = dop33 (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(dddy, ty)) op in
-                            NCase(exprD, 
+                            let e = Target.Apply1(op, Target.Var(y, ty)) in
+                            let d1e = Target.Apply2(Times, dop (Target.Var(y, ty)) op, Target.Var(d1y, ty)) in
+                            let d2e = Target.Apply2(Times, dop (Target.Var(y, ty)) op, Target.Var(d2y, ty)) in
+                            let d3e = Target.Apply2(Times, dop (Target.Var(y, ty)) op, Target.Var(d3y, ty)) in   
+                            let dd1e = dop22 (Target.Var(y, ty)) (Target.Var(d2y, ty)) (Target.Var(d1y, ty)) (Target.Var(dd1y, ty)) op in
+                            let dd2e = dop22 (Target.Var(y, ty)) (Target.Var(d2y, ty)) (Target.Var(d3y, ty)) (Target.Var(dd2y, ty)) op in
+                            let dd3e = dop22 (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d3y, ty)) (Target.Var(dd3y, ty)) op in
+                            let ddde = dop33 (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dddy, ty)) op in
+                            Target.NCase(exprD, 
                                   [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)],  
-                                  Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde]))
+                                  Target.Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde]))
 | Apply2(op,expr1,expr2)->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = dvar33 (Var.fresh()) in
                             let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 (Var.fresh()) in
-                            let ty = Type.Real in
+                            let ty = Target.Type.Real in
                             let expr1D = forward33AD expr1 in
                             let expr2D = forward33AD expr2 in
-                            let e = Apply2(op, Var(x, ty), Var(y, ty)) in
-                            let d1e = Apply2(Plus,
-                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d1x, ty))),
-                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d1y, ty)))) in
-                            let d2e = Apply2(Plus,
-                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d2x, ty))),
-                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d2y, ty)))) in
-                            let d3e = Apply2(Plus,
-                                            Apply2(Times, d1op (Var(x, ty)) (Var(y, ty)) op, (Var(d3x, ty))),
-                                            Apply2(Times, d2op (Var(x, ty)) (Var(y, ty)) op, (Var(d3y, ty)))) in                  
-                            let dd1e = d2op22 (Var(x, ty)) (Var(d1x, ty)) (Var(d2x, ty)) (Var(dd1x, ty)) 
-                                              (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(dd1y, ty)) 
+                            let e = Target.Apply2(op, Target.Var(x, ty), Target.Var(y, ty)) in
+                            let d1e = Target.Apply2(Plus,
+                                            Target.Apply2(Times, d1op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d1x, ty))),
+                                            Target.Apply2(Times, d2op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d1y, ty)))) in
+                            let d2e = Target.Apply2(Plus,
+                                            Target.Apply2(Times, d1op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d2x, ty))),
+                                            Target.Apply2(Times, d2op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d2y, ty)))) in
+                            let d3e = Target.Apply2(Plus,
+                                            Target.Apply2(Times, d1op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d3x, ty))),
+                                            Target.Apply2(Times, d2op (Target.Var(x, ty)) (Target.Var(y, ty)) op, (Target.Var(d3y, ty)))) in                  
+                            let dd1e = d2op22 (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(dd1x, ty)) 
+                                              (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dd1y, ty)) 
                                               op in
-                            let dd2e = d2op22 (Var(x, ty)) (Var(d1x, ty)) (Var(d2x, ty)) (Var(dd2x, ty)) 
-                                              (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(dd2y, ty)) 
+                            let dd2e = d2op22 (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(dd2x, ty)) 
+                                              (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dd2y, ty)) 
                                               op in
-                            let dd3e = d2op22 (Var(x, ty)) (Var(d1x, ty)) (Var(d2x, ty)) (Var(dd3x, ty)) 
-                                              (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(dd3y, ty)) 
+                            let dd3e = d2op22 (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(dd3x, ty)) 
+                                              (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dd3y, ty)) 
                                               op in
-                            let ddde = d2op33 (Var(x, ty)) (Var(d1x, ty)) (Var(d2x, ty)) (Var(d3x, ty)) (Var(dd1x, ty)) (Var(dd2x, ty)) (Var(dd3x, ty)) (Var(dddx, ty))
-                                              (Var(y, ty)) (Var(d1y, ty)) (Var(d2y, ty)) (Var(d3y, ty)) (Var(dd1y, ty)) (Var(dd2y, ty)) (Var(dd3y, ty)) (Var(dddy, ty))
+                            let ddde = d2op33 (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(d3x, ty)) (Target.Var(dd1x, ty)) (Target.Var(dd2x, ty)) (Target.Var(dd3x, ty)) (Target.Var(dddx, ty))
+                                              (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(d3y, ty)) (Target.Var(dd1y, ty)) (Target.Var(dd2y, ty)) (Target.Var(dd3y, ty)) (Target.Var(dddy, ty))
                                               op in            
-                            NCase(expr1D, [(x, ty); (d1x, ty); (d2x, ty); (d3x, ty); (dd1x, ty); (dd2x, ty); (dd3x, ty);  (dddx, ty)],
-                            NCase(expr2D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], 
-                            Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde])))
+                            Target.NCase(expr1D, [(x, ty); (d1x, ty); (d2x, ty); (d3x, ty); (dd1x, ty); (dd2x, ty); (dd3x, ty);  (dddx, ty)],
+                            Target.NCase(expr2D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], 
+                            Target.Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde])))
 | Let(y,ty,expr1,expr2) ->  let expr1D = forward33AD expr1 in
                             let expr2D = forward33AD expr2 in
                             let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 y in
-                            let ty = Type.sourceToTarget ty in
-                            NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], expr2D)  
+                            let ty = Target.Type.sourceToTarget ty in
+                            Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], expr2D)  
 end 
 
 
@@ -326,10 +322,9 @@ module CoJets12 = struct
 (*TODO: currently not implemented *)
 open Syntax.Source
 open Syntax.Operators
-open Syntax.Target
 open Anf
 
-type context = (Syntax.Var.t * sourceType) tuple
+type context = (Syntax.Var.t * sourceType) Target.tuple
 
 let dvar var : Syntax.Var.t *  Syntax.Var.t = let str, i = var in (str, i), ("d"^str, i)
 
@@ -343,134 +338,134 @@ let getPos (x,ty) list =
 
 let rec addToPos i list y = match i, list with
   | _,[]      -> failwith "addToPos: no element at this position in the list"
-  | 0,x::tl   -> (Apply2(Plus, x, y))::tl
+  | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
   | _,x::tl   -> x::(addToPos (i-1) tl y) 
 
-let rec reverse12 (context: context) (cont : targetSyn)  (expr : sourceSyn) : targetSyn * targetSyn * context = match expr with
+let rec reverse12 (context: context) (cont : Target.targetSyn)  (expr : sourceSyn) : Target.targetSyn * Target.targetSyn * context = match expr with
   | Const c                   -> begin
-                                  match typeTarget cont with 
-                                  | Result.Ok(Type.Arrow(tyList,_)) ->
-                                  let newVar,newTy = (Syntax.Var.fresh(), Type.Real) in 
+                                  match Target.typeTarget cont with 
+                                  | Result.Ok(Target.Type.Arrow(tyList,_)) ->
+                                  let newVar,newTy = (Syntax.Var.fresh(), Target.Type.Real) in 
                                   let newVarList = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in                  
                                   let newContVarList =  List.append newVarList [(newVar,newTy)] in
-                                  let newCont = Fun(newContVarList, App(cont, varToSyn newVarList)) in
-                                  Tuple[Const c; newCont], newCont, context
+                                  let newCont = Target.Fun(newContVarList, Target.App(cont, Target.varToSyn newVarList)) in
+                                  Target.Tuple[Target.Const c; newCont], newCont, context
                                   | _ -> failwith "rad: the continuation should be a function"
                                   end
   | Var(x, ty)                -> begin
-                                  match typeTarget cont with 
-                                  | Result.Ok(Arrow(tyList,_)) ->
-                                  let new_var, new_ty = Syntax.Var.fresh(), Type.sourceToTarget ty in  
+                                  match Target.typeTarget cont with 
+                                  | Result.Ok(Target.Type.Arrow(tyList,_)) ->
+                                  let new_var, new_ty = Syntax.Var.fresh(), Target.Type.sourceToTarget ty in  
                                   let newVarList = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in                          
                                   let newContVarList = List.append newVarList [(new_var, new_ty)] in
                                   let pos_x = getPos (x,ty) context in
-                                  let newCont = Fun(newContVarList, 
-                                                    App(cont,
-                                                        addToPos pos_x (varToSyn newVarList) (Var(new_var, new_ty) )
+                                  let newCont = Target.Fun(newContVarList, 
+                                                    Target.App(cont,
+                                                        addToPos pos_x (Target.varToSyn newVarList) (Target.Var(new_var, new_ty) )
                                                         )
                                                     ) 
                                   in
-                                  Tuple[Var(x, new_ty); newCont], newCont, context
+                                  Target.Tuple[Target.Var(x, new_ty); newCont], newCont, context
                                   | _ -> failwith "rad: the continuation should be a function"
                                   end
   | Apply1(op, expr)          -> begin
-                                  match typeTarget cont,expr with
-                                  | Result.Ok(Arrow(tyList,_)), Var(x, ty) ->
-                                  let new_ty = Type.sourceToTarget ty in
+                                  match Target.typeTarget cont,expr with
+                                  | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x, ty) ->
+                                  let new_ty = Target.Type.sourceToTarget ty in
                                   let pos_x = getPos (x, ty) context in
                                   let new_var = Syntax.Var.fresh() in 
                                   let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList)  in                         
                                   let newContVarList =  List.append newVarList [(new_var, new_ty)] in
                                   let dop y = begin match op with
-                                    | Cos     -> Apply1(Minus,Apply1(Sin, y))
-                                    | Sin     -> Apply1(Cos, y)
-                                    | Exp     -> Apply1(Exp, y)
-                                    | Minus   -> Const (-1.)
-                                    | Power 0 -> Const(0.)
-                                    | Power n -> Apply2(Times, Const(float_of_int (n-1)),Apply1(Power(n-1),y))
+                                    | Cos     -> Target.Apply1(Minus,Target.Apply1(Sin, y))
+                                    | Sin     -> Target.Apply1(Cos, y)
+                                    | Exp     -> Target.Apply1(Exp, y)
+                                    | Minus   -> Target.Const (-1.)
+                                    | Power 0 -> Target.Const(0.)
+                                    | Power n -> Target.Apply2(Times, Target.Const(float_of_int (n-1)),Target.Apply1(Power(n-1),y))
                                     end
                                   in
-                                  let partialOp = fun z -> Apply2(Times, dop (Var(x, new_ty)), z) in
-                                  let newCont = Fun(newContVarList, 
-                                                    App(cont,
-                                                        (Var (new_var, new_ty) |> partialOp |> addToPos pos_x (varToSyn newVarList))
+                                  let partialOp = fun z -> Target.Apply2(Times, dop (Target.Var(x, new_ty)), z) in
+                                  let newCont = Target.Fun(newContVarList, 
+                                                    Target.App(cont,
+                                                        (Target.Var (new_var, new_ty) |> partialOp |> addToPos pos_x (Target.varToSyn newVarList))
                                                         )
                                                     ) 
                                   in
-                                  Tuple[Apply1(op, Var(x,new_ty)); newCont], newCont, context
+                                  Target.Tuple[Target.Apply1(op, Target.Var(x,new_ty)); newCont], newCont, context
                                   | _,_ -> failwith "rad: the continuation should be a function"
                                   end
   | Apply2(op, expr1, expr2)  -> begin
-                                  match typeTarget cont,expr1,expr2 with 
-                                  | Result.Ok(Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
-                                  let new_ty1 = Type.sourceToTarget ty1 in
+                                  match Target.typeTarget cont,expr1,expr2 with 
+                                  | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
+                                  let new_ty1 = Target.Type.sourceToTarget ty1 in
                                   let pos_x1 = getPos (x1, ty1) context in
-                                  let new_ty2 = Type.sourceToTarget ty2 in
+                                  let new_ty2 = Target.Type.sourceToTarget ty2 in
                                   let pos_x2 = getPos (x2, ty2) context in
                                   let new_var = Syntax.Var.fresh() in 
                                   let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList) in                         
-                                  let newContVarList =  List.append newVarList [(new_var, Real)] in
+                                  let newContVarList =  List.append newVarList [(new_var, Target.Type.Real)] in
                                   let d1op _ y2 = begin
                                     match op with
-                                    | Plus  -> Const(1.)
+                                    | Plus  -> Target.Const(1.)
                                     | Times -> y2
-                                    | Minus -> Const(1.)
+                                    | Minus -> Target.Const(1.)
                                     end
                                   in 
                                   let d2op y1 _ = begin
                                     match op with
-                                    | Plus  -> Const(1.)
+                                    | Plus  -> Target.Const(1.)
                                     | Times -> y1
-                                    | Minus -> Const(-1.)
+                                    | Minus -> Target.Const(-1.)
                                     end
                                   in
-                                  let partial1Op = fun z -> Apply2(Times, d1op (Var(x1, new_ty1)) (Var(x2, new_ty2)), z) in
-                                  let partial2Op = fun z -> Apply2(Times, d2op (Var(x1, new_ty1)) (Var(x2, new_ty2)), z) in  
-                                  let newCont = Fun(newContVarList, 
-                                                    App(cont,
-                                                         Var (new_var, Real) |> partial1Op |> addToPos pos_x1 
-                                                        (Var (new_var, Real) |> partial2Op |> addToPos pos_x2 (varToSyn newVarList))
+                                  let partial1Op = fun z -> Target.Apply2(Times, d1op (Target.Var(x1, new_ty1)) (Target.Var(x2, new_ty2)), z) in
+                                  let partial2Op = fun z -> Target.Apply2(Times, d2op (Target.Var(x1, new_ty1)) (Target.Var(x2, new_ty2)), z) in  
+                                  let newCont = Target.Fun(newContVarList, 
+                                                    Target.App(cont,
+                                                         Target.Var (new_var, Target.Type.Real) |> partial1Op |> addToPos pos_x1 
+                                                        (Target.Var (new_var, Target.Type.Real) |> partial2Op |> addToPos pos_x2 (Target.varToSyn newVarList))
                                                         )
                                                     ) 
                                   in
-                                  Tuple[Apply2(op, Var(x1, new_ty1), Var(x2, new_ty2)); newCont], newCont, context
+                                  Target.Tuple[Target.Apply2(op, Target.Var(x1, new_ty1), Target.Var(x2, new_ty2)); newCont], newCont, context
                                   | _,_,_ -> failwith "rad: the continuation should be a function"
                                   end
   | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = reverse12 context cont expr1 in  
                                  let _, newContVar = dvar x in
-                                 match typeTarget cont with 
+                                 match Target.typeTarget cont with 
                                   | Result.Error s         -> failwith (Printf.sprintf "rad: continuation ill-typed: %s" s) 
                                   | Result.Ok(newContType) ->
-                                 let newCont = Var(newContVar, newContType) in
+                                 let newCont = Target.Var(newContVar, newContType) in
                                  let newContext = context @ [(x,ty)] in
                                  let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
-                                 NCase(dexpr1, [(x, Type.sourceToTarget ty); (newContVar, newContType)], dexpr2), newNewCont, context
+                                 Target.NCase(dexpr1, [(x, Target.Type.sourceToTarget ty); (newContVar, newContType)], dexpr2), newNewCont, context
 
-let semiNaiveReverseAD (context: context) (expr: sourceSyn) : targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Type.sourceToTarget ty) context in 
-  let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
+let semiNaiveReverseAD (context: context) (expr: sourceSyn) : Target.targetSyn =
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.sourceToTarget ty) context in 
+  let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   expr |> SourceAnf.weakAnf |> reverse12 context id_cont |> fun (a,_,_) -> a
 
 (* To actually compute the gradient of a term, we need to initialize tangent variables as in imperative reverse-mode.
     Every tangent variable is initialized at 0 except from the last one which is the returned variable and is initialized at 1 *)
 let rec initialize_rad list = match list with
  | []     -> failwith "initialize_rad: the gradient of a closed term won't give you much!" 
- | _::[] -> [Const 1.] 
- | _::tl -> (Const 0.)::initialize_rad tl
+ | _::[] -> [Target.Const 1.] 
+ | _::tl -> (Target.Const 0.)::initialize_rad tl
 
-let grad (context: context) (expr: sourceSyn) : targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Type.sourceToTarget ty) context in 
-  let id_cont = Fun(new_var_List, Tuple(List.map (fun (x, ty) -> Var(x, ty)) new_var_List)) in
+let grad (context: context) (expr: sourceSyn) : Target.targetSyn =
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.sourceToTarget ty) context in 
+  let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = reverse12 context id_cont (SourceAnf.weakAnf expr) in
-  match typeTarget cont with
+  match Target.typeTarget cont with
     | Result.Error s                   -> failwith (Printf.sprintf "grad: continuation ill-typed: %s" s)
-    | Result.Ok(Arrow(tyList,_)) ->
+    | Result.Ok(Target.Type.Arrow(tyList,_)) ->
     let sensitivities = initialize_rad tyList in
     begin 
-    match typeTarget dexpr with
-      | Result.Ok(NProd[ty1;ty2]) ->
+    match Target.typeTarget dexpr with
+      | Result.Ok(Target.Type.NProd[ty1;ty2]) ->
       let x,dx= dvar (Syntax.Var.fresh()) in
-      NCase(dexpr,[(x,ty1);(dx,ty2)],App(Var(dx,ty2),sensitivities))
+      Target.NCase(dexpr,[(x,ty1);(dx,ty2)],Target.App(Target.Var(dx,ty2),sensitivities))
     | _                   -> failwith "grad: should return a pair"
     end
     | _ -> failwith "grad: continuation should have a function type"
@@ -483,43 +478,42 @@ end
 module MixedJets = struct
   open Syntax.Source
   open Syntax.Operators
-  open Syntax.Target
   
-  type context = (Syntax.Var.t * sourceType) tuple
+  type context = (Syntax.Var.t * sourceType) Target.tuple
   
   let dvar var : Syntax.Var.t * Syntax.Var.t * Syntax.Var.t = let str, i = var in (str, i), ("d"^str, i), ("D"^str,i) 
   
   let dop2 y (op: op1) = match op with
-    | Cos     -> Apply1(Minus, Apply1(Sin, y))
-    | Sin     -> Apply1(Cos, y)
-    | Exp     -> Apply1(Exp, y)
-    | Minus   -> Const (-1.)
-    | Power 0 -> Const(0.)
-    | Power n -> Apply2(Times, Const(float_of_int (n-1)), Apply1(Power(n-1), y))
+    | Cos     -> Target.Apply1(Minus, Target.Apply1(Sin, y))
+    | Sin     -> Target.Apply1(Cos, y)
+    | Exp     -> Target.Apply1(Exp, y)
+    | Minus   -> Target.Const (-1.)
+    | Power 0 -> Target.Const(0.)
+    | Power n -> Target.Apply2(Times, Target.Const(float_of_int (n-1)), Target.Apply1(Power(n-1), y))
 
   (* \partial^2 op / partial x1 partial x1 *)
   let d11op _ _ (op: op2) = match op with
-    | Plus  -> Const 0.
-    | Minus -> Const 0.
-    | Times -> Const 0.
+    | Plus  -> Target.Const 0.
+    | Minus -> Target.Const 0.
+    | Times -> Target.Const 0.
 
   (* partial^2 op / partial x1 partial x2 *)
   let d12op _ _ (op: op2) = match op with
-    | Plus  -> Const 0.
-    | Minus -> Const 0.
-    | Times -> Const 1.
+    | Plus  -> Target.Const 0.
+    | Minus -> Target.Const 0.
+    | Times -> Target.Const 1.
     
   (* partial^2 op / partial x2 partial x1 *) 
   let d21op _ _ (op: op2) = match op with
-    | Plus  -> Const 0.
-    | Minus -> Const 0.
-    | Times -> Const 1.
+    | Plus  -> Target.Const 0.
+    | Minus -> Target.Const 0.
+    | Times -> Target.Const 1.
 
   (* partial^2 op / partial x2 partial x2 *)  
   let d22op _ _ (op: op2) = match op with
-    | Plus  -> Const 0.
-    | Minus -> Const 0.
-    | Times -> Const 0.
+    | Plus  -> Target.Const 0.
+    | Minus -> Target.Const 0.
+    | Times -> Target.Const 0.
 
   let getPos (x,ty) list = 
     let rec aux pos list = match list with
@@ -531,78 +525,78 @@ module MixedJets = struct
   
   let rec addToPos i y list = match i, list with
     | _,[]      -> failwith "addToPos: no element at this position in the list"
-    | 0,x::tl   -> (Apply2(Plus, x, y))::tl
+    | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
     | _,x::tl   -> x::(addToPos (i-1) y tl) 
   
-  let rec reverse12 (context: context) (cont : targetSyn)  (expr : sourceSyn) : targetSyn * targetSyn * context = match expr with
+  let rec reverse12 (context: context) (cont : Target.targetSyn)  (expr : sourceSyn) : Target.targetSyn * Target.targetSyn * context = match expr with
     | Const c                   -> begin
-                                    match typeTarget cont with 
-                                    | Result.Ok(Type.Arrow(tyList,_)) ->
-                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Type.Real) in
-                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Type.Real) in
+                                    match Target.typeTarget cont with 
+                                    | Result.Ok(Target.Type.Arrow(tyList,_)) ->
+                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.Real) in
+                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.Real) in
                                     let newVarList1 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList2 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList = newVarList1@newVarList2 in                   
                                     let newContVarList = newVarList1@[(newVar1,newTy1)]@newVarList2@[(newVar2,newTy2)] in
-                                    let newCont = Fun(newContVarList, App(cont, varToSyn newVarList)) in
-                                    Tuple[Const c; Const 0.; newCont], newCont, context
+                                    let newCont = Target.Fun(newContVarList, Target.App(cont, Target.varToSyn newVarList)) in
+                                    Target.Tuple[Target.Const c; Target.Const 0.; newCont], newCont, context
                                     | _ -> failwith "rad: the continuation should be a function"
                                     end
     | Var(x, ty)                -> begin
-                                    match typeTarget cont with 
-                                    | Result.Ok(Arrow(tyList,_)) ->
+                                    match Target.typeTarget cont with 
+                                    | Result.Ok(Target.Type.Arrow(tyList,_)) ->
                                     let x, dx, _ = dvar x in
-                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Type.sourceToTarget ty) in
-                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Type.sourceToTarget ty) in
+                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty) in
+                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty) in
                                     let n = List.length tyList in
                                     let newVarList1 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList2 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList = newVarList1@newVarList2 in                    
                                     let newContVarList = newVarList1@[(newVar1,newTy1)]@newVarList2@[(newVar2,newTy2)] in
                                     let pos_x = getPos (x,ty) context in
-                                    let newCont = Fun(newContVarList, 
-                                                      App(cont,
-                                                          addToPos (pos_x+n) (Var(newVar2, newTy2))
-                                                          (addToPos pos_x (Var(newVar1, newTy1)) (varToSyn newVarList)) 
+                                    let newCont = Target.Fun(newContVarList, 
+                                                      Target.App(cont,
+                                                          addToPos (pos_x+n) (Target.Var(newVar2, newTy2))
+                                                          (addToPos pos_x (Target.Var(newVar1, newTy1)) (Target.varToSyn newVarList)) 
                                                           )
                                                       ) 
                                     in
-                                    Tuple[Var(x, newTy1); Var(dx, newTy1); newCont], newCont, context
+                                    Target.Tuple[Target.Var(x, newTy1); Target.Var(dx, newTy1); newCont], newCont, context
                                     | _ -> failwith "rad: the continuation should be a function"
                                     end
     | Apply1(op, expr)          -> begin
-                                    match typeTarget cont,expr with
-                                    | Result.Ok(Arrow(tyList,_)), Var(x, ty) ->
+                                    match Target.typeTarget cont,expr with
+                                    | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x, ty) ->
                                     let x, dx, _ = dvar x in
-                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Type.sourceToTarget ty) in
-                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Type.sourceToTarget ty) in
+                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty) in
+                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty) in
                                     let n = List.length tyList in
                                     let newVarList1 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList2 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList = newVarList1@newVarList2 in  
                                     let pos_x = getPos (x, ty) context in                      
                                     let newContVarList = newVarList1@[(newVar1,newTy1)]@newVarList2@[(newVar2,newTy2)] in
-                                    let partialOp = fun z -> Apply2(Times, dop (Var(x, newTy1)) op, z) in
-                                    let partial2op = Apply2(Times, Apply2(Times, dop2 (Var(x,newTy1)) op, Var(newVar1, newTy1)), Var(dx, newTy1)) in
-                                    let newCont = Fun(newContVarList, 
-                                                      App(cont,
+                                    let partialOp = fun z -> Target.Apply2(Times, dop (Target.Var(x, newTy1)) op, z) in
+                                    let partial2op = Target.Apply2(Times, Target.Apply2(Times, dop2 (Target.Var(x,newTy1)) op, Target.Var(newVar1, newTy1)), Target.Var(dx, newTy1)) in
+                                    let newCont = Target.Fun(newContVarList, 
+                                                      Target.App(cont,
                                                            addToPos (pos_x+n) partial2op
-                                                          (addToPos (pos_x+n) (partialOp (Var (newVar2, newTy2)))
-                                                          (addToPos pos_x (partialOp (Var (newVar1, newTy1))) (varToSyn newVarList)))
+                                                          (addToPos (pos_x+n) (partialOp (Target.Var (newVar2, newTy2)))
+                                                          (addToPos pos_x (partialOp (Target.Var (newVar1, newTy1))) (Target.varToSyn newVarList)))
                                                           )
                                                       )
                                     in
-                                    let tangent = Apply2(Times, dop (Var(x, newTy1)) op, Var(dx, newTy1)) in 
-                                    Tuple[Apply1(op, Var(x,newTy1)); tangent; newCont], newCont, context
+                                    let tangent = Target.Apply2(Times, dop (Target.Var(x, newTy1)) op, Target.Var(dx, newTy1)) in 
+                                    Target.Tuple[Target.Apply1(op, Target.Var(x,newTy1)); tangent; newCont], newCont, context
                                     | _,_ -> failwith "rad: the continuation should be a function"
                                     end
     | Apply2(op, expr1, expr2)  -> begin
-                                    match typeTarget cont,expr1,expr2 with 
-                                    | Result.Ok(Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
+                                    match Target.typeTarget cont,expr1,expr2 with 
+                                    | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
                                     let x1, dx1, _ = dvar x1 in
                                     let x2, dx2, _ = dvar x2 in
-                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Type.sourceToTarget ty1) in
-                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Type.sourceToTarget ty1) in
+                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty1) in
+                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty1) in
                                     let n = List.length tyList in
                                     let newVarList1 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList2 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
@@ -610,35 +604,35 @@ module MixedJets = struct
                                     let newContVarList = newVarList1@[(newVar1,newTy1)]@newVarList2@[(newVar2,newTy2)] in
                                     let pos_x1 = getPos (x1, ty1) context in
                                     let pos_x2 = getPos (x2, ty2) context in
-                                    let partial1Op = fun z -> Apply2(Times, d1op (Var(x1, newTy1)) (Var(x2, newTy2)) op, z) in
-                                    let partial2Op = fun z -> Apply2(Times, d2op (Var(x1, newTy1)) (Var(x2, newTy2)) op, z) in 
-                                    let secondPartialOp = fun dx -> fun z -> fun partial -> Apply2(Times,Apply2(Times,partial,dx),z) in
-                                    let addFirstDerivatives =  varToSyn newVarList
-                                                              |> addToPos (pos_x2) (partial2Op (Var (newVar1, Real)))
-                                                              |> addToPos pos_x1  (partial1Op (Var(newVar1, Real)))
-                                                              |> addToPos (pos_x2+n)  (partial2Op (Var(newVar2, Real)))
-                                                              |> addToPos (pos_x1+n)  (partial1Op (Var(newVar2, Real)))
+                                    let partial1Op = fun z -> Target.Apply2(Times, d1op (Target.Var(x1, newTy1)) (Target.Var(x2, newTy2)) op, z) in
+                                    let partial2Op = fun z -> Target.Apply2(Times, d2op (Target.Var(x1, newTy1)) (Target.Var(x2, newTy2)) op, z) in 
+                                    let secondPartialOp = fun dx -> fun z -> fun partial -> Target.Apply2(Times,Target.Apply2(Times,partial,dx),z) in
+                                    let addFirstDerivatives =  Target.varToSyn newVarList
+                                                              |> addToPos (pos_x2) (partial2Op (Target.Var (newVar1, Target.Type.Real)))
+                                                              |> addToPos pos_x1  (partial1Op (Target.Var(newVar1, Target.Type.Real)))
+                                                              |> addToPos (pos_x2+n)  (partial2Op (Target.Var(newVar2, Target.Type.Real)))
+                                                              |> addToPos (pos_x1+n)  (partial1Op (Target.Var(newVar2, Target.Type.Real)))
                                     in
                                     let addSecondDerivatives =  addFirstDerivatives 
-                                                              |> addToPos (pos_x2+n) (secondPartialOp (Var(dx1,newTy1)) (Var(newVar1, Real)) (d11op (Var(x1,newTy1)) (Var(x2,newTy2)) op))
-                                                              |> addToPos (pos_x2+n) (secondPartialOp (Var(dx2,newTy2)) (Var(newVar1, Real)) (d12op (Var(x1,newTy1)) (Var(x2,newTy2)) op))
-                                                              |> addToPos (pos_x1+n) (secondPartialOp (Var(dx1,newTy1)) (Var(newVar1, Real)) (d21op (Var(x1,newTy1)) (Var(x2,newTy2)) op))
-                                                              |> addToPos (pos_x1+n) (secondPartialOp (Var(dx2,newTy2)) (Var(newVar1, Real)) (d22op (Var(x1,newTy1)) (Var(x2,newTy2)) op))
+                                                              |> addToPos (pos_x2+n) (secondPartialOp (Target.Var(dx1,newTy1)) (Target.Var(newVar1, Target.Type.Real)) (d11op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2)) op))
+                                                              |> addToPos (pos_x2+n) (secondPartialOp (Target.Var(dx2,newTy2)) (Target.Var(newVar1, Target.Type.Real)) (d12op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2)) op))
+                                                              |> addToPos (pos_x1+n) (secondPartialOp (Target.Var(dx1,newTy1)) (Target.Var(newVar1, Target.Type.Real)) (d21op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2)) op))
+                                                              |> addToPos (pos_x1+n) (secondPartialOp (Target.Var(dx2,newTy2)) (Target.Var(newVar1, Target.Type.Real)) (d22op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2)) op))
                                     in
-                                    let newCont = Fun(newContVarList, App(cont, addSecondDerivatives)) in
-                                    let tangent = Apply2(Plus,
-                                                          Apply2(Times, d1op (Var(x1, newTy1)) (Var(x2, newTy2)) op, Var(dx1, newTy1)),
-                                                          Apply2(Times, d2op (Var(x1, newTy1)) (Var(x2, newTy2)) op, Var(dx2, newTy2)))  in
-                                    Tuple[Apply2(op, Var(x1, newTy1), Var(x2, newTy2)); tangent ; newCont], newCont, context
+                                    let newCont = Target.Fun(newContVarList, Target.App(cont, addSecondDerivatives)) in
+                                    let tangent = Target.Apply2(Plus,
+                                                          Target.Apply2(Times, d1op (Target.Var(x1, newTy1)) (Target.Var(x2, newTy2)) op, Target.Var(dx1, newTy1)),
+                                                          Target.Apply2(Times, d2op (Target.Var(x1, newTy1)) (Target.Var(x2, newTy2)) op, Target.Var(dx2, newTy2)))  in
+                                    Target.Tuple[Target.Apply2(op, Target.Var(x1, newTy1), Target.Var(x2, newTy2)); tangent ; newCont], newCont, context
                                     | _,_,_ -> failwith "rad: the continuation should be a function"
                                     end
     | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = reverse12 context cont expr1 in  
                                    let x, dx, newContVar = dvar x in
-                                   match typeTarget cont with 
+                                   match Target.typeTarget cont with 
                                     | Result.Error s         -> failwith (Printf.sprintf "rad: continuation ill-typed: %s" s) 
                                     | Result.Ok(newContType) ->
-                                   let newCont = Var(newContVar, newContType) in
+                                   let newCont = Target.Var(newContVar, newContType) in
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
-                                   NCase(dexpr1, [(x, Type.sourceToTarget ty); (dx, Type.sourceToTarget ty) ; (newContVar, newContType)], dexpr2), newNewCont, context
+                                   Target.NCase(dexpr1, [(x, Target.Type.sourceToTarget ty); (dx, Target.Type.sourceToTarget ty) ; (newContVar, newContType)], dexpr2), newNewCont, context
 end  

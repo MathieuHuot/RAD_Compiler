@@ -1,71 +1,71 @@
 (* Classical forward mode differentiationas a source-code transformation using dual numbers *)
 
+open Syntax
 open Syntax.Source
 open Syntax.Operators
-open Syntax.Target
 
-let rec forwardADType (ty : sourceType) : Type.t = match ty with
-  | Real          -> NProd [Real;Real]
-  | Prod(ty1,ty2) -> NProd [forwardADType ty1;forwardADType ty2]
+let rec forwardADType (ty : sourceType) : Target.Type.t = match ty with
+  | Real          -> Target.Type.NProd [Target.Type.Real;Target.Type.Real]
+  | Prod(ty1,ty2) -> Target.Type.NProd [forwardADType ty1;forwardADType ty2]
 
 (* takes a primal var as input and return a pair of the primal variable and a new tangent variable *)
 (* assumes that no variable from the initial term starts with d, in other words that the new returned variable is fresh *)
 let dvar var : Syntax.Var.t * Syntax.Var.t = let str, i = var in var, ("d"^str,i) 
 
 let dop op y = match op with
-| Cos     -> Apply1(Minus,Apply1(Sin,y))
-| Sin     -> Apply1(Cos,y)
-| Exp     -> Apply1(Exp,y)
-| Minus   -> Const (-1.)
-| Power 0 -> Const(0.)
-| Power n -> Apply2(Times, Const(float_of_int (n-1)),Apply1(Power(n-1),y))
+| Cos     -> Target.Apply1(Minus,Target.Apply1(Sin,y))
+| Sin     -> Target.Apply1(Cos,y)
+| Exp     -> Target.Apply1(Exp,y)
+| Minus   -> Target.Const (-1.)
+| Power 0 -> Target.Const(0.)
+| Power n -> Target.Apply2(Times, Target.Const(float_of_int (n-1)),Target.Apply1(Power(n-1),y))
 
 let d1op op _ y2 = match op with
-  | Plus  -> Const(1.)
+  | Plus  -> Target.Const(1.)
   | Times -> y2
-  | Minus -> Const(1.)
+  | Minus -> Target.Const(1.)
 
 let d2op op y1 _ = match op with
-  | Plus  -> Const(1.)
+  | Plus  -> Target.Const(1.)
   | Times -> y1
-  | Minus -> Const(-1.)
+  | Minus -> Target.Const(-1.)
 
 (* Simple forward AD transformation. does not assume any ANF *)
-let rec forwardAD (expr : sourceSyn) : targetSyn = match expr with
-| Const c               ->  Tuple [Const c; Const 0.]
+let rec forwardAD (expr : sourceSyn) : Target.targetSyn = match expr with
+| Const c               ->  Target.Tuple [Target.Const c; Target.Const 0.]
 | Var(x,ty)             ->  let x, dx = dvar x in
-                            Tuple [ Var(x,Type.sourceToTarget ty);
-                                    Var(dx,Type.sourceToTarget ty);]
+                            Target.Tuple [ Target.Var(x,Target.Type.sourceToTarget ty);
+                                    Target.Var(dx,Target.Type.sourceToTarget ty);]
 | Apply1(op,expr)       ->  let y, dy = dvar (Syntax.Var.fresh()) in
-                            let ty = Type.Real in
+                            let ty = Target.Type.Real in
                             let exprD = forwardAD expr in
-                            let primal = Apply1(op,Var(y,ty)) in
-                            let tangent = Apply2(Times, dop op (Var(y,ty)), Var(dy,ty)) in 
-                            NCase(exprD,[(y,ty);(dy,ty)],Tuple [primal;tangent])
+                            let primal = Target.Apply1(op,Target.Var(y,ty)) in
+                            let tangent = Target.Apply2(Times, dop op (Target.Var(y,ty)), Target.Var(dy,ty)) in 
+                            Target.NCase(exprD,[(y,ty);(dy,ty)],Target.Tuple [primal;tangent])
 | Apply2(op,expr1,expr2)->  let y1, dy1 = dvar (Syntax.Var.fresh()) in
-                            let ty1 = Type.Real in
+                            let ty1 = Target.Type.Real in
                             let y2, dy2 = dvar (Syntax.Var.fresh()) in
-                            let ty2 = Type.Real in
-                            let y1VarP = Var(y1,ty1) in
-                            let y2VarP = Var(y2,ty2) in
+                            let ty2 = Target.Type.Real in
+                            let y1VarP = Target.Var(y1,ty1) in
+                            let y2VarP = Target.Var(y2,ty2) in
                             let expr1D = forwardAD expr1 in
                             let expr2D = forwardAD expr2 in
-                            let primal = Apply2(op,y1VarP,y2VarP) in
-                            let tangent = Apply2(Plus,
-                                                  Apply2(Times, d1op op y1VarP y2VarP, Var(dy1,ty1)),
-                                                  Apply2(Times,d2op op y1VarP y2VarP, Var(dy2,ty2))) in
-                            NCase(expr1D,[(y1,ty1);(dy1,ty1)],NCase(expr2D,[(y2,ty2);(dy2,ty2)],Tuple [primal;tangent]))
+                            let primal = Target.Apply2(op,y1VarP,y2VarP) in
+                            let tangent = Target.Apply2(Plus,
+                                                  Target.Apply2(Times, d1op op y1VarP y2VarP, Target.Var(dy1,ty1)),
+                                                  Target.Apply2(Times,d2op op y1VarP y2VarP, Target.Var(dy2,ty2))) in
+                            Target.NCase(expr1D,[(y1,ty1);(dy1,ty1)],Target.NCase(expr2D,[(y2,ty2);(dy2,ty2)],Target.Tuple [primal;tangent]))
 | Let(y,ty,expr1,expr2) ->  let expr1D = forwardAD expr1 in
                             let expr2D = forwardAD expr2 in
                             let y, dy = dvar y in
-                            let ty = Type.sourceToTarget ty in
-                            NCase(expr1D,[(y,ty);(dy,ty)],expr2D)
+                            let ty = Target.Type.sourceToTarget ty in
+                            Target.NCase(expr1D,[(y,ty);(dy,ty)],expr2D)
 
 let grad context expr = 
   let dexpr = forwardAD expr in
   List.map 
       (fun ((x,_),_) -> List.fold_left 
       (fun acc ((y,ty2),expr2) -> let y, dy = dvar y in
-      let f z = if (Syntax.Var.equal x y) then subst dy ty2 (Const(1.)) z else subst dy ty2 (Const(0.)) z in
-      f (subst y ty2 expr2 acc)) dexpr context) 
+      let f z = if (Syntax.Var.equal x y) then Target.subst dy ty2 (Target.Const(1.)) z else Target.subst dy ty2 (Target.Const(0.)) z in
+      f (Target.subst y ty2 expr2 acc)) dexpr context) 
       context 
