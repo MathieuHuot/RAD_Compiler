@@ -28,11 +28,11 @@ let rec pp fmt = function
 
   let isArrow ty = match ty with Arrow _ -> true | _ -> false
 
-  let rec sourceToTarget (ty : Source.sourceType) : t =
+  let rec from_source (ty : Source.sourceType) : t =
     match ty with
     | Real -> Real
     | Prod (ty1, ty2) ->
-        NProd [ sourceToTarget ty1; sourceToTarget ty2 ]
+        NProd [ from_source ty1; from_source ty2 ]
 
   let rec equal ty1 ty2 =
     match (ty1, ty2) with
@@ -43,17 +43,17 @@ let rec pp fmt = function
     | _ -> false
 end
 
-type targetSyn = Var of Var.t * Type.t
+type t = Var of Var.t * Type.t
                 | Const of float
-                | Apply1 of op1 * targetSyn
-                | Apply2 of op2 * targetSyn * targetSyn
-                | Let of Var.t * Type.t * targetSyn * targetSyn
-                | Fun of ((Var.t * Type.t) list) * targetSyn
-                | App of targetSyn * (targetSyn list)
-                | Tuple of targetSyn tuple
-                | NCase of targetSyn * ((Var.t * Type.t) list) * targetSyn
+                | Apply1 of op1 * t
+                | Apply2 of op2 * t * t
+                | Let of Var.t * Type.t * t * t
+                | Fun of ((Var.t * Type.t) list) * t
+                | App of t * (t list)
+                | Tuple of t tuple
+                | NCase of t * ((Var.t * Type.t) list) * t
 
-type context = ((Var.t * Type.t), targetSyn) CCList.Assoc.t
+type context = ((Var.t * Type.t), t) CCList.Assoc.t
 
 let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
 
@@ -252,57 +252,57 @@ in canRen expr
 else failwith (Printf.sprintf "canonicalAlphaRename: variable %s is already used as a bound variable, can't rename free vars canonically with %s" name name)
 
 (* simple typecheker *)
-let rec typeTarget = function
+let rec inferType = function
   | Const _ -> Result.Ok Type.Real
   | Var (_, t) -> Result.Ok t
   | Apply1 (_, expr) -> (
       CCResult.(
-        typeTarget expr >>= function
+        inferType expr >>= function
         | Type.Real -> Ok Type.Real
         | _ -> Error "Argument of Apply1 should be a Type.Real"))
   | Apply2 (_, expr1, expr2) -> (
       CCResult.(
-        typeTarget expr1 >>= function
+        inferType expr1 >>= function
         | Type.Real -> (
-            typeTarget expr2 >>= function
+            inferType expr2 >>= function
             | Type.Real -> Ok Type.Real
             | _ -> Error "Argumentt 2 of Apply2 should be a Type.Real")
         | _ -> Error "Argument 1 of Apply2 should be a Type.Real"))
   | Let (_, t, expr1, expr2) ->
     CCResult.(
-      typeTarget expr1 >>= fun t1 ->
-      if Type.equal t t1 then typeTarget expr2
+      inferType expr1 >>= fun t1 ->
+      if Type.equal t t1 then inferType expr2
       else
         Error
           "in Let binding type of the variable does not correspond to the \
            type of the expression")
   | Fun (l, expr) ->
     CCResult.(
-      typeTarget expr >|= fun texp ->
+      inferType expr >|= fun texp ->
       Type.Arrow (List.map snd l, texp))
   | App (expr, l) ->
     CCResult.(
-      typeTarget expr >>= function
+      inferType expr >>= function
       | Type.Arrow (tyList, retType) ->
         if List.compare_lengths tyList l <> 0 then
           Error "Wrong number of arguments in App"
         else
-          List.map typeTarget l |> flatten_l >>= fun l ->
+          List.map inferType l |> flatten_l >>= fun l ->
           if CCList.equal Type.equal tyList l then Ok retType
           else Error "Type mismatch with arguments type"
       | _ -> Error "App: expr should be of Type.Arrow type")
   | Tuple l ->
-    CCResult.(List.map typeTarget l |> flatten_l >>= fun l -> Ok (Type.NProd l))
+    CCResult.(List.map inferType l |> flatten_l >>= fun l -> Ok (Type.NProd l))
   | NCase (expr1, l, expr2) -> (
       CCResult.(
-        typeTarget expr1 >>= function
+        inferType expr1 >>= function
         | Type.NProd tl ->
           if List.for_all2 Type.equal tl (List.map snd l) then
-            typeTarget expr2
+            inferType expr2
           else Error "NCase: type mismatch"
         | _ -> Error "NCase: expression 1 should have type Prod"))
 
-let isWellTyped expr = typeTarget expr |> Result.is_ok
+let isWellTyped expr = inferType expr |> Result.is_ok
 
 (* interpreter *)
 

@@ -76,10 +76,10 @@ let rec forwardAD12Type (ty : sourceType) : Target.Type.t = match ty with
   | Real          -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real])
   | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD12Type ty1; forwardAD12Type ty2]
 
-let rec forward12AD (expr: sourceSyn) : Target.targetSyn = match expr with
+let rec forward12AD (expr: sourceSyn) : Target.t = match expr with
 | Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.])
 | Var(x,ty)             ->  let x, dx, d2x = dvar2 x in
-                            let ty = Target.Type.sourceToTarget ty in
+                            let ty = Target.Type.from_source ty in
                             Target.Tuple([Target.Var(x, ty); Target.Var(dx, ty); Target.Var(d2x, ty)])
 | Apply1(op,expr)       ->  let y, dy, d2y = dvar2 (Var.fresh()) in
                             let ty = Target.Type.Real in
@@ -104,7 +104,7 @@ let rec forward12AD (expr: sourceSyn) : Target.targetSyn = match expr with
 | Let(y,ty,expr1,expr2) ->  let expr1D = forward12AD expr1 in
                             let expr2D = forward12AD expr2 in
                             let y, dy, d2y = dvar2 y in
-                            let ty = Target.Type.sourceToTarget ty in
+                            let ty = Target.Type.from_source ty in
                             Target.NCase(expr1D, [(y, ty); (dy, ty); (d2y, ty)], expr2D)
 
 (* Compute the list d2f/dx2 for all variables x from the context *)                           
@@ -170,10 +170,10 @@ let rec forwardAD22Type (ty : sourceType) : Target.Type.t = match ty with
 
 let dvar22 var : Var.t * Var.t * Var.t * Var.t = let str, i = var in var, ("d1"^str, i), ("d2"^str, i), ("dd"^str, i) 
 
-let rec forward22AD (expr: sourceSyn) : Target.targetSyn = match expr with
+let rec forward22AD (expr: sourceSyn) : Target.t = match expr with
 | Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.])
 | Var(x,ty)             ->  let x, d1x, d2x, ddx = dvar22 x in
-                            let ty = Target.Type.sourceToTarget ty in
+                            let ty = Target.Type.from_source ty in
                             Target.Tuple([Target.Var(x, ty); Target.Var(d1x, ty); Target.Var(d2x, ty); Target.Var(ddx, ty)])
 | Apply1(op,expr)       ->  let y, d1y, d2y, ddy = dvar22 (Var.fresh()) in
                             let ty = Target.Type.Real in
@@ -206,7 +206,7 @@ let rec forward22AD (expr: sourceSyn) : Target.targetSyn = match expr with
 | Let(y,ty,expr1,expr2) ->  let expr1D = forward22AD expr1 in
                             let expr2D = forward22AD expr2 in
                             let y, d1y, d2y, ddy = dvar22 y in
-                            let ty = Target.Type.sourceToTarget ty in
+                            let ty = Target.Type.from_source ty in
                             Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], expr2D)  
 end
 
@@ -253,10 +253,10 @@ let d2op33 x d1x d2x d3x dd1x dd2x dd3x dddx y d1y d2y d3y dd1y dd2y dd3y dddy (
                                     Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3x), Target.Apply2(Times, d1y, dd2x)), Target.Apply2(Times, d3y, dd1x)), 
                                     Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3y), Target.Apply2(Times, d1y, dd2y)), Target.Apply2(Times, d3y, dd1y)))))
 
-let rec forward33AD (expr: sourceSyn) : Target.targetSyn = match expr with
+let rec forward33AD (expr: sourceSyn) : Target.t = match expr with
 | Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.])
 | Var(x,ty)             ->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = dvar33 x in
-                            let ty = Target.Type.sourceToTarget ty in
+                            let ty = Target.Type.from_source ty in
                             Target.Tuple([Target.Var(x, ty); Target.Var(d1x, ty); Target.Var(d2x, ty); Target.Var(d3x, ty); Target.Var(dd1x, ty); Target.Var(dd2x, ty); Target.Var(dd3x, ty); Target.Var(dddx, ty);])
 | Apply1(op,expr)       ->  let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 (Var.fresh()) in
                             let ty = Target.Type.Real in
@@ -305,7 +305,7 @@ let rec forward33AD (expr: sourceSyn) : Target.targetSyn = match expr with
 | Let(y,ty,expr1,expr2) ->  let expr1D = forward33AD expr1 in
                             let expr2D = forward33AD expr2 in
                             let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = dvar33 y in
-                            let ty = Target.Type.sourceToTarget ty in
+                            let ty = Target.Type.from_source ty in
                             Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], expr2D)  
 end 
 
@@ -341,9 +341,9 @@ let rec addToPos i list y = match i, list with
   | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
   | _,x::tl   -> x::(addToPos (i-1) tl y) 
 
-let rec reverse12 (context: context) (cont : Target.targetSyn)  (expr : sourceSyn) : Target.targetSyn * Target.targetSyn * context = match expr with
+let rec reverse12 (context: context) (cont : Target.t)  (expr : sourceSyn) : Target.t * Target.t * context = match expr with
   | Const c                   -> begin
-                                  match Target.typeTarget cont with 
+                                  match Target.inferType cont with 
                                   | Result.Ok(Target.Type.Arrow(tyList,_)) ->
                                   let newVar,newTy = (Syntax.Var.fresh(), Target.Type.Real) in 
                                   let newVarList = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in                  
@@ -353,9 +353,9 @@ let rec reverse12 (context: context) (cont : Target.targetSyn)  (expr : sourceSy
                                   | _ -> failwith "rad: the continuation should be a function"
                                   end
   | Var(x, ty)                -> begin
-                                  match Target.typeTarget cont with 
+                                  match Target.inferType cont with 
                                   | Result.Ok(Target.Type.Arrow(tyList,_)) ->
-                                  let new_var, new_ty = Syntax.Var.fresh(), Target.Type.sourceToTarget ty in  
+                                  let new_var, new_ty = Syntax.Var.fresh(), Target.Type.from_source ty in  
                                   let newVarList = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in                          
                                   let newContVarList = List.append newVarList [(new_var, new_ty)] in
                                   let pos_x = getPos (x,ty) context in
@@ -369,9 +369,9 @@ let rec reverse12 (context: context) (cont : Target.targetSyn)  (expr : sourceSy
                                   | _ -> failwith "rad: the continuation should be a function"
                                   end
   | Apply1(op, expr)          -> begin
-                                  match Target.typeTarget cont,expr with
+                                  match Target.inferType cont,expr with
                                   | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x, ty) ->
-                                  let new_ty = Target.Type.sourceToTarget ty in
+                                  let new_ty = Target.Type.from_source ty in
                                   let pos_x = getPos (x, ty) context in
                                   let new_var = Syntax.Var.fresh() in 
                                   let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList)  in                         
@@ -396,11 +396,11 @@ let rec reverse12 (context: context) (cont : Target.targetSyn)  (expr : sourceSy
                                   | _,_ -> failwith "rad: the continuation should be a function"
                                   end
   | Apply2(op, expr1, expr2)  -> begin
-                                  match Target.typeTarget cont,expr1,expr2 with 
+                                  match Target.inferType cont,expr1,expr2 with 
                                   | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
-                                  let new_ty1 = Target.Type.sourceToTarget ty1 in
+                                  let new_ty1 = Target.Type.from_source ty1 in
                                   let pos_x1 = getPos (x1, ty1) context in
-                                  let new_ty2 = Target.Type.sourceToTarget ty2 in
+                                  let new_ty2 = Target.Type.from_source ty2 in
                                   let pos_x2 = getPos (x2, ty2) context in
                                   let new_var = Syntax.Var.fresh() in 
                                   let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList) in                         
@@ -433,16 +433,16 @@ let rec reverse12 (context: context) (cont : Target.targetSyn)  (expr : sourceSy
                                   end
   | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = reverse12 context cont expr1 in  
                                  let _, newContVar = dvar x in
-                                 match Target.typeTarget cont with 
+                                 match Target.inferType cont with 
                                   | Result.Error s         -> failwith (Printf.sprintf "rad: continuation ill-typed: %s" s) 
                                   | Result.Ok(newContType) ->
                                  let newCont = Target.Var(newContVar, newContType) in
                                  let newContext = context @ [(x,ty)] in
                                  let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
-                                 Target.NCase(dexpr1, [(x, Target.Type.sourceToTarget ty); (newContVar, newContType)], dexpr2), newNewCont, context
+                                 Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context
 
-let semiNaiveReverseAD (context: context) (expr: sourceSyn) : Target.targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.sourceToTarget ty) context in 
+let semiNaiveReverseAD (context: context) (expr: sourceSyn) : Target.t =
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   expr |> SourceAnf.weakAnf |> reverse12 context id_cont |> fun (a,_,_) -> a
 
@@ -453,16 +453,16 @@ let rec initialize_rad list = match list with
  | _::[] -> [Target.Const 1.] 
  | _::tl -> (Target.Const 0.)::initialize_rad tl
 
-let grad (context: context) (expr: sourceSyn) : Target.targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.sourceToTarget ty) context in 
+let grad (context: context) (expr: sourceSyn) : Target.t =
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = reverse12 context id_cont (SourceAnf.weakAnf expr) in
-  match Target.typeTarget cont with
+  match Target.inferType cont with
     | Result.Error s                   -> failwith (Printf.sprintf "grad: continuation ill-typed: %s" s)
     | Result.Ok(Target.Type.Arrow(tyList,_)) ->
     let sensitivities = initialize_rad tyList in
     begin 
-    match Target.typeTarget dexpr with
+    match Target.inferType dexpr with
       | Result.Ok(Target.Type.NProd[ty1;ty2]) ->
       let x,dx= dvar (Syntax.Var.fresh()) in
       Target.NCase(dexpr,[(x,ty1);(dx,ty2)],Target.App(Target.Var(dx,ty2),sensitivities))
@@ -528,9 +528,9 @@ module MixedJets = struct
     | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
     | _,x::tl   -> x::(addToPos (i-1) y tl) 
   
-  let rec reverse12 (context: context) (cont : Target.targetSyn)  (expr : sourceSyn) : Target.targetSyn * Target.targetSyn * context = match expr with
+  let rec reverse12 (context: context) (cont : Target.t)  (expr : sourceSyn) : Target.t * Target.t * context = match expr with
     | Const c                   -> begin
-                                    match Target.typeTarget cont with 
+                                    match Target.inferType cont with 
                                     | Result.Ok(Target.Type.Arrow(tyList,_)) ->
                                     let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.Real) in
                                     let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.Real) in
@@ -543,11 +543,11 @@ module MixedJets = struct
                                     | _ -> failwith "rad: the continuation should be a function"
                                     end
     | Var(x, ty)                -> begin
-                                    match Target.typeTarget cont with 
+                                    match Target.inferType cont with 
                                     | Result.Ok(Target.Type.Arrow(tyList,_)) ->
                                     let x, dx, _ = dvar x in
-                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty) in
-                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty) in
+                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.from_source ty) in
+                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.from_source ty) in
                                     let n = List.length tyList in
                                     let newVarList1 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList2 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
@@ -565,11 +565,11 @@ module MixedJets = struct
                                     | _ -> failwith "rad: the continuation should be a function"
                                     end
     | Apply1(op, expr)          -> begin
-                                    match Target.typeTarget cont,expr with
+                                    match Target.inferType cont,expr with
                                     | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x, ty) ->
                                     let x, dx, _ = dvar x in
-                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty) in
-                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty) in
+                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.from_source ty) in
+                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.from_source ty) in
                                     let n = List.length tyList in
                                     let newVarList1 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList2 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
@@ -591,12 +591,12 @@ module MixedJets = struct
                                     | _,_ -> failwith "rad: the continuation should be a function"
                                     end
     | Apply2(op, expr1, expr2)  -> begin
-                                    match Target.typeTarget cont,expr1,expr2 with 
+                                    match Target.inferType cont,expr1,expr2 with 
                                     | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
                                     let x1, dx1, _ = dvar x1 in
                                     let x2, dx2, _ = dvar x2 in
-                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty1) in
-                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.sourceToTarget ty1) in
+                                    let newVar1, newTy1 = (Syntax.Var.fresh(), Target.Type.from_source ty1) in
+                                    let newVar2, newTy2 = (Syntax.Var.fresh(), Target.Type.from_source ty1) in
                                     let n = List.length tyList in
                                     let newVarList1 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
                                     let newVarList2 = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in
@@ -628,11 +628,11 @@ module MixedJets = struct
                                     end
     | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = reverse12 context cont expr1 in  
                                    let x, dx, newContVar = dvar x in
-                                   match Target.typeTarget cont with 
+                                   match Target.inferType cont with 
                                     | Result.Error s         -> failwith (Printf.sprintf "rad: continuation ill-typed: %s" s) 
                                     | Result.Ok(newContType) ->
                                    let newCont = Target.Var(newContVar, newContType) in
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
-                                   Target.NCase(dexpr1, [(x, Target.Type.sourceToTarget ty); (dx, Target.Type.sourceToTarget ty) ; (newContVar, newContType)], dexpr2), newNewCont, context
+                                   Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (dx, Target.Type.from_source ty) ; (newContVar, newContType)], dexpr2), newNewCont, context
 end  

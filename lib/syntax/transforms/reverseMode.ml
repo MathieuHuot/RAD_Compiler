@@ -22,9 +22,9 @@ let rec addToPos i list y = match i, list with
   | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
   | _,x::tl   -> x::(addToPos (i-1) tl y) 
 
-  let rec rad (context: context) (cont : Target.targetSyn)  (expr : sourceSyn) : Target.targetSyn * Target.targetSyn * context = match expr with
+  let rec rad (context: context) (cont : Target.t)  (expr : sourceSyn) : Target.t * Target.t * context = match expr with
     | Const c                   -> begin
-                                    match Target.typeTarget cont with 
+                                    match Target.inferType cont with 
                                     | Result.Ok (Target.Type.Arrow(tyList,_)) ->
                                     let newVar,newTy = (Syntax.Var.fresh(), Target.Type.Real) in 
                                     let newVarList = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in                  
@@ -34,9 +34,9 @@ let rec addToPos i list y = match i, list with
                                     | _ -> failwith "rad: the continuation should be a function"
                                     end
     | Var(x, ty)                -> begin
-                                    match Target.typeTarget cont with 
+                                    match Target.inferType cont with 
                                     | Result.Ok(Target.Type.Arrow(tyList,_)) ->
-                                    let new_var, new_ty = Syntax.Var.fresh(), Target.Type.sourceToTarget ty in  
+                                    let new_var, new_ty = Syntax.Var.fresh(), Target.Type.from_source ty in  
                                     let newVarList = List.map (fun ty -> Syntax.Var.fresh(), ty) tyList in                          
                                     let newContVarList = List.append newVarList [(new_var, new_ty)] in
                                     let pos_x = getPos (x,ty) context in
@@ -50,9 +50,9 @@ let rec addToPos i list y = match i, list with
                                     | _ -> failwith "rad: the continuation should be a function"
                                     end
     | Apply1(op, expr)          -> begin
-                                    match Target.typeTarget cont,expr with 
+                                    match Target.inferType cont,expr with 
                                     | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x, ty) ->
-                                    let new_ty = Target.Type.sourceToTarget ty in
+                                    let new_ty = Target.Type.from_source ty in
                                     let pos_x = getPos (x, ty) context in
                                     let new_var = Syntax.Var.fresh() in 
                                     let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList)  in                         
@@ -77,11 +77,11 @@ let rec addToPos i list y = match i, list with
                                     | _,_ -> failwith "rad: the continuation should be a function"
                                     end
     | Apply2(op, expr1, expr2)  -> begin
-                                    match Target.typeTarget cont,expr1,expr2 with 
+                                    match Target.inferType cont,expr1,expr2 with 
                                     | Result.Ok(Target.Type.Arrow(tyList,_)), Var(x1, ty1), Var(x2, ty2) ->
-                                    let new_ty1 = Target.Type.sourceToTarget ty1 in
+                                    let new_ty1 = Target.Type.from_source ty1 in
                                     let pos_x1 = getPos (x1, ty1) context in
-                                    let new_ty2 = Target.Type.sourceToTarget ty2 in
+                                    let new_ty2 = Target.Type.from_source ty2 in
                                     let pos_x2 = getPos (x2, ty2) context in
                                     let new_var = Syntax.Var.fresh() in 
                                     let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList) in                         
@@ -114,16 +114,16 @@ let rec addToPos i list y = match i, list with
                                     end
     | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = rad context cont expr1 in  
                                    let _, newContVar = dvar x in
-                                   match Target.typeTarget cont with
+                                   match Target.inferType cont with
                                     | Result.Error s    -> failwith (Printf.sprintf "rad: continuation ill-typed:%s" s)
                                     | Result.Ok(newContType) ->
                                    let newCont = Target.Var(newContVar, newContType) in
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
-                                   Target.NCase(dexpr1, [(x, Target.Type.sourceToTarget ty); (newContVar, newContType)], dexpr2), newNewCont, context
+                                   Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context
 
-let semiNaiveReverseAD (context: context) (expr: sourceSyn) : Target.targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.sourceToTarget ty) context in 
+let semiNaiveReverseAD (context: context) (expr: sourceSyn) : Target.t =
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   expr |> SourceAnf.weakAnf |> rad context id_cont |> fun (a,_,_) -> a
 
@@ -134,16 +134,16 @@ let rec initialize_rad list = match list with
  | _::[] -> [Target.Const 1.] 
  | _::tl -> (Target.Const 0.)::initialize_rad tl
 
-let grad (context: context) (expr: sourceSyn) : Target.targetSyn =
-  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.sourceToTarget ty) context in 
+let grad (context: context) (expr: sourceSyn) : Target.t =
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = rad context id_cont (SourceAnf.anf expr) in
-  match Target.typeTarget cont with
+  match Target.inferType cont with
     | Result.Error s        -> failwith (Printf.sprintf "grad: continuation ill-typed: %s" s)
     | Result.Ok(Target.Type.Arrow(tyList,_)) ->
     let sensitivities = initialize_rad tyList in
     begin 
-    match Target.typeTarget dexpr with
+    match Target.inferType dexpr with
       | Result.Ok(Target.Type.NProd [ty1;ty2]) ->
       let x,dx= dvar (Syntax.Var.fresh()) in
       Target.NCase(dexpr,[(x,ty1);(dx,ty2)],Target.App(Target.Var(dx,ty2),sensitivities))

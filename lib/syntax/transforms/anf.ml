@@ -71,11 +71,11 @@ let anf expr =
   letNormalisation expr1
 end
 
-module TargetAnf: Anf with type ast = Syntax.Target.targetSyn = struct
+module TargetAnf: Anf with type ast = Syntax.Target.t = struct
   open Syntax.Target
-  type ast = targetSyn
+  type ast = t
 
-let isVar (expr : targetSyn) = match expr with
+let isVar (expr : t) = match expr with
   | Var _ -> true
   | _     -> false
 

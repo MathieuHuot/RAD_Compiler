@@ -3,4 +3,4 @@ type varSourceContext = (Var.t * Source.sourceType) list
 type varTargetContext = (Var.t * Target.Type.t) list
 
 val sourceSynGen : int -> varSourceContext -> Source.sourceSyn
-val targetSynGen : int -> varTargetContext -> Target.targetSyn
+val tGen : int -> varTargetContext -> Target.t

@@ -47,10 +47,10 @@
                                               end
   end
 
-  module TargetTr : Traverse with type adt = Syntax.Target.targetSyn = struct
+  module TargetTr : Traverse with type adt = Syntax.Target.t = struct
   open Syntax.Target
   open Strategies.Strategy
-  type adt = targetSyn
+  type adt = t
   
   let traverse expr strat = 
     match expr with
@@ -119,7 +119,7 @@ module type Optim = functor
   -> sig val run : Tr.adt Strategies.Strategy.strategy end
 
 module ConstantPropagation: Optim =  
-functor (Tr: Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr: Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -135,7 +135,7 @@ let rec run expr = match expr with
 end
 
 module SimpleAlgebraicSimplifications: Optim = 
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -175,7 +175,7 @@ let rec run expr = match expr with
 end 
 
 module ZeroSimplification: Optim = 
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -191,7 +191,7 @@ let rec run expr = match expr with
 end
 
 module TrigoSimplification: Optim = 
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -205,7 +205,7 @@ let rec run expr = match expr with
 end
 
 module RealFactorisation: Optim = 
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -221,7 +221,7 @@ let rec run expr = match expr with
 end
 
 module LetCommutativity: Optim = 
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -239,7 +239,7 @@ let rec run expr = match expr with
   end
 
 module ForwardSubstitution: Optim = 
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -273,7 +273,7 @@ end
 
 (* optimisation for common sub-expressions simplifications *)
 module LetSimplification: Optim = 
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -289,7 +289,7 @@ let rec run expr = match expr with
 end
 
 module LambdaRemoval: Optim = 
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -314,7 +314,7 @@ let rec run expr = match expr with
 end 
 
 module DeadVarElim: Optim =
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -339,7 +339,7 @@ let run expr =
   end
 
 module OneCaseRemoval: Optim =
-functor (Tr : Traverse with type adt = Syntax.Target.targetSyn) ->
+functor (Tr : Traverse with type adt = Syntax.Target.t) ->
 struct
 open Syntax.Target
 open Strategies.Strategy
@@ -353,18 +353,18 @@ let rec run expr = match expr with
   | _                              -> Tr.traverse expr run 
 end
 
-module EvStrat : Strategies.EvalStrat with type adt = Syntax.Target.targetSyn = struct
+module EvStrat : Strategies.EvalStrat with type adt = Syntax.Target.t = struct
   open Strategies.Strategy
   open Syntax.Target
-  type adt = Syntax.Target.targetSyn
+  type adt = Syntax.Target.t
 
-  let all (strat: targetSyn strategy) : targetSyn strategy = fun expr -> TargetTr.traverse expr strat
-
-  (* Won't be used for now *)
-  let one (strat: targetSyn strategy) : targetSyn strategy  =  fun expr -> TargetTr.traverse expr strat
+  let all (strat: t strategy) : t strategy = fun expr -> TargetTr.traverse expr strat
 
   (* Won't be used for now *)
-  let some (strat: targetSyn strategy) : targetSyn strategy  =  fun expr -> TargetTr.traverse expr strat
+  let one (strat: t strategy) : t strategy  =  fun expr -> TargetTr.traverse expr strat
+
+  (* Won't be used for now *)
+  let some (strat: t strategy) : t strategy  =  fun expr -> TargetTr.traverse expr strat
 end
 
 module CTS = Strategies.CompleteTraversalStrat(EvStrat)
@@ -381,67 +381,67 @@ module CP = ConstantPropagation(TargetTr)
 module OCR = OneCaseRemoval(TargetTr)
 open Strategies.Strategy
 
-let fullOpti (expr: Syntax.Target.targetSyn) = 
+let fullOpti (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     (iterate num_iter (tryStratList [FS.run; LR.run; OCR.run])   
     >> iterate num_iter (tryStratList [LS.run; LC.run; RF.run; TS.run; ZS.run; SAS.run; FS.run; LR.run; CP.run; DVE.run; OCR.run])) expr) 
 
-let oneCaseRem (expr: Syntax.Target.targetSyn) = 
+let oneCaseRem (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat OCR.run) expr
     ) 
     
-let constProp (expr: Syntax.Target.targetSyn) = 
+let constProp (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat CP.run) expr
     ) 
     
-let simpleAlgSimpl (expr: Syntax.Target.targetSyn) = 
+let simpleAlgSimpl (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat SAS.run) expr
     ) 
     
-let zeroSimpl (expr: Syntax.Target.targetSyn) = 
+let zeroSimpl (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat ZS.run) expr
     ) 
 
-let realFact (expr: Syntax.Target.targetSyn) = 
+let realFact (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat TS.run) expr
     ) 
 
-let letComm (expr: Syntax.Target.targetSyn) = 
+let letComm (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat LC.run) expr
     ) 
 
-let forwSubst (expr: Syntax.Target.targetSyn) = 
+let forwSubst (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat FS.run) expr
     ) 
 
-let letSimpl (expr: Syntax.Target.targetSyn) = 
+let letSimpl (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat LS.run) expr
     ) 
     
-let lambdaRem (expr: Syntax.Target.targetSyn) = 
+let lambdaRem (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat LR.run) expr
     ) 
     
-let deadVarElim (expr: Syntax.Target.targetSyn) = 
+let deadVarElim (expr: Syntax.Target.t) = 
   run (
     let num_iter = 200 in 
     iterate num_iter (tryStrat DVE.run) expr
