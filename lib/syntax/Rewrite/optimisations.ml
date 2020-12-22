@@ -1,16 +1,16 @@
-(* Module for optimisations. Somewhat similar to generalized folds in Haskell *)
-(* We have an abstract module traverse for traversal of ADT. *)
-(* We instantiate it to our two main ADT: the source and target syntax. *)
-(* Then, every optimisation is enclosed in a module, and is coded as a functor from *)
-(* a traversal module. *)
+(** Module for optimisations. Somewhat similar to generalized folds in Haskell
+    We have an abstract module traverse for traversal of ADT.
+    We instantiate it to our two main ADT: the source and target syntax.
+    Then, every optimisation is enclosed in a module, and is coded as a functor from
+    a traversal module. *)
 
-(* The main optimisations performed are: *)
-(* Constant Propagation *)
-(* Simple Algebraic Simplifications *)
-(* Let Commutativities *) 
-(* Forward Subsitution *)
-(* Common SubExpressions *)
-(* Dead Code Elimination *)
+(** The main optimisations performed are:
+    - Constant Propagation
+    - Simple Algebraic Simplifications
+    - Let Commutativities
+    - Forward Subsitution
+    - Common SubExpressions
+    - Dead Code Elimination *)
 
   module type Traverse = sig
     type adt
