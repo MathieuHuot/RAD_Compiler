@@ -31,11 +31,11 @@ let d2op op y1 _ = match op with
   | Minus -> Target.Const(-1.)
 
 (* Simple forward AD transformation. does not assume any ANF *)
-let rec forwardAD (expr : sourceSyn) : Target.targetSyn = match expr with
+let rec forwardAD (expr : sourceSyn) : Target.t = match expr with
 | Const c               ->  Target.Tuple [Target.Const c; Target.Const 0.]
 | Var(x,ty)             ->  let x, dx = dvar x in
-                            Target.Tuple [ Target.Var(x,Target.Type.sourceToTarget ty);
-                                    Target.Var(dx,Target.Type.sourceToTarget ty);]
+                            Target.Tuple [ Target.Var(x,Target.Type.from_source ty);
+                                    Target.Var(dx,Target.Type.from_source ty);]
 | Apply1(op,expr)       ->  let y, dy = dvar (Syntax.Var.fresh()) in
                             let ty = Target.Type.Real in
                             let exprD = forwardAD expr in
@@ -58,7 +58,7 @@ let rec forwardAD (expr : sourceSyn) : Target.targetSyn = match expr with
 | Let(y,ty,expr1,expr2) ->  let expr1D = forwardAD expr1 in
                             let expr2D = forwardAD expr2 in
                             let y, dy = dvar y in
-                            let ty = Target.Type.sourceToTarget ty in
+                            let ty = Target.Type.from_source ty in
                             Target.NCase(expr1D,[(y,ty);(dy,ty)],expr2D)
 
 let grad context expr = 
