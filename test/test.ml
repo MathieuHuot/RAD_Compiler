@@ -74,10 +74,10 @@ module T = struct
 
   let rec dist_to_type (targetTy : Type.t) (ty : Type.t) =
     match (targetTy, ty) with
-    | Real, Real -> Some 0
-    | Real, Arrow (l, ty) ->
+    | Type.Real, Type.Real -> Some 0
+    | Type.Real, Arrow (l, ty) ->
         CCOpt.(dist_to_type targetTy ty >|= ( + ) (List.length l))
-    | Arrow (_, _), Real -> None
+    | Arrow (_, _), Type.Real -> None
     | Arrow (l1, t1), Arrow (l2, t2) ->
         CCOpt.(
           dist_to_type t1 t2 >>= fun d ->
@@ -129,8 +129,8 @@ module T = struct
     else if n <= 0 then None
     else
       match (targetTy, ty) with
-      | Real, Real -> Some term
-      | Real, Arrow (l, ty) ->
+      | Type.Real, Type.Real -> Some term
+      | Type.Real, Arrow (l, ty) ->
           complet_to_type context
             (n - List.length l)
             targetTy
@@ -175,7 +175,7 @@ module T = struct
                    let v, ty = CCList.get_at_idx_exn i newVar in
                    Var (v, ty) ))
               t)
-      | Arrow (_, _), Real -> None
+      | Arrow (_, _), Type.Real -> None
       | Arrow (_l1, _t1), Arrow (_l2, _t2) -> None
       | NProd l, _ ->
           CCOpt.(
@@ -265,12 +265,12 @@ module T = struct
               | Some term -> return term :: gen_list
             in
             match targetTy with
-            | Real ->
+            | Type.Real ->
                 oneof
-                  (map2 apply1 Op.gen1 (self (n - 1, context, Real))
+                  (map2 apply1 Op.gen1 (self (n - 1, context, Type.Real))
                   :: map3 apply2 Op.gen2
-                       (self (n / 2, context, Real))
-                       (self (n / 2, context, Real))
+                       (self (n / 2, context, Type.Real))
+                       (self (n / 2, context, Type.Real))
                   :: map const (float_bound_exclusive 1.)
                   :: gen_list)
             | _ -> oneof gen_list)
@@ -316,14 +316,14 @@ module T = struct
 
   let arbitrary_closed_term =
     QCheck.make
-      QCheck.Gen.(int_bound 20 >>= fun i -> term_gen [] i Real)
+      QCheck.Gen.(int_bound 20 >>= fun i -> term_gen [] i Type.Real)
       ~print:to_string ~shrink:shrink_term
 
   let arbitrary_term =
     QCheck.make
       QCheck.Gen.(
         int_bound 20 >>= fun i ->
-        term_gen (List.init 10 (fun i -> (("x", i), Type.Real))) i Real)
+        term_gen (List.init 10 (fun i -> (("x", i), Type.Real))) i Type.Real)
       ~print:to_string ~shrink:shrink_term
 
   let test_isWellTyped =
@@ -429,21 +429,21 @@ end
 module S = struct
   open Source
 
-  let real = Real
+  let real = Type.Real
 
-  let prod x y = Prod (x, y)
+  let prod x y = Type.Prod (x, y)
 
   let type_gen depth =
     QCheck.Gen.(
       sized_size (int_bound depth)
       @@ fix (fun _self n ->
              match n with
-             | 0 -> return Real
+             | 0 -> return Type.Real
              | _n ->
                  frequency
                    [
                      (*(2, map2 prod (self (n / 2)) (self (n / 2)));*)
-                     (1, return Real);
+                     (1, return Type.Real);
                    ]))
 
   let var x t = Var (x, t)
@@ -456,10 +456,10 @@ module S = struct
 
   let clet v t exp1 exp2 = Let (v, t, exp1, exp2)
 
-  let find_by_ty ty = List.find_opt (fun (_, t) -> equalTypes t ty)
+  let find_by_ty ty = List.find_opt (fun (_, t) -> Type.equal t ty)
 
-  let dist_to_type (targetTy : sourceType) (ty : sourceType) =
-    match (targetTy, ty) with Real, Real -> Some 0 | _ -> None
+  let dist_to_type (targetTy : Type.t) (ty : Type.t) =
+    match (targetTy, ty) with Type.Real, Type.Real -> Some 0 | _ -> None
 
   let random_closest_type targetTy tyList =
     let open QCheck.Gen in
@@ -476,11 +476,11 @@ module S = struct
         let d_min = List.fold_left (fun x (_, _, d) -> min x d) d tl in
         Some (generate1 (oneofl (List.filter (fun (_, _, d) -> d = d_min) l)))
 
-  let rec complet_to_type _context n (targetTy : sourceType) (term : sourceSyn)
-      (ty : sourceType) =
-    if equalTypes targetTy ty then Some term
+  let rec complet_to_type _context n (targetTy : Type.t) (term : sourceSyn)
+      (ty : Type.t) =
+    if Type.equal targetTy ty then Some term
     else if n <= 0 then None
-    else match (targetTy, ty) with Real, Real -> Some term | _ -> None
+    else match (targetTy, ty) with Type.Real, Type.Real -> Some term | _ -> None
 
   and get_from_context context n targetTy =
     List.filter_map
@@ -506,8 +506,8 @@ module S = struct
         (fun self (n, context, targetTy) ->
           if n <= 0 then
             match targetTy with
-            | Real -> map const (float_bound_exclusive 1.)
-            | Prod (_x1, _x2) -> failwith "Prod: not implemented"
+            | Type.Real -> map const (float_bound_exclusive 1.)
+            | Type.Prod (_x1, _x2) -> failwith "Prod: not implemented"
           else
             let let_gen =
               let newVar = Var.fresh () in
@@ -525,12 +525,12 @@ module S = struct
               | Some term -> return term :: gen_list
             in
             match targetTy with
-            | Real ->
+            | Type.Real ->
                 oneof
-                  (map2 apply1 Op.gen1 (self (n - 1, context, Real))
+                  (map2 apply1 Op.gen1 (self (n - 1, context, Type.Real))
                   :: map3 apply2 Op.gen2
-                       (self (n / 2, context, Real))
-                       (self (n / 2, context, Real))
+                       (self (n / 2, context, Type.Real))
+                       (self (n / 2, context, Type.Real))
                   :: map const (float_bound_exclusive 1.)
                   :: gen_list)
             | _ -> oneof gen_list)
@@ -555,14 +555,14 @@ module S = struct
 
   let arbitrary_closed_term =
     QCheck.make
-      QCheck.Gen.(int_bound 20 >>= fun i -> term_gen [] i Real)
+      QCheck.Gen.(int_bound 20 >>= fun i -> term_gen [] i Type.Real)
       ~print:to_string ~shrink:shrink_term
 
   let arbitrary_term =
     QCheck.make
       QCheck.Gen.(
         int_bound 20 >>= fun i ->
-        term_gen (List.init 10 (fun i -> (("x", i), Real))) i Real)
+        term_gen (List.init 10 (fun i -> (("x", i), Type.Real))) i Type.Real)
       ~print:to_string ~shrink:shrink_term
 
   let test_isWellTyped =

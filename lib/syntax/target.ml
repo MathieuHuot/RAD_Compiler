@@ -28,7 +28,7 @@ let rec pp fmt = function
 
   let isArrow ty = match ty with Arrow _ -> true | _ -> false
 
-  let rec from_source (ty : Source.sourceType) : t =
+  let rec from_source (ty : Source.Type.t) : t =
     match ty with
     | Real -> Real
     | Prod (ty1, ty2) ->

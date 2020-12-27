@@ -56,7 +56,7 @@ let _ =
   let f7 =
     Source.Apply1
       ( Operators.Sin,
-        Source.Var (Syntax.Var.fresh (), Source.Real) )
+        Source.Var (Syntax.Var.fresh (), Source.Type.Real) )
   in
   let f8 = ForwardMode.forwardAD f7 in
   let f9 = Rewrite.Optimisations.fullOpti f8 in
@@ -81,7 +81,7 @@ let _ =
   let f11 = Source.Apply1 (Exp, var11) in
   let cst1 = [ Target.Const 0.; Target.Const 1. ] in
   let f12 =
-    Transforms.ReverseMode.semiNaiveReverseAD [ (x11, Source.Real) ] f11
+    Transforms.ReverseMode.semiNaiveReverseAD [ (x11, Source.Type.Real) ] f11
   in
   let f13 =
     match f12 with
@@ -97,12 +97,12 @@ let _ =
     Target.pp f13 Target.pp f14;
 
   let x12 = ("x", 2) in
-  let var12 = Source.Var (x12, Source.Real) in
+  let var12 = Source.Var (x12, Source.Type.Real) in
   let f21 = Source.Apply2 (Operators.Plus, var11, var12) in
   let f22 = Anf.SourceAnf.anf f21 in
   let f23 =
     Transforms.ReverseMode.semiNaiveReverseAD
-      [ (x11, Source.Real); (x12, Source.Real) ]
+      [ (x11, Source.Type.Real); (x12, Source.Type.Real) ]
       f21
   in
   let cst2 =
@@ -140,7 +140,7 @@ let _ =
   in
   let g7 = Anf.SourceAnf.anf g6 in
   let g8 =
-    Transforms.ReverseMode.semiNaiveReverseAD [ (x12, Source.Real) ] g7
+    Transforms.ReverseMode.semiNaiveReverseAD [ (x12, Source.Type.Real) ] g7
   in
   let g9 = Rewrite.Optimisations.fullOpti g8 in
   Format.fprintf out
@@ -153,15 +153,15 @@ let _ =
   let g6 =
       Source.Let
         ( ("z", 1),
-          Source.Real,
+          Source.Type.Real,
           Source.Apply2
             ( Times,
-              Source.Var (x2, Source.Real),
+              Source.Var (x2, Source.Type.Real),
               Source.Apply2
                 ( Plus,
-                  Source.Var (x1, Source.Real),
-                  Source.Var (x2, Source.Real) ) ),
-          Source.Var (("z", 1), Source.Real) )
+                  Source.Var (x1, Source.Type.Real),
+                  Source.Var (x2, Source.Type.Real) ) ),
+          Source.Var (("z", 1), Source.Type.Real) )
   in
   let g7 = Anf.SourceAnf.weakAnf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in  
@@ -175,9 +175,9 @@ let _ =
   let g6 =
     Source.Let
       ( ("z", 1),
-        Source.Real,
-        Source.Var (x1, Source.Real),
-        Source.Var (("z", 1), Source.Real) )
+        Source.Type.Real,
+        Source.Var (x1, Source.Type.Real),
+        Source.Var (("z", 1), Source.Type.Real) )
   in
   let g7 = Anf.SourceAnf.weakAnf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real) ] g7 in
@@ -193,12 +193,12 @@ let _ =
       ( Operators.Times,
         Source.Apply2
           ( Operators.Plus,
-            Source.Var (x1, Source.Real),
-            Source.Var (x2, Source.Real) ),
+            Source.Var (x1, Source.Type.Real),
+            Source.Var (x2, Source.Type.Real) ),
         Source.Apply2
           ( Operators.Plus,
-            Source.Var (x1, Source.Real),
-            Source.Var (x2, Source.Real) ) )
+            Source.Var (x1, Source.Type.Real),
+            Source.Var (x2, Source.Type.Real) ) )
   in
   let g7 = Anf.SourceAnf.anf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in
@@ -242,13 +242,13 @@ let _ =
   let g6 =
     Source.Let
       ( ("z", 1),
-        Source.Real,
+        Source.Type.Real,
         Source.Let
           ( ("z", 2),
-            Source.Real,
-            Source.Var (x1, Source.Real),
-            Source.Var (("z", 2), Source.Real) ),
-        Source.Var (("z", 1), Source.Real) )
+            Source.Type.Real,
+            Source.Var (x1, Source.Type.Real),
+            Source.Var (("z", 2), Source.Type.Real) ),
+        Source.Var (("z", 1), Source.Type.Real) )
   in
   let g7 = Anf.SourceAnf.weakAnf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real) ] g7 in
@@ -262,7 +262,7 @@ let _ =
   let var = ("x", 1) in
   let var2 = ("z", 1) in
   let f7 =
-    Source.Apply1 (Sin, Source.Var (var, Source.Real))
+    Source.Apply1 (Sin, Source.Var (var, Source.Type.Real))
   in
   let f8 = Transforms.JetAD.Jets12.forward12AD f7 in
   let f9 =
@@ -287,12 +287,12 @@ let _ =
       ( Times,
         Source.Apply2
           ( Plus,
-            Source.Var (x1, Source.Real),
-            Source.Var (x2, Source.Real) ),
+            Source.Var (x1, Source.Type.Real),
+            Source.Var (x2, Source.Type.Real) ),
         Source.Apply2
           ( Plus,
-            Source.Var (x1, Source.Real),
-            Source.Var (x2, Source.Real) ) )
+            Source.Var (x1, Source.Type.Real),
+            Source.Var (x2, Source.Type.Real) ) )
   in
   let g7 =
     Transforms.JetAD.Jets12.hessian

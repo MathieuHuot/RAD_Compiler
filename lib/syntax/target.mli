@@ -23,7 +23,7 @@ module Type : sig
   val isArrow : t -> bool
   (** [isArrow t] return true if [t] is [Arrow _] and false otherwise *)
 
-  val from_source : Source.sourceType -> t
+  val from_source : Source.Type.t -> t
   (** [from_source t] map type of the source language to type of the target language *)
 
   val equal : t -> t -> bool
