@@ -72,7 +72,7 @@ let d2op2 x dx d2x y dy d2y  (op: op2) = match op with
   | Minus -> Target.Apply2(Minus, d2x, d2y)
   | Times -> Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2x, y), Target.Apply2(Times, x, d2y)), Target.Apply2(Times, Target.Const 2., Target.Apply2(Times, dx, dy)))
 
-let rec forwardAD12Type (ty : sourceType) : Target.Type.t = match ty with
+let rec forwardAD12Type (ty : Type.t) : Target.Type.t = match ty with
   | Real          -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real])
   | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD12Type ty1; forwardAD12Type ty2]
 
@@ -164,7 +164,7 @@ module Jets22 = struct
 open Source
 open Operators
 
-let rec forwardAD22Type (ty : sourceType) : Target.Type.t = match ty with
+let rec forwardAD22Type (ty : Type.t) : Target.Type.t = match ty with
   | Real          -> Target.Type.NProd([Target.Type.Real;Target.Type.Real;Target.Type.Real;Target.Type.Real])
   | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD22Type ty1;forwardAD22Type ty2]
 
@@ -217,7 +217,7 @@ module Jets33 = struct
 open Source
 open Operators
 
-let rec forwardAD33Type (ty : sourceType) : Target.Type.t = match ty with
+let rec forwardAD33Type (ty : Type.t) : Target.Type.t = match ty with
   | Real          -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real])
   | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD33Type ty1;forwardAD33Type ty2]
 
@@ -324,14 +324,14 @@ open Syntax.Source
 open Syntax.Operators
 open Anf
 
-type context = (Syntax.Var.t * sourceType) Target.tuple
+type context = (Syntax.Var.t * Type.t) Target.tuple
 
 let dvar var : Syntax.Var.t *  Syntax.Var.t = let str, i = var in (str, i), ("d"^str, i)
 
 let getPos (x,ty) list = 
   let rec aux pos list = match list with
   | [] -> failwith "getPos: element not found"
-  | (y,ty2)::tl -> if Syntax.Var.equal x y && Syntax.Source.equalTypes ty ty2 
+  | (y,ty2)::tl -> if Syntax.Var.equal x y && Syntax.Source.Type.equal ty ty2 
                     then pos 
                     else aux (pos+1) tl
   in aux 0 list
@@ -479,7 +479,7 @@ module MixedJets = struct
   open Syntax.Source
   open Syntax.Operators
   
-  type context = (Syntax.Var.t * sourceType) Target.tuple
+  type context = (Syntax.Var.t * Type.t) Target.tuple
   
   let dvar var : Syntax.Var.t * Syntax.Var.t * Syntax.Var.t = let str, i = var in (str, i), ("d"^str, i), ("D"^str,i) 
   
@@ -518,7 +518,7 @@ module MixedJets = struct
   let getPos (x,ty) list = 
     let rec aux pos list = match list with
     | [] -> failwith "getPos: element not found"
-    | (y,ty2)::tl -> if Syntax.Var.equal x y && Syntax.Source.equalTypes ty ty2 
+    | (y,ty2)::tl -> if Syntax.Var.equal x y && Syntax.Source.Type.equal ty ty2 
                       then pos 
                       else aux (pos+1) tl
     in aux 0 list

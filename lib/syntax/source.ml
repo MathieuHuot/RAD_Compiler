@@ -3,15 +3,29 @@ open Operators
 (* syntax *)
 type 'a tuple = 'a list
 
-type sourceType = Real | Prod of sourceType * sourceType
+module Type = struct
+  type t = Real | Prod of t * t
 
-type sourceSyn = Var of Var.t * sourceType
+  let rec pp fmt = function
+    | Real -> Format.fprintf fmt "real"
+    | Prod (t1, t2) -> Format.fprintf fmt "(%a * %a)" pp t1 pp t2
+
+  let to_string = CCFormat.to_string pp
+
+  let rec equal ty1 ty2 =
+    match (ty1, ty2) with
+    | Real, Real -> true
+    | Prod (t11, t12), Prod (t21, t22) -> equal t11 t21 && equal t12 t22
+    | _ -> false
+end
+
+type sourceSyn = Var of Var.t * Type.t
             | Const of float 
             | Apply1 of op1 * sourceSyn 
             | Apply2 of op2 * sourceSyn * sourceSyn 
-            | Let of Var.t * sourceType * sourceSyn * sourceSyn
+            | Let of Var.t * Type.t * sourceSyn * sourceSyn
 
-type context = ((Var.t * sourceType), sourceSyn) CCList.Assoc.t
+type context = ((Var.t * Type.t), sourceSyn) CCList.Assoc.t
 
 let rec to_string = function
   | Var (v, _) -> Var.to_string v
@@ -38,8 +52,8 @@ let rec map f expr = match f expr with
   | Let (y, ty, expr1, expr2) -> Let (y, ty, map f expr1, map f expr2)
 
 let rec equalTypes ty1 ty2 = match ty1,ty2 with
-| Real, Real                          ->  true
-| Prod(ty11, ty12), Prod(ty21, ty22)  ->  equalTypes ty11 ty21 
+| Type.Real, Type.Real                          ->  true
+| Type.Prod(ty11, ty12), Type.Prod(ty21, ty22)  ->  equalTypes ty11 ty21 
                                           && equalTypes ty12 ty22
 | _                                   ->  false
 
@@ -158,18 +172,18 @@ else failwith ("canonicalAlphaRename: variable "^name^" is already used as a bou
 
 (* simple typecheker *)
 let rec typeSource = function
-| Const _                 -> Some Real
+| Const _                 -> Some Type.Real
 | Var(_,ty)               -> Some ty
 | Apply1(_,expr)          -> 
     begin 
     match typeSource expr with 
-    | Some Real -> Some Real 
+    | Some Type.Real -> Some Type.Real 
     | _         -> None
     end
 | Apply2(_, expr1, expr2) -> 
     begin
     match typeSource expr1,typeSource expr2 with 
-    | (Some Real, Some Real) -> Some Real
+    | (Some Type.Real, Some Type.Real) -> Some Type.Real
     | _                      -> None
     end
 | Let(_,ty, expr1, expr2) -> 

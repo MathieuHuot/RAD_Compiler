@@ -4,7 +4,7 @@ open Syntax
 open Syntax.Source
 open Syntax.Operators
 
-let rec forwardADType (ty : sourceType) : Target.Type.t = match ty with
+let rec forwardADType (ty : Type.t) : Target.Type.t = match ty with
   | Real          -> Target.Type.NProd [Target.Type.Real;Target.Type.Real]
   | Prod(ty1,ty2) -> Target.Type.NProd [forwardADType ty1;forwardADType ty2]
 

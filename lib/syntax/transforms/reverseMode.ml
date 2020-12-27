@@ -5,14 +5,14 @@ open Anf
 open Syntax
 open Syntax.Source
 
-type context = (Syntax.Var.t * sourceType) Target.tuple
+type context = (Syntax.Var.t * Type.t) Target.tuple
 
 let dvar var : Syntax.Var.t * Syntax.Var.t = let str, i = var in (str, i), ("d"^str, i)
 
 let getPos (x,ty) list = 
   let rec aux pos list = match list with
   | [] -> failwith "getPos: element not found"
-  | (y,ty2)::tl -> if Syntax.Var.equal x y && Syntax.Source.equalTypes ty ty2 
+  | (y,ty2)::tl -> if Syntax.Var.equal x y && Syntax.Source.Type.equal ty ty2 
                     then pos 
                     else aux (pos+1) tl
   in aux 0 list

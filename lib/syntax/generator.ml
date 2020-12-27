@@ -1,7 +1,7 @@
 open Random
 open Operators
 
-type varSourceContext = (Var.t * Source.sourceType) list
+type varSourceContext = (Var.t * Source.Type.t) list
 type varTargetContext = (Var.t * Target.Type.t) list
 
 (* Random terms generator for tests *)
@@ -67,7 +67,7 @@ match (sourceSynChoice()) with
         let expr2,_ = syngen context (depth+1) in
         Apply2(randOp2(), expr1, expr2), context
 | _ ->  let x = Var.fresh() in
-        let newcontext = (x, Source.Real)::context in
+        let newcontext = (x, Source.Type.Real)::context in
         let expr1,_ = syngen context (depth+1) in
         let expr2,_ = syngen newcontext (depth+1)  in
         Let(x, Real, expr1, expr2), context
