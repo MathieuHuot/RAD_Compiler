@@ -72,20 +72,6 @@ let rec pp fmt = function
 
 let to_string = CCFormat.to_string pp
 
-let equalOp1 op1 op2 = match op1,op2 with
-  | Cos,Cos     -> true
-  | Sin,Sin     -> true
-  | Exp,Exp     -> true
-  | Minus,Minus -> true
-  | Power n, Power m -> n = m
-  | _           -> false
-
-let equalOp2 op1 op2 = match op1,op2 with
-  | Plus,Plus   -> true
-  | Times,Times -> true
-  | Minus,Minus -> true
-  | _           -> false
-
 let rec map f expr = match f expr with
   | Var (_, _) | Const _ as expr -> expr
   | Apply1 (op, expr) -> Apply1(op, map f expr)
