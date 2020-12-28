@@ -266,7 +266,7 @@ let rec inferType = function
         | Type.Real -> (
             inferType expr2 >>= function
             | Type.Real -> Ok Type.Real
-            | _ -> Error "Argumentt 2 of Apply2 should be a Type.Real")
+            | _ -> Error "Argument 2 of Apply2 should be a Type.Real")
         | _ -> Error "Argument 1 of Apply2 should be a Type.Real"))
   | Let (_, t, expr1, expr2) ->
     CCResult.(
