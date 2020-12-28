@@ -476,7 +476,7 @@ module S = struct
         let d_min = List.fold_left (fun x (_, _, d) -> min x d) d tl in
         Some (generate1 (oneofl (List.filter (fun (_, _, d) -> d = d_min) l)))
 
-  let rec complet_to_type _context n (targetTy : Type.t) (term : sourceSyn)
+  let rec complet_to_type _context n (targetTy : Type.t) (term : t)
       (ty : Type.t) =
     if Type.equal targetTy ty then Some term
     else if n <= 0 then None
@@ -569,9 +569,9 @@ module S = struct
     QCheck.Test.make ~count:100 ~name:"isWellTyped" arbitrary_closed_term
       isWellTyped
 
-  let test_equalTerms =
-    QCheck.Test.make ~count:100 ~name:"equalTerms" arbitrary_closed_term
-      (fun expr -> equalTerms expr expr)
+  let test_equal =
+    QCheck.Test.make ~count:100 ~name:"equal" arbitrary_closed_term
+      (fun expr -> equal expr expr)
 
   let test_interpret =
     QCheck.Test.make ~count:100 ~name:"interp" arbitrary_closed_term
@@ -604,7 +604,7 @@ module S = struct
   let test_list =
     [
       test_isWellTyped;
-      test_equalTerms;
+      test_equal;
       test_interpret;
       test_anf;
       test_weakAnf;

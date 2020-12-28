@@ -9,11 +9,11 @@ val weakAnf: ast -> ast
 val anf: ast -> ast
 end
 
-module SourceAnf: Anf with type ast = Syntax.Source.sourceSyn = struct
+module SourceAnf: Anf with type ast = Syntax.Source.t = struct
 open Syntax.Source
-type ast = sourceSyn
+type ast = t
 
-let isVar (expr : sourceSyn) = match expr with
+let isVar (expr : t) = match expr with
   | Var _ -> true
   | _     -> false
 
@@ -63,7 +63,7 @@ let rec letCommutativity expr = match expr with
 
 let rec letNormalisation expr = 
   let expr2 = letCommutativity expr in 
-  if equalTerms expr expr2 then expr else
+  if equal expr expr2 then expr else
   letNormalisation expr2
 
 let anf expr = 

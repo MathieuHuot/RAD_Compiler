@@ -17,10 +17,10 @@
     val traverse: adt -> adt Strategies.Strategy.strategy -> adt Strategies.Strategy.rewriteResult
   end
   
- module SourceTr : Traverse with type adt = Syntax.Source.sourceSyn = struct
+ module SourceTr : Traverse with type adt = Syntax.Source.t = struct
   open Syntax.Source
   open Strategies.Strategy
-  type adt = sourceSyn
+  type adt = t
   
   let traverse expr strat = 
     match expr with

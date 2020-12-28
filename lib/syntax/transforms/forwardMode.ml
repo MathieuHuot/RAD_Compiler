@@ -31,7 +31,7 @@ let d2op op y1 _ = match op with
   | Minus -> Target.Const(-1.)
 
 (* Simple forward AD transformation. does not assume any ANF *)
-let rec forwardAD (expr : sourceSyn) : Target.t = match expr with
+let rec forwardAD (expr : t) : Target.t = match expr with
 | Const c               ->  Target.Tuple [Target.Const c; Target.Const 0.]
 | Var(x,ty)             ->  let x, dx = dvar x in
                             Target.Tuple [ Target.Var(x,Target.Type.from_source ty);

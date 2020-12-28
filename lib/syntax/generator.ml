@@ -9,7 +9,7 @@ let _ = Random.init 0
 let randOp1Choice() = int 4 (* number of unary operators *)
 let randOp2Choice() = int 3 (* number of binary operators *)
 let sourceSynChoice() = int 5 (* number of term constructors for source language *)
-let tChoice() = int 9 (* number of term constructors for target language *)
+let targetSynChoice() = int 9 (* number of term constructors for target language *)
 
 let randConst() = float 100. (* uniform real number between 0 and 100, arbitrarily chosen *)
 
@@ -37,8 +37,8 @@ let randVar context =
         get_i i context
         end
 
-let sourceSynGen max_depth context : Source.sourceSyn =
-let rec syngen (context : varSourceContext) (depth : int) : Source.sourceSyn * varSourceContext =
+let sourceSynGen max_depth context : Source.t =
+let rec syngen (context : varSourceContext) (depth : int) : Source.t * varSourceContext =
         if depth = max_depth then
         begin
         match (int 2) with
@@ -77,7 +77,7 @@ let expr,_ = syngen context 0 in expr
 
 (* experimental: can't generate from the whole syntax, for simple tests only *)
 (* TODO: to generate from the whole syntax, I need to add types *)
-let tGen max_depth context : Target.t =
+let targetSynGen max_depth context : Target.t =
 let rec syngen (context : varTargetContext) (depth : int) : Target.t * varTargetContext =
         if depth = max_depth then
         begin
@@ -92,7 +92,7 @@ let rec syngen (context : varTargetContext) (depth : int) : Target.t * varTarget
         end 
         end
         else begin
-        match (tChoice()) with
+        match (targetSynChoice()) with
         | 0 | 4 | 6 ->  Const(randConst()), context
         | 1 | 7 ->  begin
                 match context with 

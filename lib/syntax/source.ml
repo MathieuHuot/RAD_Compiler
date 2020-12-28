@@ -1,5 +1,10 @@
 open Operators
 
+module VarSet = CCSet.Make (struct
+  type t = Var.t
+  let compare x y = CCPair.compare CCString.compare CCInt.compare x y
+end)
+
 (* syntax *)
 type 'a tuple = 'a list
 
@@ -19,13 +24,13 @@ module Type = struct
     | _ -> false
 end
 
-type sourceSyn = Var of Var.t * Type.t
+type t = Var of Var.t * Type.t
             | Const of float 
-            | Apply1 of op1 * sourceSyn 
-            | Apply2 of op2 * sourceSyn * sourceSyn 
-            | Let of Var.t * Type.t * sourceSyn * sourceSyn
+            | Apply1 of op1 * t 
+            | Apply2 of op2 * t * t 
+            | Let of Var.t * Type.t * t * t
 
-type context = ((Var.t * Type.t), sourceSyn) CCList.Assoc.t
+type context = ((Var.t * Type.t), t) CCList.Assoc.t
 
 let rec to_string = function
   | Var (v, _) -> Var.to_string v
@@ -51,11 +56,12 @@ let rec map f expr = match f expr with
   | Apply2 (op, expr1,expr2) -> Apply2(op, map f expr1, map f expr2)
   | Let (y, ty, expr1, expr2) -> Let (y, ty, map f expr1, map f expr2)
 
-let rec equalTypes ty1 ty2 = match ty1,ty2 with
-| Type.Real, Type.Real                          ->  true
-| Type.Prod(ty11, ty12), Type.Prod(ty21, ty22)  ->  equalTypes ty11 ty21 
-                                          && equalTypes ty12 ty22
-| _                                   ->  false
+let rec fold f expr a =
+  f expr (match expr with
+  | Var (_, _) | Const _ -> a
+  | Apply1 (_, expr) -> fold f expr a
+  | Apply2 (_, expr1,expr2)
+  | Let (_, _, expr1, expr2) -> fold f expr2 (fold f expr1 a))
 
 let isValue = function
 | Const _   -> true
@@ -79,9 +85,9 @@ let equalOp2 op1 op2 = match op1, op2 with
 (* substitute variable x of type ty by expr1 in expr2 *)
 let subst (x: Var.t) ty expr1 expr2 = map (fun expr ->
     match expr with
-    | Var (a, ty1)      -> if Var.equal a x && equalTypes ty1 ty then expr1 else expr
+    | Var (a, ty1)      -> if Var.equal a x && Type.equal ty1 ty then expr1 else expr
     | Const _           -> expr
-    | Let(y, ty1, _, _) -> if (Var.equal x y && equalTypes ty ty1)
+    | Let(y, ty1, _, _) -> if (Var.equal x y && Type.equal ty ty1)
       then failwith "subst: trying to substitute a bound variable"
       else expr
     | _                 -> expr
@@ -108,17 +114,17 @@ let simSubst context expr = map (fun expr ->
     Two variables match iff they are the same free variable or they are both bound and equal up to renaming.
     This renaming is checked by carrying an explicit list of pairs of bound variables found so far in the term. 
     When an occurence of bound variable is found deeper in the term, we check whether it matches the renaming *)
-let equalTerms expr1 expr2 = 
+let equal ?(eq = Float.equal) expr1 expr2 = 
     let rec eqT expr1 expr2 list = match expr1, expr2 with
-    | Const a,Const b                                          -> a=b
+    | Const a,Const b                                          -> eq a b
     | Var (a, ty1), Var (b, ty2)                               -> (Var.equal a b || List.mem  ((a, ty1), (b, ty2)) list)
-                                                                  && equalTypes ty1 ty2
+                                                                  && Type.equal ty1 ty2
     | Apply1(op1, expr11),Apply1(op2, expr22)                  -> equalOp1 op1 op2 
                                                                   && eqT expr11 expr22 list
     | Apply2(op1, expr11, expr12),Apply2(op2, expr21, expr22)  -> equalOp2 op1 op2 
                                                                   &&  eqT expr11 expr21 list 
                                                                   &&  eqT expr12 expr22 list
-    | Let(x, ty1, expr11, expr12), Let(y, ty2, expr21, expr22) -> equalTypes ty1 ty2 
+    | Let(x, ty1, expr11, expr12), Let(y, ty2, expr21, expr22) -> Type.equal ty1 ty2 
                                                                   && eqT expr11 expr21 list
                                                                   &&  eqT expr12 expr22 (((x, ty1), (y, ty2))::list)                                                      
     | _                                                        -> false
@@ -131,18 +137,12 @@ let closingTerm expr (cont : context) = if not(isContextOfValues cont)
     then failwith "closingTerm: context does not only contain values"
     else List.fold_left (fun expr1 ((x,ty),v) -> subst x ty v expr1) expr cont
 
-let rec freeVar = function
-| Var (x,_)              -> [x]
-| Apply1(_,expr)         -> freeVar expr
-| Apply2(_,expr1, expr2) -> 
-    let expr1Fv = freeVar expr1 in 
-    let expr2Fv = freeVar expr2 in 
-    List.append expr1Fv (List.filter (fun x -> not (List.mem x expr1Fv)) expr2Fv)
-| Let(y,_,expr1, expr2)  -> 
-    let expr1Fv = freeVar expr1 in 
-    let expr2Fv = freeVar expr2 in 
-    List.append expr1Fv (List.filter (fun x -> not(Var.equal x y) && not(List.mem x expr1Fv)) expr2Fv) 
-| _                      -> []
+let freeVar expr =
+  fold (fun expr set -> match expr with
+| Var (x,_)              -> VarSet.add x set
+| Let(y,_, _, _)  ->
+    VarSet.filter (fun x -> not(Var.equal x y)) set
+| _                      -> set) expr VarSet.empty
 
 let rec varNameNotBound (name:string) expr = match expr with
 | Let((str,_),_, expr1, expr2) -> str<> name 
@@ -161,7 +161,7 @@ let indexOf el lis =
   in index_rec 0 lis
 
 let canonicalAlphaRename (name: string) expr =
-let freeV = freeVar expr in 
+let freeV = VarSet.to_list (freeVar expr) in 
 if varNameNotBound name expr then 
 let canRen expr = map (fun expr -> match expr with
       | Var (s, ty)              -> let i = indexOf s freeV in Var ((name, i), ty)
@@ -171,36 +171,37 @@ in canRen expr
 else failwith ("canonicalAlphaRename: variable "^name^" is already used as a bound variable, can't rename free vars canonically with "^name)
 
 (* simple typecheker *)
-let rec typeSource = function
-| Const _                 -> Some Type.Real
-| Var(_,ty)               -> Some ty
+let rec inferType = function
+| Const _                 -> Result.Ok Type.Real
+| Var(_,ty)               -> Result.Ok ty
 | Apply1(_,expr)          -> 
     begin 
-    match typeSource expr with 
-    | Some Type.Real -> Some Type.Real 
-    | _         -> None
+    match inferType expr with 
+    | Result.Ok Type.Real -> Result.Ok Type.Real 
+    | _         -> Result.Error "Argument of Apply1 should be a Type.Real"
     end
 | Apply2(_, expr1, expr2) -> 
     begin
-    match typeSource expr1,typeSource expr2 with 
-    | (Some Type.Real, Some Type.Real) -> Some Type.Real
-    | _                      -> None
+    match inferType expr1,inferType expr2 with 
+    | (Result.Ok Type.Real, Result.Ok Type.Real) -> Result.Ok Type.Real
+    | _                      -> Error "Arguments of Apply2 should be a Type.Real"
     end
 | Let(_,ty, expr1, expr2) -> 
     begin
-    match typeSource expr1,typeSource expr2 with 
-    | (Some ty1, Some ty2) when equalTypes ty1 ty   -> Some ty2
-    | (_,_)                                         -> None
+    match inferType expr1,inferType expr2 with 
+    | (Result.Ok ty1, Result.Ok ty2) when Type.equal ty1 ty   -> Result.Ok ty2
+    | (_,_)                                         ->  Result.Error
+          "in Let binding type of the variable does not correspond to the \
+           type of the expression"
+
     end
 
-let isWellTyped expr = match (typeSource expr) with
-  | None      -> false
-  | Some _    -> true
-    
+let isWellTyped expr = inferType expr |> Result.is_ok
+
 (* checks whether the context captures all the free variables of an expression*)
 let contextComplete expr context =
     let exprFv = freeVar expr in 
-    List.for_all (fun x -> List.exists (fun ((y,_),_) -> Var.equal y x) context) exprFv
+    VarSet.for_all (fun x -> List.exists (fun ((y,_),_) -> Var.equal y x) context) exprFv
 
 let interpretOp1 op v = match op with
     | Cos      -> cos(v)

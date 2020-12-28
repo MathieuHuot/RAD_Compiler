@@ -2,5 +2,5 @@
 type varSourceContext = (Var.t * Source.Type.t) list
 type varTargetContext = (Var.t * Target.Type.t) list
 
-val sourceSynGen : int -> varSourceContext -> Source.sourceSyn
-val tGen : int -> varTargetContext -> Target.t
+val sourceSynGen : int -> varSourceContext -> Source.t
+val targetSynGen : int -> varTargetContext -> Target.t

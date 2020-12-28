@@ -76,7 +76,7 @@ let rec forwardAD12Type (ty : Type.t) : Target.Type.t = match ty with
   | Real          -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real])
   | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD12Type ty1; forwardAD12Type ty2]
 
-let rec forward12AD (expr: sourceSyn) : Target.t = match expr with
+let rec forward12AD (expr: t) : Target.t = match expr with
 | Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.])
 | Var(x,ty)             ->  let x, dx, d2x = dvar2 x in
                             let ty = Target.Type.from_source ty in
@@ -170,7 +170,7 @@ let rec forwardAD22Type (ty : Type.t) : Target.Type.t = match ty with
 
 let dvar22 var : Var.t * Var.t * Var.t * Var.t = let str, i = var in var, ("d1"^str, i), ("d2"^str, i), ("dd"^str, i) 
 
-let rec forward22AD (expr: sourceSyn) : Target.t = match expr with
+let rec forward22AD (expr: t) : Target.t = match expr with
 | Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.])
 | Var(x,ty)             ->  let x, d1x, d2x, ddx = dvar22 x in
                             let ty = Target.Type.from_source ty in
@@ -253,7 +253,7 @@ let d2op33 x d1x d2x d3x dd1x dd2x dd3x dddx y d1y d2y d3y dd1y dd2y dd3y dddy (
                                     Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3x), Target.Apply2(Times, d1y, dd2x)), Target.Apply2(Times, d3y, dd1x)), 
                                     Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3y), Target.Apply2(Times, d1y, dd2y)), Target.Apply2(Times, d3y, dd1y)))))
 
-let rec forward33AD (expr: sourceSyn) : Target.t = match expr with
+let rec forward33AD (expr: t) : Target.t = match expr with
 | Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.])
 | Var(x,ty)             ->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = dvar33 x in
                             let ty = Target.Type.from_source ty in
@@ -341,7 +341,7 @@ let rec addToPos i list y = match i, list with
   | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
   | _,x::tl   -> x::(addToPos (i-1) tl y) 
 
-let rec reverse12 (context: context) (cont : Target.t)  (expr : sourceSyn) : Target.t * Target.t * context = match expr with
+let rec reverse12 (context: context) (cont : Target.t)  (expr : t) : Target.t * Target.t * context = match expr with
   | Const c                   -> begin
                                   match Target.inferType cont with 
                                   | Result.Ok(Target.Type.Arrow(tyList,_)) ->
@@ -441,7 +441,7 @@ let rec reverse12 (context: context) (cont : Target.t)  (expr : sourceSyn) : Tar
                                  let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
                                  Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context
 
-let semiNaiveReverseAD (context: context) (expr: sourceSyn) : Target.t =
+let semiNaiveReverseAD (context: context) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   expr |> SourceAnf.weakAnf |> reverse12 context id_cont |> fun (a,_,_) -> a
@@ -453,7 +453,7 @@ let rec initialize_rad list = match list with
  | _::[] -> [Target.Const 1.] 
  | _::tl -> (Target.Const 0.)::initialize_rad tl
 
-let grad (context: context) (expr: sourceSyn) : Target.t =
+let grad (context: context) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = reverse12 context id_cont (SourceAnf.weakAnf expr) in
@@ -528,7 +528,7 @@ module MixedJets = struct
     | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
     | _,x::tl   -> x::(addToPos (i-1) y tl) 
   
-  let rec reverse12 (context: context) (cont : Target.t)  (expr : sourceSyn) : Target.t * Target.t * context = match expr with
+  let rec reverse12 (context: context) (cont : Target.t)  (expr : t) : Target.t * Target.t * context = match expr with
     | Const c                   -> begin
                                     match Target.inferType cont with 
                                     | Result.Ok(Target.Type.Arrow(tyList,_)) ->
