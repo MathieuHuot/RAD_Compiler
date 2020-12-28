@@ -22,7 +22,7 @@ let rec addToPos i list y = match i, list with
   | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
   | _,x::tl   -> x::(addToPos (i-1) tl y) 
 
-  let rec rad (context: context) (cont : Target.t)  (expr : sourceSyn) : Target.t * Target.t * context = match expr with
+  let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target.t * context = match expr with
     | Const c                   -> begin
                                     match Target.inferType cont with 
                                     | Result.Ok (Target.Type.Arrow(tyList,_)) ->
@@ -122,7 +122,7 @@ let rec addToPos i list y = match i, list with
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
                                    Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context
 
-let semiNaiveReverseAD (context: context) (expr: sourceSyn) : Target.t =
+let semiNaiveReverseAD (context: context) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   expr |> SourceAnf.weakAnf |> rad context id_cont |> fun (a,_,_) -> a
@@ -134,7 +134,7 @@ let rec initialize_rad list = match list with
  | _::[] -> [Target.Const 1.] 
  | _::tl -> (Target.Const 0.)::initialize_rad tl
 
-let grad (context: context) (expr: sourceSyn) : Target.t =
+let grad (context: context) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = rad context id_cont (SourceAnf.anf expr) in
