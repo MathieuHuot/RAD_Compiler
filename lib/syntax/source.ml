@@ -67,21 +67,6 @@ let isValue = function
 | Const _   -> true
 | _         -> false
 
-let equalOp1 op1 op2 = match op1, op2 with
-| Cos, Cos       -> true
-| Sin, Sin       -> true
-| Exp, Exp       -> true
-| Minus, Minus   -> true
-| Power n, Power m when n=m
-                 -> true
-| _              -> false
-
-let equalOp2 op1 op2 = match op1, op2 with
-| Plus, Plus     -> true
-| Times, Times   -> true
-| Minus, Minus   -> true
-| _              -> false
-
 (* substitute variable x of type ty by expr1 in expr2 *)
 let subst (x: Var.t) ty expr1 expr2 = map (fun expr ->
     match expr with

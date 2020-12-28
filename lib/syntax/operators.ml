@@ -10,6 +10,20 @@ type op2 = Plus | Times | Minus
 
 let is_infix _ = true
 
+let equalOp1 op1 op2 = match op1,op2 with
+  | Cos,Cos     -> true
+  | Sin,Sin     -> true
+  | Exp,Exp     -> true
+  | Minus,Minus -> true
+  | Power n, Power m -> n = m
+  | _           -> false
+
+let equalOp2 op1 op2 = match op1,op2 with
+  | Plus,Plus   -> true
+  | Times,Times -> true
+  | Minus,Minus -> true
+  | _           -> false
+
 let to_string_op1 = function
   | Cos -> "cos "
   | Sin -> "sin "
