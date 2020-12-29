@@ -24,6 +24,19 @@ let equalOp2 op1 op2 = match op1,op2 with
   | Minus,Minus -> true
   | _           -> false
 
+let interpretOp1 op v = match op with
+    | Cos      -> cos(v)
+    | Sin      -> sin(v)
+    | Exp      -> exp(v)
+    | Minus    -> -.v
+    | Power(n) -> v ** float_of_int n
+
+let interpretOp2 op val1 val2= match op with
+    | Plus  -> val1+.val2
+    | Times -> val1*.val2
+    | Minus -> val1-.val2
+
+
 let to_string_op1 = function
   | Cos -> "cos "
   | Sin -> "sin "

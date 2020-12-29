@@ -188,18 +188,6 @@ let contextComplete expr context =
     let exprFv = freeVar expr in 
     VarSet.for_all (fun x -> List.exists (fun ((y,_),_) -> Var.equal y x) context) exprFv
 
-let interpretOp1 op v = match op with
-    | Cos      -> cos(v)
-    | Sin      -> sin(v)
-    | Exp      -> exp(v)
-    | Minus    -> -.v
-    | Power(n) -> v ** float_of_int n
-    
-let interpretOp2 op val1 val2= match op with
-    | Plus  -> val1+.val2
-    | Times -> val1*.val2
-    | Minus -> val1-.val2
-
 (* interpreter *)
 let interpret expr context = 
 if not(isWellTyped expr) then failwith "interpret: the term is ill-typed";

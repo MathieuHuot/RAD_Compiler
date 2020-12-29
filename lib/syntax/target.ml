@@ -298,25 +298,11 @@ let contextComplete expr context =
   VarSet.for_all (fun x -> (List.exists (fun ((y,_),_) -> Var.equal y x) context)) exprFv
 
 let interpretOp1 op expr = match expr with
-| Const v ->
-  begin
-  match op with
-  | Cos     -> Const(cos(v))
-  | Sin     -> Const(sin(v))
-  | Exp     -> Const(exp(v))
-  | Minus   -> Const(-.v)
-  | Power n -> Const(v ** float_of_int n)
-  end
+| Const v -> Const (interpretOp1 op v)
 | expr -> Apply1 (op, expr)
 
 let interpretOp2 op expr1 expr2 = match expr1, expr2 with
-| (Const v1,Const v2) ->
-  begin
-  match op with
-  | Plus  -> Const(v1+.v2)
-  | Times -> Const(v1*.v2)
-  | Minus -> Const(v1-.v2)
-  end
+| (Const v1,Const v2) -> Const (interpretOp2 op v1 v2)
 | expr1, expr2 -> Apply2(op, expr1, expr2)
 
 (* assumes the context captures all free vars, and is only given values *)
