@@ -185,6 +185,7 @@ let rec run expr = match expr with
   | Apply2(Times,Const 0.,_)      -> Success(Const 0.)
   | Apply2(Plus,expr,Const 0.)    -> Success(expr)
   | Apply2(Plus,Const 0.,expr)    -> Success(expr)
+  | Apply2(Minus,expr,Const 0.)    -> Success(expr)
   | Apply2(Minus,Const 0.,expr)   -> Success(Apply1(Minus, expr))
   | _                             -> Tr.traverse expr run 
 end
