@@ -205,3 +205,20 @@ let rec interp = function
                                interp expr3
 | _                         -> failwith "interpret: the expression should not contain this pattern"
 in interp expr2
+
+(** {2 Traverse} *)
+module Traverse (S : Strategy.S) = struct
+  open S
+
+  let rec map f expr =
+    return expr >>= f >>= function
+    | (Var (_, _) | Const _) as expr -> return expr
+    | Apply1 (op, expr) ->
+        map f expr >|= fun expr -> Apply1 (op, expr)
+    | Apply2 (op, expr1, expr2) ->
+        apply2 (map f) expr1 expr2 >|= fun (expr1,expr2) ->
+        Apply2 (op, expr1, expr2)
+    | Let (y, ty, expr1, expr2) ->
+        apply2 (map f) expr1 expr2 >|= fun (expr1,expr2) ->
+        Let (y, ty, expr1, expr2)
+end

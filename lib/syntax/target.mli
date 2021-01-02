@@ -58,6 +58,7 @@ type t =
       [expr1 = Tuple (expr11, expr12, …)] *)
 
 type context = ((Var.t * Type.t), t) CCList.Assoc.t
+(** Type of a context. Associate a variable and its type to an expression*)
 
 val varToSyn : (Var.t * Type.t) list -> t list
 (** [varToSyn l] maps each pair [(x,t)] in [l] to [Var (x,t)] *)
@@ -123,3 +124,8 @@ val interpret : t -> context -> t
     and interprets [expr] under the context [c] as much as possible.
     [expr] does not need to be closed under [c] and does not need to be
     well typed.*)
+
+(** {2 Traverse} *)
+module Traverse : functor (S: Strategy.S) -> sig
+  val map : (t -> t Rewriter.output) -> t -> t Rewriter.output
+end

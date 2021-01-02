@@ -376,3 +376,28 @@ let rec interp expr = match expr with
     | expr                    -> NCase(expr, varList, interp expr2) end
 | expr                               ->  expr
 in interp expr2
+
+(** {2 Traverse} *)
+module Traverse (S : Strategy.S) = struct
+  open S
+
+  let rec map f expr =
+    return expr >>= f >>= function
+    | (Var (_, _) | Const _) as expr -> return expr
+    | Apply1 (op, expr) -> map f expr >|= fun expr -> Apply1 (op, expr)
+    | Apply2 (op, expr1, expr2) ->
+        apply2 (map f) expr1 expr2 >|= fun (expr1, expr2) ->
+        Apply2 (op, expr1, expr2)
+    | Let (y, ty, expr1, expr2) ->
+        apply2 (map f) expr1 expr2 >|= fun (expr1, expr2) ->
+        Let (y, ty, expr1, expr2)
+    | Fun (l, expr) -> map f expr >|= fun expr -> Fun (l, expr)
+    | App (expr1, l) -> (
+        applyl (map f) (expr1 :: l) >|= function
+        | expr1 :: l -> App (expr1, l)
+        | [] -> assert false)
+    | Tuple l -> applyl (map f) l >|= fun l -> Tuple l
+    | NCase (expr1, varList, expr2) ->
+        apply2 (map f) expr1 expr2 >|= fun (expr1, expr2) ->
+        NCase (expr1, varList, expr2)
+end

@@ -86,3 +86,8 @@ val interpret : t -> context -> float
 (** [strict_interpret expr c] takes an expression [expr] and a context [c]
     and interprets [expr] under the context [c]. [expr] need to be a well typed
     term and closed with [c].*)
+
+(** {2 Traverse} *)
+module Traverse : functor (S: Strategy.S) -> sig
+  val map : (t -> t Rewriter.output) -> t -> t Rewriter.output
+end
