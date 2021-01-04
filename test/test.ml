@@ -123,8 +123,8 @@ module T = struct
         let d_min = List.fold_left (fun x (_, _, d) -> min x d) d tl in
         Some (generate1 (oneofl (List.filter (fun (_, _, d) -> d = d_min) l)))
 
-  let rec complet_to_type context n (targetTy : Type.t) (term : t)
-      (ty : Type.t) =
+  let rec complet_to_type context n (targetTy : Type.t) (term : t) (ty : Type.t)
+      =
     if Type.equal targetTy ty then Some term
     else if n <= 0 then None
     else
@@ -212,9 +212,7 @@ module T = struct
             match targetTy with
             | Type.Real -> map const (float_bound_exclusive 1.)
             | Arrow (tyList, retType) ->
-                let argsList =
-                  List.map (fun tv -> (Var.fresh (), tv)) tyList
-                in
+                let argsList = List.map (fun tv -> (Var.fresh (), tv)) tyList in
                 let newContext = argsList @ context in
                 map
                   (fun expr -> func argsList expr)
@@ -480,7 +478,8 @@ module S = struct
       (ty : Type.t) =
     if Type.equal targetTy ty then Some term
     else if n <= 0 then None
-    else match (targetTy, ty) with Type.Real, Type.Real -> Some term | _ -> None
+    else
+      match (targetTy, ty) with Type.Real, Type.Real -> Some term | _ -> None
 
   and get_from_context context n targetTy =
     List.filter_map
@@ -570,8 +569,8 @@ module S = struct
       isWellTyped
 
   let test_equal =
-    QCheck.Test.make ~count:100 ~name:"equal" arbitrary_closed_term
-      (fun expr -> equal expr expr)
+    QCheck.Test.make ~count:100 ~name:"equal" arbitrary_closed_term (fun expr ->
+        equal expr expr)
 
   let test_interpret =
     QCheck.Test.make ~count:100 ~name:"interp" arbitrary_closed_term
@@ -612,6 +611,22 @@ module S = struct
     ]
 end
 
+module O = struct
+  module TR = Target.Traverse (Strategy.Repeat)
+  module TO = Target.Traverse (Strategy.One)
+  module TA = Target.Traverse (Strategy.All)
+
+  let test_repeat opt =
+    QCheck.Test.make ~count:10 ~name:"repeat" T.arbitrary_closed_term
+      (fun expr ->
+        let expr =
+          match TR.map opt expr with Failure expr | Success expr -> expr
+        in
+        match TO.map opt expr with Failure _ -> true | Success _ -> false)
+
+  let test_list = [ test_repeat Optimisation.T.constantPropagation ]
+end
+
 let () =
   let term = QCheck.Gen.generate1 (T.term_gen [] 10 Target.Type.Real) in
   Format.printf "%a@." Target.pp term
@@ -623,10 +638,12 @@ let () =
     List.map QCheck_alcotest.to_alcotest T.test_opti_freeVar_list
   in
   let source = List.map QCheck_alcotest.to_alcotest S.test_list in
+  let optimisation = List.map QCheck_alcotest.to_alcotest O.test_list in
   Alcotest.run "Main test"
     [
       ("Target Language", target);
       ("Opti Target Language", target_opti);
       ("Opti Free Var Target Language", target_opti_freeVar);
       ("Source Language", source);
+      ("New optimisation", optimisation);
     ]
