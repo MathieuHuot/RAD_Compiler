@@ -67,23 +67,21 @@ module Repeat : S = struct
     | Failure x -> if success then Success x else Failure x
 
   let ( >>= ) x f =
-    match x with
-    | Success x -> repeat true x f
-    | Failure x -> repeat false x f
+    match x with Success x -> repeat true x f | Failure x -> repeat false x f
 
   let ( >|= ) x f =
     match x with Success x -> Success (f x) | Failure x -> Failure (f x)
 
   let apply2 f x1 x2 =
     match repeat false x1 f with
-    | Success x1 -> (
-        match repeat false x2 f with Success x2 | Failure x2 -> Success (x1, x2))
+    | Success x1 -> repeat true x2 f >|= fun x2 -> (x1, x2)
     | Failure x1 -> repeat false x2 f >|= fun x2 -> (x1, x2)
 
   let rec applyl f = function
     | [] -> Failure []
     | h :: t -> (
         match repeat false h f with
-        | Success x -> applyl f t >>= fun l -> Success (x :: l)
+        | Success x -> (
+            match applyl f t with Success l | Failure l -> Success (x :: l))
         | Failure _ -> applyl f t >|= fun l -> h :: l)
 end
