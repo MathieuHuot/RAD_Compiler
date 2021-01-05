@@ -125,7 +125,7 @@ module T = struct
            let y:ty2 = expr1 in
            let x:ty1 = expr2 in
            expr3 *)
-        (* TODO: with this transformation with loose the information that y does not
+        (* TODO: with this transformation will loose the information that y does not
            appear in expr3 *)
         Success (Let (y, ty2, expr1, Let (x, ty1, expr2, expr3)))
     | NCase (NCase (expr1, varList1, expr2), varList2, expr3) ->
