@@ -125,13 +125,9 @@ open Syntax.Target
 open Strategies.Strategy
 
 let rec run expr = match expr with
-  | Apply2(Plus,Const a,Const b)   -> Success(Const(a+.b))
-  | Apply2(Times,Const a,Const b)  -> Success(Const(a*.b))
-  | Apply1(Cos, Const c)           -> Success(Const(cos c))
-  | Apply1(Sin, Const c)           -> Success(Const(sin c))
-  | Apply1(Exp, Const c)           -> Success(Const(exp c))
-  | Apply1(Power n, Const c)       -> Success(Const (c ** float_of_int n))
-  | expr                           -> Tr.traverse expr run
+  | Apply2(op,Const a,Const b) -> Success(Const(Syntax.Operators.interpretOp2 op a b))
+  | Apply1(op, Const c)        -> Success(Const(Syntax.Operators.interpretOp1 op c))
+  | expr                       -> Tr.traverse expr run
 end
 
 module SimpleAlgebraicSimplifications: Optim = 
@@ -143,19 +139,18 @@ open Strategies.Strategy
 let rec run expr = match expr with
   | Apply2(Plus,expr1,Apply1(Minus,expr2)) 
       -> Success(Apply2(Minus,expr1,expr2))
-  | Apply2(Times,Const(-1.),expr)  
+  | Apply2(Times,Const(-1.),expr)
+  | Apply2(Times,expr,Const(-1.))
       -> Success(Apply1(Minus,expr))
   | Apply1(Minus,Apply1(Minus,expr))
       -> Success(expr)
-  | Apply1(Minus,Const c)          
-      -> Success(Const(-.c))
   | Apply2(Minus,expr1,Apply1(Minus,expr2))
       -> Success(Apply2(Plus,expr1,expr2))
   | Let(x,ty,Const(c),e)          
+      (* TODO: move this to inlining optimisation *)
       -> Success(subst x ty (Const(c)) e)
-  | Apply2(Times,Apply1(Minus,expr1),expr2) 
-      -> Success(Apply1(Minus,Apply2(Times,expr1,expr2)))
-  | Apply2(Times,expr1,Apply1(Minus,expr2)) 
+  | Apply2(Times,Apply1(Minus,expr1),expr2)
+  | Apply2(Times,expr1,Apply1(Minus,expr2))
       -> Success(Apply1(Minus,Apply2(Times,expr1,expr2)))
   | Apply1(Power n, Apply1(Minus, expr))
       -> if n mod 2=0
@@ -164,7 +159,6 @@ let rec run expr = match expr with
   | Apply1(Power n,Apply1(Exp,expr))
       -> Success(Apply1(Exp,Apply2(Times,Const(float_of_int n),expr)))
   | Apply2(Times,expr,Const 1.)   
-      -> Success(expr)
   | Apply2(Times,Const 1.,expr)   
       -> Success(expr)
   | Apply2(Times,Apply1(Exp,expr1),Apply1(Exp,expr2)) 
@@ -185,6 +179,7 @@ let rec run expr = match expr with
   | Apply2(Times,Const 0.,_)      -> Success(Const 0.)
   | Apply2(Plus,expr,Const 0.)    -> Success(expr)
   | Apply2(Plus,Const 0.,expr)    -> Success(expr)
+  | Apply2(Minus,expr,Const 0.)    -> Success(expr)
   | Apply2(Minus,Const 0.,expr)   -> Success(Apply1(Minus, expr))
   | _                             -> Tr.traverse expr run 
 end
