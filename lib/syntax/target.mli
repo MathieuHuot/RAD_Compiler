@@ -63,6 +63,9 @@ type context = ((Var.t * Type.t), t) CCList.Assoc.t
 val varToSyn : (Var.t * Type.t) list -> t list
 (** [varToSyn l] maps each pair [(x,t)] in [l] to [Var (x,t)] *)
 
+val from_source: Source.t -> t
+(** [from_source] embeds Source.t into Target.t  *)
+
 val pp : Format.formatter -> t -> unit
 (** [Format.printf "%a@." pp expr] pretty prints [expr]*)
 

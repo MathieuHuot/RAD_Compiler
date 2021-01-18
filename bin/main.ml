@@ -132,6 +132,10 @@ let _ =
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
     Source.pp g6 Source.pp g7 Target.pp g8
     Target.pp g9;
+    
+  let g10 = Transforms.ReverseMode.grad2 [] g7 in
+  Format.fprintf out "Optimized grad of term:@.%a@.@.@."
+  Target.pp g10;
 
   let g6 =
     Source.Apply1

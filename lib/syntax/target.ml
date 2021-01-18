@@ -57,6 +57,13 @@ type context = ((Var.t * Type.t), t) CCList.Assoc.t
 
 let varToSyn varList = List.map (fun (x, ty) -> Var(x, ty)) varList
 
+let rec from_source (expr: Source.t) : t = match expr with
+  | Const c                  -> Const c
+  | Var(x, ty)               -> Var(x, Type.from_source ty)
+  | Apply1(op, expr)         -> Apply1(op, from_source expr)
+  | Apply2(op, expr1, expr2) -> Apply2(op, from_source expr1, from_source expr2)
+  | Let(x, ty, expr1, expr2) -> Let(x, Type.from_source ty, from_source expr1, from_source expr2)
+
 let rec pp fmt = function
   | Var (v, _) -> Var.pp fmt v
   | Const c -> Format.pp_print_float fmt c

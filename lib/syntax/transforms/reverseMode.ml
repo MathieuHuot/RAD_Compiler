@@ -22,7 +22,7 @@ let rec addToPos i list y = match i, list with
   | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
   | _,x::tl   -> x::(addToPos (i-1) tl y) 
 
-  let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target.t * context = match expr with
+let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target.t * context = match expr with
     | Const c                   -> begin
                                     match Target.inferType cont with 
                                     | Result.Ok (Target.Type.Arrow(tyList,_)) ->
@@ -150,3 +150,87 @@ let grad (context: context) (expr: t) : Target.t =
     | _                   -> failwith "grad: should return a pair"
     end
     | _ -> failwith "grad: continuation should have a function type"
+
+(* Optimized version of rad where the continuation is not fully computed then optimized, but instead optimized as the term is built. *)
+let rec rad2 (context: context) (cont : Target.t)  (expr : t) : Target.t * Target.t * context = match expr with
+    | Const c                   ->  let newVar, newTy = (Syntax.Var.fresh(), Target.Type.Real) in
+                                    begin match cont with 
+                                      | Fun(varList, expr) -> 
+                                        let newCont = Target.Fun(varList@[(newVar, newTy)], expr) in
+                                        Target.Tuple [Target.Const c; newCont], newCont, context
+                                      | _ -> failwith "rad2: the continuation should be a function"
+                                    end
+    | Var(x, ty)                ->  let newVar, newTy = (Syntax.Var.fresh(), Target.Type.from_source ty) in
+                                    begin match cont with 
+                                      | Fun(varList, e) ->
+                                        let pos_x = getPos (x, ty) context in
+                                        let (y, ty2) = List.nth varList pos_x in  
+                                        let newCont = Target.Fun(varList@[(newVar, newTy)], Target.subst y ty2 (Apply2(Plus, Var(y, ty2), Var(newVar, newTy))) e) in
+                                        Target.Tuple [Target.Var(x, newTy); newCont], newCont, context
+                                      | _ -> failwith "rad2: the continuation should be a function"
+                                    end
+    | Apply1(op, expr)          ->  begin match cont, expr with 
+                                      | Fun(varList, e), Var(x, ty) ->
+                                        let newVar, newTy = (Syntax.Var.fresh(), Target.Type.from_source ty) in
+                                        let pos_x = getPos (x, ty) context in
+                                        let dop y = begin match op with
+                                          | Cos     -> Target.Apply1(Minus,Target.Apply1(Sin, y))
+                                          | Sin     -> Target.Apply1(Cos, y)
+                                          | Exp     -> Target.Apply1(Exp, y)
+                                          | Minus   -> Target.Const (-1.)
+                                          | Power 0 -> Target.Const(0.)
+                                          | Power n -> Target.Apply2(Times, Target.Const(float_of_int (n-1)), Target.Apply1(Power(n-1), y))
+                                        end in
+                                        let partialOp = fun z -> Target.Apply2(Times, dop (Target.Var(x, newTy)), z) in
+                                        let (y, ty2) = List.nth varList pos_x in 
+                                        let newCont = Target.Fun(varList@[(newVar, newTy)], Target.subst y ty2 (Apply2(Plus, Var(y, ty2), partialOp(Var(newVar, Target.Type.Real)))) e) in
+                                        Target.Tuple [Target.Apply1(op, Target.Var(x,newTy)); newCont], newCont, context
+                                      | _ -> failwith "rad2: the continuation should be a function"
+                                   end
+    | Apply2(op, expr1, expr2)  -> begin match cont, expr1, expr2 with 
+                                      | Fun(varList, e), Var(x1, ty1), Var(x2, ty2) ->
+                                        let newVar, newTy1, newTy2 = (Syntax.Var.fresh(), Target.Type.from_source ty1, Target.Type.from_source ty2) in
+                                        let pos_x1 = getPos (x1, ty1) context in
+                                        let pos_x2 = getPos (x2, ty2) context in
+                                        let (y1, ty3) = List.nth varList pos_x1 in
+                                        let (y2, ty4) = List.nth varList pos_x2 in  
+                                        let d1op _ y2 = begin match op with
+                                          | Plus  -> Target.Const(1.)
+                                          | Times -> y2
+                                          | Minus -> Target.Const(1.)
+                                          end in 
+                                        let d2op y1 _ = begin match op with
+                                          | Plus  -> Target.Const(1.)
+                                          | Times -> y1
+                                          | Minus -> Target.Const(-1.)
+                                          end in
+                                        let partial1Op = fun z -> Target.Apply2(Times, d1op (Target.Var(x1, newTy1)) (Target.Var(x2, newTy2)), z) in
+                                        let partial2Op = fun z -> Target.Apply2(Times, d2op (Target.Var(x1, Target.Type.Real)) (Target.Var(x2, Target.Type.Real)), z) in  
+                                        let newCont = Target.Fun(varList@[(newVar, Target.Type.Real)], 
+                                                                  Target.simSubst [((y1, ty3), Apply2(Plus, Var(y1, ty3), partial1Op(Var(newVar, Target.Type.Real)))) 
+                                                                                  ;((y2, ty4), Apply2(Plus, Var(y2, ty4), partial2Op(Var(newVar, Target.Type.Real))))]  
+                                                                                  e) in
+                                        Target.Tuple [Target.Apply2(op, Target.Var(x1, newTy1), Target.Var(x2, newTy2)); newCont], newCont, context
+                                      | _ -> failwith "rad2: the continuation should be a function"
+                                   end
+    | Let(x, ty, expr1, expr2)  -> let _, cont, context = rad2 context cont expr1 in   
+                                   let newContext = context @ [(x,ty)] in
+                                   let dexpr2, cont, context = rad2 newContext cont expr2 in 
+                                   Let(x, Target.Type.from_source ty, Target.from_source expr1, dexpr2), cont, context
+
+let apply_sensitivities dexpr cont = 
+  let f expr = match expr with
+    | Target.Tuple([expr1; expr2]) when Target.equal expr2 cont -> 
+      begin match cont with 
+      | Target.Fun(varList, e) -> Target.Tuple([expr1; Target.simSubst (List.combine varList (initialize_rad varList)) e])
+      | _ -> failwith "apply_sensitivities: continuation should have a function type"
+      end
+    | _ -> expr
+  in 
+  Target.map f dexpr
+
+let grad2 (context: context) (expr: t) : Target.t =
+  let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
+  let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
+  let dexpr, cont, _ = rad2 context id_cont (SourceAnf.anf expr) in
+  apply_sensitivities dexpr cont
