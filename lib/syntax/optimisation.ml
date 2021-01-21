@@ -36,7 +36,7 @@ module T = struct
         (* expr1 - (- expr2) -> expr1 + expr2 *)
         Success (Apply2 (Plus, expr1, expr2))
     | Let (x, ty, Const c, e) ->
-        (* TODO: move this to inlining optimisation *)
+        (* TODO: move this to inlining optimisation and generalise this to value inlining *)
         Success (Target.subst x ty (Const c) e)
     | Apply2 (Times, Apply1 (Minus, expr1), expr2)
     | Apply2 (Times, expr1, Apply1 (Minus, expr2)) ->
@@ -107,11 +107,17 @@ module T = struct
           (* e1 * e2 + e1 * e4 -> e1 * (e2 + e4) *)
           Success (Apply2 (Times, expr1, Apply2 (Plus, expr2, expr4)))
         else if expr2 = expr4 then
-          (* e1 * e2 + e3 * e2 -> (e1 + e3) * e2 *)
-          Success (Apply2 (Times, Apply2 (Plus, expr1, expr3), expr2))
+          (* e1 * e2 + e3 * e2 -> e2 * (e1 + e3) *)
+          Success (Apply2 (Times, expr2, Apply2 (Plus, expr1, expr3)))
+        else if expr1 = expr4 then
+          (* e1 * e2 + e3 * e1 -> e1 * (e2 + e3) *)
+          Success (Apply2 (Times, expr1, Apply2 (Plus, expr2, expr3)))
+        else if expr2 = expr3 then
+          (* e1 * e2 + e2 * e4 -> e2 * (e1 + e4) *)
+          Success (Apply2 (Times, expr2, Apply2 (Plus, expr1, expr4)))
         else Failure expr
-          (* TODO: add more cases if operators are commutative *)
     | Apply2 (Plus, expr1, expr2) when Target.equal expr1 expr2 ->
+        (* e1 + e1 -> 2 * e1 *)
         Success (Apply2 (Times, Const 2., expr1))
     | expr -> Failure expr
 
@@ -125,8 +131,6 @@ module T = struct
            let y:ty2 = expr1 in
            let x:ty1 = expr2 in
            expr3 *)
-        (* TODO: with this transformation will loose the information that y does not
-           appear in expr3 *)
         Success (Let (y, ty2, expr1, Let (x, ty1, expr2, expr3)))
     | NCase (NCase (expr1, varList1, expr2), varList2, expr3) ->
         Success (NCase (expr1, varList1, NCase (expr2, varList2, expr3)))
@@ -135,6 +139,98 @@ module T = struct
     | Let (x, ty, NCase (expr1, varList, expr2), expr3) ->
         Success (NCase (expr1, varList, Let (x, ty, expr2, expr3)))
     | expr -> Failure expr
+
+  (* TODO turn this into a inlininng optimisation *)
+  let forwardSubstitution : Target.t -> Target.t output = function
+    | Let (x, ty, (Const _ as expr), e) | Let (x, _, (Var (_, ty) as expr), e)
+      ->
+        Success (Target.subst x ty expr e)
+    | NCase (Tuple exprList, varList, expr) ->
+        if List.compare_lengths exprList varList <> 0 then
+          failwith "ForwardSubstitution: tuple wrong number of arguments"
+        else
+          let context, rest =
+            List.partition
+              (fun (_, x) ->
+                match x with
+                | Target.Var _ | Target.Const _ -> true
+                | _ -> false)
+              (List.combine varList exprList)
+          in
+          if rest = [] then
+            Success (Target.simSubst (List.combine varList exprList) expr)
+          else
+            let varList1, exprList1 = List.split rest in
+            Success
+              (NCase (Tuple exprList1, varList1, Target.simSubst context expr))
+    | expr -> Failure expr
+
+  (* TODO: unsafe, does not terminate
+   * Use NCase to make convergent
+   * [@ocaml.alert unsafe "Does not terminate"]*)
+  let letSimplification : Target.t -> Target.t output = function
+    (* let x=e1 in let y=e1 in e2 -> let x=e0 in let y=x in e2 *)
+    | Let (x1, ty1, e0, Let (x2, ty2, e1, e2)) when Target.equal e0 e1 ->
+        Success (Let (x1, ty1, e0, Let (x2, ty2, Var (x1, ty1), e2)))
+    (* let x=e0 in let y=e1 in e2 -> let y=e1 in let x=e0 in e2 (x not a FV in e1) *)
+    | Let (x1, ty1, e0, Let (x2, ty2, e1, e2))
+      when not (Target.VarSet.mem x1 (Target.freeVar e1)) ->
+        Success (Let (x2, ty2, e1, Let (x1, ty1, e0, e2)))
+    | expr -> Failure expr
+
+  let lambdaRemoval : Target.t -> Target.t output = function
+    (* replaces inlined lambdas in (fun x1...xn.e)[e1...en] to
+        let x1 = e1 in let x2 = e2 in ... in let xn = en in e
+        for later optimisations like forward substitution *)
+    | App (Fun (varList, expr), exprList) ->
+        if not (List.length varList = List.length exprList) then
+          failwith
+            "LambdaRemoval: Function applied to wrong number of arguments"
+        else Success (NCase (Tuple exprList, varList, expr))
+    (* CBN evaluates a variable which has a function type *)
+    (* TODO: why doing some sort of lazy evaluation for function ? *)
+    | Let (x, ty, expr1, expr2) when Target.Type.isArrow ty ->
+        Success (Target.subst x ty expr1 expr2)
+    | NCase (Tuple exprList, varList, expr) as e ->
+        if List.exists (fun (_, ty) -> Target.Type.isArrow ty) varList then
+          let list = List.combine varList exprList in
+          let arrowList, nonArrowList =
+            List.partition (fun ((_, ty), _) -> Target.Type.isArrow ty) list
+          in
+          let var2, expr2 = List.split nonArrowList in
+          Success (NCase (Tuple expr2, var2, Target.simSubst arrowList expr))
+        else Failure e
+    | expr -> Failure expr
+
+  (* TODO: This is just a special case of inlining *)
+  let deadVarElim : (Var.t * Target.Type.t) list -> Target.t -> Target.t output
+      =
+   fun unusedVar expr ->
+    match expr with
+    | Let (x, ty, _, expr) when List.mem (x, ty) unusedVar -> Success expr
+    | NCase (_, varList, expr)
+      when List.for_all (fun y -> List.mem y unusedVar) varList ->
+        Success expr
+    | NCase (Tuple exprList, varList, expr) ->
+        let list = List.combine exprList varList in
+        (* remove each expr bound to an unused var *)
+        let filteredList =
+          List.filter (fun (_, y) -> not (List.mem y unusedVar)) list
+        in
+        let filtExpr, filtVar = List.split filteredList in
+        Success (NCase (Tuple filtExpr, filtVar, expr))
+    | expr -> Failure expr
+
+  let oneCaseRemoval : Target.t -> Target.t output = function
+    (* TODO: this optimisation is unsound, it changes the type of the expression
+     * | Tuple [ expr ] -> Success expr*)
+    (* TODO: This version is unsound, we need to unpack also the Tuple to be correct
+     * | NCase (expr1, [ (x, ty) ], expr2) ->
+      Success (Let (x, ty, expr1, expr2))*)
+    | NCase (Tuple [ expr1 ], [ (x, ty) ], expr2) ->
+        Success (Let (x, ty, expr1, expr2))
+    | expr -> Failure expr
+
 end
 
 module S = struct
