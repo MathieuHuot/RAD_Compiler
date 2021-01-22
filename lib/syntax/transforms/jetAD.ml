@@ -6,7 +6,7 @@ open Operators
 (* This method computes (1,2) velocities. *) 
 module Jets12 = struct
 open Source
-
+(* TODO: might be wrong. *)
 (* second derivative of binary operator *)
 let dop2 x dx d2x (op: op1) = match op with
   | Cos     -> Target.Apply2(Minus, Target.Apply1(Minus, Target.Apply2(Times, Target.Apply1(Cos, x), dx)), Target.Apply2(Times, Target.Apply1(Sin, x), d2x))
@@ -401,38 +401,6 @@ module MixedJets = struct
   
   let dvar var : Syntax.Var.t * Syntax.Var.t * Syntax.Var.t = let str, i = var in (str, i), ("d"^str, i), ("D"^str,i) 
   
-  let dop2 y (op: op1) = match op with
-    | Cos     -> Target.Apply1(Minus, Target.Apply1(Sin, y))
-    | Sin     -> Target.Apply1(Cos, y)
-    | Exp     -> Target.Apply1(Exp, y)
-    | Minus   -> Target.Const (-1.)
-    | Power 0 -> Target.Const(0.)
-    | Power n -> Target.Apply2(Times, Target.Const(float_of_int (n-1)), Target.Apply1(Power(n-1), y))
-
-  (* \partial^2 op / partial x1 partial x1 *)
-  let d11op _ _ (op: op2) = match op with
-    | Plus  -> Target.Const 0.
-    | Minus -> Target.Const 0.
-    | Times -> Target.Const 0.
-
-  (* partial^2 op / partial x1 partial x2 *)
-  let d12op _ _ (op: op2) = match op with
-    | Plus  -> Target.Const 0.
-    | Minus -> Target.Const 0.
-    | Times -> Target.Const 1.
-    
-  (* partial^2 op / partial x2 partial x1 *) 
-  let d21op _ _ (op: op2) = match op with
-    | Plus  -> Target.Const 0.
-    | Minus -> Target.Const 0.
-    | Times -> Target.Const 1.
-
-  (* partial^2 op / partial x2 partial x2 *)  
-  let d22op _ _ (op: op2) = match op with
-    | Plus  -> Target.Const 0.
-    | Minus -> Target.Const 0.
-    | Times -> Target.Const 0.
-
   let getPos (x,ty) list = 
     let rec aux pos list = match list with
     | [] -> failwith "getPos: element not found"
@@ -495,7 +463,7 @@ module MixedJets = struct
                                     let pos_x = getPos (x, ty) context in                      
                                     let newContVarList = newVarList1@[(newVar1,newTy1)]@newVarList2@[(newVar2,newTy2)] in
                                     let partialOp = fun z -> Target.Apply2(Times, Target.dop op (Target.Var(x, newTy1)), z) in
-                                    let partial2op = Target.Apply2(Times, Target.Apply2(Times, dop2 (Target.Var(x,newTy1)) op, Target.Var(newVar1, newTy1)), Target.Var(dx, newTy1)) in
+                                    let partial2op = Target.Apply2(Times, Target.Apply2(Times, Target.ddop op (Target.Var(x,newTy1)), Target.Var(newVar1, newTy1)), Target.Var(dx, newTy1)) in
                                     let newCont = Target.Fun(newContVarList, 
                                                       Target.App(cont,
                                                            addToPos (pos_x+n) partial2op
@@ -532,10 +500,10 @@ module MixedJets = struct
                                                               |> addToPos (pos_x1+n)  (partial1Op (Target.Var(newVar2, Target.Type.Real)))
                                     in
                                     let addSecondDerivatives =  addFirstDerivatives 
-                                                              |> addToPos (pos_x2+n) (secondPartialOp (Target.Var(dx1,newTy1)) (Target.Var(newVar1, Target.Type.Real)) (d11op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2)) op))
-                                                              |> addToPos (pos_x2+n) (secondPartialOp (Target.Var(dx2,newTy2)) (Target.Var(newVar1, Target.Type.Real)) (d12op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2)) op))
-                                                              |> addToPos (pos_x1+n) (secondPartialOp (Target.Var(dx1,newTy1)) (Target.Var(newVar1, Target.Type.Real)) (d21op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2)) op))
-                                                              |> addToPos (pos_x1+n) (secondPartialOp (Target.Var(dx2,newTy2)) (Target.Var(newVar1, Target.Type.Real)) (d22op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2)) op))
+                                                              |> addToPos (pos_x2+n) (secondPartialOp (Target.Var(dx1,newTy1)) (Target.Var(newVar1, Target.Type.Real)) (Target.d1d1op op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2))))
+                                                              |> addToPos (pos_x2+n) (secondPartialOp (Target.Var(dx2,newTy2)) (Target.Var(newVar1, Target.Type.Real)) (Target.d1d2op op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2))))
+                                                              |> addToPos (pos_x1+n) (secondPartialOp (Target.Var(dx1,newTy1)) (Target.Var(newVar1, Target.Type.Real)) (Target.d2d1op op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2))))
+                                                              |> addToPos (pos_x1+n) (secondPartialOp (Target.Var(dx2,newTy2)) (Target.Var(newVar1, Target.Type.Real)) (Target.d2d2op op (Target.Var(x1,newTy1)) (Target.Var(x2,newTy2))))
                                     in
                                     let newCont = Target.Fun(newContVarList, Target.App(cont, addSecondDerivatives)) in
                                     let tangent = Target.Apply2(Plus,

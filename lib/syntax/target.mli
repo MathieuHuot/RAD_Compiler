@@ -150,3 +150,18 @@ val d2op : Operators.op2 -> t -> t -> t
     [d2op22 op x d1x d2x ddx y d1y d2y ddy] returns 
     ∂1op(x)*ddx + ∂2op(x)*ddy + ∂1∂1op(x)*d1x*d2x + ∂1∂2op(x)*d1x*d2y + ∂2∂1op(x)*d1y*d2x + ∂2∂2op(x)*d1y*d2y *)
 val d2op22 : Operators.op2 -> t -> t -> t -> t-> t -> t-> t -> t -> t
+
+(** [ddop op e] returns ∂^2 op/∂x∂x(e) *)                          
+val ddop : Operators.op1 -> t -> t
+
+(** [d1d1op op e1 e2 ] returns ∂^2 op/∂x1∂x1(e1,e2)*)
+val d1d1op :Operators.op2 -> t -> t -> t
+
+(** [d1d2op op e1 e2 ] returns ∂^2 op/∂x1∂x2(e1,e2) *)
+val d1d2op : Operators.op2 -> t -> t -> t
+  
+(** [d2d1op op e1 e2 ] returns ∂^2 op/∂x2∂x1(e1,e2) *) 
+val d2d1op : Operators.op2 -> t -> t -> t
+ 
+(** [d2d2op op e1 e2 ] returns ∂^2 op/∂x2∂x2(e1,e2) *)
+val d2d2op : Operators.op2 -> t -> t -> t

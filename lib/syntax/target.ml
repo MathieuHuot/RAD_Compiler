@@ -438,7 +438,7 @@ let d1op op _ y2 = match op with
   | Times -> y2
   | Minus -> Const(1.)
 
-(** Second partialfirst order derivative of binary operator*)
+(** Second partial first order derivative of binary operator*)
 let d2op op y1 _ = match op with
   | Plus  -> Const(1.)
   | Times -> y1
@@ -453,3 +453,36 @@ let d2op22 (op: op2) x d1x d2x ddx y d1y d2y ddy  = match op with
                     Apply2(Plus,
                             Apply2(Plus, Apply2(Times, d1x, d2x), Apply2(Times, d1x, d2y)),
                             Apply2(Plus, Apply2(Times, d1y, d2x), Apply2(Times, d1y, d2y))))
+
+(* ∂^2 op/∂x∂x *)                          
+let ddop (op: op1) y = match op with
+  | Cos     -> Apply1(Minus, Apply1(Sin, y))
+  | Sin     -> Apply1(Cos, y)
+  | Exp     -> Apply1(Exp, y)
+  | Minus   -> Const (-1.)
+  | Power 0 -> Const(0.)
+  | Power n -> Apply2(Times, Const(float_of_int (n-1)), Apply1(Power(n-1), y))
+
+(* ∂^2 op/∂x1∂x1 *)
+let d1d1op (op: op2) _ _ = match op with
+  | Plus  -> Const 0.
+  | Minus -> Const 0.
+  | Times -> Const 0.
+
+ (* ∂^2 op/∂x1∂x2 *)
+let d1d2op (op: op2) _ _ = match op with
+  | Plus  -> Const 0.
+  | Minus -> Const 0.
+  | Times -> Const 1.
+  
+ (* ∂^2 op/∂x2∂x1 *) 
+let d2d1op (op: op2) _ _ = match op with
+  | Plus  -> Const 0.
+  | Minus -> Const 0.
+  | Times -> Const 1.
+
+ (* ∂^2 op/∂x2∂x2 *)
+let d2d2op (op: op2) _ _ = match op with
+  | Plus  -> Const 0.
+  | Minus -> Const 0.
+  | Times -> Const 0.
