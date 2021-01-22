@@ -1,6 +1,10 @@
 type nonrec 'a output = 'a Rewriter.output = Success of 'a | Failure of 'a
 
 module type S = sig
+  (** Signature of a strategy.
+   *
+   * The strategy define how rewriting rule are apply and in which order. *)
+
   val return : 'a -> 'a output
 
   val ( >>= ) : 'a output -> ('a -> 'a output) -> 'a output
@@ -13,6 +17,8 @@ module type S = sig
 end
 
 module One : S = struct
+  (** Apply rewriting rule only once. *)
+
   let return x = Failure x
 
   let ( >>= ) x f = match x with Success _ -> x | Failure x -> f x
@@ -26,7 +32,7 @@ module One : S = struct
     | Failure x1 -> f x2 >|= fun x2 -> (x1, x2)
 
   let rec applyl f = function
-    | [] -> Failure []
+    | [] -> return []
     | h :: t -> (
         match f h with
         | Success x -> Success (x :: t)
@@ -34,6 +40,8 @@ module One : S = struct
 end
 
 module All : S = struct
+  (** Traverse the syntax tree and apply the writing rule whenever it is possible. *)
+
   let return x = Failure x
 
   let ( >>= ) x f =
@@ -51,7 +59,7 @@ module All : S = struct
     | Failure x1 -> f x2 >|= fun x2 -> (x1, x2)
 
   let rec applyl f = function
-    | [] -> Failure []
+    | [] -> return []
     | h :: t -> (
         match f h with
         | Success x -> applyl f t >>= fun l -> Success (x :: l)
@@ -59,6 +67,8 @@ module All : S = struct
 end
 
 module Repeat : S = struct
+  (** Apply the writing rules until it converges. *)
+
   let return x = Failure x
 
   let rec repeat success x f =
@@ -78,7 +88,7 @@ module Repeat : S = struct
     | Failure x1 -> repeat false x2 f >|= fun x2 -> (x1, x2)
 
   let rec applyl f = function
-    | [] -> Failure []
+    | [] -> return []
     | h :: t -> (
         match repeat false h f with
         | Success x -> (
