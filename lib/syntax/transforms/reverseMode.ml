@@ -7,8 +7,6 @@ open Syntax.Source
 
 type context = (Syntax.Var.t * Type.t) Target.tuple
 
-let dvar var : Syntax.Var.t * Syntax.Var.t = let str, i = var in (str, i), ("d"^str, i)
-
 let getPos (x,ty) list = 
   let rec aux pos list = match list with
   | [] -> failwith "getPos: element not found"
@@ -90,7 +88,7 @@ let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target
                                     | _,_,_ -> failwith "rad: the continuation should be a function"
                                     end
     | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = rad context cont expr1 in  
-                                   let _, newContVar = dvar x in
+                                   let _, newContVar = Var.dvar x in
                                    match Target.inferType cont with
                                     | Result.Error s    -> failwith (Printf.sprintf "rad: continuation ill-typed:%s" s)
                                     | Result.Ok(newContType) ->
@@ -122,7 +120,7 @@ let grad (context: context) (expr: t) : Target.t =
     begin 
     match Target.inferType dexpr with
       | Result.Ok(Target.Type.NProd [ty1;ty2]) ->
-      let x,dx= dvar (Syntax.Var.fresh()) in
+      let x,dx= Var.dvar (Syntax.Var.fresh()) in
       Target.NCase(dexpr,[(x,ty1);(dx,ty2)],Target.App(Target.Var(dx,ty2),sensitivities))
     | _                   -> failwith "grad: should return a pair"
     end

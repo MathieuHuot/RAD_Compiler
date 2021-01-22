@@ -14,3 +14,18 @@ val pp : Format.formatter -> t -> unit
 
 val to_string : t -> string
 (** [to_string v] print [v] in a string using {!pp} *)
+
+val dvar : t -> t * t
+(** takes a primal var as input and returns a pair of the primal 
+    variable and a new tangent variable. Assumes that no variable 
+    from the initial term starts with d, in other words that the 
+    newly returned variable is fresh *)
+
+val dvar2 : t -> t * t * t 
+(** Similarly as above but returns a triple *)
+
+val dvar22 : t -> t * t * t * t 
+(** Similarly as above but returns a quadruple *)
+
+val dvar33 : t -> t * t * t * t * t * t * t * t
+(** Similarly as above but returns an 8-tuple *)
