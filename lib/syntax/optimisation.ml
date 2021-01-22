@@ -222,15 +222,9 @@ module T = struct
     | expr -> Failure expr
 
   let oneCaseRemoval : Target.t -> Target.t output = function
-    (* TODO: this optimisation is unsound, it changes the type of the expression
-     * | Tuple [ expr ] -> Success expr*)
-    (* TODO: This version is unsound, we need to unpack also the Tuple to be correct
-     * | NCase (expr1, [ (x, ty) ], expr2) ->
-      Success (Let (x, ty, expr1, expr2))*)
     | NCase (Tuple [ expr1 ], [ (x, ty) ], expr2) ->
         Success (Let (x, ty, expr1, expr2))
     | expr -> Failure expr
-
 end
 
 module S = struct
