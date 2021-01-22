@@ -57,16 +57,7 @@ let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target
                                     let new_var = Syntax.Var.fresh() in 
                                     let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList)  in                         
                                     let newContVarList =  List.append newVarList [(new_var, new_ty)] in
-                                    let dop y = begin match op with
-                                      | Cos     -> Target.Apply1(Minus,Target.Apply1(Sin, y))
-                                      | Sin     -> Target.Apply1(Cos, y)
-                                      | Exp     -> Target.Apply1(Exp, y)
-                                      | Minus   -> Target.Const (-1.)
-                                      | Power 0 -> Target.Const(0.)
-                                      | Power n -> Target.Apply2(Times, Target.Const(float_of_int (n-1)),Target.Apply1(Power(n-1),y))
-                                      end
-                                    in
-                                    let partialOp = fun z -> Target.Apply2(Times, dop (Target.Var(x, new_ty)), z) in
+                                    let partialOp = fun z -> Target.Apply2(Times, Target.dop op (Target.Var(x, new_ty)), z) in
                                     let newCont = Target.Fun(newContVarList, 
                                                       Target.App(cont,
                                                           (Target.Var (new_var, new_ty) |> partialOp |> addToPos pos_x (Target.varToSyn newVarList))
@@ -86,22 +77,8 @@ let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target
                                     let new_var = Syntax.Var.fresh() in 
                                     let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList) in                         
                                     let newContVarList =  List.append newVarList [(new_var, Target.Type.Real)] in
-                                    let d1op _ y2 = begin
-                                      match op with
-                                      | Plus  -> Target.Const(1.)
-                                      | Times -> y2
-                                      | Minus -> Target.Const(1.)
-                                      end
-                                    in 
-                                    let d2op y1 _ = begin
-                                      match op with
-                                      | Plus  -> Target.Const(1.)
-                                      | Times -> y1
-                                      | Minus -> Target.Const(-1.)
-                                      end
-                                    in
-                                    let partial1Op = fun z -> Target.Apply2(Times, d1op (Target.Var(x1, new_ty1)) (Target.Var(x2, new_ty2)), z) in
-                                    let partial2Op = fun z -> Target.Apply2(Times, d2op (Target.Var(x1, new_ty1)) (Target.Var(x2, new_ty2)), z) in  
+                                    let partial1Op = fun z -> Target.Apply2(Times, Target.d1op op (Target.Var(x1, new_ty1)) (Target.Var(x2, new_ty2)), z) in
+                                    let partial2Op = fun z -> Target.Apply2(Times, Target.d2op op (Target.Var(x1, new_ty1)) (Target.Var(x2, new_ty2)), z) in  
                                     let newCont = Target.Fun(newContVarList, 
                                                       Target.App(cont,
                                                            Target.Var (new_var, Target.Type.Real) |> partial1Op |> addToPos pos_x1 

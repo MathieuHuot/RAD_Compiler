@@ -132,3 +132,21 @@ val interpret : t -> context -> t
 module Traverse : functor (S: Strategy.S) -> sig
   val map : (t -> t Rewriter.output) -> t -> t Rewriter.output
 end
+
+(** First order derivative of unary operator *)
+val dop : Operators.op1 -> t -> t
+
+(** Second order derivative of binary operator 
+  [dop22 op  x d1x d2x ddx] returns ∂op(x)*d1x*d2x + ∂∂op(x)*ddx *)
+val dop22 : Operators.op1 -> t -> t -> t -> t-> t
+
+(** First partial first order derivative of binary operator *)
+val d1op : Operators.op2 -> t -> t -> t
+
+(** Second partial first order derivative of binary operator *)
+val d2op : Operators.op2 -> t -> t -> t
+
+(** Second order derivative of binary operator 
+    [d2op22 op x d1x d2x ddx y d1y d2y ddy] returns 
+    ∂1op(x)*ddx + ∂2op(x)*ddy + ∂1∂1op(x)*d1x*d2x + ∂1∂2op(x)*d1x*d2y + ∂2∂1op(x)*d1y*d2x + ∂2∂2op(x)*d1y*d2y *)
+val d2op22 : Operators.op2 -> t -> t -> t -> t-> t -> t-> t -> t -> t

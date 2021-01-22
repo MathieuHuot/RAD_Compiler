@@ -408,3 +408,48 @@ module Traverse (S : Strategy.S) = struct
         apply2 (map f) expr1 expr2 >|= fun (expr1, expr2) ->
         NCase (expr1, varList, expr2)
 end
+
+(** Derivatives of basic operators *)
+
+(** First order derivative of unary operator *)
+let dop op y = match op with
+| Cos     -> Apply1(Minus, Apply1(Sin, y))
+| Sin     -> Apply1(Cos, y)
+| Exp     -> Apply1(Exp, y)
+| Minus   -> Const (-1.)
+| Power 0 -> Const(0.)
+| Power n -> Apply2(Times, Const(float_of_int (n-1)), Apply1(Power(n-1), y))
+
+(** Second order derivative of binary operator *)
+let dop22 (op: op1) x d1x d2x ddx  = match op with
+  | Cos     -> Apply2(Minus, Apply1(Minus, Apply2(Times, Apply1(Cos, x), Apply2(Times, d1x, d2x))), Apply2(Times, Apply1(Sin, x), ddx))
+  | Sin     -> Apply2(Plus, Apply1(Minus, Apply2(Times, Apply1(Sin, x), Apply2(Times, d1x, d2x))), Apply2(Times, Apply1(Cos, x), ddx))
+  | Exp     -> Apply2(Plus, Apply2(Times, Apply1(Exp, x), Apply2(Times, d1x, d2x)), Apply2(Times, Apply1(Exp, x), ddx))
+  | Minus   -> Apply1(Minus, ddx)
+  | Power 0 -> Const(0.)
+  | Power 1 -> ddx
+  | Power n -> Apply2(Plus,
+                      Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2),x)), Apply2(Times, d1x, d2x)),
+                      Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1),x)), ddx))
+
+(** First partial first order derivative of binary operator*)
+let d1op op _ y2 = match op with
+  | Plus  -> Const(1.)
+  | Times -> y2
+  | Minus -> Const(1.)
+
+(** Second partialfirst order derivative of binary operator*)
+let d2op op y1 _ = match op with
+  | Plus  -> Const(1.)
+  | Times -> y1
+  | Minus -> Const(-1.)
+
+(** Second order derivative of binary operator *)
+let d2op22 (op: op2) x d1x d2x ddx y d1y d2y ddy  = match op with
+  | Plus  -> Apply2(Plus, ddx, ddy)
+  | Minus -> Apply2(Minus, ddx, ddy)
+  | Times -> Apply2(Plus,
+                    Apply2(Plus, Apply2(Times, ddx, y), Apply2(Times, x, ddy)),
+                    Apply2(Plus,
+                            Apply2(Plus, Apply2(Times, d1x, d2x), Apply2(Times, d1x, d2y)),
+                            Apply2(Plus, Apply2(Times, d1y, d2x), Apply2(Times, d1y, d2y))))
