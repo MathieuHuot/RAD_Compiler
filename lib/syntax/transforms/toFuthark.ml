@@ -55,4 +55,4 @@ let pp precision expr =
   let oc = Unix.out_channel_of_descr file in
   set_binary_mode_out oc false;
   let out = Format.formatter_of_out_channel oc in
-  toFuthark precision out expr;;  
+  Format.fprintf out "%a@." (toFuthark precision) expr
