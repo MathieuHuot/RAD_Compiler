@@ -1,4 +1,6 @@
-type precision = Single | Double
+module Precision : sig
+type t
+end  
 
-val toFuthark : precision -> Syntax.Target.t CCList.printer
-val print : precision -> Syntax.Target.t -> unit
+val toFuthark : Precision.t -> Syntax.Target.t CCList.printer
+val print : Precision.t -> Syntax.Target.t -> unit
