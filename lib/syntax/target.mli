@@ -133,6 +133,8 @@ module Traverse : functor (S: Strategy.S) -> sig
   val map : (t -> t Rewriter.output) -> t -> t Rewriter.output
 end
 
+(** {2 Derivatives of basic operators} *)
+
 (** First order derivative of unary operator *)
 val dop : Operators.op1 -> t -> t
 
