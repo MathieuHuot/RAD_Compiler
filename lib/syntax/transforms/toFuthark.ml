@@ -30,7 +30,7 @@ end
  NCase(e1,vList,e2) --> let ([v1] : [ty1],...,[vn] : [tyn]) = [e1] in [e2]  where vList = [(v1,ty1),...,(vn,tyn)]
  *) 
 
-let print_float fmt fl = Format.pp_print_float fmt fl (* 2. is not valid float in futhark, but 2.0 is.*) 
+let print_float fmt fl = Format.fprintf fmt "%F0" fl (*TODO: 2. is not valid float in futhark, but 2.0 is. current fix doesn't work for numbers represented with exposents *) 
 let print_unary_op precision fmt op =  (* an operator like cos in futhark is f32.cos *)
   Format.pp_print_string fmt ((match precision with | Precision.Single -> "f32." |  Precision.Double -> "f64." )^Operators.to_string_op1 op)
 let print_binary_op _ fmt op =  Operators.to_string_op2 op |> Format.pp_print_string fmt
