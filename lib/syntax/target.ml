@@ -389,7 +389,8 @@ module Traverse (S : Strategy.S) = struct
   open S
 
   let rec map f expr =
-    return expr >>= f >>= function
+    return expr >>= fun expr ->
+    f expr >>= function
     | (Var (_, _) | Const _) as expr -> return expr
     | Apply1 (op, expr) -> map f expr >|= fun expr -> Apply1 (op, expr)
     | Apply2 (op, expr1, expr2) ->
