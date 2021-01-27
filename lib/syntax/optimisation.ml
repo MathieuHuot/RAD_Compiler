@@ -203,9 +203,10 @@ module T = struct
     | expr -> Failure expr
 
   (* TODO: This is just a special case of inlining *)
-  let deadVarElim : (Var.t * Target.Type.t) list -> Target.t -> Target.t output
-      =
-   fun unusedVar expr ->
+  let deadVarElim : Target.t -> Target.t output =
+   fun expr ->
+    (* TODO: change the use of unusedVar *)
+    let unusedVar = Target.listUnusedVar expr in
     match expr with
     | Let (x, ty, _, expr) when List.mem (x, ty) unusedVar -> Success expr
     | NCase (_, varList, expr)
@@ -225,6 +226,17 @@ module T = struct
     | NCase (Tuple [ expr1 ], [ (x, ty) ], expr2) ->
         Success (Let (x, ty, expr1, expr2))
     | expr -> Failure expr
+
+  let fullOpti expr =
+    let module RT = Target.Traverse (Strategy.Repeat) in
+    let open Rewriter in
+    RT.map
+      (fun expr ->
+        constantPropagation expr >>= simpleAlgebraicSimplifications
+        >>= zeroSimplification >>= trigoSimplification >>= realFactorisation
+        >>= letCommutativity >>= lambdaRemoval >>= deadVarElim)
+      expr
+    |> get
 end
 
 module S = struct

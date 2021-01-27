@@ -371,18 +371,15 @@ module T = struct
       test_isInWeakAnf_weakAnf;
     ]
 
-  let check_opt_applies opti expr =
-    let open Rewrite.Strategies.Strategy in
-    match opti expr with Success _ -> true | _ -> false
-
   let test_opti opti opti_name =
     QCheck.Test.make ~count:100 ~max_gen:500 ~name:("Opt " ^ opti_name)
       arbitrary_closed_term (fun expr ->
+        let module AT = Target.Traverse(Strategy.All) in
         let e1 =
           interpret
-            (match opti expr with
-            | Rewrite.Strategies.Strategy.Success expr -> expr
-            | Rewrite.Strategies.Strategy.Failure _ -> QCheck.assume_fail ())
+            (match AT.map opti expr with
+            | Rewriter.Success expr -> expr
+            | Rewriter.Failure _ -> QCheck.assume_fail ())
             []
         in
         let e2 = interpret expr [] in
@@ -392,27 +389,29 @@ module T = struct
   let test_opti_freeVar opti opti_name =
     QCheck.Test.make ~count:100 ~max_gen:500 ~name:("Opt " ^ opti_name)
       arbitrary_term (fun expr ->
+        let module AT = Target.Traverse(Strategy.All) in
         let fv = freeVar expr in
         let e1 =
-          match opti expr with
-          | Rewrite.Strategies.Strategy.Success expr -> expr
-          | Rewrite.Strategies.Strategy.Failure _ -> QCheck.assume_fail ()
+          match AT.map opti expr with
+          | Rewriter.Success expr -> expr
+          | Rewriter.Failure _ -> QCheck.assume_fail ()
         in
         let fv1 = freeVar e1 in
         VarSet.subset fv1 fv)
 
   let opti_list =
+    let open Optimisation.T in
     [
-      (Rewrite.Optimisations.LR.run, "LR");
-      (Rewrite.Optimisations.FS.run, "FS");
-      (Rewrite.Optimisations.LS.run, "LS");
-      (Rewrite.Optimisations.LC.run, "LC");
-      (Rewrite.Optimisations.RF.run, "RF");
-      (Rewrite.Optimisations.TS.run, "TS");
-      (Rewrite.Optimisations.ZS.run, "ZS");
-      (Rewrite.Optimisations.SAS.run, "SAS");
-      (Rewrite.Optimisations.CP.run, "CP");
-      (Rewrite.Optimisations.DVE.run, "DVE");
+      (lambdaRemoval, "LR");
+      (forwardSubstitution, "FS");
+      (letSimplification, "LS");
+      (letCommutativity, "LC");
+      (realFactorisation, "RF");
+      (trigoSimplification, "TS");
+      (zeroSimplification, "ZS");
+      (simpleAlgebraicSimplifications, "SAS");
+      (constantPropagation, "CP");
+      (deadVarElim, "DVE");
     ]
 
   let test_opti_list =
@@ -624,7 +623,11 @@ module O = struct
         in
         match TO.map opt expr with Failure _ -> true | Success _ -> false)
 
-  let test_list = [ test_repeat Optimisation.T.constantPropagation ]
+  let test_list =
+    [
+      test_repeat Optimisation.T.constantPropagation;
+      test_repeat Optimisation.T.letCommutativity;
+    ]
 end
 
 let () =

@@ -1,5 +1,6 @@
 (* Module for A-Normal Form *)
 (* Also module for a weak-version of ANF: only assumes that operators are only applied to variables *)
+open Syntax
 
 module type Anf = sig
 type ast
@@ -132,15 +133,11 @@ let rec weakAnf expr = match expr with
   | NCase(expr1,varList,expr2)
                            ->  NCase(weakAnf expr1,varList,weakAnf expr2)
 
-open Rewrite.Optimisations
-open Rewrite.Strategies
+module RT = Target.Traverse(Strategy.Repeat)
+let letCommutativity expr = RT.map Optimisation.T.letCommutativity expr
 
-module LC = LetCommutativity(TargetTr)
-let letCommutativity expr = LC.run expr
 
-module CTS = CompleteTraversalStrat(EvStrat)
-
-let anf expr = 
+let anf expr =
   let expr1 = weakAnf expr in
-  Strategy.run (Strategy.iterate 1000 (Strategy.tryStrat letCommutativity) expr1)
+  Rewriter.get (letCommutativity expr1)
 end

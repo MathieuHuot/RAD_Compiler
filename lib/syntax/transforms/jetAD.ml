@@ -62,7 +62,7 @@ let rec forward12AD (expr: t) : Target.t = match expr with
 (* Compute the list d2f/dx2 for all variables x from the context *)                           
 let secondPartial context expr = 
   let dexpr = forward12AD expr in
-  let optiDexpr = Rewrite.Optimisations.fullOpti dexpr in
+  let optiDexpr = Optimisation.T.fullOpti dexpr in
   List.map 
       (fun (x,_,_) -> List.fold_left 
       (fun acc (y, ty2, expr2) -> let y, dy, d2y = Var.dvar2 y in
@@ -75,7 +75,7 @@ let mixedPartial context expr =
   let n = List.length context in
   let arrayContext = Array.of_list (List.map (fun (x,_,_) -> x) context) in
   let dexpr = forward12AD expr in 
-  let optiDexpr = Rewrite.Optimisations.fullOpti dexpr in
+  let optiDexpr = Optimisation.T.fullOpti dexpr in
   let mixedDerivatives = Array.make_matrix n n (Target.Const 0.) in
   for i=0 to (n-1) do
     for j=0 to (n-1) do
@@ -101,7 +101,7 @@ let mixedPartial context expr =
     for i=0 to (n-1) do
       for j=0 to (n-1) do
         mixedDerivatives.(i).(j) <- 
-          Rewrite.Optimisations.fullOpti 
+          Optimisation.T.fullOpti 
           (Target.Apply2(Minus, mixedDerivatives.(i).(j), 
                         Target.Apply2(Plus, secondPartial.(i), secondPartial.(j)))
           )
