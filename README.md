@@ -2,14 +2,8 @@
 
 To build the project
 ```bash
-dune build @install
+make build
 ```
-
-To run tests and compare them with test.expected
-```bash
-dune runtest
-```
-
 To run the project
 ```bash
 dune exec -- ./bin/main.exe
@@ -18,19 +12,24 @@ Currently print some test in out.txt
 
 To run tests
 ```bash
-dune runtest
+make
 ```
 
 To run tests and print counter example for all failing test or to run multiple time test.
 ```bash
-dune exec -- ./test/test.exe -e
+make test-full
 ```
 
 To build the doc
 ```bash
-dune build @doc-private
+make doc
 ```
 Main page of the module Syntax is `_build/default/_doc/_html/syntax@4c5eccf64a65/Syntax/index.html`
+
+To view the doc
+```bash
+make viewdoc
+```
 
 ### Content
 
