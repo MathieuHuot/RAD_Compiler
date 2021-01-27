@@ -59,7 +59,7 @@ let _ =
         Source.Var (Syntax.Var.fresh (), Source.Type.Real) )
   in
   let f8 = ForwardMode.forwardAD f7 in
-  let f9 = Rewrite.Optimisations.fullOpti f8 in
+  let f9 = Optimisation.T.fullOpti f8 in
   Format.fprintf out
     "Term:@.%a@.Forward derivative of term:@.%a@.Reduced derivative of \
      term:@.%a@.@.@."
@@ -68,7 +68,7 @@ let _ =
   let f6 = Syntax.Generator.sourceSynGen 5 [] in
   let f7 = Anf.SourceAnf.anf f6 in
   let f8 = ForwardMode.forwardAD f7 in
-  let f9 = Rewrite.Optimisations.fullOpti f8 in
+  let f9 = Optimisation.T.fullOpti f8 in
   Format.fprintf out
     "Term:@.%a@.@.Anf Term:@.%a@.@.Forward derivative of term:@.%a@.@.Reduced \
      derivative of term:@.%a@.@.@."
@@ -88,7 +88,7 @@ let _ =
     | Target.Tuple [ _; x ] -> Target.App (x, cst1)
     | _ -> failwith "f12 wrong format"
   in
-  let f14 = Rewrite.Optimisations.fullOpti f13 in
+  let f14 = Optimisation.T.fullOpti f13 in
 
   Format.fprintf out
     "variable:@.%a@.term:@.%a@.reverse derivative macro of \
@@ -115,7 +115,7 @@ let _ =
     | Target.Tuple [ _; x ] -> Target.App (x, cst2)
     | _ -> failwith "f12 wrong format"
   in
-  let f25 = Rewrite.Optimisations.fullOpti f24 in
+  let f25 = Optimisation.T.fullOpti f24 in
 
   Format.fprintf out
     "term:@.%a@.anf term:@.%a@.reverse derivative macro of \
@@ -126,7 +126,7 @@ let _ =
   let g6 = Syntax.Generator.sourceSynGen 10 [] in
   let g7 = Anf.SourceAnf.anf g6 in
   let g8 = Transforms.ReverseMode.grad [] g7 in
-  let g9 = Rewrite.Optimisations.fullOpti g8 in
+  let g9 = Optimisation.T.fullOpti g8 in
   Format.fprintf out
     "Term:@.%a@.@.Anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
@@ -146,7 +146,7 @@ let _ =
   let g8 =
     Transforms.ReverseMode.semiNaiveReverseAD [ (x12, Source.Type.Real) ] g7
   in
-  let g9 = Rewrite.Optimisations.fullOpti g8 in
+  let g9 = Optimisation.T.fullOpti g8 in
   Format.fprintf out
     "Term:@.%a@.@.Anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
@@ -169,7 +169,7 @@ let _ =
   in
   let g7 = Anf.SourceAnf.weakAnf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in  
-  let g9 = Rewrite.Optimisations.fullOpti g8 in
+  let g9 = Optimisation.T.fullOpti g8 in
   Format.fprintf out
     "Term:@.%a@.@.Anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
@@ -185,7 +185,7 @@ let _ =
   in
   let g7 = Anf.SourceAnf.weakAnf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real) ] g7 in
-  let g9 = Rewrite.Optimisations.fullOpti g8 in
+  let g9 = Optimisation.T.fullOpti g8 in
   Format.fprintf out
     "Term:@.%a@.@.Weak anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
@@ -204,21 +204,30 @@ let _ =
             Source.Var (x1, Source.Type.Real),
             Source.Var (x2, Source.Type.Real) ) )
   in
+  let module TR = Target.Traverse(Strategy.Repeat) in
+  let open Optimisation.T in
+  let lambdaRem expr = TR.map lambdaRemoval expr |> Rewriter.get in
+  let forwSubst expr = TR.map forwardSubstitution expr |> Rewriter.get in
+  let oneCaseRem expr = TR.map oneCaseRemoval expr |> Rewriter.get in
+  let letComm expr = TR.map letCommutativity expr |> Rewriter.get in
+  let simpleAlgSimpl expr = TR.map simpleAlgebraicSimplifications expr |> Rewriter.get in
+  let zeroSimpl expr = TR.map zeroSimplification expr |> Rewriter.get in
+  let deadVarElim expr = TR.map deadVarElim expr |> Rewriter.get in
   let g7 = Anf.SourceAnf.anf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in
-  let g9 = Rewrite.Optimisations.fullOpti g8 in
-  let g10 = Rewrite.Optimisations.lambdaRem g8 in
-  let g11 = Rewrite.Optimisations.forwSubst g10 in
-  let g12 = Rewrite.Optimisations.oneCaseRem g11 in
-  let g13 =  Rewrite.Optimisations.letComm g12 in
-  let g14 = Rewrite.Optimisations.forwSubst g13 in
-  let g15 = Rewrite.Optimisations.lambdaRem g14 in
-  let g16 = Rewrite.Optimisations.simpleAlgSimpl g15 in
-  let g17 = Rewrite.Optimisations.forwSubst g16 in
-  let g18 = Rewrite.Optimisations.zeroSimpl g17 in
-  let g19 = Rewrite.Optimisations.simpleAlgSimpl g18 in
-  let g20 = Rewrite.Optimisations.forwSubst g19 in
-  let g21 =  Rewrite.Optimisations.deadVarElim g20 in
+  let g9 = Optimisation.T.fullOpti g8 in
+  let g10 = lambdaRem g8 in
+  let g11 = forwSubst g10 in
+  let g12 = oneCaseRem g11 in
+  let g13 = letComm g12 in
+  let g14 = forwSubst g13 in
+  let g15 = lambdaRem g14 in
+  let g16 = simpleAlgSimpl g15 in
+  let g17 = forwSubst g16 in
+  let g18 = zeroSimpl g17 in
+  let g19 = simpleAlgSimpl g18 in
+  let g20 = forwSubst g19 in
+  let g21 = deadVarElim g20 in
   Format.fprintf out
     "Term:@.%a@.
       Weak anf Term:@.%a@.
@@ -256,7 +265,7 @@ let _ =
   in
   let g7 = Anf.SourceAnf.weakAnf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real) ] g7 in
-  let g9 = Rewrite.Optimisations.fullOpti g8 in
+  let g9 = Optimisation.T.fullOpti g8 in
   Format.fprintf out
     "Term:@.%a@.@.Weak anf Term:@.%a@.@.Reverse derivative macro of \
      term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
@@ -279,7 +288,7 @@ let _ =
          ]
          f7)
   in
-  let f10 = Rewrite.Optimisations.fullOpti f9 in
+  let f10 = Optimisation.T.fullOpti f9 in
   Format.fprintf out
     "Term:@.%a@.Forward derivative of term:@.%a@.Gradient of \
      term:@.%a@.Reduced derivative of term:@.%a@.@.@."
