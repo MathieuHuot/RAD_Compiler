@@ -6,7 +6,7 @@ let id x = Success x
 
 let return = id
 
-let bind x f = match x with Success x | Failure x -> f x
+let bind x f = match x with Success x -> f x | Failure _ -> x
 
 let ( >>= ) = bind
 
@@ -17,6 +17,11 @@ let get_exn = function
   | Failure _ -> failwith "startegy failed"
 
 let fail x = Failure x
+
+let seq f1 f2 p =
+  match f1 p with Success x -> Success (get (f2 x)) | Failure x -> f2 x
+
+let (>>) = seq
 
 let choose f1 f2 p =
   match f1 p with Success x -> Success x | Failure _ -> f2 p

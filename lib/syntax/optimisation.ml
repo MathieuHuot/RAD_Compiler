@@ -231,10 +231,9 @@ module T = struct
     let module RT = Target.Traverse (Strategy.Repeat) in
     let open Rewriter in
     RT.map
-      (fun expr ->
-        constantPropagation expr >>= simpleAlgebraicSimplifications
-        >>= zeroSimplification >>= trigoSimplification >>= realFactorisation
-        >>= letCommutativity >>= lambdaRemoval >>= deadVarElim)
+      (constantPropagation >> simpleAlgebraicSimplifications
+     >> zeroSimplification >> trigoSimplification >> realFactorisation
+     >> letCommutativity >> lambdaRemoval >> deadVarElim)
       expr
     |> get
 end
