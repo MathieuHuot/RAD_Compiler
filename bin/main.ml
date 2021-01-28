@@ -312,11 +312,9 @@ ToFuthark.pp ToFuthark.Precision.Double
 ( Operators.Times,
   Target.Apply2
     ( Operators.Plus,
-      Target.Var (x1, Target.Type.Real),
+      Target.Const (10000000000000.),
       Target.Var (x2, Target.Type.Real) ),
   Target.Apply2
     ( Operators.Plus,
       Target.Var (x1, Target.Type.Real),
       Target.Var (x2, Target.Type.Real) ) ));
-      
-ToFuthark.pp ToFuthark.Precision.Double (Target.Const 0.)

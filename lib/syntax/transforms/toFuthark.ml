@@ -30,23 +30,27 @@ end
  NCase(e1,vList,e2) --> let ([v1] : [ty1],...,[vn] : [tyn]) = [e1] in [e2]  where vList = [(v1,ty1),...,(vn,tyn)]
  *) 
 
-let print_float fmt fl = Format.fprintf fmt "%F0" fl (*TODO: 2. is not valid float in futhark, but 2.0 is. current fix doesn't work for numbers represented with exposents *) 
+(*2. is not valid float in futhark, but 2.0 is. current fix doesn't work for numbers represented with exposents *) 
+let print_float fmt fl = 
+  let s = string_of_float fl in
+  if s.[String.length s - 1] = '.' then Format.fprintf fmt "%s0" s
+  else Format.fprintf fmt "%s" s
 let print_unary_op precision fmt op =  (* an operator like cos in futhark is f32.cos *)
   Format.pp_print_string fmt ((match precision with | Precision.Single -> "f32." |  Precision.Double -> "f64." )^Operators.to_string_op1 op)
 let print_binary_op _ fmt op =  Operators.to_string_op2 op |> Format.pp_print_string fmt
 
 (* This function takes a floating precision, a format and an AST and compiles it to a Futhark program. *)
 let rec toFuthark precision fmt = function
-  | Var (v, ty) -> Format.fprintf fmt "@%a : (%a)" Var.pp v (Precision.typeToFuthark precision) ty
+  | Var (v, ty) -> Format.fprintf fmt "%a : (%a)" Var.pp v (Precision.typeToFuthark precision) ty
   | Const c -> print_float fmt c 
   | Apply1 (op, expr) -> Format.fprintf fmt "@[%a(@;<0 2>%a@,)@]" (print_unary_op precision) op (toFuthark precision) expr 
   | Apply2 (op, expr1, expr2) -> 
     if Operators.is_infix op then Format.fprintf fmt "@[(%a@ %a %a)@]" (toFuthark precision) expr1 (print_binary_op precision) op (toFuthark precision) expr2
     else Format.fprintf fmt "@[(%a %a %a)@]" (toFuthark precision) expr1 (print_binary_op precision) op (toFuthark precision) expr2
   | Let (x, ty, expr1, expr2) -> Format.fprintf fmt "@[<hv>let %a =@;<1 2>@[%a@]@ in@ %a@]" (toFuthark precision) (Var(x, ty)) (toFuthark precision) expr1 (toFuthark precision) expr2
-  | Fun (vars, expr) -> Format.fprintf fmt "@[λ%a.@;<1 2>%a@]" (CCList.pp (fun fmt (v,_) -> Var.pp fmt v)) vars (toFuthark precision) expr
+  | Fun (vars, expr) -> Format.fprintf fmt "@[\\(%a) -> @;<1 2>%a@]" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Var.pp fmt v)) vars (toFuthark precision) expr
   | App (expr, exprs) -> Format.fprintf fmt "@[(%a)[@;<0 2>@[%a@]]@]" (toFuthark precision) expr (CCList.pp (toFuthark precision)) exprs
-  | Tuple exprs -> CCList.pp ~pp_start:(fun fmt () -> Format.fprintf fmt "@[(@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@)@]") (toFuthark precision) fmt exprs
+  | Tuple exprs -> CCList.pp ~pp_start:(fun fmt () -> Format.fprintf fmt "@[(@,<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@)@]") (toFuthark precision) fmt exprs
   | NCase (expr1, vars, expr2) -> Format.fprintf fmt "@[<hv>let (%a) =@;<1 2>@[%a@]@ in@ %a@]" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Var.pp fmt v)) vars (toFuthark precision) expr1 (toFuthark precision) expr2
 
 let pp precision expr = 
