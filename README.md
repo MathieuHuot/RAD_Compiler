@@ -15,7 +15,7 @@ To run tests
 make
 ```
 
-To run tests and print counter example for all failing test or to run multiple time test.
+To run tests and print counterexamples for all failing tests or to run multiple time tests.
 ```bash
 make test-full
 ```
@@ -40,4 +40,3 @@ Currently, the input and output are an AST in OCaml.
 
 - `syntax` contains the source and target AST, and some all the basic operations on them
 - `transforms` contains the `ANF`, `ForwardMode`, `ReverseMode`, and different `Jets` source-code transformations
-- `rewrite` contains optimisations and optimisation strategies.
