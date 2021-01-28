@@ -8,9 +8,6 @@ let _ =
   set_binary_mode_out oc false;
   let out = Format.formatter_of_out_channel oc in
   Random.self_init ();
-  let _x = 2 in
-  Format.fprintf out "random term:@.%a@.end random term@.@.@." Source.pp
-    (Anf.SourceAnf.anf (Generator.sourceSynGen 10 []));
 
   (* Some terms for tests *)
   let x1 = ("x", 1) in
@@ -65,16 +62,6 @@ let _ =
      term:@.%a@.@.@."
     Source.pp f7 Target.pp f8 Target.pp f9;
 
-  let f6 = Syntax.Generator.sourceSynGen 5 [] in
-  let f7 = Anf.SourceAnf.anf f6 in
-  let f8 = ForwardMode.forwardAD f7 in
-  let f9 = Optimisation.T.fullOpti f8 in
-  Format.fprintf out
-    "Term:@.%a@.@.Anf Term:@.%a@.@.Forward derivative of term:@.%a@.@.Reduced \
-     derivative of term:@.%a@.@.@."
-    Source.pp f6 Source.pp f7 Target.pp f8
-    Target.pp f9;
-
   (* reverse mode tests *)
   let x11 = ("x", 1) in
   let var11 = Source.Var (x11, Real) in
@@ -122,20 +109,6 @@ let _ =
      term:@.%a@.derivative of term:@.%a@.fully reduced term:@.%a@.@.@."
     Source.pp f21 Source.pp f22 Target.pp f23
     Target.pp f24 Target.pp f25;
-
-  let g6 = Syntax.Generator.sourceSynGen 10 [] in
-  let g7 = Anf.SourceAnf.anf g6 in
-  let g8 = Transforms.ReverseMode.grad [] g7 in
-  let g9 = Optimisation.T.fullOpti g8 in
-  Format.fprintf out
-    "Term:@.%a@.@.Anf Term:@.%a@.@.Reverse derivative macro of \
-     term:@.%a@.@.Reduced reverse derivative macro of term:@.%a@.@.@."
-    Source.pp g6 Source.pp g7 Target.pp g8
-    Target.pp g9;
-    
-  let g10 = Transforms.ReverseMode.grad2 [] g7 in
-  Format.fprintf out "Optimized grad of term:@.%a@.@.@."
-  Target.pp g10;
 
   let g6 =
     Source.Apply1
