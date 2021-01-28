@@ -215,11 +215,20 @@ module T = struct
     | NCase (Tuple exprList, varList, expr) ->
         let list = List.combine exprList varList in
         (* remove each expr bound to an unused var *)
+        let b = ref false in
         let filteredList =
-          List.filter (fun (_, y) -> not (List.mem y unusedVar)) list
+          List.filter
+            (fun (_, y) ->
+              if not (List.mem y unusedVar) then true
+              else (
+                b := true;
+                false))
+            list
         in
         let filtExpr, filtVar = List.split filteredList in
-        Success (NCase (Tuple filtExpr, filtVar, expr))
+        if !b then
+          Success (NCase (Tuple filtExpr, filtVar, expr))
+        else Failure (NCase (Tuple filtExpr, filtVar, expr))
     | expr -> Failure expr
 
   let oneCaseRemoval : Target.t -> Target.t output = function
