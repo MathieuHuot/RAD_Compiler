@@ -145,7 +145,7 @@ module T = struct
     | Let (x, ty, (Const _ as expr), e) | Let (x, _, (Var (_, ty) as expr), e)
       ->
         Success (Target.subst x ty expr e)
-    | NCase (Tuple exprList, varList, expr) ->
+    | NCase (Tuple exprList, varList, expr) as e ->
         if List.compare_lengths exprList varList <> 0 then
           failwith "ForwardSubstitution: tuple wrong number of arguments"
         else
@@ -159,10 +159,11 @@ module T = struct
           in
           if rest = [] then
             Success (Target.simSubst (List.combine varList exprList) expr)
-          else
+          else if context <> [] then
             let varList1, exprList1 = List.split rest in
             Success
               (NCase (Tuple exprList1, varList1, Target.simSubst context expr))
+          else Failure e
     | expr -> Failure expr
 
   (* TODO: unsafe, does not terminate
@@ -226,8 +227,7 @@ module T = struct
             list
         in
         let filtExpr, filtVar = List.split filteredList in
-        if !b then
-          Success (NCase (Tuple filtExpr, filtVar, expr))
+        if !b then Success (NCase (Tuple filtExpr, filtVar, expr))
         else Failure (NCase (Tuple filtExpr, filtVar, expr))
     | expr -> Failure expr
 
