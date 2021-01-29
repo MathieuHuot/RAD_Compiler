@@ -14,3 +14,4 @@ _build/
 **.DS_Store
 **.merlin
 out.txt
+out.fut
