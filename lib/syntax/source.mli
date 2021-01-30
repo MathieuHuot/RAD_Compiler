@@ -10,8 +10,9 @@ module Type : sig
   (** Type of the source language *)
 
   type t =
-    | Real (** Type of constant *)
-    | Prod of t * t(** Type of pair *)
+    | Real (** Type of constants *)
+    | Prod of t * t(** Type of pairs *)
+    | Array of t (** Type of arrays *)
 
   val pp : Format.formatter -> t -> unit
   (** Pretty printer *)
@@ -21,6 +22,8 @@ module Type : sig
 
   val equal : t -> t -> bool
   (** Equality function *)
+
+  val isGroundType : t -> bool 
 end
 
 type t =
@@ -36,6 +39,13 @@ type t =
       [expr1] and [expr2]: [op(expr1, expr1, expr22)] *)
   | Let of Var.t * Type.t * t * t
   (** [Let (x,t, expr1, expr2)] corresponds to [let (x:t) = expr1 in expr2] *)
+  | Map of Var.t * Type.t * t * t  (** map x ty e1 [a1,...,an] = [e1[a1/x],...,e1[an/x]] *)
+  | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t (** map2 x ty2 y ty2 e1 [a1,...,an] [b1,...,bn] = [e1[a1/x,b1/y],...,e1[an/x,bn/y]] *)
+  | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t (** reduce x y e1 z A means reduce (x,y -> e1) from z on A *)
+  | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t   (** scan x ty1 y ty2 e1 z A *)
+  | Get of int * t (** get i [a1,...,an] returns ai *)
+  | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t(** fold z x ty1 y ty2 e z A means fold A from z with (x:ty1, y:ty2 -> e) *)
+  | Array of t list 
 
 type context = ((Var.t * Type.t), t) CCList.Assoc.t
 (** Type of a context. Associate a variable and its type to an expression*)

@@ -10,9 +10,10 @@ module Type : sig
   (** Type of the target language *)
 
   type t =
-    | Real (** Type of constant *)
-    | Arrow of t list * t (** Type of function *)
-    | NProd of t tuple (** Type of tuple *)
+    | Real (** Type of constants *)
+    | Arrow of t list * t (** Type of functions *)
+    | NProd of t tuple (** Type of tuples *)
+    | Array of t (** Type of arrays *)
 
   val pp : Format.formatter -> t -> unit
   (** Pretty printer *)

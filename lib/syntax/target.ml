@@ -9,20 +9,21 @@ end)
 type 'a tuple = 'a list
 
 module Type = struct
-  type t = Real | Arrow of t tuple * t | NProd of t tuple
+  type t = Real | Arrow of t tuple * t | NProd of t tuple | Array of t
 
 let rec pp fmt = function
-  | Real -> Format.fprintf fmt "real"
+  | Real         -> Format.fprintf fmt "real"
   | Arrow (l, t) ->
       Format.fprintf fmt "%a@ ->@ (%a)"
         (CCList.pp
            ~pp_sep:(fun fmt () -> Format.fprintf fmt "@ ->@ ")
            (fun fmt -> Format.fprintf fmt "(%a)" pp))
         l pp t
-  | NProd l ->
+  | NProd l      ->
       Format.fprintf fmt "(%a)"
         (CCList.pp ~pp_sep:(fun fmt () -> Format.fprintf fmt "@ *@ ") pp)
         l
+  | Array t      -> Format.fprintf fmt "Array[%a]" pp t
 
   let to_string = CCFormat.to_string pp
 
@@ -30,9 +31,9 @@ let rec pp fmt = function
 
   let rec from_source (ty : Source.Type.t) : t =
     match ty with
-    | Real -> Real
-    | Prod (ty1, ty2) ->
-        NProd [ from_source ty1; from_source ty2 ]
+    | Real            -> Real
+    | Prod (ty1, ty2) -> NProd [ from_source ty1; from_source ty2 ]
+    | Array ty        -> Array (from_source ty) 
 
   let rec equal ty1 ty2 =
     match (ty1, ty2) with
@@ -40,7 +41,15 @@ let rec pp fmt = function
     | Arrow (tyList1, ret_type1), Arrow (tyList2, ret_type2) ->
         CCList.equal equal tyList1 tyList2 && equal ret_type1 ret_type2
     | NProd tyList1, NProd tyList2 -> CCList.equal equal tyList1 tyList2
+    | Array (t1), Array(t2)            -> equal t1 t2
     | _ -> false
+
+    let rec isGroundType ty = 
+      match ty with 
+      | Real         -> true
+      | NProd tyList -> List.for_all isGroundType tyList
+      | Array ty     -> isGroundType ty
+      | _            -> false 
 end
 
 type t = Var of Var.t * Type.t
@@ -52,6 +61,14 @@ type t = Var of Var.t * Type.t
                 | App of t * (t list)
                 | Tuple of t tuple
                 | NCase of t * ((Var.t * Type.t) list) * t
+                | Map of Var.t * Type.t * t * t  (** map x ty e1 [a1,...,an] = [e1[a1/x],...,e1[an/x]] *)
+                | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t (** map2 x ty2 y ty2 e1 [a1,...,an] [b1,...,bn] = [e1[a1/x,b1/y],...,e1[an/x,bn/y]] *)
+                | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t (** reduce x y e1 z A means reduce (x,y -> e1) from z on A *)
+                | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t   (** scan x ty1 y ty2 e1 z A *)
+                | Zip of t * t (** zip [a1,...,an] [b1,...,bn] = [(a1,b1),...,(an,bn)] *)
+                | Get of int * t (** get i [a1,...,an] returns ai *)
+                | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t(** fold z x ty1 y ty2 e z A means fold A from z with (x:ty1, y:ty2 -> e) *)
+                | Array of t list 
 
 type context = ((Var.t * Type.t), t) CCList.Assoc.t
 
@@ -63,6 +80,14 @@ let rec from_source (expr: Source.t) : t = match expr with
   | Apply1(op, expr)         -> Apply1(op, from_source expr)
   | Apply2(op, expr1, expr2) -> Apply2(op, from_source expr1, from_source expr2)
   | Let(x, ty, expr1, expr2) -> Let(x, Type.from_source ty, from_source expr1, from_source expr2)
+  | Map (x, ty, expr1, expr2) -> Map (x, Type.from_source ty, from_source expr1, from_source expr2)
+  | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Map2 (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
+  | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Reduce (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
+  | Scan (x, t1, y, t2, expr1, expr2, expr3) -> Scan (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
+  | Zip(expr1, expr2) ->  Zip(from_source expr1, from_source expr2)
+  | Get(n, expr) -> Get(n, from_source expr)
+  | Fold (x, t1, y, t2, expr1, expr2, expr3) -> Fold (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
+  | Array (exprList) -> Array(List.map from_source exprList) 
 
 let rec pp fmt = function
   | Var (v, _) -> Var.pp fmt v
@@ -76,6 +101,14 @@ let rec pp fmt = function
   | App (expr, exprs) -> Format.fprintf fmt "@[(%a)[@;<0 2>@[%a@]]@]" pp expr (CCList.pp pp) exprs
   | Tuple exprs -> CCList.pp ~pp_start:(fun fmt () -> Format.fprintf fmt "@[{@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@,}@]") pp fmt exprs
   | NCase (expr1, vars, expr2) -> Format.fprintf fmt "@[<hv>lets %a =@;<1 2>@[%a@]@ in@ %a@]" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Var.pp fmt v)) vars pp expr1 pp expr2
+  | Map (x, _t, expr1, expr2) -> Format.fprintf fmt "map (%a.%a) %a" Var.pp x pp expr1 pp expr2
+  | Map2 (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "map2 (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2  pp expr3
+  | Reduce (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "reduce (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
+  | Scan (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "scan (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
+  | Zip(expr1, expr2) -> Format.fprintf fmt "zip %a %a" pp expr1 pp expr2
+  | Get(n, expr)      -> Format.fprintf fmt "get %a %a" Format.pp_print_int n pp expr
+  | Fold (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "fold (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
+  | Array (exprList) -> CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") ~pp_start:(fun fmt () -> Format.fprintf fmt "@[[@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@,]@]") pp fmt exprList
 
 let to_string = CCFormat.to_string pp
 
@@ -88,18 +121,33 @@ let rec map f expr = match f expr with
   | App (expr1, l) -> App (map f expr1, List.map (map f) l)
   | Tuple l -> Tuple (List.map (map f) l)
   | NCase (expr1, lType, expr2) -> NCase (map f expr1, lType, map f expr2)
+  | Map (x, ty, expr1, expr2) -> Map (x, ty, map f expr1, map f expr2)
+  | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Map2 (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
+  | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Reduce (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
+  | Scan (x, t1, y, t2, expr1, expr2, expr3) -> Scan (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
+  | Zip(expr1, expr2) ->  Zip(map f expr1, map f expr2)
+  | Get(n, expr) -> Get(n, map f expr)
+  | Fold (x, t1, y, t2, expr1, expr2, expr3) -> Fold (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
+  | Array (exprList) -> Array (List.map (map f) exprList)
 
-
-let rec fold f expr a =
-  f expr (match expr with
-  | Var (_, _) | Const _ -> a
-  | Apply1 (_, expr) -> fold f expr a
-  | Apply2 (_, expr1,expr2)
-  | Let (_, _, expr1, expr2) -> fold f expr2 (fold f expr1 a)
-  | Fun (_, expr) -> fold f expr a
-  | App (expr, l) -> List.fold_right (fun e a -> fold f e a) l (fold f expr a)
-  | Tuple l -> List.fold_right (fun e a -> fold f e a) l a
-  | NCase (expr1, _, expr2) -> fold f expr2 (fold f expr1 a))
+  let rec fold f expr a =
+    f expr (match expr with
+    | Var (_, _) | Const _ -> a
+    | Apply1 (_, expr)
+    | Fun (_, expr)
+    | Get(_, expr) -> a |> fold f expr
+    | Apply2 (_, expr1,expr2)
+    | Let (_, _, expr1, expr2)
+    | Zip(expr1, expr2)
+    | Map (_, _, expr1, expr2)
+    | NCase (expr1, _, expr2)  -> a |> fold f expr1 |> fold f expr2
+    | Map2 (_, _, _, _, expr1, expr2, expr3) 
+    | Reduce (_, _, _, _, expr1, expr2, expr3) 
+    | Scan (_, _, _, _, expr1, expr2, expr3)
+    | Fold (_, _, _, _, expr1, expr2, expr3) -> a |> fold f expr1 |> fold f expr2 |> fold f expr3
+    | Array exprList
+    | Tuple exprList -> List.fold_right (fun e a -> fold f e a) exprList a
+    | App (expr, exprList) -> a |> fold f expr |> List.fold_right (fun e a -> fold f e a) exprList)
 
 (* substitute variable x of type xTy by expr1 in expr2 *)
 let subst (x:Var.t) xTy expr1 expr2 =
@@ -114,6 +162,15 @@ let subst (x:Var.t) xTy expr1 expr2 =
       | NCase(_,varList,_) as expr -> if (List.exists (fun (y,ty) -> Var.equal x y && Type.equal ty xTy) varList)
         then failwith "sim: trying to substitute a bound variable"
         else expr
+      |  Map (y, ty1, _, _)  as expr -> if (Var.equal x y && Type.equal xTy ty1)
+        then failwith "subst: trying to substitute a bound variable"
+        else expr
+      | Map2 (y1, t1, y2, t2, _, _, _) 
+      | Reduce (y1, t1, y2, t2, _, _, _) 
+      | Scan (y1, t1, y2, t2, _, _, _) 
+      | Fold (y1, t1, y2, t2, _, _, _) as expr -> if (Var.equal x y1 && Type.equal xTy t1) || (Var.equal x y2 && Type.equal xTy t2)
+        then failwith "subst: trying to substitute a bound variable"
+        else expr  
       | expr -> expr
     ) expr2
 
@@ -124,7 +181,7 @@ let findInContext v context = CCList.Assoc.get ~eq:(CCPair.equal Var.equal Type.
 let simSubst context expr =
   map (function
       | Var (a,ty1) as expr       -> CCOpt.get_or ~default:expr (findInContext (a,ty1) context)
-      | Let(y,ty1,_,_) as expr    -> if isInContext (y,ty1) context
+      | Let(y,ty1,_,_) | Map (y, ty1, _, _) as expr    -> if isInContext (y,ty1) context
         then failwith "simsubst: trying to substitute a bound variable"
         else expr
       | Fun(varList,_) as expr    -> if (List.exists (fun (y,ty) -> isInContext (y,ty) context) varList)
@@ -133,13 +190,20 @@ let simSubst context expr =
       | NCase(_,varList,_) as expr -> if (List.exists (fun (y,ty) -> isInContext (y,ty) context) varList)
         then failwith "simsubst: trying to substitute a bound variable"
         else expr
-      | expr                       -> expr
+      | Map2 (y1, t1, y2, t2, _, _, _) 
+      | Reduce (y1, t1, y2, t2, _, _, _) 
+      | Scan (y1, t1, y2, t2, _, _, _) 
+      | Fold (y1, t1, y2, t2, _, _, _) as expr ->  if isInContext (y1, t1) context || isInContext (y2, t2) context
+        then failwith "simsubst: trying to substitute a bound variable"
+        else expr
+      | _                       -> expr
     ) expr
 
 (*  Checks whether two terms are equal up to alpha renaming.
     Two variables match iff they are the same free variable or they are both bound and equal up to renaming.
     This renaming is checked by carrying an explicit list of pairs of bound variables found so far in the term.
     When an occurence of bound variable is found deeper in the term, we check whether it matches the renaming *)
+(* TODO: this is weaker than it should be: it doesn't apply transitivity of equality when checking. some union find would be needed *)
 let equal ?(eq = Float.equal) expr1 expr2 =
 let module PVTSet = CCSet.Make (struct
   type t = (Var.t * Type.t) * (Var.t * Type.t)
@@ -158,7 +222,7 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
                                                          &&  eqT expr11 expr21 alpha_set
                                                          &&  eqT expr12 expr22 alpha_set
 | Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> Type.equal ty1 ty2
-                                                         && eqT expr11 expr21 alpha_set
+                                                         && eqT expr11 expr21 c
                                                          &&  eqT expr12 expr22 (PVTSet.add ((x,ty1),(y,ty2)) alpha_set)
 | App(expr11,exprList1),App(expr21,exprList2)         -> eqT expr11 expr21 alpha_set
                                                          &&  List.for_all2 (fun x y -> eqT x y alpha_set) exprList1 exprList2
@@ -174,6 +238,23 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
                                                          else
                                                          eqT expr11 expr21 alpha_set
                                                          && eqT expr12 expr22 (PVTSet.add_list alpha_set (List.combine varList1 varList2))
+| Map (x, ty1, expr11, expr12), Map (y, ty2, expr21, expr22) 
+                                                      -> Type.equal ty1 ty2 
+                                                         && eqT expr12 expr22 alpha_set
+                                                         && eqT expr11 expr21 (PVTSet.add ((x, ty1), (y, ty2)) alpha_set)
+| Map2 (x1, t11, y1, t12, expr11, expr12, expr13), Map2 (x2, t21, y2, t22, expr21, expr22, expr23)
+| Reduce (x1, t11, y1, t12, expr11, expr12, expr13), Reduce (x2, t21, y2, t22, expr21, expr22, expr23)
+| Scan (x1, t11, y1, t12, expr11, expr12, expr13), Scan (x2, t21, y2, t22, expr21, expr22, expr23)
+| Fold (x1, t11, y1, t12, expr11, expr12, expr13), Fold (x2, t21, y2, t22, expr21, expr22, expr23) 
+                                                      -> Type.equal t11 t21 
+                                                         && Type.equal t12 t22
+                                                         && eqT expr12 expr22 alpha_set
+                                                         && eqT expr13 expr23 alpha_set
+                                                         &&  eqT expr11 expr21 (PVTSet.add ((y1, t12), (y2, t22)) (PVTSet.add ((x1, t11), (x2, t21)) alpha_set))                    
+| Zip (expr11,expr12), Zip (expr21,expr22) -> eqT expr11 expr21 alpha_set 
+                                         &&  eqT expr12 expr22 alpha_set
+| Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2 (*TODO: check whether this equality on Nat is fine *)
+| Array exprList1, Array exprList2 -> CCList.equal (fun expr1 expr2 -> eqT expr1 expr2 alpha_set) exprList1 exprList2
 | _                                                   -> false
 in eqT expr1 expr2 PVTSet.empty
 
@@ -202,12 +283,18 @@ let closingTerm expr (cont : context) = if not(isContextOfValues cont)
 let freeVar expr =
   fold (fun expr set -> match expr with
 | Var (x,_)          -> VarSet.add x set
-| Let(y,_,_,_)       ->
-    VarSet.filter (fun x -> not(Var.equal x y)) set
+| Let(y,_,_,_)       
+| Map(y,_,_,_)  ->
+  VarSet.filter (fun x -> not(Var.equal x y)) set
 | Fun(varList,_)           ->
-    VarSet.(diff set (of_list (List.map fst varList)))
+  VarSet.(diff set (of_list (List.map fst varList)))
 | NCase(_,varList,_) ->
   VarSet.(diff set (of_list (List.map fst varList)))
+| Map2(y1,_,y2,_,_,_,_)
+| Reduce(y1,_,y2,_,_,_,_)  
+| Scan(y1,_,y2,_,_,_,_) 
+| Fold(y1,_,y2,_,_,_,_) ->  
+  VarSet.filter (fun x -> not(Var.equal x y1) && not(Var.equal x y2)) set
 | _                  -> set) expr VarSet.empty
 
 (* collects the list of unused bound variables *)
@@ -215,6 +302,11 @@ let listUnusedVar expr =
   fold (fun expr l -> match expr with
     | Let(x, ty, _, expr2)             -> (if (VarSet.mem x (freeVar expr2)) then [] else [(x,ty)]) @ l
     | NCase(_,varList, expr2)          -> (let fv = freeVar expr2 in List.filter (fun (y,_) -> not(VarSet.mem y fv)) varList) @ l
+    | Map(x, ty, expr1, _)             -> (if (VarSet.mem x (freeVar expr1)) then [] else [(x,ty)]) @ l
+    | Map2(y1, ty1, y2, ty2, expr,_,_) 
+    | Reduce(y1, ty1, y2, ty2, expr,_,_)
+    | Scan(y1, ty1, y2, ty2, expr,_,_)
+    | Fold(y1, ty1, y2, ty2, expr,_,_) -> (let fv = freeVar expr in List.filter (fun (y,_) -> not(VarSet.mem y fv)) [(y1, ty1); (y2, ty2)]) @ l  
     | _ -> l)
   expr []
 
@@ -225,6 +317,11 @@ let varNameNotBound (name : string) expr =
         List.for_all (fun ((str, _), _) -> str <> name) varList
     | NCase (_, varList, _) ->
         List.for_all (fun ((str, _), _) -> str <> name) varList
+    | Map ((str,_), _, _, _) -> str <> name
+    | Map2 ((str1,_), _, (str2,_), _, _, _, _) 
+    | Reduce ((str1,_), _, (str2,_), _, _, _, _) 
+    | Scan ((str1,_), _, (str2,_), _, _, _, _)  
+    | Fold ((str1,_), _, (str2,_), _, _, _, _)  -> str1 <> name && str2 <> name
     | _ -> true
   in
   fold (fun expr b -> b && aux expr) expr true
@@ -294,6 +391,99 @@ let rec inferType = function
             inferType expr2
           else Error "NCase: type mismatch"
         | _ -> Error "NCase: expression 1 should have type Prod"))
+  | Map(_, ty, expr1, expr2) ->  
+    CCResult.(
+    inferType expr2 >>= fun t2 ->
+    match t2 with 
+    | Array(t2) ->
+      if Type.equal ty t2 then inferType expr1
+      else
+      Error
+        "in Map type of the function argument does not correspond to the \
+         type of the elements of the array"
+    | _ -> Error "type of the expression should be array")
+  | Map2 (_, ty1, _, ty2, expr1, expr2, expr3) -> 
+      CCResult.(
+      inferType expr2 >>= fun t2 ->
+      match t2 with 
+      | Array(t2) ->
+        if not(Type.equal ty1 t2) then
+        Error
+          "in Map2 type of the first function argument does not correspond to the \
+           type of the elements of the first array"
+        else inferType expr3 >>= fun t3 -> begin
+        match t3 with 
+        | Array(t3) ->
+          if not(Type.equal ty2 t3) then
+          Error
+            "in Map2 type of the second function argument does not correspond to the \
+             type of the elements of the second array"
+          else inferType expr1
+        | _ -> Error "type of the expression should be array"  
+        end
+      | _ -> Error "type of the expression should be array")
+  | Reduce (_, ty1, _, ty2, expr1, expr2, expr3) -> 
+      CCResult.(
+        inferType expr1 >>= fun t1 ->
+        inferType expr2 >>= fun t2 ->
+        inferType expr3 >>= fun t3 ->
+        if Type.equal ty1 ty2 && Type.equal ty2 t1 && Type.equal t1 t2 && Type.equal t2 t3
+        then Ok t3
+        else Error 
+          "in Reduce not all the types are the same"
+      )
+  | Scan (_, ty1, _, ty2, expr1, expr2, expr3) -> 
+    CCResult.(
+        inferType expr2 >>= fun t2 ->
+        if not(Type.equal ty1 t2) 
+        then Error "In Scan type of the first argument does not match type of first variable of the function"
+        else
+        inferType expr3 >>= fun t3 ->
+        match t3 with 
+          | Array(t3) ->
+            if not(Type.equal ty2 t3) 
+            then Error "In Scan type of the second argument does not match type of second variable of the function"
+            else 
+            inferType expr1 >>= fun t1 ->
+            if not(Type.equal ty1 t1) 
+            then Error "In Scan type of the first argument does not match return type of the function"
+            else
+            Ok t1
+          | _ -> Error "in Scan type of the third argument is not an array" (* TODO*)
+      )
+  | Fold (_, ty1, _, ty2, expr1, expr2, expr3) ->
+    CCResult.(
+        inferType expr2 >>= fun t2 ->
+        if not(Type.equal ty1 t2) 
+        then Error "In Fold type of the first argument does not match type of first variable of the function"
+        else
+        inferType expr3 >>= fun t3 ->
+        match t3 with 
+          | Array(t3) ->
+            if not(Type.equal ty2 t3) 
+            then Error "In Fold type of the second argument does not match type of second variable of the function"
+            else 
+            inferType expr1 >>= fun t1 ->
+            if not(Type.equal ty1 t1) 
+            then Error "In Fold type of the first argument does not match return type of the function"
+            else
+            Ok t1
+          | _ -> Error "in Fold type of the third argument is not an array"
+      )
+  | Zip (expr1, expr2) ->  CCResult.(
+    inferType expr1 >>= function
+    | Type.Array(t1) -> (
+        inferType expr2 >>= function
+        | Type.Array(t2) -> Ok (Type.Array(Type.NProd([t1;t2])))
+        | _ -> Error "Argument 2 of Zip should be a Type.Array")
+    | _ -> Error "Argument 1 of Zip should be a Type.Array")
+  | Get (_, expr) -> CCResult.(
+    inferType expr >>= function
+    | Type.Array(t1) -> Ok t1
+    | _ -> Error "Argument 2 of Zip should be a Type.Array"
+    )
+  | Array exprList -> CCResult.(
+    inferType exprList >>= fun t1 -> Array(t1))  (* TODO, also problem of the empty array *)
 
 let isWellTyped expr = inferType expr |> Result.is_ok
 
@@ -352,6 +542,38 @@ let rec interp expr = match expr with
                          expr2 |> simSubst (List.combine varList exprList) |> interp
 
     | _               -> failwith "interpret: expression should reduce to a tuple" end
+| Map (x, ty, expr1, expr2) -> begin match (interp expr2) with
+    | Array (exprList) -> Array(List.map (fun e -> interp(subst x ty e expr1)) exprList)
+    | _ ->  failwith "interpret: expression should reduce to an array" end
+| Map2 (x, t1, y, t2, expr1, expr2, expr3) -> begin match (interp expr2), (interp expr3) with
+  | Array (exprList1),  Array (exprList2) -> Array(List.map2 (fun e1 -> fun e2 -> interp(subst y t2 e2 (subst x t1 e1 expr1))) exprList1 exprList2)
+  | _ ->  failwith "interpret: expressions should reduce to arrays" end 
+| Reduce (x, t1, y, t2, expr1, expr2, expr3) -> begin match interp expr3 with
+  | Array ([])          -> interp expr2
+  | Array (e::exprList) -> let z = interp (Reduce(x, t1, y, t2, expr1, expr2, Array (exprList))) in 
+                           expr1 |> subst x t1 e |> subst y t2 z |> interp
+  | _ ->  failwith "interpret: expression should reduce to an array" end
+| Scan (x, t1, y, t2, expr1, expr2, expr3) -> begin match interp expr3 with
+  | Array ([])          -> Array[interp expr2]
+  | Array (e::exprList) -> let eArray = interp (Reduce(x, t1, y, t2, expr1, expr2, Array (exprList))) in
+                           begin match eArray with
+                            | Array(eList) -> let z = List.hd (List.rev eList) in
+                              Array(eList @ [ expr1 |> subst x t1 e |> subst y t2 z |> interp ])
+                            | _ -> failwith "interpret: expression should reduce to an array"
+                            end
+  | _ ->  failwith "interpret: expression should reduce to an array" end
+| Zip(expr1, expr2) ->  begin match (interp expr1), (interp expr2) with
+  | Array (exprList1),  Array (exprList2) -> Array(List.combine exprList1 exprList2 |> List.map (fun (x,y) -> Tuple([x;y])))
+  | _ ->  failwith "interpret: expressions should reduce to arrays" end 
+| Get(n, expr) -> begin match (interp expr) with
+  | Array (exprList) -> List.nth exprList n
+  | _ ->  failwith "interpret: expression should reduce to an array" end
+| Fold (x, t1, y, t2, expr1, expr2, expr3) -> begin match interp expr3 with
+  | Array ([])          -> interp expr2
+  | Array (e::exprList) -> let z = interp (Reduce(x, t1, y, t2, expr1, expr2, Array (exprList))) in 
+                           expr1 |> subst x t1 e |> subst y t2 z |> interp
+  | _ ->  failwith "interpret: expression should reduce to an array" end
+| Array (exprList) -> Array(List.map interp exprList)
 | _                               ->  expr
 in interp expr2
 
@@ -381,6 +603,38 @@ let rec interp expr = match expr with
                                  expr2 |> simSubst (List.combine varList exprList) |> interp
 
     | expr                    -> NCase(expr, varList, interp expr2) end
+| Map (x, ty, expr1, expr2) -> begin match (interp expr2) with
+    | Array (exprList) -> Array(List.map (fun e -> interp(subst x ty e expr1)) exprList)
+    | _ ->  failwith "interpret: expression should reduce to an array" end
+| Map2 (x, t1, y, t2, expr1, expr2, expr3) -> begin match (interp expr2), (interp expr3) with
+  | Array (exprList1),  Array (exprList2) -> Array(List.map2 (fun e1 -> fun e2 -> interp(subst y t2 e2 (subst x t1 e1 expr1))) exprList1 exprList2)
+  | _ ->  failwith "interpret: expressions should reduce to arrays" end 
+| Reduce (x, t1, y, t2, expr1, expr2, expr3) -> begin match interp expr3 with
+  | Array ([])          -> interp expr2
+  | Array (e::exprList) -> let z = interp (Reduce(x, t1, y, t2, expr1, expr2, Array (exprList))) in 
+                           expr1 |> subst x t1 e |> subst y t2 z |> interp
+  | _ ->  failwith "interpret: expression should reduce to an array" end
+| Scan (x, t1, y, t2, expr1, expr2, expr3) -> begin match interp expr3 with
+  | Array ([])          -> Array[interp expr2]
+  | Array (e::exprList) -> let eArray = interp (Reduce(x, t1, y, t2, expr1, expr2, Array (exprList))) in
+                           begin match eArray with
+                            | Array(eList) -> let z = List.hd (List.rev eList) in
+                              Array(eList @ [ expr1 |> subst x t1 e |> subst y t2 z |> interp ])
+                            | _ -> failwith "interpret: expression should reduce to an array"
+                            end
+  | _ ->  failwith "interpret: expression should reduce to an array" end
+| Zip(expr1, expr2) ->  begin match (interp expr1), (interp expr2) with
+  | Array (exprList1),  Array (exprList2) -> Array(List.combine exprList1 exprList2 |> List.map (fun (x,y) -> Tuple([x;y])))
+  | _ ->  failwith "interpret: expressions should reduce to arrays" end 
+| Get(n, expr) -> begin match (interp expr) with
+  | Array (exprList) -> List.nth exprList n
+  | _ ->  failwith "interpret: expression should reduce to an array" end
+| Fold (x, t1, y, t2, expr1, expr2, expr3) -> begin match interp expr3 with
+  | Array ([])          -> interp expr2
+  | Array (e::exprList) -> let z = interp (Reduce(x, t1, y, t2, expr1, expr2, Array (exprList))) in 
+                           expr1 |> subst x t1 e |> subst y t2 z |> interp
+  | _ ->  failwith "interpret: expression should reduce to an array" end
+| Array (exprList) -> Array(List.map interp exprList) 
 | expr                               ->  expr
 in interp expr2
 
@@ -408,6 +662,34 @@ module Traverse (S : Strategy.S) = struct
     | NCase (expr1, varList, expr2) ->
         apply2 (map f) expr1 expr2 >|= fun (expr1, expr2) ->
         NCase (expr1, varList, expr2)
+    | Map (x, ty, expr1, expr2) -> 
+      apply2 (map f) expr1 expr2 >|= fun (expr1, expr2) ->
+      Map (x, ty, expr1, expr2)
+    | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> 
+      applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
+        | [e1;e2;e3] -> Map2(x, t1, y, t2, e1, e2, e3)
+        | _ -> assert false
+        end
+    | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> 
+     applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
+        | [e1;e2;e3] -> Reduce(x, t1, y, t2, e1, e2, e3)
+        | _ -> assert false
+        end
+    | Scan (x, t1, y, t2, expr1, expr2, expr3) -> 
+     applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
+        | [e1;e2;e3] -> Scan(x, t1, y, t2, e1, e2, e3)
+        | _ -> assert false
+        end
+    | Zip(expr1, expr2) ->  
+      apply2 (map f) expr1 expr2 >|= fun (expr1, expr2) ->
+      Zip (expr1, expr2)
+    | Get(n, expr) -> map f expr >|= fun expr -> Get(n, expr)
+    | Fold (x, t1, y, t2, expr1, expr2, expr3) -> 
+     applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
+        | [e1;e2;e3] -> Fold(x, t1, y, t2, e1, e2, e3)
+        | _ -> assert false
+        end
+    | Array (exprList) -> applyl (map f) exprList >|= fun l -> Array l
 end
 
 (** Derivatives of basic operators *)
