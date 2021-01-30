@@ -222,7 +222,7 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
                                                          &&  eqT expr11 expr21 alpha_set
                                                          &&  eqT expr12 expr22 alpha_set
 | Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> Type.equal ty1 ty2
-                                                         && eqT expr11 expr21 c
+                                                         && eqT expr11 expr21 alpha_set
                                                          &&  eqT expr12 expr22 (PVTSet.add ((x,ty1),(y,ty2)) alpha_set)
 | App(expr11,exprList1),App(expr21,exprList2)         -> eqT expr11 expr21 alpha_set
                                                          &&  List.for_all2 (fun x y -> eqT x y alpha_set) exprList1 exprList2
