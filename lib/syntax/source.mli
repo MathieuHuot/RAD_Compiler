@@ -12,7 +12,7 @@ module Type : sig
   type t =
     | Real (** Type of constants *)
     | Prod of t * t(** Type of pairs *)
-    | Array of t (** Type of arrays *)
+    | Array of int * t (** Type of arrays with fixed known size *)
 
   val pp : Format.formatter -> t -> unit
   (** Pretty printer *)

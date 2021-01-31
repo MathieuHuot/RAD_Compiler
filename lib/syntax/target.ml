@@ -9,7 +9,7 @@ end)
 type 'a tuple = 'a list
 
 module Type = struct
-  type t = Real | Arrow of t tuple * t | NProd of t tuple | Array of t
+  type t = Real | Arrow of t tuple * t | NProd of t tuple | Array of int * t
 
 let rec pp fmt = function
   | Real         -> Format.fprintf fmt "real"
@@ -23,7 +23,7 @@ let rec pp fmt = function
       Format.fprintf fmt "(%a)"
         (CCList.pp ~pp_sep:(fun fmt () -> Format.fprintf fmt "@ *@ ") pp)
         l
-  | Array t      -> Format.fprintf fmt "Array[%a]" pp t
+  | Array (n, t)  -> Format.fprintf fmt "Array[%a][%a]" Format.pp_print_int n pp t
 
   let to_string = CCFormat.to_string pp
 
@@ -33,7 +33,7 @@ let rec pp fmt = function
     match ty with
     | Real            -> Real
     | Prod (ty1, ty2) -> NProd [ from_source ty1; from_source ty2 ]
-    | Array ty        -> Array (from_source ty) 
+    | Array (n, ty)   -> Array (n, from_source ty) 
 
   let rec equal ty1 ty2 =
     match (ty1, ty2) with
@@ -41,15 +41,15 @@ let rec pp fmt = function
     | Arrow (tyList1, ret_type1), Arrow (tyList2, ret_type2) ->
         CCList.equal equal tyList1 tyList2 && equal ret_type1 ret_type2
     | NProd tyList1, NProd tyList2 -> CCList.equal equal tyList1 tyList2
-    | Array (t1), Array(t2)            -> equal t1 t2
+    | Array (n, t1), Array(m, t2)            -> equal t1 t2 &&  n = m
     | _ -> false
 
     let rec isGroundType ty = 
       match ty with 
-      | Real         -> true
-      | NProd tyList -> List.for_all isGroundType tyList
-      | Array ty     -> isGroundType ty
-      | _            -> false 
+      | Real          -> true
+      | NProd tyList  -> List.for_all isGroundType tyList
+      | Array (_, ty) -> isGroundType ty
+      | _             -> false 
 end
 
 type t = Var of Var.t * Type.t
@@ -66,6 +66,9 @@ type t = Var of Var.t * Type.t
                 | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t (** reduce x y e1 z A means reduce (x,y -> e1) from z on A *)
                 | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t   (** scan x ty1 y ty2 e1 z A *)
                 | Zip of t * t (** zip [a1,...,an] [b1,...,bn] = [(a1,b1),...,(an,bn)] *)
+                | Unzip of t (** Unzip [(a1,b1),...,(an,bn)] = [a1,...,an],[b1,...,bn] =  *)
+                | Zip3 of t * t * t (** zip [a1,...,an] [b1,...,bn] [c1,...,cn] = [(a1,b1,c1),...,(an,bn,cn)] *)
+                | Unzip3 of t (** Unzip  [(a1,b1,c1),...,(an,bn,cn)] = [a1,...,an],[b1,...,bn], [c1,...,cn] =  *)
                 | Get of int * t (** get i [a1,...,an] returns ai *)
                 | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t(** fold z x ty1 y ty2 e z A means fold A from z with (x:ty1, y:ty2 -> e) *)
                 | Array of t list 
@@ -105,6 +108,9 @@ let rec pp fmt = function
   | Reduce (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "reduce (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
   | Scan (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "scan (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
   | Zip(expr1, expr2) -> Format.fprintf fmt "zip %a %a" pp expr1 pp expr2
+  | Zip3(expr1, expr2, expr3) -> Format.fprintf fmt "zip3 %a %a %a" pp expr1 pp expr2 pp expr3
+  | Unzip(expr) -> Format.fprintf fmt "unzip %a " pp expr
+  | Unzip3(expr) -> Format.fprintf fmt "unzip3 %a " pp expr 
   | Get(n, expr)      -> Format.fprintf fmt "get %a %a" Format.pp_print_int n pp expr
   | Fold (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "fold (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
   | Array (exprList) -> CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") ~pp_start:(fun fmt () -> Format.fprintf fmt "@[[@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@,]@]") pp fmt exprList
@@ -125,6 +131,9 @@ let rec map f expr = match f expr with
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Reduce (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
   | Scan (x, t1, y, t2, expr1, expr2, expr3) -> Scan (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
   | Zip(expr1, expr2) ->  Zip(map f expr1, map f expr2)
+  | Zip3(expr1, expr2, expr3) ->  Zip3(map f expr1, map f expr2, map f expr3)
+  | Unzip(expr) ->  Unzip(map f expr)
+  | Unzip3(expr) ->  Unzip3(map f expr)
   | Get(n, expr) -> Get(n, map f expr)
   | Fold (x, t1, y, t2, expr1, expr2, expr3) -> Fold (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
   | Array (exprList) -> Array (List.map (map f) exprList)
@@ -134,7 +143,9 @@ let rec map f expr = match f expr with
     | Var (_, _) | Const _ -> a
     | Apply1 (_, expr)
     | Fun (_, expr)
-    | Get(_, expr) -> a |> fold f expr
+    | Get(_, expr) 
+    | Unzip(expr)
+    | Unzip3(expr) -> a |> fold f expr
     | Apply2 (_, expr1,expr2)
     | Let (_, _, expr1, expr2)
     | Zip(expr1, expr2)
@@ -143,7 +154,8 @@ let rec map f expr = match f expr with
     | Map2 (_, _, _, _, expr1, expr2, expr3) 
     | Reduce (_, _, _, _, expr1, expr2, expr3) 
     | Scan (_, _, _, _, expr1, expr2, expr3)
-    | Fold (_, _, _, _, expr1, expr2, expr3) -> a |> fold f expr1 |> fold f expr2 |> fold f expr3
+    | Fold (_, _, _, _, expr1, expr2, expr3)
+    | Zip3(expr1, expr2, expr3) -> a |> fold f expr1 |> fold f expr2 |> fold f expr3
     | Array exprList
     | Tuple exprList -> List.fold_right (fun e a -> fold f e a) exprList a
     | App (expr, exprList) -> a |> fold f expr |> List.fold_right (fun e a -> fold f e a) exprList)
@@ -249,8 +261,14 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
                                                          && eqT expr12 expr22 alpha_set
                                                          && eqT expr13 expr23 alpha_set
                                                          &&  eqT expr11 expr21 (PVTSet.add ((y1, t12), (y2, t22)) (PVTSet.add ((x1, t11), (x2, t21)) alpha_set))                    
-| Zip (expr11,expr12), Zip (expr21,expr22) -> eqT expr11 expr21 alpha_set 
-                                         &&  eqT expr12 expr22 alpha_set
+| Zip (expr11, expr12), Zip (expr21, expr22)          -> eqT expr11 expr21 alpha_set 
+                                                         &&  eqT expr12 expr22 alpha_set
+| Zip3 (expr11, expr12, expr13), Zip3 (expr21, expr22, expr23) 
+                                                      -> eqT expr11 expr21 alpha_set 
+                                                         &&  eqT expr12 expr22 alpha_set    
+                                                         &&  eqT expr13 expr23 alpha_set   
+| Unzip(expr1), Unzip(expr2)                          -> eqT expr1 expr2 alpha_set
+| Unzip3(expr1), Unzip3(expr2)                        -> eqT expr1 expr2 alpha_set                                                                                             
 | Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2
 | Array exprList1, Array exprList2 -> CCList.equal (fun expr1 expr2 -> eqT expr1 expr2 alpha_set) exprList1 exprList2
 | _                                                   -> false
@@ -270,6 +288,7 @@ let rec isValue = function
 | Const _           -> true
 | Fun(_,_)          -> true
 | Tuple(exprList)   -> List.for_all isValue exprList
+| Array(exprList)   -> List.for_all isValue exprList
 | _                 -> false
 
 let isContextOfValues (cont : context) = List.for_all (fun (_,v) -> isValue v) cont
@@ -388,8 +407,8 @@ let rec inferType expr =
   | Map(_, ty, expr1, expr2) ->(
     let* t2 = inferType expr2 in
     match t2 with
-    | Array(t2) ->
-      if Type.equal ty t2 then (inferType expr1 >|= fun t1 -> Type.Array t1)
+    | Array(n, t2) ->
+      if Type.equal ty t2 then (inferType expr1 >|= fun t1 -> Type.Array (n, t1))
       else
       Error
         "in Map type of the function argument does not correspond to the \
@@ -399,19 +418,22 @@ let rec inferType expr =
       let* t2 = inferType expr2 in
       let* t3 = inferType expr3 in
       match t2,t3 with
-      | Array(t2), Array(t3) ->
+      | Array(n, t2), Array(m, t3) ->
         if not(Type.equal ty1 t2) && not(Type.equal ty2 t3) then
         Error
           "in Map2 type of one of the function argument does not correspond to the \
            type of the elements of the array"
-        else (inferType expr1 >|= fun t1 -> Type.Array t1)
+        else if not(n = m) then
+          Error
+            "in Map2 the two arguments should be vectors of the sam size"
+        else (inferType expr1 >|= fun t1 -> Type.Array (n, t1))
       | _ -> Error "type of the expression should be array")
   | Reduce (_, ty1, _, ty2, expr1, expr2, expr3) -> (
         let* t1 = inferType expr1 in
         let* t2 = inferType expr2 in
         let* t3 = inferType expr3 in
         match t3 with
-        | Array t3 ->
+        | Array (_, t3) ->
             if Type.equal ty1 ty2 && Type.equal ty2 t1 && Type.equal t1 t2 && Type.equal t2 t3
             then Ok t1
             else Error
@@ -424,7 +446,7 @@ let rec inferType expr =
         else
         inferType expr3 >>= fun t3 ->
         match t3 with 
-          | Array(t3) ->
+          | Array(n, t3) ->
             if not(Type.equal ty2 t3) 
             then Error "In Scan type of the second argument does not match type of second variable of the function"
             else 
@@ -432,17 +454,17 @@ let rec inferType expr =
             if not(Type.equal ty1 t1) 
             then Error "In Scan type of the first argument does not match return type of the function"
             else
-            Ok (Type.Array t1)
+            Ok (Type.Array (n, t1))
           | _ -> Error "in Scan type of the third argument is not an array"
       )
-  | Fold (_, ty1, _, ty2, expr1, expr2, expr3) ->(
+  | Fold (_, ty1, _, ty2, expr1, expr2, expr3) -> (
         inferType expr2 >>= fun t2 ->
         if not(Type.equal ty1 t2) 
         then Error "In Fold type of the first argument does not match type of first variable of the function"
         else
         inferType expr3 >>= fun t3 ->
         match t3 with 
-          | Array(t3) ->
+          | Array(_, t3) ->
             if not(Type.equal ty2 t3) 
             then Error "In Fold type of the second argument does not match type of second variable of the function"
             else 
@@ -455,21 +477,41 @@ let rec inferType expr =
       )
   | Zip (expr1, expr2) -> (
     inferType expr1 >>= function
-    | Type.Array(t1) -> (
+    | Type.Array(n1, t1) -> (
         inferType expr2 >>= function
-        | Type.Array(t2) -> Ok (Type.Array(Type.NProd([t1;t2])))
+        | Type.Array(n2, t2) -> if n1=n2 then Ok (Type.Array(n1, Type.NProd([t1;t2]))) 
+                                else Error "in Zip the two arrays should have the same length" 
         | _ -> Error "Argument 2 of Zip should be a Type.Array")
     | _ -> Error "Argument 1 of Zip should be a Type.Array")
-  | Get (_, expr) -> (
+  | Zip3 (expr1, expr2, expr3) -> (
+    inferType expr1 >>= function
+    | Type.Array(n1, t1) -> (
+        inferType expr2 >>= function
+        | Type.Array(n2, t2) ->  (inferType expr3 >>= function
+              | Type.Array(n3, t3) -> if (n1=n2 && n1=n3) then Ok (Type.Array (n1, Type.NProd ([t1; t2; t3])))
+                                      else Error "in Zip3 the three arrays should have the same length" 
+              | _ -> Error "Argument 3 of Zip3 should be a Type.Array")
+        | _ -> Error "Argument 2 of Zip3 should be a Type.Array")
+    | _ -> Error "Argument 1 of Zip3 should be a Type.Array")
+  | Unzip (expr) -> (
     inferType expr >>= function
-    | Type.Array(t1) -> Ok t1
+    | Type.Array(m, Type.NProd([t1; t2])) -> Ok (Type.NProd ([Type.Array (m, t1); Type.Array (m ,t2)]))
+    | _ -> Error "Argument of Unzip should be an array of pairs")
+  | Unzip3 (expr) -> (
+    inferType expr >>= function
+    | Type.Array(m, Type.NProd([t1; t2; t3])) -> Ok (Type.NProd ([Type.Array (m, t1); Type.Array (m ,t2); Type.Array (m ,t3)]))
+    | _ -> Error "Argument of Unzip3 should be an array of triples")
+  | Get (n, expr) -> (
+    inferType expr >>= function
+    | Type.Array(m, t1) -> if n<m then Ok t1 
+                           else Error "trying to get an element out of bounds of an array"
     | _ -> Error "Argument 2 of Zip should be a Type.Array"
     )
   | Array exprList -> (
     List.map inferType exprList |> flatten_l >>= function
-      | [] -> Error "Empty array" (* TODO, also problem of the empty array *)
+      | [] -> Error "Empty array"
       | h::t -> if CCList.for_all (Type.equal h) t then
-          Ok (Type.Array h)
+          Ok (Type.Array (List.length exprList, h))
         else Error "All elements of an array should have the same type."
   )
 
@@ -668,13 +710,20 @@ module Traverse (S : Strategy.S) = struct
         | [e1;e2;e3] -> Scan(x, t1, y, t2, e1, e2, e3)
         | _ -> assert false
         end
-    | Zip(expr1, expr2) ->  
+    | Zip (expr1, expr2) ->  
       apply2 (map f) expr1 expr2 >|= fun (expr1, expr2) ->
       Zip (expr1, expr2)
-    | Get(n, expr) -> map f expr >|= fun expr -> Get(n, expr)
+    | Zip3 (expr1, expr2, expr3) ->  
+      applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
+        | [e1; e2; e3] -> Zip3(e1, e2, e3)
+        | _ -> assert false
+        end
+    | Unzip (expr) ->  map f expr >|= fun expr -> Unzip (expr)
+    | Unzip3 (expr) ->  map f expr >|= fun expr -> Unzip3 (expr)
+    | Get (n, expr) -> map f expr >|= fun expr -> Get(n, expr)
     | Fold (x, t1, y, t2, expr1, expr2, expr3) -> 
      applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
-        | [e1;e2;e3] -> Fold(x, t1, y, t2, e1, e2, e3)
+        | [e1; e2; e3] -> Fold(x, t1, y, t2, e1, e2, e3)
         | _ -> assert false
         end
     | Array (exprList) -> applyl (map f) exprList >|= fun l -> Array l

@@ -13,7 +13,7 @@ module Type : sig
     | Real (** Type of constants *)
     | Arrow of t list * t (** Type of functions *)
     | NProd of t tuple (** Type of tuples *)
-    | Array of t (** Type of arrays *)
+    | Array of int * t (** Type of arrays with fixed known size *)
 
   val pp : Format.formatter -> t -> unit
   (** Pretty printer *)
@@ -57,6 +57,17 @@ type t =
   (** [NCase (expr1, l, expr2] destructs tuples:
       [let (x1:t1, (x2:t2), … = (expr11, expr12, …) in expr2] where
       [expr1 = Tuple (expr11, expr12, …)] *)
+  | Map of Var.t * Type.t * t * t  (** map x ty e1 [a1,...,an] = [e1[a1/x],...,e1[an/x]] *)
+  | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t (** map2 x ty1 y ty2 e1 [a1,...,an] [b1,...,bn] = [e1[a1/x,b1/y],...,e1[an/x,bn/y]] *)
+  | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t (** reduce x y e1 z A means reduce (x,y -> e1) from z on A *)
+  | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t   (** scan x ty1 y ty2 e1 z A *)
+  | Zip of t * t (** zip [a1,...,an] [b1,...,bn] = [(a1,b1),...,(an,bn)] *)
+  | Unzip of t (** Unzip [(a1,b1),...,(an,bn)] = [a1,...,an],[b1,...,bn] =  *)
+  | Zip3 of t * t * t (** zip [a1,...,an] [b1,...,bn] [c1,...,cn] = [(a1,b1,c1),...,(an,bn,cn)] *)
+  | Unzip3 of t (** Unzip  [(a1,b1,c1),...,(an,bn,cn)] = [a1,...,an],[b1,...,bn], [c1,...,cn] =  *)
+  | Get of int * t (** get i [a1,...,an] returns ai *)
+  | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t(** fold z x ty1 y ty2 e z A means fold A from z with (x:ty1, y:ty2 -> e) *)
+  | Array of t list      
 
 type context = ((Var.t * Type.t), t) CCList.Assoc.t
 (** Type of a context. Associate a variable and its type to an expression*)

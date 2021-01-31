@@ -9,12 +9,12 @@ end)
 type 'a tuple = 'a list
 
 module Type = struct
-  type t = Real | Prod of t * t | Array of t
+  type t = Real | Prod of t * t | Array of int * t
 
   let rec pp fmt = function
     | Real          -> Format.fprintf fmt "real"
     | Prod (t1, t2) -> Format.fprintf fmt "(%a * %a)" pp t1 pp t2
-    | Array t       -> Format.fprintf fmt "Array[%a]" pp t
+    | Array (n, t)  -> Format.fprintf fmt "Array[%a][%a]" Format.pp_print_int n pp t
 
   let to_string = CCFormat.to_string pp
 
@@ -22,14 +22,14 @@ module Type = struct
     match (ty1, ty2) with
     | Real, Real                       -> true
     | Prod (t11, t12), Prod (t21, t22) -> equal t11 t21 && equal t12 t22
-    | Array (t1), Array(t2)            -> equal t1 t2
+    | Array (n1, t1), Array(n2, t2)    -> equal t1 t2 && n1=n2
     | _ -> false
 
   let rec isGroundType ty = 
     match ty with 
-    | Real -> true
+    | Real            -> true
     | Prod (ty1, ty2) -> isGroundType ty1 && isGroundType ty2
-    | Array ty -> isGroundType ty
+    | Array (_,ty)    -> isGroundType ty
 end
 
 type t = Var of Var.t * Type.t
@@ -177,7 +177,7 @@ let simSubst context expr = map (fun expr ->
                                                              && eqT expr12 expr22 alpha_set
                                                              && eqT expr13 expr23 alpha_set
                                                              &&  eqT expr11 expr21 (PVTSet.add ((y1, t12), (y2, t22)) (PVTSet.add ((x1, t11), (x2, t21)) alpha_set))                    
-    | Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2 (*TODO: check whether this equality on Nat is fine *)
+    | Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2
     | Array exprList1, Array exprList2 -> CCList.equal (fun expr1 expr2 -> eqT expr1 expr2 alpha_set) exprList1 exprList2
     | _                                                   -> false
     in eqT expr1 expr2 PVTSet.empty
@@ -280,8 +280,8 @@ let rec inferType expr =
   | Map(_, ty, expr1, expr2) ->(
     let* t2 = inferType expr2 in
     match t2 with
-    | Array(t2) ->
-      if Type.equal ty t2 then (inferType expr1 >|= fun t1 -> Type.Array t1)
+    | Array(n, t2) ->
+      if Type.equal ty t2 then (inferType expr1 >|= fun t1 -> Type.Array (n, t1))
       else
       Error
         "in Map type of the function argument does not correspond to the \
@@ -291,19 +291,22 @@ let rec inferType expr =
       let* t2 = inferType expr2 in
       let* t3 = inferType expr3 in
       match t2,t3 with
-      | Array(t2), Array(t3) ->
+      | Array(n, t2), Array(m, t3) ->
         if not(Type.equal ty1 t2) && not(Type.equal ty2 t3) then
         Error
           "in Map2 type of one of the function argument does not correspond to the \
            type of the elements of the array"
-        else (inferType expr1 >|= fun t1 -> Type.Array t1)
+        else if not(n = m) then
+          Error
+            "in Map2 the two arguments should be vectors of the sam size"
+        else (inferType expr1 >|= fun t1 -> Type.Array (n, t1))
       | _ -> Error "type of the expression should be array")
   | Reduce (_, ty1, _, ty2, expr1, expr2, expr3) -> (
         let* t1 = inferType expr1 in
         let* t2 = inferType expr2 in
         let* t3 = inferType expr3 in
         match t3 with
-        | Array t3 ->
+        | Array (_, t3) ->
             if Type.equal ty1 ty2 && Type.equal ty2 t1 && Type.equal t1 t2 && Type.equal t2 t3
             then Ok t1
             else Error
@@ -316,7 +319,7 @@ let rec inferType expr =
         else
         inferType expr3 >>= fun t3 ->
         match t3 with 
-          | Array(t3) ->
+          | Array(n, t3) ->
             if not(Type.equal ty2 t3) 
             then Error "In Scan type of the second argument does not match type of second variable of the function"
             else 
@@ -324,17 +327,17 @@ let rec inferType expr =
             if not(Type.equal ty1 t1) 
             then Error "In Scan type of the first argument does not match return type of the function"
             else
-            Ok (Type.Array t1)
+            Ok (Type.Array (n, t1))
           | _ -> Error "in Scan type of the third argument is not an array"
       )
-  | Fold (_, ty1, _, ty2, expr1, expr2, expr3) ->(
+  | Fold (_, ty1, _, ty2, expr1, expr2, expr3) -> (
         inferType expr2 >>= fun t2 ->
         if not(Type.equal ty1 t2) 
         then Error "In Fold type of the first argument does not match type of first variable of the function"
         else
         inferType expr3 >>= fun t3 ->
         match t3 with 
-          | Array(t3) ->
+          | Array(_, t3) ->
             if not(Type.equal ty2 t3) 
             then Error "In Fold type of the second argument does not match type of second variable of the function"
             else 
@@ -345,16 +348,17 @@ let rec inferType expr =
             Ok t1
           | _ -> Error "in Fold type of the third argument is not an array"
       )
-  | Get (_, expr) -> (
+  | Get (n, expr) -> (
     inferType expr >>= function
-    | Type.Array(t1) -> Ok t1
+    | Type.Array(m, t1) -> if n<m then Ok t1 
+                           else Error "trying to get an element out of bounds of an array"
     | _ -> Error "Argument 2 of Zip should be a Type.Array"
     )
   | Array exprList -> (
     List.map inferType exprList |> flatten_l >>= function
-      | [] -> Error "Empty array" (* TODO, also problem of the empty array *)
+      | [] -> Error "Empty array"
       | h::t -> if CCList.for_all (Type.equal h) t then
-          Ok (Type.Array h)
+          Ok (Type.Array (List.length exprList, h))
         else Error "All elements of an array should have the same type."
   )
 
