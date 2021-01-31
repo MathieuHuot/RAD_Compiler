@@ -87,7 +87,7 @@ let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target
                                     Target.Tuple [Target.Apply2(op, Target.Var(x1, new_ty1), Target.Var(x2, new_ty2)); newCont], newCont, context
                                     | _,_,_ -> failwith "rad: the continuation should be a function"
                                     end
-    | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = rad context cont expr1 in  
+    | Let(x, ty, expr1, expr2)  -> begin let dexpr1, cont, context = rad context cont expr1 in  
                                    let _, newContVar = Var.dvar x in
                                    match Target.inferType cont with
                                     | Result.Error s    -> failwith (Printf.sprintf "rad: continuation ill-typed:%s" s)
@@ -95,7 +95,8 @@ let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target
                                    let newCont = Target.Var(newContVar, newContType) in
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
-                                   Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context
+                                   Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context end
+    | _ -> failwith "TODO"
 
 let semiNaiveReverseAD (context: context) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
@@ -174,6 +175,7 @@ let rec rad2 (context: context) (cont : Target.t)  (expr : t) : Target.t * Targe
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, cont, context = rad2 newContext cont expr2 in 
                                    Let(x, Target.Type.from_source ty, Target.from_source expr1, dexpr2), cont, context
+    | _ -> failwith "TODO"
 
 let apply_sensitivities dexpr cont = 
   let f expr = match expr with

@@ -27,6 +27,7 @@ let d2op2 x dx d2x y dy d2y  (op: op2) = match op with
 let rec forwardAD12Type (ty : Type.t) : Target.Type.t = match ty with
   | Real          -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real])
   | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD12Type ty1; forwardAD12Type ty2]
+  | Array(_, _)   -> failwith "TODO"
 
 let rec forward12AD (expr: t) : Target.t = match expr with
 | Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.])
@@ -58,6 +59,7 @@ let rec forward12AD (expr: t) : Target.t = match expr with
                             let y, dy, d2y = Var.dvar2 y in
                             let ty = Target.Type.from_source ty in
                             Target.NCase(expr1D, [(y, ty); (dy, ty); (d2y, ty)], expr2D)
+| _ -> failwith "TODO"
 
 (* Compute the list d2f/dx2 for all variables x from the context *)                           
 let secondPartial context expr = 
@@ -118,8 +120,7 @@ open Operators
 let rec forwardAD22Type (ty : Type.t) : Target.Type.t = match ty with
   | Real          -> Target.Type.NProd([Target.Type.Real;Target.Type.Real;Target.Type.Real;Target.Type.Real])
   | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD22Type ty1;forwardAD22Type ty2]
-
-
+  | Array(_, _)   -> failwith "TODO"
 
 let rec forward22AD (expr: t) : Target.t = match expr with
 | Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.])
@@ -157,7 +158,8 @@ let rec forward22AD (expr: t) : Target.t = match expr with
                             let expr2D = forward22AD expr2 in
                             let y, d1y, d2y, ddy = Var.dvar22 y in
                             let ty = Target.Type.from_source ty in
-                            Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], expr2D)  
+                            Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], expr2D)
+| _ -> failwith "TODO"  
 end
 
 (* This method computes (3,3) velocities. *) 
@@ -168,6 +170,7 @@ open Operators
 let rec forwardAD33Type (ty : Type.t) : Target.Type.t = match ty with
   | Real          -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real])
   | Prod(ty1,ty2) -> Target.Type.NProd [forwardAD33Type ty1;forwardAD33Type ty2]
+  | Array(_, _)   -> failwith "TODO"
 
 (* third derivative of unary operator *) 
 let dop33 x d1x d2x ddx (op: op1) = match op with
@@ -248,7 +251,8 @@ let rec forward33AD (expr: t) : Target.t = match expr with
                             let expr2D = forward33AD expr2 in
                             let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = Var.dvar33 y in
                             let ty = Target.Type.from_source ty in
-                            Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], expr2D)  
+                            Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], expr2D)
+| _ -> failwith "TODO"  
 end 
 
 (* This method comptues (1,2)-covelocities. *)
@@ -349,7 +353,7 @@ let rec reverse12 (context: context) (cont : Target.t)  (expr : t) : Target.t * 
                                   Target.Tuple[Target.Apply2(op, Target.Var(x1, new_ty1), Target.Var(x2, new_ty2)); newCont], newCont, context
                                   | _,_,_ -> failwith "rad: the continuation should be a function"
                                   end
-  | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = reverse12 context cont expr1 in  
+  | Let(x, ty, expr1, expr2)  -> begin let dexpr1, cont, context = reverse12 context cont expr1 in  
                                  let _, newContVar = dvar x in
                                  match Target.inferType cont with 
                                   | Result.Error s         -> failwith (Printf.sprintf "rad: continuation ill-typed: %s" s) 
@@ -357,7 +361,8 @@ let rec reverse12 (context: context) (cont : Target.t)  (expr : t) : Target.t * 
                                  let newCont = Target.Var(newContVar, newContType) in
                                  let newContext = context @ [(x,ty)] in
                                  let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
-                                 Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context
+                                 Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context end
+| _ -> failwith "TODO"
 
 let semiNaiveReverseAD (context: context) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
@@ -512,7 +517,7 @@ module MixedJets = struct
                                     Target.Tuple[Target.Apply2(op, Target.Var(x1, newTy1), Target.Var(x2, newTy2)); tangent ; newCont], newCont, context
                                     | _,_,_ -> failwith "rad: the continuation should be a function"
                                     end
-    | Let(x, ty, expr1, expr2)  -> let dexpr1, cont, context = reverse12 context cont expr1 in  
+    | Let(x, ty, expr1, expr2)  -> begin let dexpr1, cont, context = reverse12 context cont expr1 in  
                                    let x, dx, newContVar = dvar x in
                                    match Target.inferType cont with 
                                     | Result.Error s         -> failwith (Printf.sprintf "rad: continuation ill-typed: %s" s) 
@@ -520,5 +525,6 @@ module MixedJets = struct
                                    let newCont = Target.Var(newContVar, newContType) in
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = reverse12 newContext newCont expr2 in
-                                   Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (dx, Target.Type.from_source ty) ; (newContVar, newContType)], dexpr2), newNewCont, context
-end  
+                                   Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (dx, Target.Type.from_source ty) ; (newContVar, newContType)], dexpr2), newNewCont, context end
+    | _ -> failwith "TODO"
+end

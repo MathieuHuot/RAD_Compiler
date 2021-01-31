@@ -54,6 +54,7 @@ let rec weakAnf expr = match expr with
       let newVar2 = Var(m,ty2) in 
       Let(n,ty1,expr1Anf,Let(m,ty2,expr2Anf,Apply2(op,newVar1, newVar2)))
   | Let(x,ty,expr1,expr2)  -> Let(x,ty, weakAnf expr1, weakAnf expr2)
+  | _ -> failwith "TODO"
 
 let rec letCommutativity expr = match expr with
   | Let(x,ty1,Let(y,ty2,expr1,expr2),expr3)   -> Let(y,ty2,letCommutativity expr1,Let(x,ty1,letCommutativity expr2,letCommutativity expr3))
@@ -132,10 +133,10 @@ let rec weakAnf expr = match expr with
   | App(expr,exprList)     -> App(weakAnf expr, List.map weakAnf exprList)
   | NCase(expr1,varList,expr2)
                            ->  NCase(weakAnf expr1,varList,weakAnf expr2)
+  | _ -> failwith "TODO"
 
 module RT = Target.Traverse(Strategy.Repeat)
 let letCommutativity expr = RT.map Optimisation.T.letCommutativity expr
-
 
 let anf expr =
   let expr1 = weakAnf expr in

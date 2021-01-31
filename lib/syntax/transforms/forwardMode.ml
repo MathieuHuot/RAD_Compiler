@@ -4,8 +4,9 @@ open Syntax.Source
 open Syntax.Operators
 
 let rec forwardADType (ty : Type.t) : Target.Type.t = match ty with
-  | Real          -> Target.Type.NProd [Target.Type.Real; Target.Type.Real]
-  | Prod(ty1,ty2) -> Target.Type.NProd [forwardADType ty1; forwardADType ty2]
+  | Real           -> Target.Type.NProd [Target.Type.Real; Target.Type.Real]
+  | Prod(ty1, ty2) -> Target.Type.NProd [forwardADType ty1; forwardADType ty2]
+  | Array(_, _)   -> failwith "TODO"
 
 (* Simple forward AD transformation. does not assume any ANF *)
 let rec forwardAD (expr : t) : Target.t = match expr with
@@ -37,6 +38,7 @@ let rec forwardAD (expr : t) : Target.t = match expr with
                             let y, dy = Var.dvar y in
                             let ty = Target.Type.from_source ty in
                             Target.NCase(expr1D, [(y, ty); (dy, ty)], expr2D)
+| _ -> failwith "TODO"
 
 let grad context expr = 
   let dexpr = forwardAD expr in
