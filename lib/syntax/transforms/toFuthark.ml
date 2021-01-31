@@ -41,17 +41,17 @@ let rec toFuthark precision fmt = function
   | App (expr, exprs) -> Format.fprintf fmt "@[(%a)[@;<0 2>@[%a@]]@]" (toFuthark precision) expr (CCList.pp (toFuthark precision)) exprs
   | Tuple exprs -> CCList.pp ~pp_start:(fun fmt () -> Format.fprintf fmt "@[(@,<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@)@]") (toFuthark precision) fmt exprs
   | NCase (expr1, vars, expr2) -> Format.fprintf fmt "@[<hv>let (%a) =@;<1 2>@[%a@]@ in@ %a@]" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Var.pp fmt v)) vars (toFuthark precision) expr1 (toFuthark precision) expr2
-  | Map (x, _t, expr1, expr2) -> Format.fprintf fmt "map (%a.%a) %a" Var.pp x pp expr1 pp expr2
-  | Map2 (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "map2 (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2  pp expr3
-  | Reduce (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "reduce (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
-  | Scan (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "scan (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
+  | Map (x, _t, expr1, expr2) -> Format.fprintf fmt "map (\\%a -> %a) %a" Var.pp x pp expr1 pp expr2
+  | Map2 (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "map2 (\\%a -> \\%a -> %a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2  pp expr3
+  | Reduce (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "reduce (\\%a -> \\%a -> %a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
+  | Scan (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "scan (\\%a -> \\%a -> %a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
   | Zip(expr1, expr2) -> Format.fprintf fmt "zip %a %a" pp expr1 pp expr2
   | Zip3(expr1, expr2, expr3) -> Format.fprintf fmt "zip3 %a %a %a" pp expr1 pp expr2 pp expr3
   | Unzip(expr) -> Format.fprintf fmt "unzip %a " pp expr
   | Unzip3(expr) -> Format.fprintf fmt "unzip3 %a " pp expr 
-  | Get(n, expr)      -> Format.fprintf fmt "get %a %a" Format.pp_print_int n pp expr
-  | Fold (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "fold (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
-  | Array (exprList) -> CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") ~pp_start:(fun fmt () -> Format.fprintf fmt "@[[@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@,]@]") pp fmt exprList
+  | Get(n, expr)      -> Format.fprintf fmt "get %a %a" Format.pp_print_int n pp expr (* TODO *)
+  | Fold (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "loop %a=%a for %a in %a do %a" Var.pp x pp expr2  Var.pp y pp expr3 pp expr1
+  | Array (exprList) -> CCList.pp ~pp_sep:(fun fmt () -> Format.fprintf fmt "@[(@,<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]]@]") (toFuthark precision) fmt exprList
 
 let pp precision expr = 
   CCIO.File.(remove_noerr (make "out.fut"));
