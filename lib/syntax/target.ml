@@ -62,7 +62,7 @@ type t = Var of Var.t * Type.t
                 | Tuple of t tuple
                 | NCase of t * ((Var.t * Type.t) list) * t
                 | Map of Var.t * Type.t * t * t  (** map x ty e1 [a1,...,an] = [e1[a1/x],...,e1[an/x]] *)
-                | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t (** map2 x ty2 y ty2 e1 [a1,...,an] [b1,...,bn] = [e1[a1/x,b1/y],...,e1[an/x,bn/y]] *)
+                | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t (** map2 x ty1 y ty2 e1 [a1,...,an] [b1,...,bn] = [e1[a1/x,b1/y],...,e1[an/x,bn/y]] *)
                 | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t (** reduce x y e1 z A means reduce (x,y -> e1) from z on A *)
                 | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t   (** scan x ty1 y ty2 e1 z A *)
                 | Zip of t * t (** zip [a1,...,an] [b1,...,bn] = [(a1,b1),...,(an,bn)] *)
@@ -342,36 +342,33 @@ in canRen expr
 else failwith (Printf.sprintf "canonicalAlphaRename: variable %s is already used as a bound variable, can't rename free vars canonically with %s" name name)
 
 (* simple typecheker *)
-let rec inferType = function
-  | Const _ -> Result.Ok Type.Real
-  | Var (_, t) -> Result.Ok t
+let rec inferType expr =
+  let open CCResult in
+  match expr with
+  | Const _ -> Ok Type.Real
+  | Var (_, t) -> Ok t
   | Apply1 (_, expr) -> (
-      CCResult.(
         inferType expr >>= function
         | Type.Real -> Ok Type.Real
-        | _ -> Error "Argument of Apply1 should be a Type.Real"))
+        | _ -> Error "Argument of Apply1 should be a Type.Real")
   | Apply2 (_, expr1, expr2) -> (
-      CCResult.(
         inferType expr1 >>= function
         | Type.Real -> (
             inferType expr2 >>= function
             | Type.Real -> Ok Type.Real
             | _ -> Error "Argument 2 of Apply2 should be a Type.Real")
-        | _ -> Error "Argument 1 of Apply2 should be a Type.Real"))
+        | _ -> Error "Argument 1 of Apply2 should be a Type.Real")
   | Let (_, t, expr1, expr2) ->
-    CCResult.(
-      inferType expr1 >>= fun t1 ->
+      let* t1 = (inferType expr1) in
       if Type.equal t t1 then inferType expr2
       else
         Error
           "in Let binding type of the variable does not correspond to the \
-           type of the expression")
+           type of the expression"
   | Fun (l, expr) ->
-    CCResult.(
-      inferType expr >|= fun texp ->
-      Type.Arrow (List.map snd l, texp))
-  | App (expr, l) ->
-    CCResult.(
+      let+ texp = inferType expr in
+      Type.Arrow (List.map snd l, texp)
+  | App (expr, l) -> (
       inferType expr >>= function
       | Type.Arrow (tyList, retType) ->
         if List.compare_lengths tyList l <> 0 then
@@ -382,58 +379,48 @@ let rec inferType = function
           else Error "Type mismatch with arguments type"
       | _ -> Error "App: expr should be of Type.Arrow type")
   | Tuple l ->
-    CCResult.(List.map inferType l |> flatten_l >>= fun l -> Ok (Type.NProd l))
+    List.map inferType l |> flatten_l >|= fun l -> Type.NProd l
   | NCase (expr1, l, expr2) -> (
-      CCResult.(
         inferType expr1 >>= function
         | Type.NProd tl ->
           if List.for_all2 Type.equal tl (List.map snd l) then
             inferType expr2
           else Error "NCase: type mismatch"
-        | _ -> Error "NCase: expression 1 should have type Prod"))
-  | Map(_, ty, expr1, expr2) ->  
-    CCResult.(
-    inferType expr2 >>= fun t2 ->
-    match t2 with 
+        | _ -> Error "NCase: expression 1 should have type Prod")
+  | Map(_, ty, expr1, expr2) ->(
+    let* t2 = inferType expr2 in
+    match t2 with
     | Array(t2) ->
-      if Type.equal ty t2 then inferType expr1
+      if Type.equal ty t2 then (inferType expr1 >|= fun t1 -> Type.Array t1)
       else
       Error
         "in Map type of the function argument does not correspond to the \
          type of the elements of the array"
     | _ -> Error "type of the expression should be array")
-  | Map2 (_, ty1, _, ty2, expr1, expr2, expr3) -> 
-      CCResult.(
-      inferType expr2 >>= fun t2 ->
-      match t2 with 
-      | Array(t2) ->
-        if not(Type.equal ty1 t2) then
+  | Map2 (_, ty1, _, ty2, expr1, expr2, expr3) -> (
+      let* t2 = inferType expr2 in
+      let* t3 = inferType expr3 in
+      match t2,t3 with
+      | Array(t2), Array(t3) ->
+        if not(Type.equal ty1 t2) && not(Type.equal ty2 t3) then
         Error
-          "in Map2 type of the first function argument does not correspond to the \
-           type of the elements of the first array"
-        else inferType expr3 >>= fun t3 -> begin
-        match t3 with 
-        | Array(t3) ->
-          if not(Type.equal ty2 t3) then
-          Error
-            "in Map2 type of the second function argument does not correspond to the \
-             type of the elements of the second array"
-          else inferType expr1
-        | _ -> Error "type of the expression should be array"  
-        end
+          "in Map2 type of one of the function argument does not correspond to the \
+           type of the elements of the array"
+        else (inferType expr1 >|= fun t1 -> Type.Array t1)
       | _ -> Error "type of the expression should be array")
-  | Reduce (_, ty1, _, ty2, expr1, expr2, expr3) -> 
-      CCResult.(
-        inferType expr1 >>= fun t1 ->
-        inferType expr2 >>= fun t2 ->
-        inferType expr3 >>= fun t3 ->
-        if Type.equal ty1 ty2 && Type.equal ty2 t1 && Type.equal t1 t2 && Type.equal t2 t3
-        then Ok t3
-        else Error 
-          "in Reduce not all the types are the same"
-      )
-  | Scan (_, ty1, _, ty2, expr1, expr2, expr3) -> 
-    CCResult.(
+  | Reduce (_, ty1, _, ty2, expr1, expr2, expr3) -> (
+        let* t1 = inferType expr1 in
+        let* t2 = inferType expr2 in
+        let* t3 = inferType expr3 in
+        match t3 with
+        | Array t3 ->
+            if Type.equal ty1 ty2 && Type.equal ty2 t1 && Type.equal t1 t2 && Type.equal t2 t3
+                 (* TODO: reduce seems to be a fold, in that case, this restriction is too strict *)
+            then Ok t1
+            else Error
+              "in Reduce not all the types are the same"
+        | _ -> Error "type of the expression should be array")
+  | Scan (_, ty1, _, ty2, expr1, expr2, expr3) -> (
         inferType expr2 >>= fun t2 ->
         if not(Type.equal ty1 t2) 
         then Error "In Scan type of the first argument does not match type of first variable of the function"
@@ -451,8 +438,7 @@ let rec inferType = function
             Ok t1
           | _ -> Error "in Scan type of the third argument is not an array" (* TODO*)
       )
-  | Fold (_, ty1, _, ty2, expr1, expr2, expr3) ->
-    CCResult.(
+  | Fold (_, ty1, _, ty2, expr1, expr2, expr3) ->(
         inferType expr2 >>= fun t2 ->
         if not(Type.equal ty1 t2) 
         then Error "In Fold type of the first argument does not match type of first variable of the function"
@@ -470,20 +456,25 @@ let rec inferType = function
             Ok t1
           | _ -> Error "in Fold type of the third argument is not an array"
       )
-  | Zip (expr1, expr2) ->  CCResult.(
+  | Zip (expr1, expr2) -> (
     inferType expr1 >>= function
     | Type.Array(t1) -> (
         inferType expr2 >>= function
         | Type.Array(t2) -> Ok (Type.Array(Type.NProd([t1;t2])))
         | _ -> Error "Argument 2 of Zip should be a Type.Array")
     | _ -> Error "Argument 1 of Zip should be a Type.Array")
-  | Get (_, expr) -> CCResult.(
+  | Get (_, expr) -> (
     inferType expr >>= function
     | Type.Array(t1) -> Ok t1
     | _ -> Error "Argument 2 of Zip should be a Type.Array"
     )
-  | Array exprList -> CCResult.(
-    inferType exprList >>= fun t1 -> Array(t1))  (* TODO, also problem of the empty array *)
+  | Array exprList -> (
+    List.map inferType exprList |> flatten_l >>= function
+      | [] -> Error "Empty array" (* TODO, also problem of the empty array *)
+      | h::t -> if CCList.for_all (Type.equal h) t then
+          Ok (Type.Array h)
+        else Error "All elements of an array should have the same type."
+  )
 
 let isWellTyped expr = inferType expr |> Result.is_ok
 
