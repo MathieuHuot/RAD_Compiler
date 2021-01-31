@@ -162,7 +162,7 @@ let simSubst context expr = map (fun expr ->
                                                              &&  eqT expr11 expr21 alpha_set
                                                              &&  eqT expr12 expr22 alpha_set
     | Let(x,ty1,expr11,expr12), Let(y,ty2,expr21,expr22)  -> Type.equal ty1 ty2
-                                                             && eqT expr11 expr21 c
+                                                             && eqT expr11 expr21 alpha_set
                                                              &&  eqT expr12 expr22 (PVTSet.add ((x,ty1),(y,ty2)) alpha_set)
     | Map (x, ty1, expr11, expr12), Map (y, ty2, expr21, expr22) 
                                                           -> Type.equal ty1 ty2 
@@ -254,30 +254,109 @@ in canRen expr
 else failwith ("canonicalAlphaRename: variable "^name^" is already used as a bound variable, can't rename free vars canonically with "^name)
 
 (* simple typecheker *)
-let rec inferType = function
-| Const _                 -> Result.Ok Type.Real
-| Var(_,ty)               -> Result.Ok ty
-| Apply1(_,expr)          -> 
-    begin 
-    match inferType expr with 
-    | Result.Ok Type.Real -> Result.Ok Type.Real 
-    | _         -> Result.Error "Argument of Apply1 should be a Type.Real"
-    end
-| Apply2(_, expr1, expr2) -> 
-    begin
-    match inferType expr1,inferType expr2 with 
-    | (Result.Ok Type.Real, Result.Ok Type.Real) -> Result.Ok Type.Real
-    | _                      -> Error "Arguments of Apply2 should be a Type.Real"
-    end
-| Let(_,ty, expr1, expr2) -> 
-    begin
-    match inferType expr1,inferType expr2 with 
-    | (Result.Ok ty1, Result.Ok ty2) when Type.equal ty1 ty   -> Result.Ok ty2
-    | (_,_)                                         ->  Result.Error
+let rec inferType expr =
+  let open CCResult in
+  match expr with
+  | Const _ -> Ok Type.Real
+  | Var (_, t) -> Ok t
+  | Apply1 (_, expr) -> (
+        inferType expr >>= function
+        | Type.Real -> Ok Type.Real
+        | _ -> Error "Argument of Apply1 should be a Type.Real")
+  | Apply2 (_, expr1, expr2) -> (
+        inferType expr1 >>= function
+        | Type.Real -> (
+            inferType expr2 >>= function
+            | Type.Real -> Ok Type.Real
+            | _ -> Error "Argument 2 of Apply2 should be a Type.Real")
+        | _ -> Error "Argument 1 of Apply2 should be a Type.Real")
+  | Let (_, t, expr1, expr2) ->
+      let* t1 = (inferType expr1) in
+      if Type.equal t t1 then inferType expr2
+      else
+        Error
           "in Let binding type of the variable does not correspond to the \
            type of the expression"
-
-    end
+  | Map(_, ty, expr1, expr2) ->(
+    let* t2 = inferType expr2 in
+    match t2 with
+    | Array(t2) ->
+      if Type.equal ty t2 then (inferType expr1 >|= fun t1 -> Type.Array t1)
+      else
+      Error
+        "in Map type of the function argument does not correspond to the \
+         type of the elements of the array"
+    | _ -> Error "type of the expression should be array")
+  | Map2 (_, ty1, _, ty2, expr1, expr2, expr3) -> (
+      let* t2 = inferType expr2 in
+      let* t3 = inferType expr3 in
+      match t2,t3 with
+      | Array(t2), Array(t3) ->
+        if not(Type.equal ty1 t2) && not(Type.equal ty2 t3) then
+        Error
+          "in Map2 type of one of the function argument does not correspond to the \
+           type of the elements of the array"
+        else (inferType expr1 >|= fun t1 -> Type.Array t1)
+      | _ -> Error "type of the expression should be array")
+  | Reduce (_, ty1, _, ty2, expr1, expr2, expr3) -> (
+        let* t1 = inferType expr1 in
+        let* t2 = inferType expr2 in
+        let* t3 = inferType expr3 in
+        match t3 with
+        | Array t3 ->
+            if Type.equal ty1 ty2 && Type.equal ty2 t1 && Type.equal t1 t2 && Type.equal t2 t3
+            then Ok t1
+            else Error
+              "in Reduce not all the types are the same"
+        | _ -> Error "type of the expression should be array")
+  | Scan (_, ty1, _, ty2, expr1, expr2, expr3) -> (
+        inferType expr2 >>= fun t2 ->
+        if not(Type.equal ty1 t2) 
+        then Error "In Scan type of the first argument does not match type of first variable of the function"
+        else
+        inferType expr3 >>= fun t3 ->
+        match t3 with 
+          | Array(t3) ->
+            if not(Type.equal ty2 t3) 
+            then Error "In Scan type of the second argument does not match type of second variable of the function"
+            else 
+            inferType expr1 >>= fun t1 ->
+            if not(Type.equal ty1 t1) 
+            then Error "In Scan type of the first argument does not match return type of the function"
+            else
+            Ok (Type.Array t1)
+          | _ -> Error "in Scan type of the third argument is not an array"
+      )
+  | Fold (_, ty1, _, ty2, expr1, expr2, expr3) ->(
+        inferType expr2 >>= fun t2 ->
+        if not(Type.equal ty1 t2) 
+        then Error "In Fold type of the first argument does not match type of first variable of the function"
+        else
+        inferType expr3 >>= fun t3 ->
+        match t3 with 
+          | Array(t3) ->
+            if not(Type.equal ty2 t3) 
+            then Error "In Fold type of the second argument does not match type of second variable of the function"
+            else 
+            inferType expr1 >>= fun t1 ->
+            if not(Type.equal ty1 t1) 
+            then Error "In Fold type of the first argument does not match return type of the function"
+            else
+            Ok t1
+          | _ -> Error "in Fold type of the third argument is not an array"
+      )
+  | Get (_, expr) -> (
+    inferType expr >>= function
+    | Type.Array(t1) -> Ok t1
+    | _ -> Error "Argument 2 of Zip should be a Type.Array"
+    )
+  | Array exprList -> (
+    List.map inferType exprList |> flatten_l >>= function
+      | [] -> Error "Empty array" (* TODO, also problem of the empty array *)
+      | h::t -> if CCList.for_all (Type.equal h) t then
+          Ok (Type.Array h)
+        else Error "All elements of an array should have the same type."
+  )
 
 let isWellTyped expr = inferType expr |> Result.is_ok
 
@@ -300,8 +379,7 @@ let rec interp = function
                                interpretOp2 op val1 val2
 | Let(x, ty, expr1, expr2)  -> let v = interp expr1 in 
                                let expr3 = subst x ty (Const v) expr2 in
-                               interp expr3
-|                                
+                               interp expr3              (*TODO*)              
 | _                         -> failwith "interpret: the expression should not contain this pattern"
 in interp expr2
 
@@ -320,4 +398,29 @@ module Traverse (S : Strategy.S) = struct
     | Let (y, ty, expr1, expr2) ->
         apply2 (map f) expr1 expr2 >|= fun (expr1,expr2) ->
         Let (y, ty, expr1, expr2)
+         | Map (x, ty, expr1, expr2) -> 
+      apply2 (map f) expr1 expr2 >|= fun (expr1, expr2) ->
+      Map (x, ty, expr1, expr2)
+    | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> 
+      applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
+        | [e1;e2;e3] -> Map2(x, t1, y, t2, e1, e2, e3)
+        | _ -> assert false
+        end
+    | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> 
+     applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
+        | [e1;e2;e3] -> Reduce(x, t1, y, t2, e1, e2, e3)
+        | _ -> assert false
+        end
+    | Scan (x, t1, y, t2, expr1, expr2, expr3) -> 
+     applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
+        | [e1;e2;e3] -> Scan(x, t1, y, t2, e1, e2, e3)
+        | _ -> assert false
+        end
+    | Get(n, expr) -> map f expr >|= fun expr -> Get(n, expr)
+    | Fold (x, t1, y, t2, expr1, expr2, expr3) -> 
+     applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
+        | [e1;e2;e3] -> Fold(x, t1, y, t2, e1, e2, e3)
+        | _ -> assert false
+        end
+    | Array (exprList) -> applyl (map f) exprList >|= fun l -> Array l
 end

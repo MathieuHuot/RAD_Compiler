@@ -84,7 +84,6 @@ let rec from_source (expr: Source.t) : t = match expr with
   | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Map2 (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Reduce (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
   | Scan (x, t1, y, t2, expr1, expr2, expr3) -> Scan (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
-  | Zip(expr1, expr2) ->  Zip(from_source expr1, from_source expr2)
   | Get(n, expr) -> Get(n, from_source expr)
   | Fold (x, t1, y, t2, expr1, expr2, expr3) -> Fold (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
   | Array (exprList) -> Array(List.map from_source exprList) 
