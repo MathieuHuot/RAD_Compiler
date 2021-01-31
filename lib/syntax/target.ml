@@ -415,7 +415,6 @@ let rec inferType expr =
         match t3 with
         | Array t3 ->
             if Type.equal ty1 ty2 && Type.equal ty2 t1 && Type.equal t1 t2 && Type.equal t2 t3
-                 (* TODO: reduce seems to be a fold, in that case, this restriction is too strict *)
             then Ok t1
             else Error
               "in Reduce not all the types are the same"
