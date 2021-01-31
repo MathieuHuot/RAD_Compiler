@@ -203,7 +203,6 @@ let simSubst context expr =
     Two variables match iff they are the same free variable or they are both bound and equal up to renaming.
     This renaming is checked by carrying an explicit list of pairs of bound variables found so far in the term.
     When an occurence of bound variable is found deeper in the term, we check whether it matches the renaming *)
-(* TODO: this is weaker than it should be: it doesn't apply transitivity of equality when checking. some union find would be needed *)
 let equal ?(eq = Float.equal) expr1 expr2 =
 let module PVTSet = CCSet.Make (struct
   type t = (Var.t * Type.t) * (Var.t * Type.t)
@@ -253,7 +252,7 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
                                                          &&  eqT expr11 expr21 (PVTSet.add ((y1, t12), (y2, t22)) (PVTSet.add ((x1, t11), (x2, t21)) alpha_set))                    
 | Zip (expr11,expr12), Zip (expr21,expr22) -> eqT expr11 expr21 alpha_set 
                                          &&  eqT expr12 expr22 alpha_set
-| Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2 (*TODO: check whether this equality on Nat is fine *)
+| Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2
 | Array exprList1, Array exprList2 -> CCList.equal (fun expr1 expr2 -> eqT expr1 expr2 alpha_set) exprList1 exprList2
 | _                                                   -> false
 in eqT expr1 expr2 PVTSet.empty
@@ -434,8 +433,8 @@ let rec inferType expr =
             if not(Type.equal ty1 t1) 
             then Error "In Scan type of the first argument does not match return type of the function"
             else
-            Ok t1
-          | _ -> Error "in Scan type of the third argument is not an array" (* TODO*)
+            Ok (Type.Array t1)
+          | _ -> Error "in Scan type of the third argument is not an array"
       )
   | Fold (_, ty1, _, ty2, expr1, expr2, expr3) ->(
         inferType expr2 >>= fun t2 ->
