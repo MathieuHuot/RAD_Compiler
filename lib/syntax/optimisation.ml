@@ -236,6 +236,22 @@ module T = struct
         Success (Let (x, ty, expr1, expr2))
     | expr -> Failure expr
 
+  let exact_opti_list =
+    [
+      (lambdaRemoval, "LR");
+      (forwardSubstitution, "FS");
+      (letCommutativity, "LC");
+      (realFactorisation, "RF");
+      (trigoSimplification, "TS");
+      (zeroSimplification, "ZS");
+      (simpleAlgebraicSimplifications, "SAS");
+      (constantPropagation, "CP");
+      (deadVarElim, "DVE");
+    ]
+
+  let opti_list =
+    (letSimplification, "LS") :: exact_opti_list
+
   let fullOpti expr =
     let module RT = Target.Traverse (Strategy.Repeat) in
     let open Rewriter in

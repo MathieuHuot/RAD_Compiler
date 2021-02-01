@@ -93,28 +93,32 @@ module T = struct
         let fv1 = freeVar e1 in
         VarSet.subset fv1 fv)
 
-  let opti_list =
-    let open Optimisation.T in
-    [
-      (lambdaRemoval, "LR");
-      (forwardSubstitution, "FS");
-      (letSimplification, "LS");
-      (letCommutativity, "LC");
-      (realFactorisation, "RF");
-      (trigoSimplification, "TS");
-      (zeroSimplification, "ZS");
-      (simpleAlgebraicSimplifications, "SAS");
-      (constantPropagation, "CP");
-      (deadVarElim, "DVE");
-    ]
-
   let test_opti_list =
-    List.map (fun (opti, opti_name) -> test_opti opti opti_name) opti_list
+    List.map (fun (opti, opti_name) -> test_opti opti opti_name) Optimisation.T.opti_list
 
   let test_opti_freeVar_list =
     List.map
       (fun (opti, opti_name) -> test_opti_freeVar opti opti_name)
-      opti_list
+      Optimisation.T.opti_list
+
+
+  let test_opti_repeat opti opti_name =
+    QCheck.Test.make ~count:10 ~max_gen:50 ~name:("Opt " ^ opti_name)
+      arbitrary_closed_term (fun expr ->
+        let module TR = Target.Traverse (Strategy.Repeat) in
+        let e1 =
+          interpret
+            (match TR.map opti expr with
+            | Rewriter.Success expr -> expr
+            | Rewriter.Failure _ -> QCheck.assume_fail ())
+            []
+        in
+        let e2 = interpret expr [] in
+        if weakEqual e1 e2 then true
+        else failwith (Printf.sprintf "%s\n\n%s" (to_string e1) (to_string e2)))
+
+  let test_opti_repeat_list =
+    List.map (fun (opti, opti_name) -> test_opti_repeat opti opti_name) Optimisation.T.exact_opti_list
 end
 
 module S = struct
@@ -129,7 +133,9 @@ module S = struct
     QCheck.make
       QCheck.Gen.(
         int_bound 20 >>= fun i ->
-        SourceGen.gen (List.init 10 (fun i -> (("x", i), Type.Real))) i Type.Real)
+        SourceGen.gen
+          (List.init 10 (fun i -> (("x", i), Type.Real)))
+          i Type.Real)
       ~print:to_string ~shrink:SourceGen.shrink
 
   let test_isWellTyped =
@@ -209,6 +215,7 @@ let () =
   let target_opti_freeVar =
     List.map QCheck_alcotest.to_alcotest T.test_opti_freeVar_list
   in
+  let target_opti_repeat = List.map QCheck_alcotest.to_alcotest T.test_opti_repeat_list in
   let source = List.map QCheck_alcotest.to_alcotest S.test_list in
   let optimisation = List.map QCheck_alcotest.to_alcotest O.test_list in
   Alcotest.run "Main test"
@@ -216,6 +223,7 @@ let () =
       ("Target Language", target);
       ("Opti Target Language", target_opti);
       ("Opti Free Var Target Language", target_opti_freeVar);
+      ("Repeat Opti Target Language", target_opti_repeat);
       ("Source Language", source);
       ("New optimisation", optimisation);
     ]
