@@ -231,10 +231,15 @@ module T = struct
         else Failure (NCase (Tuple filtExpr, filtVar, expr))
     | expr -> Failure expr
 
+    (* TODO: maybe remove this, or could also remove Let altogether and just keep NCase *)
   let oneCaseRemoval : Target.t -> Target.t output = function
     | NCase (Tuple [ expr1 ], [ (x, ty) ], expr2) ->
         Success (Let (x, ty, expr1, expr2))
     | expr -> Failure expr
+
+  let fusion : Target.t -> Target.t output = function
+  | Map (y, ty2, expr2, Map (x, ty1, expr1, expr3)) -> Success (Map (x, ty1, Let(y, ty2, expr2, expr1), expr3))
+  | expr -> Failure expr
 
   let fullOpti expr =
     let module RT = Target.Traverse (Strategy.Repeat) in
