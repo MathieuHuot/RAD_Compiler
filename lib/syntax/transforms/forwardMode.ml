@@ -6,7 +6,7 @@ open Syntax.Operators
 let rec forwardADType (ty : Type.t) : Target.Type.t = match ty with
   | Real           -> Target.Type.NProd [Target.Type.Real; Target.Type.Real]
   | Prod(ty1, ty2) -> Target.Type.NProd [forwardADType ty1; forwardADType ty2]
-  | Array(_, _)   -> failwith "TODO"
+  | Array(n, ty)   -> Target.Type.Array(n, forwardADType ty) (* Not sure yet if it will be efficient. Simply following the obvious thing to do *)
 
 (* Simple forward AD transformation. does not assume any ANF *)
 let rec forwardAD (expr : t) : Target.t = match expr with
@@ -38,7 +38,19 @@ let rec forwardAD (expr : t) : Target.t = match expr with
                             let y, dy = Var.dvar y in
                             let ty = Target.Type.from_source ty in
                             Target.NCase(expr1D, [(y, ty); (dy, ty)], expr2D)
-| _ -> failwith "TODO"
+| Map (x, ty, expr1, expr2) -> 
+  begin match ty with
+  | Real -> let y = Syntax.Var.fresh() in
+            let x, dx = Var.dvar x in 
+            Map(y, NProd([Real; Real]), NCase(Var(y, NProd([Real; Real])),[(x, Real); (dx, Real)], forwardAD expr1), forwardAD expr2)
+  | _    -> Map(x, forwardADType ty, forwardAD expr1, forwardAD expr2)
+  end
+| Map2 (x, t1, y, t2, expr1, expr2, expr3) -> failwith "TODO"
+| Reduce (x, t1, y, t2, expr1, expr2, expr3) -> failwith "TODO"
+| Scan (x, t1, y, t2, expr1, expr2, expr3) -> failwith "TODO"
+| Fold (x, t1, y, t2, expr1, expr2, expr3) -> failwith "TODO"
+| Get(n, expr) -> Get(n, forwardAD expr)
+| Array (exprList) -> Array(List.map forwardAD exprList)     
 
 let grad context expr = 
   let dexpr = forwardAD expr in

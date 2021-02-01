@@ -165,13 +165,13 @@ let subst (x:Var.t) xTy expr1 expr2 =
   map (function
       | Var(a,ty) as expr         -> if Var.equal a x && Type.equal ty xTy then expr1 else expr
       | Let(y,ty,_,_) as expr     -> if (Var.equal x y && Type.equal xTy ty)
-        then failwith "sim: trying to substitute a bound variable"
+        then failwith "subst: trying to substitute a bound variable"
         else expr
       | Fun(varList,_) as expr    -> if (List.exists (fun (y,ty) -> Var.equal x y && Type.equal ty xTy) varList)
-        then failwith "sim: trying to substitute a bound variable"
+        then failwith "subst: trying to substitute a bound variable"
         else expr
       | NCase(_,varList,_) as expr -> if (List.exists (fun (y,ty) -> Var.equal x y && Type.equal ty xTy) varList)
-        then failwith "sim: trying to substitute a bound variable"
+        then failwith "subst: trying to substitute a bound variable"
         else expr
       |  Map (y, ty1, _, _)  as expr -> if (Var.equal x y && Type.equal xTy ty1)
         then failwith "subst: trying to substitute a bound variable"
