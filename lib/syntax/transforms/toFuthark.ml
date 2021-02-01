@@ -49,7 +49,8 @@ let rec toFuthark precision fmt = function
   | Zip3(expr1, expr2, expr3) -> Format.fprintf fmt "zip3 %a %a %a" pp expr1 pp expr2 pp expr3
   | Unzip(expr) -> Format.fprintf fmt "unzip %a " pp expr
   | Unzip3(expr) -> Format.fprintf fmt "unzip3 %a " pp expr 
-  | Get(n, expr)      -> Format.fprintf fmt "get %a %a" Format.pp_print_int n pp expr (* TODO *)
+  | Get(n, expr)      -> (* Be careful, produces a fresh variable. seems to be needed to adapt to Futhark *)
+    let y = Var.fresh() in Format.fprintf fmt "@[<hv>let %a =@;<1 2>@[%a@]@ in@ %a[%a]@]" Var.pp y pp expr Var.pp y Format.pp_print_int n
   | Fold (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "loop %a=%a for %a in %a do %a" Var.pp x pp expr2  Var.pp y pp expr3 pp expr1
   | Array (exprList) -> CCList.pp ~pp_sep:(fun fmt () -> Format.fprintf fmt "@[(@,<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]]@]") (toFuthark precision) fmt exprList
 
