@@ -70,7 +70,7 @@ type t = Var of Var.t * Type.t
                 | Zip3 of t * t * t (** zip [a1,...,an] [b1,...,bn] [c1,...,cn] = [(a1,b1,c1),...,(an,bn,cn)] *)
                 | Unzip3 of t (** Unzip  [(a1,b1,c1),...,(an,bn,cn)] = [a1,...,an],[b1,...,bn], [c1,...,cn] =  *)
                 | Get of int * t (** get i [a1,...,an] returns ai *)
-                | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t(** fold z x ty1 y ty2 e z A means fold A from z with (x:ty1, y:ty2 -> e) *)
+                | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t(** fold z x ty1 y ty2 e z A means fold A from z with (x:ty1, y:ty2 -> e). It's a fold LEFT operator. *)
                 | Array of t list 
 
 type context = ((Var.t * Type.t), t) CCList.Assoc.t
