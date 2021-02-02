@@ -187,7 +187,9 @@ module S = struct
 
   (* Test AD *)
 
-  let all_pairs l = List.flat_map (fun x -> List.map (fun y -> (x, y)) l) l
+  let rec all_pairs = function
+    | [] -> []
+    | h::t -> (List.map (fun x -> (h,x)) t) @ (all_pairs t)
 
   let test_grads grad1 grad1_name grad2 grad2_name =
     let freeVar = List.init 10 (fun i -> (("x", i), Type.Real)) in
@@ -220,6 +222,7 @@ module S = struct
       (fun ((g1, n1), (g2, n2)) -> test_grads g1 n1 g2 n2)
       (all_pairs
          [
+           (Transforms.ForwardMode.grad, "ForwardMode.grad");
            (Transforms.ReverseMode.grad, "ReverseMode.grad");
            (Transforms.ReverseMode.grad2, "ReverseMode.grad2");
            (Transforms.JetAD.CoJets12.grad, "JetAD.CoJets12.grad");
