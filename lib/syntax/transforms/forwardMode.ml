@@ -44,6 +44,9 @@ let rec forwardAD (expr : t) : Target.t = match expr with
 | Get(n, expr)                               -> Get(n, forwardAD expr)
 | Array (exprList)                           -> Array(List.map forwardAD exprList)     
 
+let initialize_sensitivity x ty b = match ty with
+  | Real -> if b then Target.Tuple [Var(x, Target.Type.from_source ty); Target.Const 1.] else Target.Tuple [Var(x, Target.Type.from_source ty); Target.Const 0.]
+
 (**TODO: currently assumes every variable in grad_vars is of type Real. *)
 (** given an expression of the form dexpr = forwardAD(expr), computes its partial derivative w.r.t. x:ty. Assumes fv is the list of free variables of dexpr *)
 let partialDerivative x ty fv dexpr =
