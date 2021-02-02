@@ -43,8 +43,8 @@ let rec forwardAD (expr : t) : Target.t = match expr with
 | Scan (x, t1, y, t2, expr1, expr2, expr3)   -> Scan (x, forwardADType t1, y, forwardADType t2, forwardAD expr1, forwardAD  expr2, forwardAD  expr3)
 | Fold (x, t1, y, t2, expr1, expr2, expr3)   -> Fold (x, forwardADType t1, y, forwardADType t2, forwardAD expr1, forwardAD  expr2, forwardAD  expr3)
 | Get(n, expr)                               -> Get(n, forwardAD expr)
-| Array (exprList)                           -> Array(List.map forwardAD exprList)     
-
+| Array (exprList)                           -> Array(List.map forwardAD exprList)
+ 
 (* Given a selected variable x:ty for which we want to initialize its tangent part, does it by pattern matching on ty.Profiling
    If ty=Real, it's simply the usual if b then 1 else 0, but it's a bit more subtle for array types. *)
 let rec initialize_sensitivity (x: Var.t) (ty: Type.t) (b: bool) = match ty with
