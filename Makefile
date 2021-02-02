@@ -1,4 +1,4 @@
-all: test
+all: build test
 
 build:
 	dune build @install
