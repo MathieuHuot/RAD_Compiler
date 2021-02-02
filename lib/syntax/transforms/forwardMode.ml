@@ -3,7 +3,7 @@ open Syntax
 open Syntax.Source
 open Syntax.Operators
 
-type gradient_variables = (Syntax.Var.t * Type.t) Target.tuple
+type gradient_variables = (Syntax.Var.t * Type.t) tuple
 
 let rec forwardADType (ty : Type.t) : Target.Type.t = match ty with
   | Real           -> Target.Type.NProd [Target.Type.Real; Target.Type.Real]
@@ -44,17 +44,15 @@ let rec forwardAD (expr : t) : Target.t = match expr with
 | Get(n, expr)                               -> Get(n, forwardAD expr)
 | Array (exprList)                           -> Array(List.map forwardAD exprList)     
 
-let initialize_sensitivity x ty b = match ty with
+let initialize_sensitivity (x: Var.t) (ty: Type.t) (b: bool) = match ty with
   | Real -> if b then Target.Tuple [Var(x, Target.Type.from_source ty); Target.Const 1.] else Target.Tuple [Var(x, Target.Type.from_source ty); Target.Const 0.]
+  | Prod(ty1, ty2) -> failwith "TODO"
+  | Array(n, ty) -> failwith "TODO"
 
-(**TODO: currently assumes every variable in grad_vars is of type Real. *)
+(*TODO: currently assumes every variable in grad_vars is of type Real. *)
 (** given an expression of the form dexpr = forwardAD(expr), computes its partial derivative w.r.t. x:ty. Assumes fv is the list of free variables of dexpr *)
 let partialDerivative x ty fv dexpr =
-  List.fold_left (fun acc y -> if Syntax.Var.equal x y (* checks whether y = forwardAD(x) *)
-                               then Target.subst y (forwardADType ty) (Target.Tuple [Var(y, Target.Type.from_source ty); Target.Const 1.]) acc (* if so, initialize its tangentpart at 1. *)
-                               else Target.subst y (forwardADType ty) (Target.Tuple [Var(y, Target.Type.from_source ty); Target.Const 0.]) acc) (* otherwise at 0. *)
-                 dexpr 
-                 fv 
+  List.fold_left (fun acc y -> Target.subst y (forwardADType ty) (initialize_sensitivity y ty (Syntax.Var.equal x y)) acc) dexpr fv 
 
 let grad grad_vars expr = 
   let dexpr = forwardAD expr in
