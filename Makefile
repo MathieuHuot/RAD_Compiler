@@ -1,10 +1,10 @@
-all: test
+all: build test
 
 build:
-	dune build @install
+	dune build --release @install
 
-test:
-	dune runtest --no-buffer --force
+test: build
+	dune runtest --release --no-buffer --force
 
 test-full:
 	dune exec -- ./test/test.exe -e
