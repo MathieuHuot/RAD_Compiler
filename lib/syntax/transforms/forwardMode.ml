@@ -3,7 +3,7 @@ open Syntax
 open Syntax.Source
 open Syntax.Operators
 
-type gradient_variables = (Syntax.Var.t * Type.t) Target.tuple
+type gradient_variables = (Syntax.Var.t * Type.t) Source.tuple
 
 let rec forwardADType (ty : Type.t) : Target.Type.t = match ty with
   | Real           -> Target.Type.NProd [Target.Type.Real; Target.Type.Real]
@@ -36,7 +36,7 @@ let rec forwardAD (expr : t) : Target.t = match expr with
 | Apply2(op,expr1,expr2)                     -> binaryDop op (forwardAD expr1) (forwardAD expr2)
 | Let(y,ty,expr1,expr2)                      -> Let(y, forwardADType ty, forwardAD expr1, forwardAD expr2)  
 
-(**TODO: currently assumes every variable in grad_vars is of type Real. *)
+(*TODO: currently assumes every variable in grad_vars is of type Real. *)
 (** given an expression of the form dexpr = forwardAD(expr), computes its partial derivative w.r.t. x:ty. Assumes fv is the list of free variables of dexpr *)
 let partialDerivative x ty fv dexpr =
   List.fold_left (fun acc y -> if Syntax.Var.equal x y (* checks whether y = forwardAD(x) *)
