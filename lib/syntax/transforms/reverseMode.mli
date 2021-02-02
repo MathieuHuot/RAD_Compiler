@@ -1,5 +1,5 @@
-type context = (Syntax.Var.t * Syntax.Source.Type.t) Syntax.Source.tuple
+type gradient_variables = (Syntax.Var.t * Syntax.Source.Type.t) Syntax.Source.tuple
 
-val semiNaiveReverseAD : context -> Syntax.Source.t -> Syntax.Target.t
-val grad : context -> Syntax.Source.t -> Syntax.Target.t
-val grad2 : context -> Syntax.Source.t -> Syntax.Target.t
+val semiNaiveReverseAD : gradient_variables -> Syntax.Source.t -> Syntax.Target.t
+val grad : gradient_variables -> Syntax.Source.t -> Syntax.Target.t
+val grad2 : gradient_variables -> Syntax.Source.t -> Syntax.Target.t
