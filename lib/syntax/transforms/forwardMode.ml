@@ -57,4 +57,4 @@ let partialDerivative x ty fv dexpr =
 let grad grad_vars expr = 
   let dexpr = forwardAD expr in
   let fv = Target.VarSet.to_list (Target.freeVar dexpr) in
-  List.map (fun (x, ty) -> partialDerivative x ty fv dexpr) grad_vars 
+  Target.Tuple(List.map (fun (x, ty) -> partialDerivative x ty fv dexpr) grad_vars) 

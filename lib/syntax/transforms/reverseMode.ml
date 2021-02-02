@@ -5,7 +5,7 @@ open Anf
 open Syntax
 open Syntax.Source
 
-type context = (Syntax.Var.t * Type.t) Target.tuple
+type  gradient_variables = (Syntax.Var.t * Type.t) Target.tuple
 
 let getPos (x,ty) list = 
   let rec aux pos list = match list with
@@ -20,7 +20,7 @@ let rec addToPos i list y = match i, list with
   | 0,x::tl   -> (Target.Apply2(Plus, x, y))::tl
   | _,x::tl   -> x::(addToPos (i-1) tl y) 
 
-let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target.t * context = match expr with
+let rec rad (context:  gradient_variables) (cont : Target.t)  (expr : t) : Target.t * Target.t *  gradient_variables = match expr with
     | Const c                   -> begin
                                     match Target.inferType cont with 
                                     | Result.Ok (Target.Type.Arrow(tyList,_)) ->
@@ -98,7 +98,7 @@ let rec rad (context: context) (cont : Target.t)  (expr : t) : Target.t * Target
                                    Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context end
     | _ -> failwith "TODO"
 
-let semiNaiveReverseAD (context: context) (expr: t) : Target.t =
+let semiNaiveReverseAD (context:  gradient_variables) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   expr |> SourceAnf.weakAnf |> rad context id_cont |> fun (a,_,_) -> a
@@ -110,7 +110,7 @@ let rec initialize_rad list = match list with
  | _::[] -> [Target.Const 1.] 
  | _::tl -> (Target.Const 0.)::initialize_rad tl
 
-let grad (context: context) (expr: t) : Target.t =
+let grad (context:  gradient_variables) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = rad context id_cont (SourceAnf.anf expr) in
@@ -128,7 +128,7 @@ let grad (context: context) (expr: t) : Target.t =
     | _ -> failwith "grad: continuation should have a function type"
 
 (* Optimized version of rad where the continuation is not fully computed then optimized, but instead optimized as the term is built. *)
-let rec rad2 (context: context) (cont : Target.t)  (expr : t) : Target.t * Target.t * context = match expr with
+let rec rad2 (context:  gradient_variables) (cont : Target.t)  (expr : t) : Target.t * Target.t *  gradient_variables = match expr with
     | Const c                   ->  let newVar, newTy = (Syntax.Var.fresh(), Target.Type.Real) in
                                     begin match cont with 
                                       | Fun(varList, expr) -> 
@@ -188,7 +188,7 @@ let apply_sensitivities dexpr cont =
   in 
   Target.map f dexpr
 
-let grad2 (context: context) (expr: t) : Target.t =
+let grad2 (context:  gradient_variables) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
   let id_cont = Target.Fun(new_var_List, Target.Tuple(List.map (fun (x, ty) -> Target.Var(x, ty)) new_var_List)) in
   let dexpr, cont, _ = rad2 context id_cont (SourceAnf.anf expr) in
