@@ -199,7 +199,7 @@ module S = struct
         let e1 = grad1 freeVar expr in
         let e2 = grad2 freeVar expr in
         try
-          for _ = 0 to 1000 do
+          for _ = 0 to 100 do
             let context =
               List.map
                 (fun (name, t) ->
