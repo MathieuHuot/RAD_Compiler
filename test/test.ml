@@ -4,20 +4,18 @@ open Syntax
 module T = struct
   open Target
 
+  (* Term gen *)
   let arbitrary_closed_term =
     QCheck.make
       QCheck.Gen.(int_bound 20 >>= fun i -> TargetGen.gen [] i Type.Real)
       ~print:to_string ~shrink:TargetGen.shrink
 
-  let arbitrary_term =
+  let arbitrary_term freeVar =
     QCheck.make
-      QCheck.Gen.(
-        int_bound 20 >>= fun i ->
-        TargetGen.gen
-          (List.init 10 (fun i -> (("x", i), Type.Real)))
-          i Type.Real)
+      QCheck.Gen.(int_bound 20 >>= fun i -> TargetGen.gen freeVar i Type.Real)
       ~print:to_string ~shrink:TargetGen.shrink
 
+  (* Basic test *)
   let test_isWellTyped =
     QCheck.Test.make ~count:100 ~name:"isWellTyped" arbitrary_closed_term
       (fun term ->
@@ -65,6 +63,7 @@ module T = struct
       test_isInWeakAnf_weakAnf;
     ]
 
+  (* Test optimization *)
   let test_opti opti opti_name =
     QCheck.Test.make ~count:100 ~max_gen:500 ~name:("Opt " ^ opti_name)
       arbitrary_closed_term (fun expr ->
@@ -82,7 +81,8 @@ module T = struct
 
   let test_opti_freeVar opti opti_name =
     QCheck.Test.make ~count:100 ~max_gen:500 ~name:("Opt " ^ opti_name)
-      arbitrary_term (fun expr ->
+      (arbitrary_term (List.init 10 (fun i -> (("x", i), Type.Real))))
+      (fun expr ->
         let module AT = Target.Traverse (Strategy.All) in
         let fv = freeVar expr in
         let e1 =
@@ -94,13 +94,14 @@ module T = struct
         VarSet.subset fv1 fv)
 
   let test_opti_list =
-    List.map (fun (opti, opti_name) -> test_opti opti opti_name) Optimisation.T.opti_list
+    List.map
+      (fun (opti, opti_name) -> test_opti opti opti_name)
+      Optimisation.T.opti_list
 
   let test_opti_freeVar_list =
     List.map
       (fun (opti, opti_name) -> test_opti_freeVar opti opti_name)
       Optimisation.T.opti_list
-
 
   let test_opti_repeat opti opti_name =
     QCheck.Test.make ~count:10 ~max_gen:50 ~name:("Opt " ^ opti_name)
@@ -118,7 +119,9 @@ module T = struct
         else failwith (Printf.sprintf "%s\n\n%s" (to_string e1) (to_string e2)))
 
   let test_opti_repeat_list =
-    List.map (fun (opti, opti_name) -> test_opti_repeat opti opti_name) Optimisation.T.exact_opti_list
+    List.map
+      (fun (opti, opti_name) -> test_opti_repeat opti opti_name)
+      Optimisation.T.exact_opti_list
 end
 
 module S = struct
@@ -129,13 +132,9 @@ module S = struct
       QCheck.Gen.(int_bound 20 >>= fun i -> SourceGen.gen [] i Type.Real)
       ~print:to_string ~shrink:SourceGen.shrink
 
-  let arbitrary_term =
+  let arbitrary_term freeVar =
     QCheck.make
-      QCheck.Gen.(
-        int_bound 20 >>= fun i ->
-        SourceGen.gen
-          (List.init 10 (fun i -> (("x", i), Type.Real)))
-          i Type.Real)
+      QCheck.Gen.(int_bound 20 >>= fun i -> SourceGen.gen freeVar i Type.Real)
       ~print:to_string ~shrink:SourceGen.shrink
 
   let test_isWellTyped =
@@ -183,6 +182,48 @@ module S = struct
       test_weakAnf;
       test_isInWeakAnf_weakAnf;
     ]
+
+  exception Fail
+
+  (* Test AD *)
+
+  let all_pairs l = List.flat_map (fun x -> List.map (fun y -> (x, y)) l) l
+
+  let test_grads grad1 grad1_name grad2 grad2_name =
+    let freeVar = List.init 10 (fun i -> (("x", i), Type.Real)) in
+    QCheck.Test.make ~count:100
+      ~name:(Printf.sprintf "Grad %s %s" grad1_name grad2_name)
+      (arbitrary_term freeVar) (fun expr ->
+        let e1 = grad1 freeVar expr in
+        let e2 = grad2 freeVar expr in
+        try
+          for _ = 0 to 1000 do
+            let context =
+              List.map
+                (fun (name, t) ->
+                  ( (name, Target.Type.from_source t),
+                    Target.Const Random.(run (float 1.)) ))
+                freeVar
+            in
+            if
+              not
+                (Target.weakEqual
+                   (Target.interpret e1 context)
+                   (Target.interpret e2 context))
+            then raise Fail
+          done;
+          true
+        with Fail -> false)
+
+  let test_grads_list =
+    List.map
+      (fun ((g1, n1), (g2, n2)) -> test_grads g1 n1 g2 n2)
+      (all_pairs
+         [
+           (Transforms.ReverseMode.grad, "ReverseMode.grad");
+           (Transforms.ReverseMode.grad2, "ReverseMode.grad2");
+           (Transforms.JetAD.CoJets12.grad, "JetAD.CoJets12.grad");
+         ])
 end
 
 module O = struct
@@ -215,8 +256,11 @@ let () =
   let target_opti_freeVar =
     List.map QCheck_alcotest.to_alcotest T.test_opti_freeVar_list
   in
-  let target_opti_repeat = List.map QCheck_alcotest.to_alcotest T.test_opti_repeat_list in
+  let target_opti_repeat =
+    List.map QCheck_alcotest.to_alcotest T.test_opti_repeat_list
+  in
   let source = List.map QCheck_alcotest.to_alcotest S.test_list in
+  let grads = List.map QCheck_alcotest.to_alcotest S.test_grads_list in
   let optimisation = List.map QCheck_alcotest.to_alcotest O.test_list in
   Alcotest.run "Main test"
     [
@@ -226,4 +270,5 @@ let () =
       ("Repeat Opti Target Language", target_opti_repeat);
       ("Source Language", source);
       ("New optimisation", optimisation);
+      ("Grads", grads);
     ]
