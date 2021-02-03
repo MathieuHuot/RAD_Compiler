@@ -25,12 +25,12 @@ let binaryDop op expr1 expr2 =
   Target.NCase(expr1, [(y1, ty); (dy1, ty)], Target.NCase(expr2, [(y2, ty); (dy2, ty)], Target.Tuple [primal;tangent]))
 
 let forwardADType (ty : Type.t) : Target.Type.t = 
-  Functor.travserseType ty (fun _ -> Target.Type.NProd [Target.Type.Real; Target.Type.Real])
+  Functor.traverseType ty (fun _ -> Target.Type.NProd [Target.Type.Real; Target.Type.Real])
 
 (* Simple forward AD transformation. does not assume any ANF *)
 (* If Gamma |- t : ty, then  forwardADType(Gamma) |- forwardAD(t): forwardADType(ty)  *)
 let forwardAD (expr : t) : Target.t = 
-  Functor.travserse expr
+  Functor.traverse expr
   (fun c -> Target.Tuple [Target.Const c; Target.Const 0.])
   (fun x ty ->  Var(x, forwardADType ty))
   unaryDop

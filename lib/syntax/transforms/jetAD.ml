@@ -24,42 +24,40 @@ let d2op2 x dx d2x y dy d2y  (op: op2) = match op with
   | Minus -> Target.Apply2(Minus, d2x, d2y)
   | Times -> Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2x, y), Target.Apply2(Times, x, d2y)), Target.Apply2(Times, Target.Const 2., Target.Apply2(Times, dx, dy)))
 
+let unaryDop op expr =
+  let y, dy, d2y = Var.dvar2 (Var.fresh()) in
+  let ty = Target.Type.Real in
+  let e = Target.Apply1(op, Target.Var(y, ty)) in
+  let de = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(dy, ty)) in 
+  let d2e = dop2 (Target.Var(y, ty)) (Target.Var(dy, ty)) (Target.Var(d2y, ty)) op in
+  Target.NCase(expr, [(y, ty); (dy, ty); (d2y, ty)], Target.Tuple([e; de; d2e]))
+
+let binaryDop op expr1 expr2 = 
+  let x, dx, d2x = Var.dvar2 (Var.fresh()) in
+  let y, dy, d2y = Var.dvar2 (Var.fresh()) in
+  let ty = Target.Type.Real in
+  let e = Target.Apply2(op, Target.Var(x, ty), Target.Var(y, ty)) in
+  let de = Target.Apply2(Plus,
+                        Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(dx, ty))),
+                        Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(dy, ty)))) in
+  let d2e = d2op2 (Target.Var(x, ty)) (Target.Var(dx, ty)) (Target.Var(d2x, ty)) (Target.Var(y, ty)) (Target.Var(dy, ty)) (Target.Var(d2y, ty)) op in
+  Target.NCase(expr1, [(x, ty); (dx, ty); (d2x, ty)],
+  Target.NCase(expr2, [(y, ty); (dy, ty); (d2y, ty)], 
+  Target.Tuple([e; de; d2e])))
+
 let rec forwardAD12Type (ty : Type.t) : Target.Type.t =
-  Functor.travserseType ty (fun _ -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real]))
+  Functor.traverseType ty (fun _ -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real]))
 
-let rec forward12AD (expr: t) : Target.t = match expr with
-| Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.])
-| Var(x,ty)             ->  let x, dx, d2x = Var.dvar2 x in
-                            let ty = Target.Type.from_source ty in
-                            Target.Tuple([Target.Var(x, ty); Target.Var(dx, ty); Target.Var(d2x, ty)])
-| Apply1(op,expr)       ->  let y, dy, d2y = Var.dvar2 (Var.fresh()) in
-                            let ty = Target.Type.Real in
-                            let exprD = forward12AD expr in
-                            let e = Target.Apply1(op, Target.Var(y, ty)) in
-                            let de = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(dy, ty)) in 
-                            let d2e = dop2 (Target.Var(y, ty)) (Target.Var(dy, ty)) (Target.Var(d2y, ty)) op in
-                            Target.NCase(exprD, [(y, ty); (dy, ty); (d2y, ty)], Target.Tuple([e; de; d2e]))
-| Apply2(op,expr1,expr2)->  let x, dx, d2x = Var.dvar2 (Var.fresh()) in
-                            let y, dy, d2y = Var.dvar2 (Var.fresh()) in
-                            let ty = Target.Type.Real in
-                            let expr1D = forward12AD expr1 in
-                            let expr2D = forward12AD expr2 in
-                            let e = Target.Apply2(op, Target.Var(x, ty), Target.Var(y, ty)) in
-                            let de = Target.Apply2(Plus,
-                                            Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(dx, ty))),
-                                            Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(dy, ty)))) in
-                            let d2e = d2op2 (Target.Var(x, ty)) (Target.Var(dx, ty)) (Target.Var(d2x, ty)) (Target.Var(y, ty)) (Target.Var(dy, ty)) (Target.Var(d2y, ty)) op in
-                            Target.NCase(expr1D, [(x, ty); (dx, ty); (d2x, ty)],
-                            Target.NCase(expr2D, [(y, ty); (dy, ty); (d2y, ty)], 
-                            Target.Tuple([e; de; d2e])))
-| Let(y,ty,expr1,expr2) ->  let expr1D = forward12AD expr1 in
-                            let expr2D = forward12AD expr2 in
-                            let y, dy, d2y = Var.dvar2 y in
-                            let ty = Target.Type.from_source ty in
-                            Target.NCase(expr1D, [(y, ty); (dy, ty); (d2y, ty)], expr2D)
-| _ -> failwith "TODO"
+let forward12AD (expr: t) : Target.t = 
+  Functor.traverse expr
+  (fun c -> Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.]))
+  (fun x ty ->  Var(x, forwardAD12Type ty))
+  unaryDop
+  binaryDop
+  forwardAD12Type 
 
-(* Compute the list d2f/dx2 for all variables x from the context *)                           
+(* Compute the list d2f/dx2 for all variables x from the context *)
+(*TODO: *)                           
 let secondPartial context expr = 
   let dexpr = forward12AD expr in
   let optiDexpr = Optimisation.T.fullOpti dexpr in
@@ -71,6 +69,7 @@ let secondPartial context expr =
       context
 
 (* Compute the list d2f/dxi dxj for all xi,xj in the context *)
+(*TODO: *) 
 let mixedPartial context expr = 
   let n = List.length context in
   let arrayContext = Array.of_list (List.map (fun (x,_,_) -> x) context) in
@@ -116,55 +115,52 @@ open Source
 open Operators
 
 let forwardAD22Type (ty : Type.t) : Target.Type.t = 
-  Functor.travserseType ty (fun _ -> Target.Type.NProd([Target.Type.Real;Target.Type.Real;Target.Type.Real;Target.Type.Real]))
+  Functor.traverseType ty (fun _ -> Target.Type.NProd([Target.Type.Real;Target.Type.Real;Target.Type.Real;Target.Type.Real]))
 
-let rec forward22AD (expr: t) : Target.t = match expr with
-| Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.])
-| Var(x,ty)             ->  let x, d1x, d2x, ddx = Var.dvar22 x in
-                            let ty = Target.Type.from_source ty in
-                            Target.Tuple([Target.Var(x, ty); Target.Var(d1x, ty); Target.Var(d2x, ty); Target.Var(ddx, ty)])
-| Apply1(op,expr)       ->  let y, d1y, d2y, ddy = Var.dvar22 (Var.fresh()) in
-                            let ty = Target.Type.Real in
-                            let exprD = forward22AD expr in
-                            let e = Target.Apply1(op, Target.Var(y, ty)) in
-                            let d1e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d1y, ty)) in
-                            let d2e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d2y, ty)) in  
-                            let dde = Target.dop22 op (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(ddy, ty)) in
-                            Target.NCase(exprD,[(y, ty); (d1y, ty); (d2y, ty); (ddy, ty)], Target.Tuple([e; d1e; d2e; dde]))
-| Apply2(op,expr1,expr2)->  let x, d1x, d2x, ddx = Var.dvar22 (Var.fresh()) in
-                            let y, d1y, d2y, ddy = Var.dvar22 (Var.fresh()) in
-                            (* comparing notation to the paper cited above *)
-                            (* x is first index, y is second, d1 is for du, d2 for dv, dd for dudv *)
-                            let ty = Target.Type.Real in
-                            let expr1D = forward22AD expr1 in
-                            let expr2D = forward22AD expr2 in
-                            let e = Target.Apply2(op, Target.Var(x, ty), Target.Var(y, ty)) in
-                            let d1e = Target.Apply2(Plus,
-                                            Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d1x, ty))),
-                                            Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d1y, ty)))) in
-                            let d2e = Target.Apply2(Plus,
-                                            Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d2x, ty))),
-                                            Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d2y, ty)))) in                
-                            let dde = Target.d2op22 op (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(ddx, ty)) 
-                                             (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(ddy, ty)) in
-                            Target.NCase(expr1D, [(x, ty); (d1x, ty); (d2x, ty);  (ddx, ty)],
-                            Target.NCase(expr2D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], 
-                            Target.Tuple([e; d1e; d2e; dde])))
-| Let(y,ty,expr1,expr2) ->  let expr1D = forward22AD expr1 in
-                            let expr2D = forward22AD expr2 in
-                            let y, d1y, d2y, ddy = Var.dvar22 y in
-                            let ty = Target.Type.from_source ty in
-                            Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], expr2D)
-| _ -> failwith "TODO"  
+let unaryDop op expr = 
+  let y, d1y, d2y, ddy = Var.dvar22 (Var.fresh()) in
+  let ty = Target.Type.Real in
+  let e = Target.Apply1(op, Target.Var(y, ty)) in
+  let d1e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d1y, ty)) in
+  let d2e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d2y, ty)) in  
+  let dde = Target.dop22 op (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(ddy, ty)) in
+  Target.NCase(expr,[(y, ty); (d1y, ty); (d2y, ty); (ddy, ty)], Target.Tuple([e; d1e; d2e; dde]))
+
+let binaryDop op expr1 expr2 = 
+  let x, d1x, d2x, ddx = Var.dvar22 (Var.fresh()) in
+  let y, d1y, d2y, ddy = Var.dvar22 (Var.fresh()) in
+  (* comparing notation to the paper cited above *)
+  (* x is first index, y is second, d1 is for du, d2 for dv, dd for dudv *)
+  let ty = Target.Type.Real in
+  let e = Target.Apply2(op, Target.Var(x, ty), Target.Var(y, ty)) in
+  let d1e = Target.Apply2(Plus,
+                  Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d1x, ty))),
+                  Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d1y, ty)))) in
+  let d2e = Target.Apply2(Plus,
+                  Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d2x, ty))),
+                  Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d2y, ty)))) in                
+  let dde = Target.d2op22 op (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(ddx, ty)) 
+                  (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(ddy, ty)) in
+  Target.NCase(expr1, [(x, ty); (d1x, ty); (d2x, ty);  (ddx, ty)],
+  Target.NCase(expr2, [(y, ty); (d1y, ty); (d2y, ty);  (ddy, ty)], 
+  Target.Tuple([e; d1e; d2e; dde])))
+
+let forward22AD (expr: t) : Target.t = 
+ Functor.traverse expr
+ (fun c -> Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.]))
+ (fun x ty ->  Var(x, forwardAD22Type ty))
+ unaryDop
+ binaryDop
+ forwardAD22Type 
+
+(*TODO: gradient, hessian, ...*)
+
 end
 
 (* This method computes (3,3) velocities. *) 
 module Jets33 = struct
 open Source
 open Operators
-
-let rec forwardAD33Type (ty : Type.t) : Target.Type.t = 
-  Functor.travserseType ty (fun _ -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real]))
 
 (* third derivative of unary operator *) 
 let dop33 x d1x d2x ddx (op: op1) = match op with
@@ -192,62 +188,65 @@ let d2op33 x d1x d2x d3x dd1x dd2x dd3x dddx y d1y d2y d3y dd1y dd2y dd3y dddy (
                                     Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3x), Target.Apply2(Times, d1y, dd2x)), Target.Apply2(Times, d3y, dd1x)), 
                                     Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3y), Target.Apply2(Times, d1y, dd2y)), Target.Apply2(Times, d3y, dd1y)))))
 
-let rec forward33AD (expr: t) : Target.t = match expr with
-| Const c               ->  Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.])
-| Var(x,ty)             ->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = Var.dvar33 x in
-                            let ty = Target.Type.from_source ty in
-                            Target.Tuple([Target.Var(x, ty); Target.Var(d1x, ty); Target.Var(d2x, ty); Target.Var(d3x, ty); Target.Var(dd1x, ty); Target.Var(dd2x, ty); Target.Var(dd3x, ty); Target.Var(dddx, ty);])
-| Apply1(op,expr)       ->  let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = Var.dvar33 (Var.fresh()) in
-                            let ty = Target.Type.Real in
-                            let exprD = forward33AD expr in
-                            let e = Target.Apply1(op, Target.Var(y, ty)) in
-                            let d1e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d1y, ty)) in
-                            let d2e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d2y, ty)) in
-                            let d3e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d3y, ty)) in   
-                            let dd1e = Target.dop22 op(Target.Var(y, ty)) (Target.Var(d2y, ty)) (Target.Var(d1y, ty)) (Target.Var(dd1y, ty)) in
-                            let dd2e = Target.dop22 op(Target.Var(y, ty)) (Target.Var(d2y, ty)) (Target.Var(d3y, ty)) (Target.Var(dd2y, ty)) in
-                            let dd3e = Target.dop22 op (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d3y, ty)) (Target.Var(dd3y, ty)) in
-                            let ddde = dop33 (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dddy, ty)) op in
-                            Target.NCase(exprD, 
-                                  [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)],  
-                                  Target.Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde]))
-| Apply2(op,expr1,expr2)->  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = Var.dvar33 (Var.fresh()) in
-                            let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = Var.dvar33 (Var.fresh()) in
-                            let ty = Target.Type.Real in
-                            let expr1D = forward33AD expr1 in
-                            let expr2D = forward33AD expr2 in
-                            let e = Target.Apply2(op, Target.Var(x, ty), Target.Var(y, ty)) in
-                            let d1e = Target.Apply2(Plus,
-                                            Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d1x, ty))),
-                                            Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d1y, ty)))) in
-                            let d2e = Target.Apply2(Plus,
-                                            Target.Apply2(Times, Target.d1op op(Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d2x, ty))),
-                                            Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d2y, ty)))) in
-                            let d3e = Target.Apply2(Plus,
-                                            Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d3x, ty))),
-                                            Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d3y, ty)))) in                  
-                            let dd1e = Target.d2op22 op (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(dd1x, ty)) 
-                                              (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dd1y, ty)) 
-                                              in
-                            let dd2e = Target.d2op22 op (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(dd2x, ty)) 
-                                              (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dd2y, ty)) 
-                                              in
-                            let dd3e = Target.d2op22 op (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(dd3x, ty)) 
-                                              (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dd3y, ty)) 
-                                              in
-                            let ddde = d2op33 (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(d3x, ty)) (Target.Var(dd1x, ty)) (Target.Var(dd2x, ty)) (Target.Var(dd3x, ty)) (Target.Var(dddx, ty))
-                                              (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(d3y, ty)) (Target.Var(dd1y, ty)) (Target.Var(dd2y, ty)) (Target.Var(dd3y, ty)) (Target.Var(dddy, ty))
-                                              op in            
-                            Target.NCase(expr1D, [(x, ty); (d1x, ty); (d2x, ty); (d3x, ty); (dd1x, ty); (dd2x, ty); (dd3x, ty);  (dddx, ty)],
-                            Target.NCase(expr2D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], 
-                            Target.Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde])))
-| Let(y,ty,expr1,expr2) ->  let expr1D = forward33AD expr1 in
-                            let expr2D = forward33AD expr2 in
-                            let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = Var.dvar33 y in
-                            let ty = Target.Type.from_source ty in
-                            Target.NCase(expr1D, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], expr2D)
-| _ -> failwith "TODO"  
-end 
+let unaryDop op expr = 
+  let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = Var.dvar33 (Var.fresh()) in
+  let ty = Target.Type.Real in
+  let e = Target.Apply1(op, Target.Var(y, ty)) in
+  let d1e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d1y, ty)) in
+  let d2e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d2y, ty)) in
+  let d3e = Target.Apply2(Times, Target.dop op (Target.Var(y, ty)), Target.Var(d3y, ty)) in   
+  let dd1e = Target.dop22 op(Target.Var(y, ty)) (Target.Var(d2y, ty)) (Target.Var(d1y, ty)) (Target.Var(dd1y, ty)) in
+  let dd2e = Target.dop22 op(Target.Var(y, ty)) (Target.Var(d2y, ty)) (Target.Var(d3y, ty)) (Target.Var(dd2y, ty)) in
+  let dd3e = Target.dop22 op (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d3y, ty)) (Target.Var(dd3y, ty)) in
+  let ddde = dop33 (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dddy, ty)) op in
+  Target.NCase(expr, 
+        [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)],  
+        Target.Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde]))
+
+let binaryDop op expr1 expr2 = 
+  let x, d1x, d2x, d3x, dd1x, dd2x, dd3x, dddx = Var.dvar33 (Var.fresh()) in
+  let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = Var.dvar33 (Var.fresh()) in
+  let ty = Target.Type.Real in
+  let e = Target.Apply2(op, Target.Var(x, ty), Target.Var(y, ty)) in
+  let d1e = Target.Apply2(Plus,
+                  Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d1x, ty))),
+                  Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d1y, ty)))) in
+  let d2e = Target.Apply2(Plus,
+                  Target.Apply2(Times, Target.d1op op(Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d2x, ty))),
+                  Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d2y, ty)))) in
+  let d3e = Target.Apply2(Plus,
+                  Target.Apply2(Times, Target.d1op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d3x, ty))),
+                  Target.Apply2(Times, Target.d2op op (Target.Var(x, ty)) (Target.Var(y, ty)), (Target.Var(d3y, ty)))) in                  
+  let dd1e = Target.d2op22 op (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(dd1x, ty)) 
+                    (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dd1y, ty)) 
+                    in
+  let dd2e = Target.d2op22 op (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(dd2x, ty)) 
+                    (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dd2y, ty)) 
+                    in
+  let dd3e = Target.d2op22 op (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(dd3x, ty)) 
+                    (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(dd3y, ty)) 
+                    in
+  let ddde = d2op33 (Target.Var(x, ty)) (Target.Var(d1x, ty)) (Target.Var(d2x, ty)) (Target.Var(d3x, ty)) (Target.Var(dd1x, ty)) (Target.Var(dd2x, ty)) (Target.Var(dd3x, ty)) (Target.Var(dddx, ty))
+                    (Target.Var(y, ty)) (Target.Var(d1y, ty)) (Target.Var(d2y, ty)) (Target.Var(d3y, ty)) (Target.Var(dd1y, ty)) (Target.Var(dd2y, ty)) (Target.Var(dd3y, ty)) (Target.Var(dddy, ty))
+                    op in            
+  Target.NCase(expr1, [(x, ty); (d1x, ty); (d2x, ty); (d3x, ty); (dd1x, ty); (dd2x, ty); (dd3x, ty);  (dddx, ty)],
+  Target.NCase(expr2, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], 
+  Target.Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde])))
+
+let rec forwardAD33Type (ty : Type.t) : Target.Type.t = 
+  Functor.traverseType ty (fun _ -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real]))
+
+let forward33AD (expr: t) : Target.t = 
+  Functor.traverse expr
+  (fun c -> Target.Tuple([Target.Const c; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.; Target.Const 0.]))
+  (fun x ty ->  Var(x, forwardAD33Type ty))
+  unaryDop
+  binaryDop
+  forwardAD33Type 
+
+  (*TODO: gradient, hessian, ...*)
+  
+end
 
 (* This method comptues (1,2)-covelocities. *)
 (* It computes the whole hessian in one pass on a function Real^n -> Real *)
