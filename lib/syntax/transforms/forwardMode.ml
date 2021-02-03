@@ -24,26 +24,18 @@ let binaryDop op expr1 expr2 =
                         Target.Apply2(Times, Target.d2op op y1VarP y2VarP, Target.Var(dy2, ty))) in
   Target.NCase(expr1, [(y1, ty); (dy1, ty)], Target.NCase(expr2, [(y2, ty); (dy2, ty)], Target.Tuple [primal;tangent]))
 
-let rec forwardADType (ty : Type.t) : Target.Type.t = match ty with
-  | Real           -> Target.Type.NProd [Target.Type.Real; Target.Type.Real]
-  | Prod(ty1, ty2) -> Target.Type.NProd [forwardADType ty1; forwardADType ty2]
-  | Array(n, ty)   -> Target.Type.Array(n, forwardADType ty)
+let forwardADType (ty : Type.t) : Target.Type.t = 
+  Functor.travserseType ty (fun x -> Target.Type.NProd [Target.Type.Real; Target.Type.Real])
 
 (* Simple forward AD transformation. does not assume any ANF *)
 (* If Gamma |- t : ty, then  forwardADType(Gamma) |- forwardAD(t): forwardADType(ty)  *)
-let rec forwardAD (expr : t) : Target.t = match expr with
-| Const c                                    -> Target.Tuple [Target.Const c; Target.Const 0.]
-| Var(x,ty)                                  -> Var(x, forwardADType ty)
-| Apply1(op,expr)                            -> unaryDop op (forwardAD expr)
-| Apply2(op,expr1,expr2)                     -> binaryDop op (forwardAD expr1) (forwardAD expr2)
-| Let(y,ty,expr1,expr2)                      -> Let(y, forwardADType ty, forwardAD expr1, forwardAD expr2)
-| Map (x, ty, expr1, expr2)                  -> Map(x, forwardADType ty, forwardAD expr1, forwardAD expr2)
-| Map2 (x, t1, y, t2, expr1, expr2, expr3)   -> Map2 (x, forwardADType t1, y, forwardADType t2, forwardAD expr1, forwardAD expr2, forwardAD expr3)
-| Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Reduce (x, forwardADType t1, y, forwardADType t2, forwardAD expr1, forwardAD  expr2, forwardAD  expr3)
-| Scan (x, t1, y, t2, expr1, expr2, expr3)   -> Scan (x, forwardADType t1, y, forwardADType t2, forwardAD expr1, forwardAD  expr2, forwardAD  expr3)
-| Fold (x, t1, y, t2, expr1, expr2, expr3)   -> Fold (x, forwardADType t1, y, forwardADType t2, forwardAD expr1, forwardAD  expr2, forwardAD  expr3)
-| Get(n, expr)                               -> Get(n, forwardAD expr)
-| Array (exprList)                           -> Array(List.map forwardAD exprList)
+let forwardAD (expr : t) : Target.t = 
+  Functor.travserse expr
+  (fun c -> Target.Tuple [Target.Const c; Target.Const 0.])
+  (fun x ty ->  Var(x, forwardADType ty))
+  unaryDop
+  binaryDop
+  forwardADType 
  
 (* Given a selected variable x:ty for which we want to initialize its tangent part, does it by pattern matching on ty.Profiling
    If ty=Real, it's simply the usual if b then 1 else 0, but it's a bit more subtle for array types. *)
