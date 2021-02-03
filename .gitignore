@@ -1,5 +1,6 @@
 */byte
 */native
+*.install
 *.cmi
 *.cmo
 *.cmt
