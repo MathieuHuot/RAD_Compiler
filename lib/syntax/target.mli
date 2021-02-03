@@ -24,6 +24,8 @@ module Type : sig
   val isArrow : t -> bool
   (** [isArrow t] return true if [t] is [Arrow _] and false otherwise *)
 
+  val isGroundType : t -> bool
+
   val from_source : Source.Type.t -> t
   (** [from_source t] map type of the source language to type of the target language *)
 
@@ -128,11 +130,6 @@ val inferType : t -> (Type.t, string) result
 
 val isWellTyped : t -> bool
 (** [isWellTyped expr] returns [true] if [expr] is well typed. *)
-
-val strict_interpret : t -> context -> t
-(** [strict_interpret expr c] takes an expression [expr] and a context [c]
-    and interprets [expr] under the context [c]. [expr] need to be a well typed
-    term and closed with [c].*)
 
 val interpret : t -> context -> t
 (** [interpret expr c] takes an expression [expr] and a context [c]

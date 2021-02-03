@@ -45,7 +45,7 @@ let binaryDop op expr1 expr2 =
   Target.NCase(expr2, [(y, ty); (dy, ty); (d2y, ty)], 
   Target.Tuple([e; de; d2e])))
 
-let rec forwardAD12Type (ty : Type.t) : Target.Type.t =
+let forwardAD12Type (ty : Type.t) : Target.Type.t =
   Functor.traverseType ty (fun _ -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real]))
 
 let forward12AD (expr: t) : Target.t = 
@@ -233,7 +233,7 @@ let binaryDop op expr1 expr2 =
   Target.NCase(expr2, [(y, ty); (d1y, ty); (d2y, ty); (d3y, ty); (dd1y, ty); (dd2y, ty); (dd3y, ty);  (dddy, ty)], 
   Target.Tuple([e; d1e; d2e; d3e; dd1e; dd2e; dd3e; ddde])))
 
-let rec forwardAD33Type (ty : Type.t) : Target.Type.t = 
+let forwardAD33Type (ty : Type.t) : Target.Type.t = 
   Functor.traverseType ty (fun _ -> Target.Type.NProd([Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real; Target.Type.Real]))
 
 let forward33AD (expr: t) : Target.t = 

@@ -47,6 +47,8 @@ let tuple l = Tuple l
 
 let ncase exp1 l exp2 = NCase (exp1, l, exp2)
 
+let carray l = Array l
+
 let rec dist_to_type (targetTy : Type.t) (ty : Type.t) =
   match (targetTy, ty) with
   | Type.Real, Type.Real -> Some 0
@@ -82,6 +84,7 @@ let rec dist_to_type (targetTy : Type.t) (ty : Type.t) =
       match List.filter_map (dist_to_type targetTy) l with
       | [] -> None
       | h :: t -> Some (1 + List.fold_left min h t))
+  | _ -> None (* TODO *)
 
 let random_closest_type targetTy tyList =
   let open QCheck.Gen in
@@ -156,6 +159,7 @@ let rec complet_to_type context n (targetTy : Type.t) (term : t) (ty : Type.t) =
             l
           |> sequence_l
           >|= fun l -> Tuple l)
+    | _ -> None (* TODO *)
 
 and get_from_context context n targetTy =
   List.filter_map
@@ -195,6 +199,7 @@ and gen context (n : int) targetTy =
                       (fun t ->
                         self (n / max (List.length tyList) 1, context, t))
                       tyList))
+          | Array (n,t) -> map carray (list_repeat n (gen context 0 t))
         else
           let let_gen =
             let newVar = Var.fresh () in
@@ -280,3 +285,4 @@ let rec shrink expr =
       | _ -> empty)
       <+> (shrink expr1 >|= fun expr -> ncase expr vars expr2)
       <+> (shrink expr2 >|= fun expr -> ncase expr1 vars expr)
+  | _ -> empty (* TODO *)

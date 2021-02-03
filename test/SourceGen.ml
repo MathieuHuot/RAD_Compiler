@@ -8,16 +8,17 @@ module TypeGen = struct
   let _prod x y = Type.Prod (x, y)
 
   let gen depth =
-    QCheck.Gen.(sized_size (int_bound depth)
-                 @@ fix (fun _self n ->
-                        match n with
-                        | 0 -> return real
-                        | _n ->
-                            frequency
-                              [
-                                (*(2, map2 prod (self (n / 2)) (self (n / 2)));*)
-                                (1, return real);
-                              ]))
+    QCheck.Gen.(
+      sized_size (int_bound depth)
+      @@ fix (fun _self n ->
+             match n with
+             | 0 -> return real
+             | _n ->
+                 frequency
+                   [
+                     (*(2, map2 prod (self (n / 2)) (self (n / 2)));*)
+                     (1, return real);
+                   ]))
 end
 
 let var x t = Var (x, t)
@@ -29,6 +30,8 @@ let apply1 op exp = Apply1 (op, exp)
 let apply2 op exp1 exp2 = Apply2 (op, exp1, exp2)
 
 let clet v t exp1 exp2 = Let (v, t, exp1, exp2)
+
+let carray l = Array l
 
 let dist_to_type (targetTy : Type.t) (ty : Type.t) =
   match (targetTy, ty) with Type.Real, Type.Real -> Some 0 | _ -> None
@@ -80,6 +83,7 @@ and gen context (n : int) targetTy =
           match targetTy with
           | Type.Real -> map const (float_bound_exclusive 1.)
           | Type.Prod (_x1, _x2) -> failwith "Prod: not implemented"
+          | Type.Array (n, t) -> map carray (list_repeat n (gen context 0 t))
         else
           let let_gen =
             let newVar = Var.fresh () in
@@ -124,3 +128,4 @@ let rec shrink expr =
       shrink expr1
       >|= (fun expr -> clet x t expr expr2)
       <+> (shrink expr2 >|= fun expr -> clet x t expr1 expr)
+  | _ -> empty (* TODO *)

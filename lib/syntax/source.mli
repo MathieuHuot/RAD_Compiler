@@ -73,6 +73,10 @@ val equal: ?eq:(float -> float -> bool) -> t -> t ->  bool
 (** [equal ~eq expr1 expr2] compares recursively [expr1] with [expr2] using
     [eq] to compare constant term. *)
 
+val weakEqual: t -> t ->  bool
+(** [weakEqual expr1 expr2] compares recursively [expr1] with [expr2] using
+    a weak equality function to compare constant term. *)
+
 val isValue : t -> bool
 (** [isValue expr] returns true if [expr] is [Const …] and false otherwise. *)
 
@@ -86,6 +90,10 @@ val simSubst : context -> t -> t
 
 val freeVar : t -> VarSet.t
 (** [freeVar expr] returns the set of free variable in [expr]. *)
+
+val listUnusedVar : t -> (Var.t * Type.t) list
+(** [listUnusedVar expr] returns the set of bound variable define with a
+    [Let] or [NCase] but not used. *)
 
 val canonicalAlphaRename : string -> t -> t
 (** [canonicalAplphaRename name expr] *)

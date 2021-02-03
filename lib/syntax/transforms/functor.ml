@@ -3,7 +3,7 @@ open Syntax.Source
 
 let rec traverseType (ty: Type.t) f : Target.Type.t = match ty with
   | Real -> f Target.Type.Real
-  | Prod(ty1, ty2) -> Target.Type.NProd [traverseType ty f; traverseType ty2 f]
+  | Prod(ty1, ty2) -> Target.Type.NProd [traverseType ty1 f; traverseType ty2 f]
   | Array(n, ty)   -> Target.Type.Array(n, traverseType ty f)
 
 let rec traverse (expr : t) f1 f2 f3 f4 f5 : Target.t = match expr with
