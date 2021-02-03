@@ -763,6 +763,9 @@ let dop22 (op: op1) x d1x d2x ddx  = match op with
   | Power n -> Apply2(Plus,
                       Apply2(Times, Apply2(Times, Const(float_of_int(n*(n-1))), Apply1(Power(n-2),x)), Apply2(Times, d1x, d2x)),
                       Apply2(Times, Apply2(Times, Const(float_of_int n), Apply1(Power(n-1),x)), ddx))
+  (*
+  | Div     -> (*TODO: *)
+  *)
 
 (** First partial first order derivative of binary operator*)
 let d1op op _ y2 = match op with
@@ -791,6 +794,15 @@ let d2op22 (op: op2) x d1x d2x ddx y d1y d2y ddy  = match op with
                     Apply2(Plus,
                             Apply2(Plus, Apply2(Times, d1x, d2x), Apply2(Times, d1x, d2y)),
                             Apply2(Plus, Apply2(Times, d1y, d2x), Apply2(Times, d1y, d2y))))
+  (*
+  | Div   ->  Apply2(Plus,
+                    Apply2(Plus, Apply2(Div, ddx, y), Apply2(Times, Apply2(Div, x, Apply2(Times, Const 2., Apply1(Power(3), y)), ddy)),
+                    Apply2(Plus,
+                            Apply2(Plus, Apply2(Times, d1x, d2x), Apply2(Times, d1x, d2y)),
+                            Apply2(Plus, Apply2(Times, d1y, d2x), Apply2(Times, d1y, d2y))))
+    
+    (* TODO: not sure about this one, currently wrong*)
+  *)
 
 (* ∂^2 op/∂x∂x *)                          
 let ddop (op: op1) y = match op with
@@ -800,6 +812,18 @@ let ddop (op: op1) y = match op with
   | Minus   -> Const (-1.)
   | Power 0 -> Const(0.)
   | Power n -> Apply2(Times, Const(float_of_int (n-1)), Apply1(Power(n-1), y))
+   (*
+  | Acos    -> Apply2(Div, Apply1(Minus, y), Apply1(Power(3), Apply1(Sqrt, Apply2(Minus, 1, Apply1(Power(2), y)))))
+  | Asin    -> Apply2(Div, y, Apply1(Power(3), Apply1(Sqrt, Apply2(Minus, 1, Apply1(Power(2), y)))))
+  | Tan     -> Apply2(Div, Apply2(Times, Const 2., Apply1(Tan, y)), Apply1(Power(2), Apply1(Cos, y)))
+  | Atan    -> Apply2(Div, Apply2(Times, Const -2., y), Apply1(Power(2), Apply2(Plus, 1, Apply1(Power(2), y))))
+  | Cosh    -> Apply1(Cosh, y)
+  | Sinh    -> Apply1(Sinh, y)
+  | Tanh    -> Apply2(Div, Apply2(Times, Const -2., Apply1(Tanh, y)), Apply1(Power(2), Apply1(Cosh, y)))
+  | Log     -> Apply2(Div, Const -1., Apply1(Power(2), y))
+  | Log10   -> Apply2(Div, Const -1., Apply2(Times, Log Const 10., Apply1(Power(2), y)))
+  | Sqrt    -> Apply2(Div, Const -0.25., Apply1(Power(3), Apply1(Sqrt, y)))
+  *)
 
 (* ∂^2 op/∂x1∂x1 *)
 let d1d1op (op: op2) _ _ = match op with
