@@ -207,7 +207,7 @@ let simSubst context expr =
       | Fold (y1, t1, y2, t2, _, _, _) as expr ->  if isInContext (y1, t1) context || isInContext (y2, t2) context
         then failwith "simsubst: trying to substitute a bound variable"
         else expr
-      | _                       -> expr
+      | expr                       -> expr
     ) expr
 
 (*  Checks whether two terms are equal up to alpha renaming.
