@@ -607,7 +607,7 @@ let interpret expr context =
         | Array exprList -> List.nth exprList n
         | expr -> Get (n, expr))
     | Array exprList -> Array (List.map interp exprList)
-    | expr -> expr
+    | expr -> expr (* TODO: missing case *)
   in
   interp (simSubst context expr)
 
