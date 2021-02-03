@@ -30,6 +30,22 @@ module Type = struct
     | Real            -> true
     | Prod (ty1, ty2) -> isGroundType ty1 && isGroundType ty2
     | Array (_,ty)    -> isGroundType ty
+
+  module Parse = struct
+    open CCParse
+
+    let mk_prod (t1, t2) = Prod (t1,t2)
+
+    let pReal = map (function
+        | "real" -> Real
+        | _ -> failwith "expected \"real\"")
+        (string "real")
+
+    let pType = fix @@ fun self ->
+      (try_ pReal) <|> (pure mk_prod <*> (U.pair ~start:"(" ~stop:")" ~sep:"*" self self))
+
+    let of_string = parse_string pType
+  end
 end
 
 type t = Var of Var.t * Type.t
@@ -46,17 +62,17 @@ type t = Var of Var.t * Type.t
             | Array of t list 
             (* | Filter of (Var.t -> bool) *) (* currently not supported as we don't have boolean types *)
             (* | Scatter of t * t * t *)  (* kind of impure and low level: currently not supported *)
-            
-type context = ((Var.t * Type.t), t) CCList.Assoc.t 
+
+type context = ((Var.t * Type.t), t) CCList.Assoc.t
 
 let rec pp fmt = function
-  | Var (a, _) -> Var.pp fmt a
-  | Const c -> Format.pp_print_float fmt c
+  | Var (a, t) -> Format.fprintf fmt "%a:%a" Var.pp a Type.pp t
+  | Const c -> Format.fprintf fmt "%h" c
   | Apply1 (op, expr) -> Format.fprintf fmt "%a(%a)" pp_op1 op pp expr
   | Apply2 (op, expr1, expr2) ->
     if is_infix op then Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
     else Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
-  | Let (x, _t, expr1, expr2) -> Format.fprintf fmt "let %a = %a in@.%a" Var.pp x pp expr1 pp expr2
+  | Let (x, t, expr1, expr2) -> Format.fprintf fmt "let %a:%a = %a in@.%a" Var.pp x Type.pp t pp expr1 pp expr2
   | Map (x, _t, expr1, expr2) -> Format.fprintf fmt "map (%a.%a) %a" Var.pp x pp expr1 pp expr2
   | Map2 (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "map2 (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2  pp expr3
   | Reduce (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "reduce (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
@@ -65,7 +81,7 @@ let rec pp fmt = function
   | Fold (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "fold (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
   | Array (exprList) -> CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") ~pp_start:(fun fmt () -> Format.fprintf fmt "@[[@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@,]@]") pp fmt exprList
 
-let to_string = CCFormat.to_string pp  
+let to_string = CCFormat.to_string pp
 
 let rec map f expr = match f expr with
   | Var (_, _) | Const _ as expr -> expr
@@ -427,4 +443,57 @@ module Traverse (S : Strategy.S) = struct
         | _ -> assert false
         end
     | Array (exprList) -> applyl (map f) exprList >|= fun l -> Array l
+end
+
+(** {2 Parser} *)
+module Parse = struct
+  open CCParse
+
+  let mk_var (x, t) = Var (x, t)
+
+  let mk_const f = Const f
+
+  let mk_apply1 (o, t) = Apply1 (o, t)
+
+  let mk_plus (t1, t2) = Apply2 (Operators.Plus, t1, t2)
+
+  let mk_minus (t1, t2) = Apply2 (Operators.Minus, t1, t2)
+
+  let mk_times (t1, t2) = Apply2 (Operators.Times, t1, t2)
+
+  let mk_let (x, t, t1, t2) = Let (x, t, t1, t2)
+
+  let float =
+    map2
+      (fun c s -> String.make 1 c ^ s)
+      (char_if (fun c -> is_num c || Char.equal c '-'))
+      (chars_if (fun c ->
+           is_alpha_num c || Char.equal c '-' || Char.equal c '.'))
+    >>= fun s ->
+    try return (float_of_string s) with Failure _ -> fail "expected an float"
+
+  let pVarType =
+    skip_white
+    *> U.pair ~start:"" ~stop:"" ~sep:":"
+         (U.pair ~start:"" ~stop:"" ~sep:"" (chars_if is_alpha) U.int)
+         Type.Parse.pType
+
+  let pLet self =
+    skip_white *> string "let" *> skip_white *> pVarType >>= fun (v, t) ->
+    skip_white *> string "=" *> skip_white *> self >>= fun expr1 ->
+    skip_white *> string "in" *> skip_white *> self >|= fun expr2 ->
+    (v, t, expr1, expr2)
+
+  let pTerm =
+    fix @@ fun self ->
+    skip_white *> pure mk_const
+    <*> try_ float
+    <|> try_ (pure mk_var <*> pVarType)
+    <|> try_ (pure mk_apply1 <*> U.pair ~start:"" ~sep:"(" ~stop:")" Operators.Parse.pOp1 self)
+    <|> try_ (pure mk_plus <*> U.pair ~start:"(" ~sep:"+" ~stop:")" self self)
+    <|> try_ (pure mk_minus <*> U.pair ~start:"(" ~sep:"-" ~stop:")" self self)
+    <|> try_ (pure mk_times <*> U.pair ~start:"(" ~sep:"*" ~stop:")" self self)
+    <|> (pure mk_let <*> pLet self)
+
+  let of_string = parse_string pTerm
 end

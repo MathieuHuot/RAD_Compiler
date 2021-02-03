@@ -29,3 +29,9 @@ val dvar22 : t -> t * t * t * t
 
 val dvar33 : t -> t * t * t * t * t * t * t * t
 (** Similarly as above but returns an 8-tuple *)
+
+module Parse : sig
+  val pVar : t CCParse.t
+
+  val of_string : string -> (t, string) Result.t
+end
