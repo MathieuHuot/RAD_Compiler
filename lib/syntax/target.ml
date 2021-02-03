@@ -533,65 +533,83 @@ let interpretOp2 op expr1 expr2 = match expr1, expr2 with
 | expr1, expr2 -> Apply2(op, expr1, expr2)
 
 let interpret expr context =
-let expr2 = simSubst context expr in
-let rec interp expr = match expr with
-| Apply1(op,expr)                 ->  let v = interp expr in
-                                  interpretOp1 op v
-| Apply2(op,expr1,expr2)          ->  let val1 = interp expr1 in
-                                  let val2 = interp expr2 in
-                                  interpretOp2 op val1 val2
-| Let(x,ty,expr1,expr2)           ->  let v = interp expr1 in
-                                  interp (subst x ty v expr2)
-| App(expr1,exprList)             ->  begin
-  let vList = List.map interp exprList in
-  match (interp expr1) with
-    | Fun(varList,expr1) -> if not(List.length varList = List.length vList)
-                            then App (Fun(varList, interp expr1), vList)
-                            else
-                            expr1 |> simSubst (List.combine varList vList) |> interp
-    | expr               ->  App (expr, vList) end
-| Tuple(exprList)                 -> Tuple(List.map interp exprList)
-| NCase(expr1,varList,expr2)      -> begin match (interp expr1) with
-    | Tuple(exprList) as expr -> if not(List.length varList = List.length exprList)
-                                 then NCase(expr, varList, interp expr2)
-                                 else
-                                 expr2 |> simSubst (List.combine varList exprList) |> interp
-
-    | expr                    -> NCase(expr, varList, interp expr2) end
-| Map (x, ty, expr1, expr2) -> begin match (interp expr2) with
-    | Array (exprList) -> Array(List.map (fun e -> interp(subst x ty e expr1)) exprList)
-    | _ ->  failwith "interpret: expression should reduce to an array" end
-| Map2 (x, t1, y, t2, expr1, expr2, expr3) -> begin match (interp expr2), (interp expr3) with
-  | Array (exprList1),  Array (exprList2) -> Array(List.map2 (fun e1 -> fun e2 -> interp(subst y t2 e2 (subst x t1 e1 expr1))) exprList1 exprList2)
-  | _ ->  failwith "interpret: expressions should reduce to arrays" end 
-| Reduce (x, t1, y, t2, expr1, expr2, expr3) -> begin match interp expr3 with
-  | Array ([])          -> interp expr2
-  | Array (e::exprList) -> let z = interp (Reduce(x, t1, y, t2, expr1, expr2, Array (exprList))) in 
-                           expr1 |> subst x t1 e |> subst y t2 z |> interp
-  | _ ->  failwith "interpret: expression should reduce to an array" end
-| Scan (x, t1, y, t2, expr1, expr2, expr3) -> begin match interp expr3 with
-  | Array ([])          -> Array[interp expr2]
-  | Array (e::exprList) -> let eArray = interp (Reduce(x, t1, y, t2, expr1, expr2, Array (exprList))) in
-                           begin match eArray with
-                            | Array(eList) -> let z = List.hd (List.rev eList) in
-                              Array(eList @ [ expr1 |> subst x t1 e |> subst y t2 z |> interp ])
-                            | _ -> failwith "interpret: expression should reduce to an array"
-                            end
-  | _ ->  failwith "interpret: expression should reduce to an array" end
-| Zip(expr1, expr2) ->  begin match (interp expr1), (interp expr2) with
-  | Array (exprList1),  Array (exprList2) -> Array(List.combine exprList1 exprList2 |> List.map (fun (x,y) -> Tuple([x;y])))
-  | _ ->  failwith "interpret: expressions should reduce to arrays" end 
-| Get(n, expr) -> begin match (interp expr) with
-  | Array (exprList) -> List.nth exprList n
-  | _ ->  failwith "interpret: expression should reduce to an array" end
-| Fold (x, t1, y, t2, expr1, expr2, expr3) -> begin match interp expr3 with
-  | Array ([])          -> interp expr2
-  | Array (e::exprList) -> let z = interp (Reduce(x, t1, y, t2, expr1, expr2, Array (exprList))) in 
-                           expr1 |> subst x t1 e |> subst y t2 z |> interp
-  | _ ->  failwith "interpret: expression should reduce to an array" end
-| Array (exprList) -> Array(List.map interp exprList) 
-| expr                               ->  expr
-in interp expr2
+  if not (isWellTyped expr) then failwith "interpret: ill typed term";
+  let rec interp expr =
+    match expr with
+    | Apply1 (op, expr) ->
+        let v = interp expr in
+        interpretOp1 op v
+    | Apply2 (op, expr1, expr2) ->
+        let val1 = interp expr1 in
+        let val2 = interp expr2 in
+        interpretOp2 op val1 val2
+    | Let (x, ty, expr1, expr2) ->
+        let v = interp expr1 in
+        interp (subst x ty v expr2)
+    | App (expr1, exprList) -> (
+        let vList = List.map interp exprList in
+        match interp expr1 with
+        | Fun (varList, expr1) ->
+            if not (List.length varList = List.length vList) then
+              App (Fun (varList, interp expr1), vList)
+            else expr1 |> simSubst (List.combine varList vList) |> interp
+        | expr -> App (expr, vList))
+    | Tuple exprList -> Tuple (List.map interp exprList)
+    | NCase (expr1, varList, expr2) -> (
+        match interp expr1 with
+        | Tuple exprList as expr ->
+            if not (List.length varList = List.length exprList) then
+              NCase (expr, varList, interp expr2)
+            else expr2 |> simSubst (List.combine varList exprList) |> interp
+        | expr -> NCase (expr, varList, interp expr2))
+    | Map (x, ty, expr1, expr2) -> (
+        let expr1 = interp expr1 in
+        match interp expr2 with
+        | Array exprList ->
+            Array (List.map (fun e -> interp (subst x ty e expr1)) exprList)
+        | expr2 -> Map (x, ty, expr1, expr2))
+    | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> (
+        let expr1 = interp expr1 in
+        match (interp expr2, interp expr3) with
+        | Array exprList1, Array exprList2 ->
+            Array
+              (List.map2
+                 (fun e1 e2 -> interp (subst y t2 e2 (subst x t1 e1 expr1)))
+                 exprList1 exprList2)
+        | expr2, expr3 -> Map2 (x, t1, y, t2, expr1, expr2, expr3))
+    | Fold (x, t1, y, t2, expr1, expr2, expr3)
+    | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> (
+        let expr1 = interp expr1 in
+        let expr2 = interp expr2 in
+        match interp expr3 with
+        | Array exprList ->
+            List.fold_left
+              (fun acc e -> interp (subst y t2 e (subst x t1 acc expr1)))
+              expr2 exprList
+        | expr3 -> Reduce (x, t1, y, t2, expr1, expr2, expr3))
+    | Scan (x, t1, y, t2, expr1, expr2, expr3) -> (
+        let expr1 = interp expr1 in
+        let expr2 = interp expr2 in
+        match interp expr3 with
+        | Array exprList -> (
+            List.fold_left (fun (acc,l) e -> let tmp = interp (subst y t2 e (subst x t1 acc expr1)) in
+                           (tmp, tmp::l)) (expr2, []) exprList
+          |> fun (_,l) -> Array (List.rev l))
+        | expr3 -> Scan (x, t1, y, t2, expr1, expr2, expr3))
+    | Zip (expr1, expr2) -> (
+        match (interp expr1, interp expr2) with
+        | Array exprList1, Array exprList2 ->
+            Array
+              (List.map2 (fun x y -> Tuple [ x; y ]) exprList1 exprList2)
+        | expr1, expr2 -> Zip (expr1, expr2))
+    | Get (n, expr) -> (
+        match interp expr with
+        | Array exprList -> List.nth exprList n
+        | expr -> Get (n, expr))
+    | Array exprList -> Array (List.map interp exprList)
+    | expr -> expr
+  in
+  interp (simSubst context expr)
 
 (** {2 Traverse} *)
 module Traverse (S : Strategy.S) = struct
