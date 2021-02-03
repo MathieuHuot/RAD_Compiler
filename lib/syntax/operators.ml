@@ -54,3 +54,23 @@ let pp_op1 fmt op =
 
 let pp_op2 fmt op =
   to_string_op2 op |> Format.pp_print_string fmt
+
+module Parse = struct
+  open CCParse
+
+  let pOp1 =
+    skip_white
+    *> (try_ (string "cos")
+       <|> try_ (string "sin")
+       <|> try_ (string "exp")
+       <|> try_ (string "-")
+       <|> try_ (string "^"))
+    <* skip_white
+    >>= function
+    | "cos" -> return Cos
+    | "sin" -> return Sin
+    | "exp" -> return Exp
+    | "-" -> return (Minus : op1)
+    | "^" -> U.int >|= fun n -> Power n
+    | _ -> failwith "Not a operator"
+end

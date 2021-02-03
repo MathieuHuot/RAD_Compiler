@@ -137,6 +137,7 @@ module S = struct
       QCheck.Gen.(int_bound 20 >>= fun i -> SourceGen.gen freeVar i Type.Real)
       ~print:to_string ~shrink:SourceGen.shrink
 
+  (* Basic Tests *)
   let test_isWellTyped =
     QCheck.Test.make ~count:100 ~name:"isWellTyped" arbitrary_closed_term
       isWellTyped
@@ -144,6 +145,12 @@ module S = struct
   let test_equal =
     QCheck.Test.make ~count:100 ~name:"equal" arbitrary_closed_term (fun expr ->
         equal expr expr)
+
+  let test_parse =
+    QCheck.Test.make ~count:100 ~name:"parse" arbitrary_closed_term (fun expr ->
+        match Parse.of_string (to_string expr) with
+        | Result.Ok e -> equal expr e
+        | Result.Error _ -> false)
 
   let test_interpret =
     QCheck.Test.make ~count:100 ~name:"interp" arbitrary_closed_term
@@ -177,6 +184,7 @@ module S = struct
     [
       test_isWellTyped;
       test_equal;
+      test_parse;
       test_interpret;
       test_anf;
       test_weakAnf;
@@ -189,7 +197,7 @@ module S = struct
 
   let rec all_pairs = function
     | [] -> []
-    | h::t -> (List.map (fun x -> (h,x)) t) @ (all_pairs t)
+    | h :: t -> List.map (fun x -> (h, x)) t @ all_pairs t
 
   let test_grads grad1 grad1_name grad2 grad2_name =
     let freeVar = List.init 10 (fun i -> (("x", i), Type.Real)) in

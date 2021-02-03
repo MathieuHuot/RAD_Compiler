@@ -34,3 +34,11 @@ let dvar33 var : t * t * t * t * t * t * t * t =
                       ("d1"^str, i), ("d2"^str, i), ("d3"^str, i), 
                       ("dd1"^str, i),  ("dd2"^str, i),  ("dd3"^str, i),  
                       ("ddd"^str, i)
+
+module Parse = struct
+  open CCParse
+
+  let pVar = U.pair ~start:"" ~stop:"" ~sep:"" (chars_if is_alpha) U.int
+
+  let of_string = parse_string pVar
+end
