@@ -39,7 +39,7 @@ let forwardAD (expr : t) : Target.t =
  
 (* Given a selected variable x:ty for which we want to initialize its tangent part, does it by pattern matching on ty.Profiling
    If ty=Real, it's simply the usual if b then 1 else 0, but it's a bit more subtle for array types. *)
-let rec initialize_sensitivity (x: Var.t) (ty: Type.t) (b: bool) = match ty with
+let initialize_sensitivity (x: Var.t) (ty: Type.t) (b: bool) = match ty with
   | Real -> if b then Target.Tuple [Var(x, Target.Type.from_source ty); Target.Const 1.] else Target.Tuple [Var(x, Target.Type.from_source ty); Target.Const 0.]
   | Prod(_, _) -> failwith "currently not used on Source"
   | Array(_, _) -> failwith "TODO" (* Array(initialize_sensitivity x ty b) *)
