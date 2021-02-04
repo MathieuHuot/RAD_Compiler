@@ -51,14 +51,14 @@ module T = struct
         (* (e^expr)^n -> e^(n * expr) *)
         Success (Apply1 (Exp, Apply2 (Times, Const (float_of_int n), expr)))
     | Apply2 (Times, expr, Const 1.) | Apply2 (Times, Const 1., expr) ->
-        (* exrp * 1 -> expr *)
-        (* 1 * exrp -> expr *)
+        (* expr * 1 -> expr *)
+        (* 1 * expr -> expr *)
         Success expr
     | Apply2 (Times, Apply1 (Exp, expr1), Apply1 (Exp, expr2)) ->
         (* e^expr1 * e^expr2 -> e^(expr1 + expr2) *)
         Success (Apply1 (Exp, Apply2 (Plus, expr1, expr2)))
     | Apply2 (Plus, Apply1 (Minus, expr1), expr2) ->
-        (* (- epxr1) + expr2 -> expr2 - expr1 *)
+        (* (- expr1) + expr2 -> expr2 - expr1 *)
         Success (Apply2 (Minus, expr2, expr1))
     | expr -> Failure expr
 

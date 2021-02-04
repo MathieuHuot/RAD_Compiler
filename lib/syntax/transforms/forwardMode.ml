@@ -61,7 +61,7 @@ let projToGrad expr dexpr =
 let rec grad_type (gamma: Target.Type.t) (ty: Target.Type.t) = match gamma with
   | Real -> ty
   | NProd(tyList) -> NProd(List.map (fun x -> grad_type x ty) tyList)
-  | Array(n, gamma)  -> Array(n, grad_type gamma ty)
+  | Array(n, gamma) -> Array(n, grad_type gamma ty)
   | Arrow(_,_) ->  failwith "currently not supported for differentiation"
 
 (* If gradient_variables |- t : ty, then  gradient_variables |- grad(t): grad_type(ty)  *)
