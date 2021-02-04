@@ -117,5 +117,5 @@ module Parse = struct
     | "exp" -> return Exp
     | "-" -> return (Minus : op1)
     | "^" -> U.int >|= fun n -> Power n
-    | _ -> failwith "Not a operator"
+    | _ -> failwith "Not an operator"
 end
