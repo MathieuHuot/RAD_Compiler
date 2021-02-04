@@ -237,7 +237,7 @@ module T = struct
         Success (Let (x, ty, expr1, expr2))
     | expr -> Failure expr
 
-  let fusion : Target.t -> Target.t output = function
+  let loop_fusion : Target.t -> Target.t output = function
   | Map (y, ty2, expr2, Map (x, ty1, expr1, expr3)) -> Success (Map(x, ty1, Let(y, ty2, expr2, expr1), expr3))
   | Map(z, ty3, expr4, Map2(x, ty1, y, ty2, expr1, expr2, expr3)) -> Success (Map2(x, ty1, y, ty2, Let(z, ty3, expr1, expr4), expr2, expr3))
   | Map2(x1, ty1, x2, ty2, expr1, Map(z1, ty11, expr11, expr12), Map(z2, ty22, expr21, expr22)) -> 
@@ -256,11 +256,16 @@ module T = struct
 
   let loop_removal : Target.t -> Target.t output = function
   | Get(n, Map(x, ty, expr1, expr2)) -> Success(Let(x, ty, Get(n, expr2), expr1))
-  | Get(n, Array(exprList)) -> Success (Array(truncate exprList n))
+  | Get(n, Array(exprList)) -> Success (List.nth exprList n)
   | Get(n, Map2(x, ty1, y, ty2, expr1, expr2, expr3)) ->  Success (NCase(Get(n, Zip(expr2, expr3)), [(x, ty1); (y, ty2)], expr1))
   | Get(n, Scan(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Fold(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
+  | Get(n, Fold(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Fold(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
   | Get(n, Zip(expr1, expr2)) -> Success (Tuple([Get(n, expr1); Get(n, expr2)]))
   | Get(n, Zip3(expr1, expr2, expr3)) -> Success (Tuple([Get(n, expr1); Get(n, expr2);  Get(n, expr3)]))
+  | NCase(Unzip(expr), [(x1, ty1); (y1, ty2)], Tuple([Get(n, Var(x2, ty11)); Get(m, Var(y2, ty22))])) 
+    when Var.equal x1 x2 && Var.equal y1 y2 && n=m -> Success (Get(n, expr))
+  | NCase(Unzip3(expr), [(x1, ty1); (y1, ty2); (z1, ty3)], Tuple([Get(n, Var(x2, ty11)); Get(m, Var(y2, ty22)); Get(p, Var(z2, ty33))])) 
+    when Var.equal x1 x2 && Var.equal y1 y2 && Var.equal z1 z2 && n=m && m=p -> Success (Get(n, expr)) 
   | expr -> Failure expr
 
   let array_simplification : Target.t -> Target.t output = function
