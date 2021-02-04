@@ -117,7 +117,7 @@ let rec pp fmt = function
 
 let to_string = CCFormat.to_string pp
 
-let rec map f expr = match f expr with
+let rec map f expr = (match expr with
   | Var (_, _) | Const _ as expr -> expr
   | Apply1 (op, expr) -> Apply1(op, map f expr)
   | Apply2 (op, expr1,expr2) -> Apply2(op, map f expr1, map f expr2)
@@ -137,6 +137,7 @@ let rec map f expr = match f expr with
   | Get(n, expr) -> Get(n, map f expr)
   | Fold (x, t1, y, t2, expr1, expr2, expr3) -> Fold (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
   | Array (exprList) -> Array (List.map (map f) exprList)
+  ) |> f
 
   let rec fold f expr a =
     f expr (match expr with
