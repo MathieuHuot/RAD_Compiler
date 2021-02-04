@@ -18,11 +18,13 @@ let dop2 x dx d2x (op: op1) = match op with
   | Power n -> Target.Apply2(Plus,
                       Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int(n*(n-1))), Target.Apply1(Power(n-2), x)), dx),
                       Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int n), Target.Apply1(Power(n-1), x)), d2x))
+  | _ -> failwith "TODO"
              
 let d2op2 x dx d2x y dy d2y  (op: op2) = match op with
   | Plus  -> Target.Apply2(Plus, d2x, d2y)
   | Minus -> Target.Apply2(Minus, d2x, d2y)
   | Times -> Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2x, y), Target.Apply2(Times, x, d2y)), Target.Apply2(Times, Target.Const 2., Target.Apply2(Times, dx, dy)))
+  | _ -> failwith "TODO"
 
 let unaryDop op expr =
   let y, dy, d2y = Var.dvar2 (Var.fresh()) in
@@ -173,6 +175,7 @@ let dop33 x d1x d2x ddx (op: op1) = match op with
   | Power n -> Target.Apply2(Plus,
                       Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int(n*(n-1))), Target.Apply1(Power(n-2),x)), Target.Apply2(Times, d1x, d2x)),
                       Target.Apply2(Times, Target.Apply2(Times, Target.Const(float_of_int n), Target.Apply1(Power(n-1),x)), ddx))
+  | _ -> failwith "TODO"
 
 (* third derivative of binary operator *)                     
 let d2op33 x d1x d2x d3x dd1x dd2x dd3x dddx y d1y d2y d3y dd1y dd2y dd3y dddy (op: op2) = match op with
@@ -187,6 +190,7 @@ let d2op33 x d1x d2x d3x dd1x dd2x dd3x dddx y d1y d2y d3y dd1y dd2y dd3y dddy (
                             Target.Apply2(Plus, 
                                     Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3x), Target.Apply2(Times, d1y, dd2x)), Target.Apply2(Times, d3y, dd1x)), 
                                     Target.Apply2(Plus, Target.Apply2(Plus, Target.Apply2(Times, d2y, dd3y), Target.Apply2(Times, d1y, dd2y)), Target.Apply2(Times, d3y, dd1y)))))
+  | _ -> failwith "TODO"
 
 let unaryDop op expr = 
   let y, d1y, d2y, d3y, dd1y, dd2y, dd3y, dddy = Var.dvar33 (Var.fresh()) in
