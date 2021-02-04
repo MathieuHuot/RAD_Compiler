@@ -97,6 +97,7 @@ module Parse = struct
        <|> try_ (string "sin")
        <|> try_ (string "exp")
        <|> try_ (string "-")
+       <|> try_ (string "^")
        <|> try_ (string "acos")
        <|> try_ (string "asin")
        <|> try_ (string "tan")
