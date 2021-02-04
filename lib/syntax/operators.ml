@@ -97,7 +97,16 @@ module Parse = struct
        <|> try_ (string "sin")
        <|> try_ (string "exp")
        <|> try_ (string "-")
-       <|> try_ (string "^"))
+       <|> try_ (string "acos")
+       <|> try_ (string "asin")
+       <|> try_ (string "tan")
+       <|> try_ (string "atan")
+       <|> try_ (string "cosh")
+       <|> try_ (string "sinh")
+       <|> try_ (string "tanh")
+       <|> try_ (string "log")
+       <|> try_ (string "log10")
+       <|> try_ (string "sqrt"))
     <* skip_white
     >>= function
     | "cos" -> return Cos
