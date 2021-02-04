@@ -34,34 +34,29 @@ let rec isInWeakAnf expr = match expr with
   | Apply1(_,_) | Apply2(_,_,_) -> isImmediate expr 
   | _                           -> true
 
-let rec weakAnf expr = match expr with
-  | Const _                -> expr
-  | Var _                  -> expr
-  | Apply1(op,expr1)       -> if isImmediate expr then expr else 
-      let exprAnf = weakAnf expr1 in
-      let n = Syntax.Var.fresh() in
-      let ty = Type.Real in
-      let newVar = Var(n,ty) in
-      Let(n,ty,exprAnf,Apply1(op,newVar))
-  | Apply2(op,expr1,expr2) -> if isImmediate expr then expr else
-      let expr1Anf = weakAnf expr1 in 
-      let expr2Anf = weakAnf expr2 in 
-      let n = Syntax.Var.fresh() in
-      let ty1 = Type.Real in
-      let newVar1 = Var(n,ty1) in 
-      let m = Syntax.Var.fresh() in 
-      let ty2 = Type.Real in
-      let newVar2 = Var(m,ty2) in 
-      Let(n,ty1,expr1Anf,Let(m,ty2,expr2Anf,Apply2(op,newVar1, newVar2)))
-  | Let(x,ty,expr1,expr2)  -> Let(x,ty, weakAnf expr1, weakAnf expr2)
-  | _ -> failwith "TODO"
+(*TODO: finish. I think it needs the other kind of map as I want to recursively go into the term I just changed. *)
+  let weakAnf expr = map (fun expr ->
+    match expr with
+    | Apply1(op, expr1)       -> if isImmediate expr then expr else 
+        let n = Syntax.Var.fresh() in
+        let ty = Type.Real in
+        let newVar = Var(n,ty) in
+        Let(n, ty, expr1, Apply1(op, newVar))
+    | Apply2(op, expr1, expr2) -> if isImmediate expr then expr else
+        let n = Syntax.Var.fresh() in
+        let ty1 = Type.Real in
+        let newVar1 = Var(n,ty1) in 
+        let m = Syntax.Var.fresh() in 
+        let ty2 = Type.Real in
+        let newVar2 = Var(m,ty2) in 
+        Let(n, ty1, expr1, Let(m, ty2, expr2, Apply2(op, newVar1, newVar2)))
+    | expr -> expr) expr
 
-let rec letCommutativity expr = match expr with
-  | Let(x,ty1,Let(y,ty2,expr1,expr2),expr3)   -> Let(y,ty2,letCommutativity expr1,Let(x,ty1,letCommutativity expr2,letCommutativity expr3))
-  | Let(x,ty,expr1,expr2)                     -> Let(x,ty,letCommutativity expr1,letCommutativity expr2)
-  | Apply1(op,expr)                           -> Apply1(op,letCommutativity expr)
-  | Apply2(op,expr1,expr2)                    -> Apply2(op,letCommutativity expr1,letCommutativity expr2)
-  | _                                         -> expr
+(*TODO: same as above *)
+let letCommutativity expr = map (fun expr ->
+  match expr with
+  | Let(x,ty1,Let(y,ty2,expr1,expr2),expr3)   -> Let(y,ty2, expr1,Let(x,ty1, expr2, expr3))
+  | expr                                         -> expr) expr
 
 let rec letNormalisation expr = 
   let expr2 = letCommutativity expr in 
@@ -81,6 +76,7 @@ let isVar (expr : t) = match expr with
   | Var _ -> true
   | _     -> false
 
+  (*TODO: this is where some catamorphism to generalise List.exists and List.for_all would be useful.*)
 let rec isImmediate expr = match expr with
   | Const _                  -> true
   | Var _                    -> true
@@ -108,32 +104,23 @@ let rec isInWeakAnf expr = match expr with
   | NCase(expr1,_,expr2) -> isInWeakAnf expr1 && isInWeakAnf expr2
   | _                    -> true
 
-let rec weakAnf expr = match expr with
-  | Const _                -> expr
-  | Var _                  -> expr
-  | Apply1(op,expr1)       -> if isImmediate expr then expr else 
-      let exprAnf = weakAnf expr1 in
-      let n = Syntax.Var.fresh() in
-      let ty = Type.Real in
-      let newVar = Var(n,ty) in
-      Let(n,ty,exprAnf,Apply1(op,newVar))
-  | Apply2(op,expr1,expr2) -> if isImmediate expr then expr else
-      let expr1Anf = weakAnf expr1 in 
-      let expr2Anf = weakAnf expr2 in 
-      let n = Syntax.Var.fresh() in
-      let ty1 = Type.Real in
-      let newVar1 = Var(n,ty1) in 
-      let m = Syntax.Var.fresh() in 
-      let ty2 = Type.Real in
-      let newVar2 = Var(m,ty2) in 
-      Let(n,ty1,expr1Anf,Let(m,ty2,expr2Anf,Apply2(op,newVar1, newVar2)))
-  | Let(x,ty,expr1,expr2)  -> Let(x,ty, weakAnf expr1, weakAnf expr2)
-  | Tuple(exprList)        -> Tuple(List.map weakAnf exprList)
-  | Fun(varList,expr)      -> Fun(varList,weakAnf expr)
-  | App(expr,exprList)     -> App(weakAnf expr, List.map weakAnf exprList)
-  | NCase(expr1,varList,expr2)
-                           ->  NCase(weakAnf expr1,varList,weakAnf expr2)
-  | _ -> failwith "TODO"
+  (*TODO: same as above*)
+  let weakAnf expr = map (fun expr ->
+    match expr with
+    | Apply1(op, expr1)       -> if isImmediate expr then expr else 
+        let n = Syntax.Var.fresh() in
+        let ty = Type.Real in
+        let newVar = Var(n,ty) in
+        Let(n, ty, expr1, Apply1(op, newVar))
+    | Apply2(op, expr1, expr2) -> if isImmediate expr then expr else
+        let n = Syntax.Var.fresh() in
+        let ty1 = Type.Real in
+        let newVar1 = Var(n,ty1) in 
+        let m = Syntax.Var.fresh() in 
+        let ty2 = Type.Real in
+        let newVar2 = Var(m,ty2) in 
+        Let(n, ty1, expr1, Let(m, ty2, expr2, Apply2(op, newVar1, newVar2)))
+    | expr -> expr) expr
 
 module RT = Target.Traverse(Strategy.Repeat)
 let letCommutativity expr = RT.map Optimisation.T.letCommutativity expr
