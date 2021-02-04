@@ -259,6 +259,13 @@ module T = struct
   | Get(n, Array(exprList)) -> Success (Array(truncate exprList n))
   | Get(n, Map2(x, ty1, y, ty2, expr1, expr2, expr3)) ->  Success (NCase(Get(n, Zip(expr2, expr3)), [(x, ty1); (y, ty2)], expr1))
   | Get(n, Scan(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Fold(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
+  | Get(n, Zip(expr1, expr2)) -> Success (Tuple([Get(n, expr1); Get(n, expr2)]))
+  | Get(n, Zip3(expr1, expr2, expr3)) -> Success (Tuple([Get(n, expr1); Get(n, expr2);  Get(n, expr3)]))
+  | expr -> Failure expr
+
+  let array_simplification : Target.t -> Target.t output = function
+  | Unzip(Zip(expr1, expr2)) -> Success (Tuple([expr1; expr2]))
+  | Unzip3(Zip3(expr1, expr2, expr3)) -> Success (Tuple([expr1; expr2; expr3]))
   | expr -> Failure expr
 
   let exact_opti_list =
