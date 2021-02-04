@@ -52,6 +52,7 @@ let rec pp fmt = function
       | _             -> false 
 end
 
+(*TODO: might need to add map3 ...*)
 type t = Var of Var.t * Type.t
                 | Const of float
                 | Apply1 of op1 * t
