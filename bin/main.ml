@@ -291,6 +291,26 @@ let _ =
   Format.fprintf out "Term:@.%a@.@.Reduced hession of term:@.%a@.@.@."
     Source.pp g6 Target.pp
     g7.(0).(0);
+
+  let x1 = ("x", 1) in
+  let x2 = ("x", 2) in    
+  let t = Source.Const 0x1.0aa47b68c7e48p-1 in
+  let t1 = ForwardMode.grad [(x1, Source.Type.Real); (x2, Source.Type.Real)] t in
+  let t2 = ReverseMode.grad [(x1, Source.Type.Real); (x2, Source.Type.Real)] t in
+  let t3 = ReverseMode.grad2 [(x1, Source.Type.Real); (x2, Source.Type.Real)] t in
+  let t11 = Target.interpret t1 [((x1, Target.Type.Real), Var(x1, Target.Type.Real)); ((x2, Target.Type.Real), Var(x2, Target.Type.Real))] in
+  let t21 = Target.interpret t2 [((x1, Target.Type.Real), Var(x1, Target.Type.Real)); ((x2, Target.Type.Real), Var(x2, Target.Type.Real))] in
+  let t31 = Target.interpret t3 [((x1, Target.Type.Real), Var(x1, Target.Type.Real)); ((x2, Target.Type.Real), Var(x2, Target.Type.Real))] in
+  Format.fprintf out
+  "Term:@.%a@.@.
+  Forward derivative macro of term:@.%a@.@
+  Reverse derivative macro of term:@.%a@.@
+  Reverse2 derivative macro of term:@.%a@.@
+  Value of Forward derivative macro of term:@.%a@.@
+  Value of Reverse derivative macro of term:@.%a@.@
+  Value of Reverse2 derivative macro of term:@.%a@.@"
+  Source.pp t Target.pp t1 Target.pp t2 Target.pp t3 Target.pp t11 Target.pp t21 Target.pp t31;
+
   Unix.close file;
 
 ToFuthark.pp ToFuthark.Precision.Double 
@@ -304,15 +324,3 @@ ToFuthark.pp ToFuthark.Precision.Double
     ( Operators.Plus,
       Target.Var (x1, Target.Type.Real),
       Target.Var (x2, Target.Type.Real) ) ));
-
-
-  let x1 = ("x", 1) in
-  let x2 = ("x", 2) in    
-  let t = Source.Const 0x1.0aa47b68c7e48p-1 in
-  let t1 = ForwardMode.grad [(x1, Source.Type.Real); (x2, Source.Type.Real)] t in
-  let t2 = ReverseMode.grad [(x1, Source.Type.Real); (x2, Source.Type.Real)] t in
-  Format.fprintf out
-  "Term:@.%a@.@.
-  Forward derivative macro of term:@.%a@.@
-  Reverse derivative macro of term:@.%a@.@"
-  Source.pp t Target.pp t1 Target.pp t2
