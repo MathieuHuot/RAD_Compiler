@@ -599,15 +599,33 @@ let interpret expr context =
     | Zip (expr1, expr2) -> (
         match (interp expr1, interp expr2) with
         | Array exprList1, Array exprList2 ->
-            Array
-              (List.map2 (fun x y -> Tuple [ x; y ]) exprList1 exprList2)
+            Array (List.map2 (fun x y -> Tuple [ x; y ]) exprList1 exprList2)
         | expr1, expr2 -> Zip (expr1, expr2))
+    | Zip3 (expr1, expr2, expr3) -> (
+      match (interp expr1, interp expr2, interp expr3) with
+      | Array exprList1, Array exprList2, Array exprList3 ->
+          Array (List.map2 (fun (x,y) z -> Tuple [ x; y; z ])  (List. combine exprList1 exprList2) exprList3)
+      | expr1, expr2, expr3 -> Zip3 (expr1, expr2, expr3))
+    | Unzip(exprList) -> (match interp exprList with
+        | Array(exprList) -> if List.for_all (fun e -> match e with | Tuple([_;_]) -> true | _ -> false) exprList
+                             then let exprList1, exprList2 = List.split (List.map (fun e -> match e with | Tuple([e1; e2]) -> (e1, e2) | _ -> failwith "") exprList)
+                             in Tuple([Array(exprList1); Array(exprList2)])
+                             else Array(exprList)
+        | exprList -> Unzip(exprList))
+    | Unzip3(exprList) ->  (match interp exprList with
+        | Array(exprList) -> if List.for_all (fun e -> match e with | Tuple([_;_;_]) -> true | _ -> false) exprList
+                            then let exprList1, exprList2, exprList3 = List.fold_left (fun (l1,l2,l3) (e1,e2,e3) -> e1::l1, e2::l2, e3::l3 ) 
+                                                                                      ([],[],[]) 
+                                                                                      (List.rev (List.map (fun e -> match e with | Tuple([e1; e2; e3]) -> (e1, e2, e3) | _ -> failwith "") exprList))
+                            in Tuple([Array(exprList1); Array(exprList2); Array(exprList2)])
+                            else Array(exprList)
+        | exprList -> Unzip(exprList))
     | Get (n, expr) -> (
         match interp expr with
         | Array exprList -> List.nth exprList n
         | expr -> Get (n, expr))
     | Array exprList -> Array (List.map interp exprList)
-    | expr -> expr (* TODO: missing case *)
+    | expr -> expr
   in
   interp (simSubst context expr)
 
@@ -719,7 +737,6 @@ let d2op op y1 y2 = match op with
   | Times -> y1
   | Minus -> Const(-1.) 
   | Div   -> Apply2(Div, Apply1(Minus, y1), Apply1(Power(2), y2))
- 
 
 (** Second order derivative of binary operator *)
 let d2op22 (op: op2) x d1x d2x ddx y d1y d2y ddy  = match op with
@@ -758,7 +775,6 @@ let d1d1op (op: op2) _ _ = match op with
   | Times -> Const 0.
   | Div   -> Const 0.
  
-
  (* ∂^2 op/∂x1∂x2 *)
 let d1d2op (op: op2) _ y2 = match op with
   | Plus  -> Const 0.
@@ -766,14 +782,12 @@ let d1d2op (op: op2) _ y2 = match op with
   | Times -> Const 1.
   | Div   -> Apply2(Div, Const (-1.), Apply1(Power(2), y2))
  
-  
  (* ∂^2 op/∂x2∂x1 *) 
 let d2d1op (op: op2) _ y2 = match op with
   | Plus  -> Const 0.
   | Minus -> Const 0.
   | Times -> Const 1. 
   | Div   -> Apply2(Div, Const (-1.), Apply1(Power(2), y2))
- 
 
  (* ∂^2 op/∂x2∂x2 *)
 let d2d2op (op: op2) y1 y2 = match op with
