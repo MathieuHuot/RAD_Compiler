@@ -291,11 +291,11 @@ let rec isValue = function
 | Array(exprList)   -> List.for_all isValue exprList
 | _                 -> false
 
-let isContextOfValues (cont : context) = List.for_all (fun (_,v) -> isValue v) cont
+(* let isContextOfValues (cont : context) = List.for_all (fun (_,v) -> isValue v) cont *)
 
-let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
+(* let closingTerm expr (cont : context) = if not(isContextOfValues cont) 
     then failwith "closingTerm: context does not only contain values"
-    else simSubst cont expr
+    else simSubst cont expr *)
 
 let freeVar expr =
   fold (fun expr set -> match expr with
@@ -520,9 +520,9 @@ let isWellTyped expr = inferType expr |> Result.is_ok
 (* interpreter *)
 
 (* checks whether the context captures all the free variables of an expression*)
-let contextComplete expr context =
+(* let contextComplete expr context =
   let exprFv = freeVar expr in 
-  VarSet.for_all (fun x -> (List.exists (fun ((y,_),_) -> Var.equal y x) context)) exprFv
+  VarSet.for_all (fun x -> (List.exists (fun ((y,_),_) -> Var.equal y x) context)) exprFv *)
 
 let interpretOp1 op expr = match expr with
 | Const v -> Const (interpretOp1 op v)
@@ -617,7 +617,7 @@ let interpret expr context =
                             then let exprList1, exprList2, exprList3 = List.fold_left (fun (l1,l2,l3) (e1,e2,e3) -> e1::l1, e2::l2, e3::l3 ) 
                                                                                       ([],[],[]) 
                                                                                       (List.rev (List.map (fun e -> match e with | Tuple([e1; e2; e3]) -> (e1, e2, e3) | _ -> failwith "") exprList))
-                            in Tuple([Array(exprList1); Array(exprList2); Array(exprList2)])
+                            in Tuple([Array(exprList1); Array(exprList2); Array(exprList3)])
                             else Array(exprList)
         | exprList -> Unzip(exprList))
     | Get (n, expr) -> (
