@@ -51,6 +51,13 @@ let initialize_sensitivity (x: Var.t) (ty: Type.t) (b: bool) = match ty with
 let partialDerivative x ty fv dexpr =
   List.fold_left (fun acc (y, ty2) -> Target.subst y (forwardADType ty2) (initialize_sensitivity y ty2 (Syntax.Var.equal x y && Type.equal ty ty2)) acc) dexpr fv 
 
+let projToGrad expr dexpr = 
+  match Source.inferType expr with
+  | Result.Ok Real -> let x, y = Syntax.Var.fresh(),Syntax.Var.fresh() in Target.NCase (dexpr, [(x, Target.Type.Real); (y, Target.Type.Real)], Target.Var(y, Target.Type.Real))
+  | Result.Ok (Prod(_,_)) -> failwith "currently not used on Source"
+  | Result.Ok (Array(_)) -> failwith "TODO"
+  | _ -> failwith "projToGrad: expression is ill-typed"
+
 let rec grad_type (gamma: Target.Type.t) (ty: Target.Type.t) = match gamma with
   | Real -> ty
   | NProd(tyList) -> NProd(List.map (fun x -> grad_type x ty) tyList)
@@ -62,4 +69,5 @@ let rec grad_type (gamma: Target.Type.t) (ty: Target.Type.t) = match gamma with
   the partial derivative w.r.t. to x by calling partialDerivative. Store the result in a Tuple. *)
 let grad grad_vars expr = 
   let dexpr = forwardAD expr in
-  Target.Tuple(List.map (fun (x, ty) -> partialDerivative x ty (grad_vars) dexpr) grad_vars)
+  let der =  projToGrad expr dexpr in
+  Target.Tuple(List.map (fun (x, ty) -> partialDerivative x ty (grad_vars) der) grad_vars)
