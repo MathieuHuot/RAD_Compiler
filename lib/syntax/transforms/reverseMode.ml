@@ -179,7 +179,7 @@ let rec rad2 (context: gradient_variables) (cont : Target.t)  (expr : t) : Targe
      Also projects to the gradient part, so forgets some of the unused primal part. *)
 let apply_sensitivities dexpr cont = 
   let f expr = match expr with
-    | Target.Tuple([expr1; expr2]) when Target.equal expr2 cont -> 
+    | Target.Tuple([_; expr2]) when Target.equal expr2 cont -> 
       begin match cont with 
       | Target.Fun(varList, e) -> Target.simSubst (List.combine varList (initialize_rad varList)) e
       | _ -> failwith "apply_sensitivities: continuation should have a function type"

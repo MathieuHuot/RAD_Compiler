@@ -262,9 +262,9 @@ module T = struct
   | Get(n, Fold(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Fold(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
   | Get(n, Zip(expr1, expr2)) -> Success (Tuple([Get(n, expr1); Get(n, expr2)]))
   | Get(n, Zip3(expr1, expr2, expr3)) -> Success (Tuple([Get(n, expr1); Get(n, expr2);  Get(n, expr3)]))
-  | NCase(Unzip(expr), [(x1, ty1); (y1, ty2)], Tuple([Get(n, Var(x2, ty11)); Get(m, Var(y2, ty22))])) 
+  | NCase(Unzip(expr), [(x1, _); (y1, _)], Tuple([Get(n, Var(x2, _)); Get(m, Var(y2, _))])) 
     when Var.equal x1 x2 && Var.equal y1 y2 && n=m -> Success (Get(n, expr))
-  | NCase(Unzip3(expr), [(x1, ty1); (y1, ty2); (z1, ty3)], Tuple([Get(n, Var(x2, ty11)); Get(m, Var(y2, ty22)); Get(p, Var(z2, ty33))])) 
+  | NCase(Unzip3(expr), [(x1, _); (y1, _); (z1, _)], Tuple([Get(n, Var(x2, _)); Get(m, Var(y2, _)); Get(p, Var(z2, _))])) 
     when Var.equal x1 x2 && Var.equal y1 y2 && Var.equal z1 z2 && n=m && m=p -> Success (Get(n, expr)) 
   | expr -> Failure expr
 
