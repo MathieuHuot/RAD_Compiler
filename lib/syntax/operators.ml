@@ -10,11 +10,11 @@ type op2 = Plus | Times | Minus | Div
 
 let is_infix _ = true
 
-let equalOp1 op1 op2 = match op1,op2 with
-  | Cos,Cos     -> true
-  | Sin,Sin     -> true
-  | Exp,Exp     -> true
-  | Minus,Minus -> true
+let equalOp1 op1 op2 = match op1, op2 with
+  | Cos, Cos    -> true
+  | Sin, Sin    -> true
+  | Exp, Exp    -> true
+  | Minus, Minus-> true
   | Power n, Power m 
                 -> n = m
   | Acos, Acos  -> true
@@ -29,12 +29,12 @@ let equalOp1 op1 op2 = match op1,op2 with
   | Sqrt, Sqrt  -> true
   | _           -> false
 
-let equalOp2 op1 op2 = match op1,op2 with
-  | Plus,Plus   -> true
-  | Times,Times -> true
-  | Minus,Minus -> true
-  | Div, Div    -> true 
-  | _           -> false
+let equalOp2 op1 op2 = match op1, op2 with
+  | Plus, Plus   -> true
+  | Times, Times -> true
+  | Minus, Minus -> true
+  | Div, Div     -> true 
+  | _            -> false
 
 let interpretOp1 op v = match op with
     | Cos      -> cos(v)

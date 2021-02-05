@@ -273,6 +273,28 @@ module T = struct
   | Unzip3(Zip3(expr1, expr2, expr3)) -> Success (Tuple([expr1; expr2; expr3]))
   | expr -> Failure expr
 
+  let algebraicSimplifications : Target.t -> Target.t output = function
+  | Apply1(Power(2), Apply1(Sqrt, expr)) -> Success expr
+  | Apply1(Cos, Apply1(Acos, expr)) -> Success expr
+  | Apply1(Sin, Apply1(Asin, expr)) -> Success expr
+  | Apply1(Log, Apply1(Exp, expr)) -> Success expr
+  | Apply1(Exp, Apply1(Log, expr)) -> Success expr
+  | Apply2(Div, Apply1(Sin, expr1), Apply1(Cos, expr2)) 
+    when Target.equal expr1 expr2 -> Success (Apply1(Tan, expr1))
+  | Apply2(Div, Apply1(Sinh, expr1), Apply1(Cosh, expr2)) 
+    when Target.equal expr1 expr2 -> Success (Apply1(Tanh, expr1))
+  | Apply1(Log, Apply2(Div, expr1, expr2)) -> Success (Apply2(Minus, Apply1(Log, expr1), Apply1(Log, expr2)))
+  | Apply1(Log10, Apply2(Div, expr1, expr2)) -> Success (Apply2(Minus, Apply1(Log10, expr1), Apply1(Log10, expr2)))
+  | Apply1(Log, Apply2(Times, expr1, expr2)) -> Success (Apply2(Plus, Apply1(Log, expr1), Apply1(Log, expr2)))
+  | Apply1(Log10, Apply2(Times, expr1, expr2)) -> Success (Apply2(Plus, Apply1(Log10, expr1), Apply1(Log10, expr2)))
+  | Apply1(Log, Apply1(Sqrt, expr)) -> Success (Apply2(Times, Const 0.5, Apply1(Log, expr)))
+  | Apply1(Log, Apply1(Power(n), expr)) -> Success (Apply2(Times, Const (float_of_int n), Apply1(Log, expr)))
+  | Apply1(Log10, Apply1(Sqrt, expr)) -> Success (Apply2(Times, Const 0.5, Apply1(Log10, expr)))
+  | Apply1(Log10, Apply1(Power(n), expr)) -> Success (Apply2(Times, Const (float_of_int n), Apply1(Log10, expr)))
+  | Apply1(Power(n), Apply1(Power(m), expr)) -> Success (Apply1(Power(n+m), expr))
+  | Apply2(Times, expr1, expr2) when Target.equal expr1 expr2 -> Success (Apply1(Power(2), expr1))
+  | expr -> Failure expr
+
   let exact_opti_list =
     [
       (lambdaRemoval, "LR");
