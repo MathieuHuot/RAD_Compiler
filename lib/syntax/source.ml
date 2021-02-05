@@ -34,24 +34,22 @@ module Type = struct
   module Parse = struct
     open CCParse
 
-    let mk_prod (t1, t2) = Prod (t1,t2)
-
-    let mk_array (n, t) = Array (n, t)
-
-    let pReal = map (function
-        | "real" -> Real
-        | _ -> assert false)
+    let pReal =
+      map
+        (function "real" -> Real | _ -> assert false)
         (skip_white *> string "real")
 
-    let pProd self = pure mk_prod <*> (skip_white *> U.pair ~start:"(" ~stop:")" ~sep:"*" self self)
+    let pProd self =
+      skip_white *> U.pair ~start:"(" ~stop:")" ~sep:"*" self self
+      >|= fun (t1, t2) -> Prod (t1, t2)
 
-    let pArray self = pure mk_array <*> (
-        skip_white *> string "Array[" *> skip_white *> U.int >>= fun n ->
-        skip_white *> string "][" *> skip_white *> self >>= fun t ->
-        string "]" >|= fun _ -> (n, t))
+    let pArray self =
+      skip_white *> string "Array[" *> skip_white *> U.int >>= fun n ->
+      skip_white *> string "][" *> skip_white *> self >>= fun t ->
+      string "]" >|= fun _ -> Array (n, t)
 
-    let pType = fix @@ fun self ->
-      try_ pReal <|> try_ (pProd self) <|> (pArray self)
+    let pType =
+      fix @@ fun self -> try_ pReal <|> try_ (pProd self) <|> pArray self
 
     let of_string = parse_string pType
   end
