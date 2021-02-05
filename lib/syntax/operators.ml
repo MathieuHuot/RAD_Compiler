@@ -105,10 +105,10 @@ let to_string_op1 = function
   | Log     -> "log "
   | Log10   -> "log10 "
   | Sqrt    -> "sqrt "
-  | Atanh    -> "atanh"
-  | Acosh    -> "acosh"
-  | Asinh    -> "asinh"
-  | Log2     -> "log2"
+  | Atanh   -> "atanh"
+  | Acosh   -> "acosh"
+  | Asinh   -> "asinh"
+  | Log2    -> "log2"
 
 let to_string_op2 = function
     | Plus  -> "+"
@@ -149,11 +149,11 @@ module Parse = struct
        )
     <* skip_white
     >>= function
-    | "cos" -> return Cos
-    | "sin" -> return Sin
-    | "exp" -> return Exp
-    | "-" -> return (Minus : op1)
-    | "^" -> U.int >|= fun n -> Power n
+    | "cos"  -> return Cos
+    | "sin"  -> return Sin
+    | "exp"  -> return Exp
+    | "-"    -> return (Minus : op1)
+    | "^"    -> U.int >|= fun n -> Power n
     | "acos" -> return Acos
     | "asin" -> return Asin
     | "tan"  -> return Tan
@@ -162,11 +162,11 @@ module Parse = struct
     | "sinh" -> return Sinh
     | "tanh" -> return Tanh
     | "log"  -> return Log
-    | "log10" -> return Log10
+    | "log10"-> return Log10
     | "sqrt" -> return Sqrt
-    | "atanh" -> return Atanh
-    | "acosh" -> return Acosh
-    | "asinh" -> return Asinh
+    | "atanh"-> return Atanh
+    | "acosh"-> return Acosh
+    | "asinh"-> return Asinh
     | "log2" -> return Log2
-    | _ -> failwith "Not an operator"
+    | _      -> failwith "Not an operator"
 end
