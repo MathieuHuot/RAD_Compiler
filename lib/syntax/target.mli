@@ -31,6 +31,12 @@ module Type : sig
 
   val equal : t -> t -> bool
   (** Equality function *)
+
+  module Parse : sig
+    val pType : t CCParse.t
+
+    val of_string : string -> t CCParse.or_error
+  end
 end
 
 type t =
@@ -140,6 +146,13 @@ val interpret : t -> context -> t
 (** {2 Traverse} *)
 module Traverse : functor (S: Strategy.S) -> sig
   val map : (t -> t Rewriter.output) -> t -> t Rewriter.output
+end
+
+(** {2 Parser} *)
+module Parse : sig
+  val pTerm : t CCParse.t
+
+  val of_string : string -> t CCParse.or_error
 end
 
 (** {2 Derivatives of basic operators} *)

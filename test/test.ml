@@ -27,6 +27,12 @@ module T = struct
     QCheck.Test.make ~count:100 ~name:"equal" arbitrary_closed_term (fun expr ->
         equal expr expr)
 
+  let test_parse =
+    QCheck.Test.make ~count:100 ~name:"parse" arbitrary_closed_term (fun expr ->
+        match Parse.of_string (to_string expr) with
+        | Result.Ok e -> equal expr e
+        | Result.Error _ -> false)
+
   let test_interpret =
     QCheck.Test.make ~count:100 ~name:"interp" arbitrary_closed_term
       (fun expr -> match interpret expr [] with Const _ -> true | _ -> false)
@@ -57,6 +63,7 @@ module T = struct
     [
       test_isWellTyped;
       test_equal;
+      test_parse;
       test_interpret;
       test_anf;
       test_weakAnf;

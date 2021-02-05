@@ -14,11 +14,16 @@ module Type = struct
 let rec pp fmt = function
   | Real         -> Format.fprintf fmt "real"
   | Arrow (l, t) ->
+    begin match l with
+    | [] ->
+      Format.fprintf fmt "()@ ->@ (%a)" pp t
+    | l ->
       Format.fprintf fmt "%a@ ->@ (%a)"
         (CCList.pp
            ~pp_sep:(fun fmt () -> Format.fprintf fmt "@ ->@ ")
            (fun fmt -> Format.fprintf fmt "(%a)" pp))
         l pp t
+    end
   | NProd l      ->
       Format.fprintf fmt "(%a)"
         (CCList.pp ~pp_sep:(fun fmt () -> Format.fprintf fmt "@ *@ ") pp)
@@ -50,6 +55,42 @@ let rec pp fmt = function
       | NProd tyList  -> List.for_all isGroundType tyList
       | Array (_, ty) -> isGroundType ty
       | _             -> false 
+
+  module Parse = struct
+    open CCParse
+
+    let pReal =
+      map
+        (function "real" -> Real | _ -> assert false)
+        (skip_white *> string "real")
+
+    let pNProd self =
+      U.list ~start:"(" ~stop:")" ~sep:"*" self >|= fun l -> NProd l
+
+    let pArray self =
+      skip_white *> string "Array[" *> skip_white *> U.int >>= fun n ->
+      skip_white *> string "][" *> skip_white *> self >>= fun t ->
+      string "]" >|= fun _ -> Array (n, t)
+
+    let pArrow self =
+      skip_white
+      *> (try_
+            ( string "()" *> skip_white *> string "->" *> skip_white
+            *> string "(" *> skip_white *> self <* skip_white <* string ")"
+            >|= fun expr -> Arrow ([], expr) )
+         <|> ( U.list ~start:"" ~stop:"" ~sep:"->"
+                 (string "(" *> skip_white *> self <* skip_white <* string ")")
+             >>= fun l ->
+               match List.rev l with
+               | [] | _::[] -> fail "Arrow: empty list"
+               | h :: t -> return (Arrow (List.rev t, h)) ))
+
+    let pType =
+      fix @@ fun self ->
+      try_ (pArrow self) <|> try_ pReal <|> try_ (pNProd self) <|> pArray self
+
+    let of_string = parse_string pType
+  end
 end
 
 (*TODO: might need to add map3 ...*)
@@ -93,27 +134,27 @@ let rec from_source (expr: Source.t) : t = match expr with
   | Array (exprList) -> Array(List.map from_source exprList) 
 
 let rec pp fmt = function
-  | Var (v, _) -> Var.pp fmt v
-  | Const c -> Format.pp_print_float fmt c
+  | Var (a, t) -> Format.fprintf fmt "%a:%a" Var.pp a Type.pp t
+  | Const c -> Format.fprintf fmt "%.18g" c
   | Apply1 (op, expr) -> Format.fprintf fmt "@[%a(@;<0 2>%a@,)@]" pp_op1 op pp expr
   | Apply2 (op, expr1, expr2) ->
     if is_infix op then Format.fprintf fmt "@[(%a@ %a %a)@]" pp expr1 pp_op2 op pp expr2
     else Format.fprintf fmt "@[(%a %a %a)@]" pp expr1 pp_op2 op pp expr2
-  | Let (x, _t, expr1, expr2) -> Format.fprintf fmt "@[<hv>let %a =@;<1 2>@[%a@]@ in@ %a@]" Var.pp x pp expr1 pp expr2
-  | Fun (vars, expr) -> Format.fprintf fmt "@[λ%a.@;<1 2>%a@]" (CCList.pp (fun fmt (v,_) -> Var.pp fmt v)) vars pp expr
+  | Let (x, t, expr1, expr2) -> Format.fprintf fmt "@[<hv>let %a:%a =@;<1 2>@[%a@]@ in@ %a@]" Var.pp x Type.pp t pp expr1 pp expr2
+  | Fun (vars, expr) -> Format.fprintf fmt "@[λ%a.@;<1 2>%a@]" (CCList.pp (fun fmt (v,t) -> Format.fprintf fmt "%a:%a" Var.pp v Type.pp t)) vars pp expr
   | App (expr, exprs) -> Format.fprintf fmt "@[(%a)[@;<0 2>@[%a@]]@]" pp expr (CCList.pp pp) exprs
   | Tuple exprs -> CCList.pp ~pp_start:(fun fmt () -> Format.fprintf fmt "@[{@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@,}@]") pp fmt exprs
-  | NCase (expr1, vars, expr2) -> Format.fprintf fmt "@[<hv>lets %a =@;<1 2>@[%a@]@ in@ %a@]" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Var.pp fmt v)) vars pp expr1 pp expr2
-  | Map (x, _t, expr1, expr2) -> Format.fprintf fmt "map (%a.%a) %a" Var.pp x pp expr1 pp expr2
-  | Map2 (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "map2 (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2  pp expr3
-  | Reduce (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "reduce (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
-  | Scan (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "scan (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
-  | Zip(expr1, expr2) -> Format.fprintf fmt "zip %a %a" pp expr1 pp expr2
-  | Zip3(expr1, expr2, expr3) -> Format.fprintf fmt "zip3 %a %a %a" pp expr1 pp expr2 pp expr3
-  | Unzip(expr) -> Format.fprintf fmt "unzip %a " pp expr
-  | Unzip3(expr) -> Format.fprintf fmt "unzip3 %a " pp expr 
-  | Get(n, expr)      -> Format.fprintf fmt "get %a %a" Format.pp_print_int n pp expr
-  | Fold (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "fold (%a,%a.%a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
+  | NCase (expr1, vars, expr2) -> Format.fprintf fmt "@[<hv>lets %a =@;<1 2>@[%a@]@ in@ %a@]" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,t) -> Format.fprintf fmt "%a:%a" Var.pp v Type.pp t)) vars pp expr1 pp expr2
+  | Map (x, t, expr1, expr2) -> Format.fprintf fmt "@[map@;<1 2>(%a:%a.%a)@ (%a)@]" Var.pp x Type.pp t pp expr1 pp expr2
+  | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Format.fprintf fmt "@[map2@;<1 2>(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2  pp expr3
+  | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Format.fprintf fmt "@[reduce@;<1 2>(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2 pp expr3
+  | Scan (x, t1, y, t2, expr1, expr2, expr3)  -> Format.fprintf fmt "@[scan@;<1 2>(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2 pp expr3
+  | Zip(expr1, expr2) -> Format.fprintf fmt "@[zip@;<1 2>(%a) (%a)@]" pp expr1 pp expr2
+  | Zip3(expr1, expr2, expr3) -> Format.fprintf fmt "@[zip3@;<1 2>(%a) (%a) (%a)@]" pp expr1 pp expr2 pp expr3
+  | Unzip(expr) -> Format.fprintf fmt "@[unzip@;<1 2>(%a)@]" pp expr
+  | Unzip3(expr) -> Format.fprintf fmt "@[unzip3@;<1 2>(%a)@]" pp expr 
+  | Get(n, expr)      -> Format.fprintf fmt "get %i@;<1 2>(%a)" n pp expr
+  | Fold (x, t1, y, t2, expr1, expr2, expr3)  -> Format.fprintf fmt "@[fold(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2 pp expr3
   | Array (exprList) -> CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") ~pp_start:(fun fmt () -> Format.fprintf fmt "@[[@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@,]@]") pp fmt exprList
 
 let to_string = CCFormat.to_string pp
@@ -690,6 +731,149 @@ module Traverse (S : Strategy.S) = struct
         | _ -> assert false
         end
     | Array (exprList) -> applyl (map f) exprList >|= fun l -> Array l
+end
+
+(** {2 Parser} *)
+module Parse = struct
+  open CCParse
+
+  let mk_var (x, t) = Var (x, t)
+
+  let mk_const f = Const f
+
+  let mk_apply1 (o, t) = Apply1 (o, t)
+
+  let mk_plus (t1, t2) = Apply2 (Operators.Plus, t1, t2)
+
+  let mk_minus (t1, t2) = Apply2 (Operators.Minus, t1, t2)
+
+  let mk_times (t1, t2) = Apply2 (Operators.Times, t1, t2)
+
+  let float =
+    map2
+      (fun c s -> String.make 1 c ^ s)
+      (char_if (fun c -> is_num c || Char.equal c '-'))
+      (chars_if (fun c ->
+           is_num c || Char.equal c '-' || Char.equal c '.' || Char.equal c 'e'))
+    >>= fun s ->
+    try return (float_of_string s) with Failure _ -> fail "expected an float"
+
+  let pVarType =
+    skip_white
+    *> U.pair ~start:"" ~stop:"" ~sep:":"
+         (U.pair ~start:"" ~stop:"" ~sep:"" (chars_if is_alpha) U.int)
+         Type.Parse.pType
+
+  let pApply1 self =
+    Operators.Parse.pOp1 >>= fun op ->
+    skip_white *> string "(" *> self <* skip_white <* string ")" >|= fun expr ->
+    Apply1 (op, expr)
+
+  let pLet self =
+    skip_white *> string "let" *> skip_white *> pVarType >>= fun (v, t) ->
+    skip_white *> string "=" *> skip_white *> self >>= fun expr1 ->
+    skip_white *> string "in" *> skip_white *> self >|= fun expr2 ->
+    Let (v, t, expr1, expr2)
+
+  let pFun self =
+    skip_white *> string "λ" *> skip_white *> U.list ~start:"" ~stop:"" ~sep:"," pVarType >>= fun vars ->
+    skip_white *> string "." *> skip_white *> self >|= fun expr -> Fun (vars, expr)
+
+  let pApp self =
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")" >>= fun expr ->
+    skip_white *> U.list ~sep:"," self >|= fun exprs -> App (expr, exprs)
+
+  let pTuple self = U.list ~start:"{" ~stop:"}" ~sep:"," self >|= fun l -> Tuple l
+
+  let pNCase self =
+    skip_white *> string "lets" *> skip_white *> U.list ~start:"" ~stop:"" ~sep:"," pVarType >>= fun vars ->
+    skip_white *> string "=" *> skip_white *> self >>= fun expr1 ->
+    skip_white *> string "in" *> skip_white *> self >|= fun expr2 ->
+    NCase (expr1, vars, expr2)
+
+  let pMap self =
+    skip_white *> string "map" *> skip_white
+    *> U.pair ~start:"(" ~stop:")" ~sep:"." pVarType self
+    >>= fun ((x, t), expr1) ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >|= fun expr2 -> Map (x, t, expr1, expr2)
+
+  let pMap2 self =
+    skip_white *> string "map2" *> skip_white
+    *> U.pair ~sep:"."
+         (U.pair ~start:"" ~stop:"" ~sep:"," pVarType pVarType)
+         self
+    >>= fun (((x, t1), (y, t2)), expr1) ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >>= fun expr2 ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >|= fun expr3 -> Map2 (x, t1, y, t2, expr1, expr2, expr3)
+
+  let pReduce self =
+    skip_white *> string "reduce" *> skip_white
+    *> U.pair ~sep:"."
+         (U.pair ~start:"" ~stop:"" ~sep:"," pVarType pVarType)
+         self
+    >>= fun (((x, t1), (y, t2)), expr1) ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >>= fun expr2 ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >|= fun expr3 -> Reduce (x, t1, y, t2, expr1, expr2, expr3)
+
+  let pScan self =
+    skip_white *> string "scan" *> skip_white
+    *> U.pair ~sep:"."
+         (U.pair ~start:"" ~stop:"" ~sep:"," pVarType pVarType)
+         self
+    >>= fun (((x, t1), (y, t2)), expr1) ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >>= fun expr2 ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >|= fun expr3 -> Scan (x, t1, y, t2, expr1, expr2, expr3)
+
+  let pFold self =
+    skip_white *> string "fold" *> skip_white
+    *> U.pair ~sep:"."
+         (U.pair ~start:"" ~stop:"" ~sep:"," pVarType pVarType)
+         self
+    >>= fun (((x, t1), (y, t2)), expr1) ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >>= fun expr2 ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >|= fun expr3 -> Fold (x, t1, y, t2, expr1, expr2, expr3)
+
+  let pGet self =
+    skip_white *> string "get" *> skip_white *> U.int >>= fun n ->
+    skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
+    >|= fun expr -> Get (n, expr)
+
+  let pArray self = U.list ~sep:"," self >|= fun l -> Array l
+
+  let pTerm =
+    fix @@ fun self ->
+    skip_white
+    *> (try_ (pure mk_const <*> float)
+       <|> try_ (pure mk_var <*> pVarType)
+       <|> try_ (pApply1 self)
+       <|> try_ (pure mk_plus <*> U.pair ~start:"(" ~sep:"+" ~stop:")" self self)
+       <|> try_
+             (pure mk_minus <*> U.pair ~start:"(" ~sep:"-" ~stop:")" self self)
+       <|> try_
+             (pure mk_times <*> U.pair ~start:"(" ~sep:"*" ~stop:")" self self)
+       <|> try_ (pLet self)
+       <|> try_ (pFun self)
+       <|> try_ (pApp self)
+       <|> try_ (pTuple self)
+       <|> try_ (pNCase self)
+       <|> try_ (pMap self)
+       <|> try_ (pMap2 self)
+       <|> try_ (pReduce self)
+       <|> try_ (pScan self)
+       <|> try_ (pFold self)
+       <|> try_ (pGet self)
+       <|> pArray self)
+
+  let of_string = parse_string pTerm
 end
 
 (* Derivatives of basic operators *)
