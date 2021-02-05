@@ -460,8 +460,6 @@ module Parse = struct
 
   let mk_const f = Const f
 
-  let mk_apply1 (o, t) = Apply1 (o, t)
-
   let mk_plus (t1, t2) = Apply2 (Operators.Plus, t1, t2)
 
   let mk_minus (t1, t2) = Apply2 (Operators.Minus, t1, t2)
