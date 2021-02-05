@@ -943,6 +943,12 @@ let dop op y = match op with
 | Log      -> Apply2(Div, Const 1., y)
 | Log10    -> Apply2(Div, Const 1., Apply2(Times, Apply1(Log, (Const 10.)), y))
 | Sqrt     -> Apply2(Div, Const (-1.), Apply1(Sqrt, y))
+(*
+| Log2     -> Apply2(Div, Const 1., Apply2(Times, Apply1(Log, (Const 2.)), y))
+| Atanh    -> Apply2(Div, Const 1., Apply2(Minus, Const 1., Apply1(Power(2), y)))
+| Asinh    -> Apply2(Div, Const 1., Apply1(Sqrt, Apply2(Plus, Apply1(Power(2), y), Const 1.))
+| Acosh    -> Apply2(Div, Const 1., Apply1(Sqrt, Apply2(Minus, Apply1(Power(2), y), Const 1.))
+*)
 
 (* ∂^2 op/∂x∂x *)                          
 let ddop (op: op1) y = match op with
@@ -962,6 +968,12 @@ let ddop (op: op1) y = match op with
   | Log     -> Apply2(Div, Const (-1.), Apply1(Power(2), y))
   | Log10   -> Apply2(Div, Const (-1.), Apply2(Times, Apply1(Log, (Const 10.)), Apply1(Power(2), y)))
   | Sqrt    -> Apply2(Div, Const (2.5e-1), Apply1(Power(3), Apply1(Sqrt, y)))
+  (*
+  | Log2   -> Apply2(Div, Const (-1.), Apply2(Times, Apply1(Log, (Const 2.)), Apply1(Power(2), y)))
+  | Atanh  -> Apply2(Div, Apply2(Times, Const 2., y), Apply1(Power(2), Apply2(Minus, Const 1., Apply1(Power(2), y))))
+  | Asinh  -> Apply2(Div, Apply1(Minus, y), Apply1(Power(3), Apply1(Sqrt, Apply2(Plus, Const 1., Apply1(Power(2), y)))))
+  | Acosh  -> Apply2(Div, Apply1(Minus, y), Apply1(Power(3), Apply1(Sqrt, Apply2(Minus, Apply1(Power(2), y), Const 1.))))
+  *)
 
 (** Second order derivative of binary operator *)
 let dop22 (op: op1) x d1x d2x ddx  = Apply2(Plus, Apply2(Times, ddop op x, Apply2(Times, d1x, d2x)), Apply2(Times, dop op x, ddx))
