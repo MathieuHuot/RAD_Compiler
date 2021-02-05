@@ -1,3 +1,3 @@
 (library
 (name syntax)
-(libraries containers))
+(libraries unix containers))
