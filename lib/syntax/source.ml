@@ -67,7 +67,7 @@ type context = ((Var.t * Type.t), t) CCList.Assoc.t
 
 let rec pp fmt = function
   | Var (a, t) -> Format.fprintf fmt "%a:%a" Var.pp a Type.pp t
-  | Const c -> Format.fprintf fmt "%h" c
+  | Const c -> Format.fprintf fmt "%.18g" c
   | Apply1 (op, expr) -> Format.fprintf fmt "%a(%a)" pp_op1 op pp expr
   | Apply2 (op, expr1, expr2) ->
     if is_infix op then Format.fprintf fmt "(%a %a %a)" pp expr1 pp_op2 op pp expr2
@@ -468,7 +468,7 @@ module Parse = struct
       (fun c s -> String.make 1 c ^ s)
       (char_if (fun c -> is_num c || Char.equal c '-'))
       (chars_if (fun c ->
-           is_alpha_num c || Char.equal c '-' || Char.equal c '.'))
+           is_num c || Char.equal c '-' || Char.equal c '.' || Char.equal c 'e'))
     >>= fun s ->
     try return (float_of_string s) with Failure _ -> fail "expected an float"
 
