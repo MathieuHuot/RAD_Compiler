@@ -162,9 +162,8 @@ let rec rad2 (context: gradient_variables) (cont : Target.t)  (expr : t) : Targe
                                       let newCont = newContinuation cont Target.Type.Real 
                                       (fun newVar varList e -> let (y1, ty3) = List.nth varList pos_x1 in
                                                         let (y2, ty4) = List.nth varList pos_x2 in  
-                                                        Target.simSubst [((y1, ty3), Apply2(Plus, Var(y1, ty3), partial1Op(Var(newVar, Target.Type.Real)))); 
-                                                                         ((y2, ty4), Apply2(Plus, Var(y2, ty4), partial2Op(Var(newVar, Target.Type.Real))))]  
-                                                                                e) in
+                                                        Target.subst y2 ty4 (Apply2(Plus, Var(y2, ty4), partial2Op(Var(newVar, Target.Type.Real))))
+                                                        (Target.subst y1 ty3 (Apply2(Plus, Var(y1, ty3), partial1Op(Var(newVar, Target.Type.Real)))) e)) in
                                       Target.Tuple [Target.Apply2(op, Target.Var(x1, Target.Type.Real), Target.Var(x2, Target.Type.Real)); newCont], newCont, context
                                     | _ -> failwith "rad2:  a binary operator should be apply to two variables"
                                  end
