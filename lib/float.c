@@ -27,3 +27,11 @@ CAMLprim value caml_asinh_float(value f) {
 CAMLprim value caml_atanh_float(value f) {
   return caml_copy_double(caml_atanh(Double_val(f)));
 }
+
+CAMLexport double caml_log2(double x){
+    return log2(x);
+}
+
+CAMLprim value caml_log2_float(value f) {
+  return caml_copy_double(caml_log2(Double_val(f)));
+}
