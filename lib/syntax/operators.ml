@@ -3,7 +3,7 @@
 The following operators take real arguments and return reals *)
 
 (** Unary operators *)
-type op1 = Cos  | Sin | Exp | Minus | Power of int | Acos | Asin | Tan | Atan | Cosh | Sinh | Tanh | Log | Log10 | Sqrt
+type op1 = Cos  | Sin | Exp | Minus | Power of int | Acos | Asin | Tan | Atan | Cosh | Sinh | Tanh | Log | Log10 | Sqrt (* | Acosh | Asinh | Atanh | Log2 *)
 
 (**Binary operators *)
 type op2 = Plus | Times | Minus | Div 
@@ -27,6 +27,12 @@ let equalOp1 op1 op2 = match op1, op2 with
   | Log, Log    -> true
   | Log10, Log10-> true
   | Sqrt, Sqrt  -> true
+  (*
+  | Atanh, Atanh-> true
+  | Acosh, Acosh-> true
+  | Asinh, Asinh-> true
+  | Log2, Log2  -> true
+  *)
   | _           -> false
 
 let equalOp2 op1 op2 = match op1, op2 with
@@ -52,6 +58,13 @@ let interpretOp1 op v = match op with
     | Log      -> log(v)
     | Log10    -> log10(v)
     | Sqrt     -> sqrt(v)
+    (*
+    | Atanh    -> Pervasives.atanh(v)
+    | Acosh    -> Pervasives.acosh(v)
+    | Asinh    -> Pervasives.asinh(v)
+    | Log2     -> Pervasives.log2(v)
+    *)
+
 
 let interpretOp2 op val1 val2= match op with
     | Plus  -> val1+.val2
@@ -75,6 +88,12 @@ let to_string_op1 = function
   | Log     -> "log "
   | Log10   -> "log10 "
   | Sqrt    -> "sqrt "
+  (*
+  | Atanh    -> "atanh"
+  | Acosh    -> "acosh"
+  | Asinh    -> "asinh"
+  | Log2     -> "log2"
+  *)
 
 let to_string_op2 = function
     | Plus  -> "+"
@@ -107,7 +126,14 @@ module Parse = struct
        <|> try_ (string "tanh")
        <|> try_ (string "log")
        <|> try_ (string "log10")
-       <|> try_ (string "sqrt"))
+       <|> try_ (string "sqrt")
+       (*
+       <|> try_ (string "atanh")
+       <|> try_ (string "acosh")
+       <|> try_ (string "asinh")
+       <|> try_ (string "log2")
+       *)
+       )
     <* skip_white
     >>= function
     | "cos" -> return Cos
@@ -125,5 +151,11 @@ module Parse = struct
     | "log"  -> return Log
     | "log10" -> return Log10
     | "sqrt" -> return Sqrt
+    (*
+    | "atanh" -> return Atanh
+    | "acosh" -> return Atanh
+    | "asinh" -> return 
+    | "log2" -> return Log2
+    *)
     | _ -> failwith "Not an operator"
 end
