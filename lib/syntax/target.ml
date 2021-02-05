@@ -575,102 +575,147 @@ let interpretOp2 op expr1 expr2 = match expr1, expr2 with
 | (Const v1,Const v2) -> Const (interpretOp2 op v1 v2)
 | expr1, expr2 -> Apply2(op, expr1, expr2)
 
+module M = CCMap.Make(struct
+    type t = Var.t * Type.t
+    let compare = CCPair.compare (CCPair.compare CCString.compare CCInt.compare) compare
+  end)
+
 let interpret expr context =
   if not (isWellTyped expr) then failwith "interpret: ill typed term";
-  let rec interp expr =
+  let rec interp context expr =
     match expr with
+    | Var (v, t) -> begin
+        match M.get (v, t) context with
+        | Some expr -> interp context expr
+        | None -> expr
+      end
+    | Const _ -> expr
+    | Fun (vars, expr) -> Fun (vars, interp context expr)
     | Apply1 (op, expr) ->
-        let v = interp expr in
+        let v = interp context expr in
         interpretOp1 op v
     | Apply2 (op, expr1, expr2) ->
-        let val1 = interp expr1 in
-        let val2 = interp expr2 in
+        let val1 = interp context expr1 in
+        let val2 = interp context expr2 in
         interpretOp2 op val1 val2
     | Let (x, ty, expr1, expr2) ->
-        let v = interp expr1 in
-        interp (subst x ty v expr2)
+        let v = interp context expr1 in
+        interp (M.add (x, ty) v context) expr2
     | App (expr1, exprList) -> (
-        let vList = List.map interp exprList in
-        match interp expr1 with
+        let vList = List.map (interp context) exprList in
+        match interp context expr1 with
         | Fun (varList, expr1) ->
-            if not (List.length varList = List.length vList) then
-              App (Fun (varList, interp expr1), vList)
-            else expr1 |> simSubst (List.combine varList vList) |> interp
+            assert (List.compare_lengths varList vList = 0);
+            interp (M.add_list context (List.combine varList vList)) expr1
         | expr -> App (expr, vList))
-    | Tuple exprList -> Tuple (List.map interp exprList)
+    | Tuple exprList -> Tuple (List.map (interp context) exprList)
     | NCase (expr1, varList, expr2) -> (
-        match interp expr1 with
-        | Tuple exprList as expr ->
-            if not (List.length varList = List.length exprList) then
-              NCase (expr, varList, interp expr2)
-            else expr2 |> simSubst (List.combine varList exprList) |> interp
-        | expr -> NCase (expr, varList, interp expr2))
+        match interp context expr1 with
+        | Tuple exprList ->
+          assert (List.compare_lengths varList exprList = 0);
+          interp (M.add_list context (List.combine varList exprList)) expr2
+        | expr -> NCase (expr, varList, interp context expr2))
     | Map (x, ty, expr1, expr2) -> (
-        let expr1 = interp expr1 in
-        match interp expr2 with
+        let expr1 = interp context expr1 in
+        match interp context expr2 with
         | Array exprList ->
-            Array (List.map (fun e -> interp (subst x ty e expr1)) exprList)
+            Array (List.map (fun e -> interp (M.add (x, ty) e context) expr1) exprList)
         | expr2 -> Map (x, ty, expr1, expr2))
     | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> (
-        let expr1 = interp expr1 in
-        match (interp expr2, interp expr3) with
+        let expr1 = interp context expr1 in
+        match (interp context expr2, interp context expr3) with
         | Array exprList1, Array exprList2 ->
             Array
               (List.map2
-                 (fun e1 e2 -> interp (subst y t2 e2 (subst x t1 e1 expr1)))
+                 (fun e1 e2 -> interp (M.add (y, t2) e2 (M.add (x, t1) e1 context)) expr1)
                  exprList1 exprList2)
         | expr2, expr3 -> Map2 (x, t1, y, t2, expr1, expr2, expr3))
     | Fold (x, t1, y, t2, expr1, expr2, expr3)
     | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> (
-        let expr1 = interp expr1 in
-        let expr2 = interp expr2 in
-        match interp expr3 with
+        let expr1 = interp context expr1 in
+        let expr2 = interp context expr2 in
+        match interp context expr3 with
         | Array exprList ->
             List.fold_left
-              (fun acc e -> interp (subst y t2 e (subst x t1 acc expr1)))
+              (fun acc e -> interp (M.add (y, t2) e (M.add (x, t1) acc context)) expr1)
               expr2 exprList
         | expr3 -> Reduce (x, t1, y, t2, expr1, expr2, expr3))
     | Scan (x, t1, y, t2, expr1, expr2, expr3) -> (
-        let expr1 = interp expr1 in
-        let expr2 = interp expr2 in
-        match interp expr3 with
-        | Array exprList -> (
-            List.fold_left (fun (acc,l) e -> let tmp = interp (subst y t2 e (subst x t1 acc expr1)) in
-                           (tmp, tmp::l)) (expr2, []) exprList
-          |> fun (_,l) -> Array (List.rev l))
+        let expr1 = interp context expr1 in
+        let expr2 = interp context expr2 in
+        match interp context expr3 with
+        | Array exprList ->
+            List.fold_left
+              (fun (acc, l) e ->
+                let tmp = interp (M.add (y, t2) e (M.add (x, t1) acc context)) expr1 in
+                (tmp, tmp :: l))
+              (expr2, []) exprList
+            |> fun (_, l) -> Array (List.rev l)
         | expr3 -> Scan (x, t1, y, t2, expr1, expr2, expr3))
     | Zip (expr1, expr2) -> (
-        match (interp expr1, interp expr2) with
+        match (interp context expr1, interp context expr2) with
         | Array exprList1, Array exprList2 ->
             Array (List.map2 (fun x y -> Tuple [ x; y ]) exprList1 exprList2)
         | expr1, expr2 -> Zip (expr1, expr2))
     | Zip3 (expr1, expr2, expr3) -> (
-      match (interp expr1, interp expr2, interp expr3) with
-      | Array exprList1, Array exprList2, Array exprList3 ->
-          Array (List.map2 (fun (x,y) z -> Tuple [ x; y; z ])  (List. combine exprList1 exprList2) exprList3)
-      | expr1, expr2, expr3 -> Zip3 (expr1, expr2, expr3))
-    | Unzip(exprList) -> (match interp exprList with
-        | Array(exprList) -> if List.for_all (fun e -> match e with | Tuple([_;_]) -> true | _ -> false) exprList
-                             then let exprList1, exprList2 = List.split (List.map (fun e -> match e with | Tuple([e1; e2]) -> (e1, e2) | _ -> failwith "") exprList)
-                             in Tuple([Array(exprList1); Array(exprList2)])
-                             else Array(exprList)
-        | exprList -> Unzip(exprList))
-    | Unzip3(exprList) ->  (match interp exprList with
-        | Array(exprList) -> if List.for_all (fun e -> match e with | Tuple([_;_;_]) -> true | _ -> false) exprList
-                            then let exprList1, exprList2, exprList3 = List.fold_left (fun (l1,l2,l3) (e1,e2,e3) -> e1::l1, e2::l2, e3::l3 ) 
-                                                                                      ([],[],[]) 
-                                                                                      (List.rev (List.map (fun e -> match e with | Tuple([e1; e2; e3]) -> (e1, e2, e3) | _ -> failwith "") exprList))
-                            in Tuple([Array(exprList1); Array(exprList2); Array(exprList3)])
-                            else Array(exprList)
-        | exprList -> Unzip(exprList))
+        match (interp context expr1, interp context expr2, interp context expr3) with
+        | Array exprList1, Array exprList2, Array exprList3 ->
+            Array
+              (List.map2
+                 (fun (x, y) z -> Tuple [ x; y; z ])
+                 (List.combine exprList1 exprList2)
+                 exprList3)
+        | expr1, expr2, expr3 -> Zip3 (expr1, expr2, expr3))
+    | Unzip exprList -> (
+        match interp context exprList with
+        | Array exprList ->
+            if
+              List.for_all
+                (fun e -> match e with Tuple [ _; _ ] -> true | _ -> false)
+                exprList
+            then
+              let exprList1, exprList2 =
+                List.split
+                  (List.map
+                     (fun e ->
+                       match e with
+                       | Tuple [ e1; e2 ] -> (e1, e2)
+                       | _ -> assert false)
+                     exprList)
+              in
+              Tuple [ Array exprList1; Array exprList2 ]
+            else Unzip (Array exprList)
+        | exprList -> Unzip exprList)
+    | Unzip3 exprList -> (
+        match interp context exprList with
+        | Array exprList ->
+            if
+              List.for_all
+                (fun e -> match e with Tuple [ _; _; _ ] -> true | _ -> false)
+                exprList
+            then
+              let exprList1, exprList2, exprList3 =
+                List.fold_left
+                  (fun (l1, l2, l3) (e1, e2, e3) ->
+                    (e1 :: l1, e2 :: l2, e3 :: l3))
+                  ([], [], [])
+                  ((List.rev_map
+                        (fun e ->
+                          match e with
+                          | Tuple [ e1; e2; e3 ] -> (e1, e2, e3)
+                          | _ -> failwith "")
+                        exprList))
+              in
+              Tuple [ Array exprList1; Array exprList2; Array exprList3 ]
+            else Unzip3 (Array exprList)
+        | exprList -> Unzip3 exprList)
     | Get (n, expr) -> (
-        match interp expr with
+        match interp context expr with
         | Array exprList -> List.nth exprList n
         | expr -> Get (n, expr))
-    | Array exprList -> Array (List.map interp exprList)
-    | expr -> expr
+    | Array exprList -> Array (List.map (interp context) exprList)
   in
-  interp (simSubst context expr)
+  interp (M.of_list context) expr
 
 (** {2 Traverse} *)
 module Traverse (S : Strategy.S) = struct
