@@ -3,10 +3,33 @@
 The following operators take real arguments and return reals *)
 
 (** Unary operators *)
-type op1 = Cos  | Sin | Exp | Minus | Power of int | Acos | Asin | Tan | Atan | Cosh | Sinh | Tanh | Log | Log10 | Sqrt (* | Acosh | Asinh | Atanh | Log2 *)
+type op1 =  Cos 
+          | Sin 
+          | Exp 
+          | Minus 
+          | Power of int 
+          | Acos 
+          | Asin 
+          | Tan 
+          | Atan 
+          | Cosh 
+          | Sinh 
+          | Tanh 
+          | Log 
+          | Log10 
+          | Sqrt 
+          (* 
+          | Acosh 
+          | Asinh 
+          | Atanh 
+          | Log2 
+          *)
 
 (**Binary operators *)
-type op2 = Plus | Times | Minus | Div 
+type op2 =  Plus 
+          | Times 
+          | Minus 
+          | Div 
 
 let is_infix _ = true
 
@@ -64,7 +87,6 @@ let interpretOp1 op v = match op with
     | Asinh    -> Pervasives.asinh(v)
     | Log2     -> Pervasives.log2(v)
     *)
-
 
 let interpretOp2 op val1 val2= match op with
     | Plus  -> val1+.val2
