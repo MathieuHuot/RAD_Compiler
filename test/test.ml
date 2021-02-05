@@ -265,10 +265,6 @@ module O = struct
 end
 
 let () =
-  let term = QCheck.Gen.generate1 (TargetGen.gen [] 10 Target.Type.Real) in
-  Format.printf "%a@." Target.pp term
-
-let () =
   let target = List.map QCheck_alcotest.to_alcotest T.test_list in
   let target_opti = List.map QCheck_alcotest.to_alcotest T.test_opti_list in
   let target_opti_freeVar =
