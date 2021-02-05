@@ -1,0 +1,5 @@
+(library
+ (name float)
+ (foreign_stubs (language c) (names float))
+ (libraries containers))
+
