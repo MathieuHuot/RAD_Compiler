@@ -164,6 +164,33 @@ module Jets33 = struct
 open Source
 open Operators
 
+(* ∂^3 op/∂x∂x∂x *)                          
+let dddop (op: op1) y = match op with
+  | Cos     -> Apply1(Minus, Apply1(Cos, y))
+  | Sin     -> Apply1(Minus, Apply1(Sin, y))
+  | Exp     -> Apply1(Exp, y)
+  | Minus   -> Const (-1.)
+  | Power 0 -> Const(0.)
+  | Power 1 -> Const(0.)
+  | Power 2 -> Const(0.)
+  | Power 3 -> Const(6.)
+  | Power n -> Apply2(Times, Const(float_of_int ((n-1)*(n-2)*(n-3))), Apply1(Power(n-3), y))
+  | Cosh    -> Apply1(Cosh, y)
+  | Sinh    -> Apply1(Sinh, y)
+  | Log     -> Apply2(Div, Const (-1.), Apply1(Power(2), y))
+  | Log10   -> Apply2(Div, Const (-1.), Apply2(Times, Apply1(Log, (Const 10.)), Apply1(Power(2), y)))
+  | Log2    -> Apply2(Div, Const (-1.), Apply2(Times, Apply1(Log, (Const 2.)), Apply1(Power(2), y)))
+  (*TODO: check, I think I messed up some*)
+  | Acos    -> Apply2(Div, Apply1(Minus, y), Apply1(Power(3), Apply1(Sqrt, Apply2(Minus, Const 1., Apply1(Power(2), y)))))
+  | Asin    -> Apply2(Div, y, Apply1(Power(3), Apply1(Sqrt, Apply2(Minus, Const 1., Apply1(Power(2), y)))))
+  | Tan     -> Apply2(Div, Apply2(Times, Const 2., Apply1(Tan, y)), Apply1(Power(2), Apply1(Cos, y)))
+  | Atan    -> Apply2(Div, Apply2(Times, Const (-2.), y), Apply1(Power(2), Apply2(Plus, Const 1., Apply1(Power(2), y))))
+  | Tanh    -> Apply2(Div, Apply2(Times, Const (-2.), Apply1(Tanh, y)), Apply1(Power(2), Apply1(Cosh, y)))
+  | Sqrt    -> Apply2(Div, Const (2.5e-1), Apply1(Power(3), Apply1(Sqrt, y)))
+  | Atanh   -> Apply2(Div, Apply2(Times, Const 2., y), Apply1(Power(2), Apply2(Minus, Const 1., Apply1(Power(2), y))))
+  | Asinh   -> Apply2(Div, Apply1(Minus, y), Apply1(Power(3), Apply1(Sqrt, Apply2(Plus, Const 1., Apply1(Power(2), y)))))
+  | Acosh   -> Apply2(Div, Apply1(Minus, y), Apply1(Power(3), Apply1(Sqrt, Apply2(Minus, Apply1(Power(2), y), Const 1.))))
+
 (* third derivative of unary operator *) 
 let dop33 x d1x d2x ddx (op: op1) = match op with
   | Cos     -> Target.Apply2(Minus, Target.Apply1(Minus, Target.Apply2(Times, Target.Apply1(Cos, x), Target.Apply2(Times, d1x, d2x))), Target.Apply2(Times,Target.Apply1(Sin, x), ddx))

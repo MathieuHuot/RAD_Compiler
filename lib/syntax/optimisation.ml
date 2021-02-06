@@ -293,6 +293,8 @@ module T = struct
   | Apply1(Log10, Apply1(Power(n), expr)) -> Success (Apply2(Times, Const (float_of_int n), Apply1(Log10, expr)))
   | Apply1(Power(n), Apply1(Power(m), expr)) -> Success (Apply1(Power(n+m), expr))
   | Apply2(Times, expr1, expr2) when Target.equal expr1 expr2 -> Success (Apply1(Power(2), expr1))
+  | Apply1(Power(1), expr) -> Success expr
+  | Apply1(Power(0), expr) -> Success (Const 1.)
   | expr -> Failure expr
 
   let exact_opti_list =
