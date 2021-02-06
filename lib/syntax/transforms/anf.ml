@@ -34,7 +34,8 @@ let rec isInWeakAnf expr = match expr with
   | Apply1(_,_) | Apply2(_,_,_) -> isImmediate expr 
   | _                           -> true
 
-(*TODO: finish. I think it needs the other kind of map as I want to recursively go into the term I just changed. *)
+(*TODO: finish. I think it needs the other kind of map as I want to recursively go into the term I just changed. 
+          Unless again we use repeat to normalize. But need to use the map of strategies and not the basic map. *)
   let weakAnf expr = map (fun expr ->
     match expr with
     | Apply1(op, expr1)       -> if isImmediate expr then expr else 
