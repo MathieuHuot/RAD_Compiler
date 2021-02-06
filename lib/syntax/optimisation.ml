@@ -245,6 +245,8 @@ module T = struct
   | Fold(x, ty1, y, ty2, expr1, expr2, Map(z, ty3, expr3, expr4)) -> Success (Fold(x, ty1, z, ty3, Let(y, ty2, expr3, expr1), expr2, expr4))
   | Reduce(x, ty1, y, ty2, expr1, expr2, Map(z, ty3, expr3, expr4)) -> Success (Reduce(x, ty1, z, ty3, Let(y, ty2, expr3, expr1), expr2, expr4))
   | Scan(x, ty1, y, ty2, expr1, expr2, Map(z, ty3, expr3, expr4)) ->  Success (Scan(x, ty1, z, ty3, Let(y, ty2, expr3, expr1), expr2, expr4))
+  | Map(x, NProd([ty1; ty2]), expr1, Zip(expr2, expr3)) -> let y1, y2 = Var.fresh(), Var.fresh() in
+    Success (Map2(y1, ty1, y2, ty2, Target.subst x (NProd([ty1; ty2])) (Tuple([Var(y1, ty1); Var(y2, ty2)])) expr1, expr2, expr3))
   | expr -> Failure expr
 
   let rec truncate lis n = match n with
@@ -260,6 +262,7 @@ module T = struct
   | Get(n, Map2(x, ty1, y, ty2, expr1, expr2, expr3)) ->  Success (NCase(Get(n, Zip(expr2, expr3)), [(x, ty1); (y, ty2)], expr1))
   | Get(n, Scan(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Fold(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
   | Get(n, Fold(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Fold(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
+  | Get(n, Reduce(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Reduce(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
   | Get(n, Zip(expr1, expr2)) -> Success (Tuple([Get(n, expr1); Get(n, expr2)]))
   | Get(n, Zip3(expr1, expr2, expr3)) -> Success (Tuple([Get(n, expr1); Get(n, expr2);  Get(n, expr3)]))
   | NCase(Unzip(expr), [(x1, _); (y1, _)], Tuple([Get(n, Var(x2, _)); Get(m, Var(y2, _))])) 
