@@ -126,7 +126,7 @@ let rec from_source (expr: Source.t) : t = match expr with
   | Apply2(op, expr1, expr2) -> Apply2(op, from_source expr1, from_source expr2)
   | Let(x, ty, expr1, expr2) -> Let(x, Type.from_source ty, from_source expr1, from_source expr2)
   | Map (x, ty, expr1, expr2) -> Map (x, Type.from_source ty, from_source expr1, from_source expr2)
-  | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Map2 (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
+  (* | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Map2 (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3) *)
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Reduce (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
   | Scan (x, t1, y, t2, expr1, expr2, expr3) -> Scan (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
   | Get(n, expr) -> Get(n, from_source expr)

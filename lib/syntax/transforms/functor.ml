@@ -13,7 +13,7 @@ let rec traverse (expr : t) f1 f2 f3 f4 f5 : Target.t = match expr with
   | Apply2(op,expr1,expr2)                     -> f4 op (traverse expr1 f1 f2 f3 f4 f5) (traverse expr2 f1 f2 f3 f4 f5)
   | Let(y,ty,expr1,expr2)                      -> Target.Let(y, f5 ty, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5)
   | Map (x, ty, expr1, expr2)                  -> Target.Map(x, f5 ty, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5)
-  | Map2 (x, t1, y, t2, expr1, expr2, expr3)   -> Target.Map2 (x, f5 t1, y, f5 t2, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5, traverse expr3 f1 f2 f3 f4 f5)
+  (* | Map2 (x, t1, y, t2, expr1, expr2, expr3)   -> Target.Map2 (x, f5 t1, y, f5 t2, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5, traverse expr3 f1 f2 f3 f4 f5) *)
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Target.Reduce (x, f5 t1, y, f5 t2, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5, traverse expr3 f1 f2 f3 f4 f5)
   | Scan (x, t1, y, t2, expr1, expr2, expr3)   -> Target.Scan (x, f5 t1, y, f5 t2, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5, traverse expr3 f1 f2 f3 f4 f5)
   | Fold (x, t1, y, t2, expr1, expr2, expr3)   -> Target.Fold (x, f5 t1, y, f5 t2, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5, traverse expr3 f1 f2 f3 f4 f5)
