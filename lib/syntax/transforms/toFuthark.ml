@@ -43,6 +43,7 @@ let rec toFuthark precision fmt = function
   | NCase (expr1, vars, expr2) -> Format.fprintf fmt "@[<hv>let (%a) =@;<1 2>@[%a@]@ in@ %a@]" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,_) -> Var.pp fmt v)) vars (toFuthark precision) expr1 (toFuthark precision) expr2
   | Map (x, _t, expr1, expr2) -> Format.fprintf fmt "map (\\%a -> %a) %a" Var.pp x pp expr1 pp expr2
   | Map2 (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "map2 (\\%a -> \\%a -> %a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2  pp expr3
+  | Map3 (x, _t1, y, _t2, z, _t3, expr1, expr2, expr3, expr4) -> Format.fprintf fmt "map3 (\\%a -> \\%a -> \\%a -> %a) (%a) (%a) (%a)" Var.pp x Var.pp y  Var.pp z pp expr1 pp expr2 pp expr3 pp expr4
   | Reduce (x, _t1, y, _t2, expr1, expr2, expr3) -> Format.fprintf fmt "reduce (\\%a -> \\%a -> %a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
   | Scan (x, _t1, y, _t2, expr1, expr2, expr3)  -> Format.fprintf fmt "scan (\\%a -> \\%a -> %a) (%a) (%a)" Var.pp x Var.pp y pp expr1 pp expr2 pp expr3
   | Zip(expr1, expr2) -> Format.fprintf fmt "zip %a %a" pp expr1 pp expr2

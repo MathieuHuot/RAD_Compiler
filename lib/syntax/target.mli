@@ -67,6 +67,7 @@ type t =
       [expr1 = Tuple (expr11, expr12, …)] *)
   | Map of Var.t * Type.t * t * t  (** map x ty e1 [a1,...,an] = [e1[a1/x],...,e1[an/x]] *)
   | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t (** map2 x ty1 y ty2 e1 [a1,...,an] [b1,...,bn] = [e1[a1/x,b1/y],...,e1[an/x,bn/y]] *)
+  | Map3 of Var.t * Type.t * Var.t * Type.t * Var.t * Type.t * t * t * t * t (** map3 x1 ty1 x2 ty2 x3 ty3 e [a1,...,an] [b1,...,bn] [c1,...,cn] = [e[a1/x1,b1/x2,c1/x3],...,e[an/x1,bn/x2,cn/x3]] *) 
   | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t (** reduce x y e1 z A means reduce (x,y -> e1) from z on A *)
   | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t   (** scan x ty1 y ty2 e1 z A *)
   | Zip of t * t (** zip [a1,...,an] [b1,...,bn] = [(a1,b1),...,(an,bn)] *)

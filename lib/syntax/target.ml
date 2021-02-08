@@ -105,6 +105,7 @@ type t = Var of Var.t * Type.t
                 | NCase of t * ((Var.t * Type.t) list) * t
                 | Map of Var.t * Type.t * t * t  (** map x ty e1 [a1,...,an] = [e1[a1/x],...,e1[an/x]] *)
                 | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t (** map2 x ty1 y ty2 e1 [a1,...,an] [b1,...,bn] = [e1[a1/x,b1/y],...,e1[an/x,bn/y]] *)
+                | Map3 of Var.t * Type.t * Var.t * Type.t * Var.t * Type.t * t * t * t * t (** map3 x1 ty1 x2 ty2 x3 ty3 e [a1,...,an] [b1,...,bn] [c1,...,cn] = [e[a1/x1,b1/x2,c1/x3],...,e[an/x1,bn/x2,cn/x3]] *)
                 | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t (** reduce x y e1 z A means reduce (x,y -> e1) from z on A *)
                 | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t   (** scan x ty1 y ty2 e1 z A *)
                 | Zip of t * t (** zip [a1,...,an] [b1,...,bn] = [(a1,b1),...,(an,bn)] *)
@@ -147,6 +148,7 @@ let rec pp fmt = function
   | NCase (expr1, vars, expr2) -> Format.fprintf fmt "@[<hv>lets %a =@;<1 2>@[%a@]@ in@ %a@]" (CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") (fun fmt (v,t) -> Format.fprintf fmt "%a:%a" Var.pp v Type.pp t)) vars pp expr1 pp expr2
   | Map (x, t, expr1, expr2) -> Format.fprintf fmt "@[map@;<1 2>(%a:%a.%a)@ (%a)@]" Var.pp x Type.pp t pp expr1 pp expr2
   | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Format.fprintf fmt "@[map2@;<1 2>(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2  pp expr3
+  | Map3 (x, t1, y, t2, z, t3, expr1, expr2, expr3, expr4) -> Format.fprintf fmt "@[map2@;<1 2>(%a:%a,%a:%a,%a:%a.%a)@ (%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 Var.pp z Type.pp t3 pp expr1 pp expr2 pp expr3 pp expr4
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Format.fprintf fmt "@[reduce@;<1 2>(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2 pp expr3
   | Scan (x, t1, y, t2, expr1, expr2, expr3)  -> Format.fprintf fmt "@[scan@;<1 2>(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2 pp expr3
   | Zip(expr1, expr2) -> Format.fprintf fmt "@[zip@;<1 2>(%a) (%a)@]" pp expr1 pp expr2
@@ -170,6 +172,7 @@ let rec map f expr = (match expr with
   | NCase (expr1, lType, expr2) -> NCase (map f expr1, lType, map f expr2)
   | Map (x, ty, expr1, expr2) -> Map (x, ty, map f expr1, map f expr2)
   | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Map2 (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
+  | Map3 (x, t1, y, t2, z, t3, expr1, expr2, expr3, expr4) -> Map3 (x, t1, y, t2, z, t3, map f expr1, map f expr2, map f expr3, map f expr4)
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Reduce (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
   | Scan (x, t1, y, t2, expr1, expr2, expr3) -> Scan (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
   | Zip(expr1, expr2) ->  Zip(map f expr1, map f expr2)
@@ -199,6 +202,7 @@ let rec map f expr = (match expr with
     | Scan (_, _, _, _, expr1, expr2, expr3)
     | Fold (_, _, _, _, expr1, expr2, expr3)
     | Zip3(expr1, expr2, expr3) -> a |> fold f expr1 |> fold f expr2 |> fold f expr3
+    | Map3 (_, _, _, _, _, _, expr1, expr2, expr3, expr4) -> a |> fold f expr1 |> fold f expr2 |> fold f expr3 |> fold f expr4
     | Array exprList
     | Tuple exprList -> List.fold_right (fun e a -> fold f e a) exprList a
     | App (expr, exprList) -> a |> fold f expr |> List.fold_right (fun e a -> fold f e a) exprList)
@@ -225,6 +229,9 @@ let subst (x:Var.t) xTy expr1 expr2 =
       | Fold (y1, t1, y2, t2, _, _, _) as expr -> if (Var.equal x y1 && Type.equal xTy t1) || (Var.equal x y2 && Type.equal xTy t2)
         then failwith "subst: trying to substitute a bound variable"
         else expr  
+      | Map3 (y1, t1, y2, t2, y3, t3, _, _, _, _) as expr -> if (Var.equal x y1 && Type.equal xTy t1) || (Var.equal x y2 && Type.equal xTy t2) || (Var.equal x y3 && Type.equal xTy t3)
+        then failwith "subst: trying to substitute a bound variable"
+        else expr
       | expr -> expr
     ) expr2
 
@@ -249,6 +256,9 @@ let simSubst context expr =
       | Scan (y1, t1, y2, t2, _, _, _) 
       | Fold (y1, t1, y2, t2, _, _, _) as expr ->  if isInContext (y1, t1) context || isInContext (y2, t2) context
         then failwith "simsubst: trying to substitute a bound variable"
+        else expr
+      | Map3 (y1, t1, y2, t2, y3, t3, _, _, _, _) as expr -> if isInContext (y1, t1) context || isInContext (y2, t2) context || isInContext (y3, t3) context
+        then failwith "subst: trying to substitute a bound variable"
         else expr
       | expr                       -> expr
     ) expr
@@ -314,6 +324,14 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
 | Unzip3(expr1), Unzip3(expr2)                        -> eqT expr1 expr2 alpha_set                                                                                             
 | Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2
 | Array exprList1, Array exprList2 -> CCList.equal (fun expr1 expr2 -> eqT expr1 expr2 alpha_set) exprList1 exprList2
+| Map3 (x1, t11, y1, t12, z1, t13, expr11, expr12, expr13, expr14), Map3 (x2, t21, y2, t22, z2, t23, expr21, expr22, expr23, expr24)
+                                                      -> Type.equal t11 t21 
+                                                         && Type.equal t12 t22
+                                                         && Type.equal t13 t23
+                                                         && eqT expr12 expr22 alpha_set
+                                                         && eqT expr13 expr23 alpha_set
+                                                         && eqT expr14 expr24 alpha_set
+                                                         &&  eqT expr11 expr21 (PVTSet.add ((z1, t13), (z2, t23)) (PVTSet.add ((y1, t12), (y2, t22)) (PVTSet.add ((x1, t11), (x2, t21)) alpha_set)))                    
 | _                                                   -> false
 in eqT expr1 expr2 PVTSet.empty
 
@@ -355,6 +373,8 @@ let freeVar expr =
 | Scan(y1,_,y2,_,_,_,_) 
 | Fold(y1,_,y2,_,_,_,_) ->  
   VarSet.filter (fun x -> not(Var.equal x y1) && not(Var.equal x y2)) set
+| Map3(y1,_,y2,_,y3,_,_,_,_,_) ->
+  VarSet.filter (fun x -> not(Var.equal x y1) && not(Var.equal x y2) && not(Var.equal x y3)) set
 | _                  -> set) expr VarSet.empty
 
 (* collects the list of unused bound variables *)
@@ -366,7 +386,8 @@ let listUnusedVar expr =
     | Map2(y1, ty1, y2, ty2, expr,_,_) 
     | Reduce(y1, ty1, y2, ty2, expr,_,_)
     | Scan(y1, ty1, y2, ty2, expr,_,_)
-    | Fold(y1, ty1, y2, ty2, expr,_,_) -> (let fv = freeVar expr in List.filter (fun (y,_) -> not(VarSet.mem y fv)) [(y1, ty1); (y2, ty2)]) @ l  
+    | Fold(y1, ty1, y2, ty2, expr,_,_) -> (let fv = freeVar expr in List.filter (fun (y,_) -> not(VarSet.mem y fv)) [(y1, ty1); (y2, ty2)]) @ l
+    | Map3(y1, ty1, y2, ty2, y3, ty3, expr,_,_,_) -> (let fv = freeVar expr in List.filter (fun (y,_) -> not(VarSet.mem y fv)) [(y1, ty1); (y2, ty2); (y3, ty3)]) @ l
     | _ -> l)
   expr []
 
@@ -382,6 +403,7 @@ let varNameNotBound (name : string) expr =
     | Reduce ((str1,_), _, (str2,_), _, _, _, _) 
     | Scan ((str1,_), _, (str2,_), _, _, _, _)  
     | Fold ((str1,_), _, (str2,_), _, _, _, _)  -> str1 <> name && str2 <> name
+    | Map3 ((str1,_), _, (str2,_), _,(str3,_),_,_,_,_,_)  -> str1 <> name && str2 <> name && str3 <> name
     | _ -> true
   in
   fold (fun expr b -> b && aux expr) expr true
@@ -462,15 +484,30 @@ let rec inferType expr =
       let* t3 = inferType expr3 in
       match t2,t3 with
       | Array(n, t2), Array(m, t3) ->
-        if not(Type.equal ty1 t2) && not(Type.equal ty2 t3) then
+        if not(Type.equal ty1 t2) || not(Type.equal ty2 t3) then
         Error
           "in Map2 type of one of the function argument does not correspond to the \
            type of the elements of the array"
         else if not(n = m) then
           Error
-            "in Map2 the two arguments should be vectors of the sam size"
+            "in Map2 the two arguments should be vectors of the same size"
         else (inferType expr1 >|= fun t1 -> Type.Array (n, t1))
       | _ -> Error "type of the expression should be array")
+  | Map3 (_, ty1, _, ty2, _, ty3, expr1, expr2, expr3, expr4) -> (
+        let* t2 = inferType expr2 in
+        let* t3 = inferType expr3 in
+        let* t4 = inferType expr4 in
+        match t2, t3, t4 with
+        | Array(n, t2), Array(m, t3), Array(p, t4) ->
+          if not(Type.equal ty1 t2) || not(Type.equal ty2 t3) || not(Type.equal ty2 t4) then
+          Error
+            "in Map3 type of one of the function argument does not correspond to the \
+             type of the elements of the array"
+          else if not(n = m && n = p) then
+            Error
+              "in Map3 the three arguments should be vectors of the same size"
+          else (inferType expr1 >|= fun t1 -> Type.Array (n, t1))
+        | _ -> Error "type of the expression should be array")
   | Reduce (_, ty1, _, ty2, expr1, expr2, expr3) -> (
         let* t1 = inferType expr1 in
         let* t2 = inferType expr2 in
@@ -630,6 +667,18 @@ let interpret expr context =
                  (fun e1 e2 -> interp (M.add (y, t2) e2 (M.add (x, t1) e1 context)) expr1)
                  exprList1 exprList2)
         | expr2, expr3 -> Map2 (x, t1, y, t2, expr1, expr2, expr3))
+    | Map3 (x, t1, y, t2, z, t3, expr1, expr2, expr3, expr4) -> (
+        let expr1 = interp context expr1 in
+        match (interp context expr2, interp context expr3, interp context expr4) with
+        | Array exprList1, Array exprList2, Array exprList3 ->
+          let rec map3 f l1 l2 l3 = begin match l1, l2, l3 with
+              | [],[],[] -> []
+              | a::l1, b::l2, c::l3 -> (f a b c)::(map3 f l1 l2 l3) 
+              | _ -> assert false end in
+            Array (map3
+                  (fun e1 e2 e3 -> interp (M.add (z, t3) e3 (M.add (y, t2) e2 (M.add (x, t1) e1 context))) expr1)
+                  exprList1 exprList2 exprList3) 
+        | expr2, expr3, expr4 -> Map3 (x, t1, y, t2, z, t3, expr1, expr2, expr3, expr4))
     | Fold (x, t1, y, t2, expr1, expr2, expr3)
     | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> (
         let expr1 = interp context expr1 in
@@ -749,6 +798,11 @@ module Traverse (S : Strategy.S) = struct
         | [e1;e2;e3] -> Map2(x, t1, y, t2, e1, e2, e3)
         | _ -> assert false
         end
+    | Map3 (x, t1, y, t2, z, t3, expr1, expr2, expr3, expr4) -> 
+          applyl (map f) [expr1; expr2; expr3; expr4] >|= fun l -> begin match l with 
+            | [e1;e2;e3;e4] -> Map3 (x, t1, y, t2, z, t3, e1, e2, e3, e4)
+            | _ -> assert false
+            end        
     | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> 
      applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
         | [e1;e2;e3] -> Reduce(x, t1, y, t2, e1, e2, e3)
