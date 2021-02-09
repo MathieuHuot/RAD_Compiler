@@ -240,13 +240,18 @@ module T = struct
   let loop_fusion : Target.t -> Target.t output = function
   | Map (y, ty2, expr2, Map (x, ty1, expr1, expr3)) -> Success (Map(x, ty1, Let(y, ty2, expr2, expr1), expr3))
   | Map(z, ty3, expr4, Map2(x, ty1, y, ty2, expr1, expr2, expr3)) -> Success (Map2(x, ty1, y, ty2, Let(z, ty3, expr1, expr4), expr2, expr3))
+  | Map(y, ty, expr5, Map3(x1, ty1, x2, ty2, x3, ty3, expr1, expr2, expr3, expr4)) -> Success (Map3(x1, ty1, x2, ty2, x3, ty3, Let(y, ty, expr1, expr5), expr2, expr3, expr4))
   | Map2(x1, ty1, x2, ty2, expr1, Map(z1, ty11, expr11, expr12), Map(z2, ty22, expr21, expr22)) -> 
     Success (Map2(z1, ty11, z2, ty22, NCase(Tuple([expr11; expr21]), [(x1, ty1); (x2, ty2)], expr1) , expr12, expr22))
+  | Map3(x1, ty1, x2, ty2, x3, ty3, expr1, Map(z1, ty11, expr11, expr12), Map(z2, ty22, expr21, expr22), Map(z3, ty33, expr31, expr32)) -> 
+      Success (Map3(z1, ty11, z2, ty22, z3, ty33, NCase(Tuple([expr11; expr21; expr31]), [(x1, ty1); (x2, ty2); (x3, ty3)], expr1) , expr12, expr22, expr32)) 
   | Fold(x, ty1, y, ty2, expr1, expr2, Map(z, ty3, expr3, expr4)) -> Success (Fold(x, ty1, z, ty3, Let(y, ty2, expr3, expr1), expr2, expr4))
   | Reduce(x, ty1, y, ty2, expr1, expr2, Map(z, ty3, expr3, expr4)) -> Success (Reduce(x, ty1, z, ty3, Let(y, ty2, expr3, expr1), expr2, expr4))
   | Scan(x, ty1, y, ty2, expr1, expr2, Map(z, ty3, expr3, expr4)) ->  Success (Scan(x, ty1, z, ty3, Let(y, ty2, expr3, expr1), expr2, expr4))
   | Map(x, NProd([ty1; ty2]), expr1, Zip(expr2, expr3)) -> let y1, y2 = Var.fresh(), Var.fresh() in
     Success (Map2(y1, ty1, y2, ty2, Target.subst x (NProd([ty1; ty2])) (Tuple([Var(y1, ty1); Var(y2, ty2)])) expr1, expr2, expr3))
+  | Map(x, NProd([ty1; ty2; ty3]), expr1, Zip3(expr2, expr3, expr4)) -> let y1, y2, y3 = Var.fresh(), Var.fresh(), Var.fresh() in
+    Success (Map3(y1, ty1, y2, ty2, y3, ty3, Target.subst x (NProd([ty1; ty2; ty3])) (Tuple([Var(y1, ty1); Var(y2, ty2); Var(y3, ty3)])) expr1, expr2, expr3, expr4))
   | expr -> Failure expr
 
   let rec truncate lis n = match n with
@@ -256,11 +261,11 @@ module T = struct
         | e::lis -> e::(truncate lis (n-1))
         end  
 
-        (*TODO: add map3 optimisations*)
   let loop_removal : Target.t -> Target.t output = function
   | Get(n, Map(x, ty, expr1, expr2)) -> Success(Let(x, ty, Get(n, expr2), expr1))
   | Get(n, Array(exprList)) -> Success (List.nth exprList n)
   | Get(n, Map2(x, ty1, y, ty2, expr1, expr2, expr3)) ->  Success (NCase(Get(n, Zip(expr2, expr3)), [(x, ty1); (y, ty2)], expr1))
+  | Get(n, Map3(x, ty1, y, ty2, z, ty3, expr1, expr2, expr3, expr4)) ->  Success (NCase(Get(n, Zip3(expr2, expr3, expr4)), [(x, ty1); (y, ty2); (z, ty3)], expr1))
   | Get(n, Scan(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Fold(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
   | Get(n, Fold(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Fold(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
   | Get(n, Reduce(x, ty1, y, ty2, expr1, expr2, Array(exprList))) -> Success (Reduce(x, ty1, y, ty2, expr1, expr2, Array(truncate exprList n)))
