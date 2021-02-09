@@ -140,7 +140,7 @@ module T = struct
         Success (NCase (expr1, varList, Let (x, ty, expr2, expr3)))
     | expr -> Failure expr
 
-  (* TODO turn this into a inlininng optimisation *)
+  (* TODO turn this into a inlinining optimisation *)
   let forwardSubstitution : Target.t -> Target.t output = function
     | Let (x, ty, (Const _ as expr), e) | Let (x, _, (Var (_, ty) as expr), e)
       ->
@@ -169,6 +169,8 @@ module T = struct
   (* TODO: unsafe, does not terminate
    * Use NCase to make convergent
    * [@ocaml.alert unsafe "Does not terminate"]*)
+
+  (* MH: I think we keep the first one which is a simple case of subexpression elimination, and remove the second one *)
   let letSimplification : Target.t -> Target.t output = function
     (* let x=e1 in let y=e1 in e2 -> let x=e0 in let y=x in e2 *)
     | Let (x1, ty1, e0, Let (x2, ty2, e1, e2)) when Target.equal e0 e1 ->
@@ -190,6 +192,7 @@ module T = struct
         else Success (NCase (Tuple exprList, varList, expr))
     (* CBN evaluates a variable which has a function type *)
     (* TODO: why doing some sort of lazy evaluation for function ? *)
+    (*MH: it's used crefully after rad, but integrated into the more efficient rad2. should be removed eventually *)
     | Let (x, ty, expr1, expr2) when Target.Type.isArrow ty ->
         Success (Target.subst x ty expr1 expr2)
     | NCase (Tuple exprList, varList, expr) as e ->
@@ -231,7 +234,8 @@ module T = struct
         else Failure (NCase (Tuple filtExpr, filtVar, expr))
     | expr -> Failure expr
 
-    (* TODO: maybe remove this, or could also remove Let altogether and just keep NCase *)
+    (* TODO: see if useful *)
+    (* could also remove Let altogether and just keep NCase *)
   let oneCaseRemoval : Target.t -> Target.t output = function
     | NCase (Tuple [ expr1 ], [ (x, ty) ], expr2) ->
         Success (Let (x, ty, expr1, expr2))
@@ -284,7 +288,7 @@ module T = struct
 
   let algebraicSimplifications : Target.t -> Target.t output = function
   | Apply1(Power(2), Apply1(Sqrt, expr)) -> Success expr
-  | Apply1(Cos, Apply1(Acos, expr)) -> Success expr
+  | Apply1(Cos, Apply1(Acos, expr)) -> Success expr 
   | Apply1(Sin, Apply1(Asin, expr)) -> Success expr
   | Apply1(Log, Apply1(Exp, expr)) -> Success expr
   | Apply1(Exp, Apply1(Log, expr)) -> Success expr

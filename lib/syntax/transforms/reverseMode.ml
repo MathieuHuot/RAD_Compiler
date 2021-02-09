@@ -96,14 +96,14 @@ let rec rad (context: gradient_variables) (cont : Target.t)  (expr : t) : Target
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
                                    Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context end
-  | Array (exprList)            -> failwith "TODO"
-  | Get(n, expr)                -> failwith "TODO"
-  | Map (x, t, expr1, expr2)    -> failwith "TODO"
-  | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
+    | Array (exprList)          -> failwith "TODO"
+    | Get(n, expr)              -> failwith "TODO"
+    | Map (x, t, expr1, expr2)  -> failwith "TODO"
+    | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
                                 -> failwith "TODO"
-  | Scan (x, t1, y, t2, expr1, expr2, expr3) 
+    | Scan (x, t1, y, t2, expr1, expr2, expr3) 
                                 ->  failwith "TODO"
-  | Fold (x, t1, y, t2, expr1, expr2, expr3) 
+    | Fold (x, t1, y, t2, expr1, expr2, expr3) 
                                 -> failwith "TODO"
 
 let semiNaiveReverseAD (context: gradient_variables) (expr: t) : Target.t =
