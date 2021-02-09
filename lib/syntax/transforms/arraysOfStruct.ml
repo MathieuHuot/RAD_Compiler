@@ -10,10 +10,9 @@ type t = Var of Var.t * Type.t | Const of float | Apply1 of op1 * t | Apply2 of 
 | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t | Map3 of Var.t * Type.t * Var.t * Type.t * Var.t * Type.t * t * t * t * t 
 | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t | Zip of t * t 
 | Unzip of t| Zip3 of t * t * t | Unzip3 of t | Get of int * t | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t | Array of t list 
-| AoS of t | SoA of t
+| AoS of t | SoA of t (*TODO: might need more indication in SoA, like some type, or the kind of structure being distributed (pairs, triple, ...) *)
 
-let rec type_embedding (ty: Target.Type.t) : Type.t =
-  match ty with 
+let rec type_embedding (ty: Target.Type.t) : Type.t = match ty with 
   | Target.Type.Real -> Real
   | Target.Type.NProd(tyList) -> NProd(List.map type_embedding tyList)
   | Target.Type.Arrow(tyList, ty) ->Arrow(List.map type_embedding tyList, type_embedding ty)
@@ -40,12 +39,12 @@ let rec embedding (expr: Target.t) : t = match expr with
   | Target.Unzip(expr) -> Unzip(embedding expr)
   | Target.Unzip3(expr) -> Unzip3(embedding expr)
   | Target.Array (exprList) -> Array(List.map embedding exprList)
-  | Target.Get(n, expr) -> Get(n, embedding expr)
+  | Target.Get(n, expr) -> Get(n, embedding expr) 
 
+(*TODO: that's not what I want actually *)  
 let soa_init (expr: t) = SoA (AoS (expr))
 
-let rec type_projection (ty: Type.t) : Target.Type.t =
-    match ty with 
+let rec type_projection (ty: Type.t) : Target.Type.t = match ty with 
     | Real -> Target.Type.Real
     | NProd(tyList) -> Target.Type.NProd(List.map type_projection tyList)
     | Arrow(tyList, ty) -> Target.Type.Arrow(List.map type_projection tyList, type_projection ty)
@@ -77,6 +76,10 @@ let rec projection (expr: t) : Target.t = match expr with
   | Get(n, expr) -> Get(n, projection expr)
 
 let rec reduction (expr: t) = match expr with
+| Unzip(AoS(expr)) -> expr
+| Unzip3(AoS(expr)) -> expr
+(* | Map(x, NProd([ty1; ty2]), expr1, SoA(expr2)) -> let y1, y2 = Var.fresh(), Var.fresh() in
+  Map2(y1, ty1, y2, ty2, NCase(Var(x,NProd([ty1; ty2])), expr1), ???) *)
 | _ -> failwith "TODO"
 
 let arrayOfStructConversion (expr: Target.t) : Target.t =
