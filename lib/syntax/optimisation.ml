@@ -256,6 +256,7 @@ module T = struct
         | e::lis -> e::(truncate lis (n-1))
         end  
 
+        (*TODO: add map3 optimisations*)
   let loop_removal : Target.t -> Target.t output = function
   | Get(n, Map(x, ty, expr1, expr2)) -> Success(Let(x, ty, Get(n, expr2), expr1))
   | Get(n, Array(exprList)) -> Success (List.nth exprList n)

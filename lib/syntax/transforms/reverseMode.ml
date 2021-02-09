@@ -96,7 +96,15 @@ let rec rad (context: gradient_variables) (cont : Target.t)  (expr : t) : Target
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
                                    Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context end
-    | _ -> failwith "TODO"
+  | Array (exprList)            -> failwith "TODO"
+  | Get(n, expr)                -> failwith "TODO"
+  | Map (x, t, expr1, expr2)    -> failwith "TODO"
+  | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
+                                -> failwith "TODO"
+  | Scan (x, t1, y, t2, expr1, expr2, expr3) 
+                                ->  failwith "TODO"
+  | Fold (x, t1, y, t2, expr1, expr2, expr3) 
+                                -> failwith "TODO"
 
 let semiNaiveReverseAD (context: gradient_variables) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
@@ -104,11 +112,26 @@ let semiNaiveReverseAD (context: gradient_variables) (expr: t) : Target.t =
   expr |> SourceAnf.weakAnf |> rad context id_cont |> fun (a,_,_) -> a
 
 (* To actually compute the gradient of a term, we need to initialize tangent variables as in imperative reverse-mode.
-    Every tangent variable is initialized at 0 except from the last one which is the returned variable and is initialized at 1 *)
+    Every tangent variable is initialized at 0 except from the last one which is the returned variable and is initialized at 1
+    0 is the unit for + of the type seen as a monoid. Every group type inherits the monoid structure from (R,+,0) in the obvious way,
+    e.g. Array(n,R) with pointwise addition and the unit is the zero vector of size n. *)
+let rec make_list size elt = match size with
+ | 0 -> []
+ | _ -> elt::make_list (size-1) elt
+
+let rec zero_vector ty = 
+  if not(Target.Type.isGroundType ty) then failwith "zero_vector only applies to a ground type"
+  else
+  match ty with
+  | Target.Type.Real         -> Target.Const 0.
+  | Target.Type.Array(n, ty) -> Target.Array(make_list n (zero_vector ty))
+  | _                        -> assert false
+
+(*Assumes the last type is of type Real for the usual reverse mode to work *)
 let rec initialize_rad list = match list with
  | []     -> failwith "initialize_rad: the gradient of a closed term won't give you much!" 
  | _::[] -> [Target.Const 1.] 
- | _::tl -> (Target.Const 0.)::initialize_rad tl
+ | ty::tl -> (zero_vector ty)::initialize_rad tl
 
 let grad (context: gradient_variables) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
@@ -156,7 +179,6 @@ let rec rad2 (context: gradient_variables) (cont : Target.t)  (expr : t) : Targe
                                     | Var(x1,_), Var(x2,_) ->
                                       let pos_x1 = getPos (x1, Type.Real) context in
                                       let pos_x2 = getPos (x2, Type.Real) context in
-
                                       let partial1Op = fun z -> Target.Apply2(Times, Target.d1op op (Target.Var(x1, Target.Type.Real)) (Target.Var(x2, Target.Type.Real)), z) in
                                       let partial2Op = fun z -> Target.Apply2(Times, Target.d2op op (Target.Var(x1, Target.Type.Real)) (Target.Var(x2, Target.Type.Real)), z) in  
                                       let newCont = newContinuation cont Target.Type.Real 
@@ -171,7 +193,15 @@ let rec rad2 (context: gradient_variables) (cont : Target.t)  (expr : t) : Targe
                                  let newContext = context @ [(x,ty)] in
                                  let dexpr2, cont, context = rad2 newContext cont expr2 in 
                                  Let(x, Target.Type.from_source ty, Target.from_source expr1, dexpr2), cont, context
-  | _ -> failwith "TODO"
+  | Array (exprList)          -> failwith "TODO"
+  | Get(n, expr)              -> failwith "TODO"
+  | Map (x, t, expr1, expr2)  -> failwith "TODO"
+  | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
+                              -> failwith "TODO"
+  | Scan (x, t1, y, t2, expr1, expr2, expr3) 
+                              ->  failwith "TODO"
+  | Fold (x, t1, y, t2, expr1, expr2, expr3) 
+                              -> failwith "TODO"
 
 
   (* Initialize the tangent variables for computing a gradient. That is for every primal x, dx=0, except for the output variable z for which dz=1.
@@ -180,7 +210,7 @@ let apply_sensitivities dexpr cont =
   let f expr = match expr with
     | Target.Tuple([_; expr2]) when Target.equal expr2 cont -> 
       begin match cont with 
-      | Target.Fun(varList, e) -> Target.simSubst (List.combine varList (initialize_rad varList)) e
+      | Target.Fun(varList, e) -> Target.simSubst (List.combine varList (initialize_rad (List.map snd varList))) e
       | _ -> failwith "apply_sensitivities: continuation should have a function type"
       end
     | _ -> expr
