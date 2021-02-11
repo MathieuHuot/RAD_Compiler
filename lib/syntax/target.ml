@@ -112,7 +112,7 @@ type t = Var of Var.t * Type.t
                 | Unzip of t (** Unzip [(a1,b1),...,(an,bn)] = [a1,...,an],[b1,...,bn] =  *)
                 | Zip3 of t * t * t (** zip [a1,...,an] [b1,...,bn] [c1,...,cn] = [(a1,b1,c1),...,(an,bn,cn)] *)
                 | Unzip3 of t (** Unzip  [(a1,b1,c1),...,(an,bn,cn)] = [a1,...,an],[b1,...,bn], [c1,...,cn] =  *)
-                | Get of int * t (** get i [a1,...,an] returns ai *)
+                (* | Get of int * t * get i [a1,...,an] returns ai *)
                 | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t(** fold z x ty1 y ty2 e z A means fold A from z with (x:ty1, y:ty2 -> e). It's a fold LEFT operator. *)
                 | Array of t list 
 
@@ -130,7 +130,7 @@ let rec from_source (expr: Source.t) : t = match expr with
   (* | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Map2 (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3) *)
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Reduce (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
   | Scan (x, t1, y, t2, expr1, expr2, expr3) -> Scan (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
-  | Get(n, expr) -> Get(n, from_source expr)
+  (* | Get(n, expr) -> Get(n, from_source expr) *)
   | Fold (x, t1, y, t2, expr1, expr2, expr3) -> Fold (x, Type.from_source t1, y, Type.from_source t2, from_source expr1, from_source expr2, from_source expr3)
   | Array (exprList) -> Array(List.map from_source exprList) 
 
@@ -155,7 +155,7 @@ let rec pp fmt = function
   | Zip3(expr1, expr2, expr3) -> Format.fprintf fmt "@[zip3@;<1 2>(%a) (%a) (%a)@]" pp expr1 pp expr2 pp expr3
   | Unzip(expr) -> Format.fprintf fmt "@[unzip@;<1 2>(%a)@]" pp expr
   | Unzip3(expr) -> Format.fprintf fmt "@[unzip3@;<1 2>(%a)@]" pp expr 
-  | Get(n, expr)      -> Format.fprintf fmt "get %i@;<1 2>(%a)" n pp expr
+  (* | Get(n, expr)      -> Format.fprintf fmt "get %i@;<1 2>(%a)" n pp expr *)
   | Fold (x, t1, y, t2, expr1, expr2, expr3)  -> Format.fprintf fmt "@[fold(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2 pp expr3
   | Array (exprList) -> CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") ~pp_start:(fun fmt () -> Format.fprintf fmt "@[[@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@,]@]") pp fmt exprList
 
@@ -179,7 +179,7 @@ let rec map f expr = (match expr with
   | Zip3(expr1, expr2, expr3) ->  Zip3(map f expr1, map f expr2, map f expr3)
   | Unzip(expr) ->  Unzip(map f expr)
   | Unzip3(expr) ->  Unzip3(map f expr)
-  | Get(n, expr) -> Get(n, map f expr)
+  (* | Get(n, expr) -> Get(n, map f expr) *)
   | Fold (x, t1, y, t2, expr1, expr2, expr3) -> Fold (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
   | Array (exprList) -> Array (List.map (map f) exprList)
   ) |> f
@@ -189,7 +189,7 @@ let rec map f expr = (match expr with
     | Var (_, _) | Const _ -> a
     | Apply1 (_, expr)
     | Fun (_, expr)
-    | Get(_, expr) 
+    (* | Get(_, expr)  *)
     | Unzip(expr)
     | Unzip3(expr) -> a |> fold f expr
     | Apply2 (_, expr1,expr2)
@@ -322,7 +322,7 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
                                                          &&  eqT expr13 expr23 alpha_set   
 | Unzip(expr1), Unzip(expr2)                          -> eqT expr1 expr2 alpha_set
 | Unzip3(expr1), Unzip3(expr2)                        -> eqT expr1 expr2 alpha_set                                                                                             
-| Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2
+(* | Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2 *)
 | Array exprList1, Array exprList2 -> CCList.equal (fun expr1 expr2 -> eqT expr1 expr2 alpha_set) exprList1 exprList2
 | Map3 (x1, t11, y1, t12, z1, t13, expr11, expr12, expr13, expr14), Map3 (x2, t21, y2, t22, z2, t23, expr21, expr22, expr23, expr24)
                                                       -> Type.equal t11 t21 
@@ -581,12 +581,12 @@ let rec inferType expr =
     inferType expr >>= function
     | Type.Array(m, Type.NProd([t1; t2; t3])) -> Ok (Type.NProd ([Type.Array (m, t1); Type.Array (m ,t2); Type.Array (m ,t3)]))
     | _ -> Error "Argument of Unzip3 should be an array of triples")
-  | Get (n, expr) -> (
+  (* | Get (n, expr) -> (
     inferType expr >>= function
     | Type.Array(m, t1) -> if n<m then Ok t1 
                            else Error "trying to get an element out of bounds of an array"
     | _ -> Error "Argument 2 of Zip should be a Type.Array"
-    )
+    ) *)
   | Array exprList -> (
     List.map inferType exprList |> flatten_l >>= function
       | [] -> Error "Empty array"
@@ -758,10 +758,10 @@ let interpret expr context =
               Tuple [ Array exprList1; Array exprList2; Array exprList3 ]
             else Unzip3 (Array exprList)
         | exprList -> Unzip3 exprList)
-    | Get (n, expr) -> (
+    (* | Get (n, expr) -> (
         match interp context expr with
         | Array exprList -> List.nth exprList n
-        | expr -> Get (n, expr))
+        | expr -> Get (n, expr)) *)
     | Array exprList -> Array (List.map (interp context) exprList)
   in
   interp (M.of_list context) expr
@@ -823,7 +823,7 @@ module Traverse (S : Strategy.S) = struct
         end
     | Unzip (expr) ->  map f expr >|= fun expr -> Unzip (expr)
     | Unzip3 (expr) ->  map f expr >|= fun expr -> Unzip3 (expr)
-    | Get (n, expr) -> map f expr >|= fun expr -> Get(n, expr)
+    (* | Get (n, expr) -> map f expr >|= fun expr -> Get(n, expr) *)
     | Fold (x, t1, y, t2, expr1, expr2, expr3) -> 
      applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
         | [e1; e2; e3] -> Fold(x, t1, y, t2, e1, e2, e3)
@@ -939,10 +939,10 @@ module Parse = struct
     skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
     >|= fun expr3 -> Fold (x, t1, y, t2, expr1, expr2, expr3)
 
-  let pGet self =
+  (* let pGet self =
     skip_white *> string "get" *> skip_white *> U.int >>= fun n ->
     skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
-    >|= fun expr -> Get (n, expr)
+    >|= fun expr -> Get (n, expr) *)
 
   let pArray self = U.list ~sep:"," self >|= fun l -> Array l
 
@@ -967,7 +967,7 @@ module Parse = struct
        <|> try_ (pReduce self)
        <|> try_ (pScan self)
        <|> try_ (pFold self)
-       <|> try_ (pGet self)
+       (* <|> try_ (pGet self) *)
        <|> pArray self)
 
   let of_string = parse_string pTerm

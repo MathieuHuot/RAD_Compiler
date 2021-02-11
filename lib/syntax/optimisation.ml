@@ -265,7 +265,7 @@ module T = struct
         | e::lis -> e::(truncate lis (n-1))
         end  
 
-  let loop_removal : Target.t -> Target.t output = function
+  (* let loop_removal : Target.t -> Target.t output = function
   | Get(n, Map(x, ty, expr1, expr2)) -> Success(Let(x, ty, Get(n, expr2), expr1))
   | Get(n, Array(exprList)) -> Success (List.nth exprList n)
   | Get(n, Map2(x, ty1, y, ty2, expr1, expr2, expr3)) ->  Success (NCase(Get(n, Zip(expr2, expr3)), [(x, ty1); (y, ty2)], expr1))
@@ -279,7 +279,7 @@ module T = struct
     when Var.equal x1 x2 && Var.equal y1 y2 && n=m -> Success (Get(n, expr))
   | NCase(Unzip3(expr), [(x1, _); (y1, _); (z1, _)], Tuple([Get(n, Var(x2, _)); Get(m, Var(y2, _)); Get(p, Var(z2, _))])) 
     when Var.equal x1 x2 && Var.equal y1 y2 && Var.equal z1 z2 && n=m && m=p -> Success (Get(n, expr)) 
-  | expr -> Failure expr
+  | expr -> Failure expr *)
 
   let array_simplification : Target.t -> Target.t output = function
   | Unzip(Zip(expr1, expr2)) -> Success (Tuple([expr1; expr2]))

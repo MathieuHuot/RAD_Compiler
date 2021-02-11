@@ -17,5 +17,5 @@ let rec traverse (expr : t) f1 f2 f3 f4 f5 : Target.t = match expr with
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Target.Reduce (x, f5 t1, y, f5 t2, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5, traverse expr3 f1 f2 f3 f4 f5)
   | Scan (x, t1, y, t2, expr1, expr2, expr3)   -> Target.Scan (x, f5 t1, y, f5 t2, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5, traverse expr3 f1 f2 f3 f4 f5)
   | Fold (x, t1, y, t2, expr1, expr2, expr3)   -> Target.Fold (x, f5 t1, y, f5 t2, traverse expr1 f1 f2 f3 f4 f5, traverse expr2 f1 f2 f3 f4 f5, traverse expr3 f1 f2 f3 f4 f5)
-  | Get(n, expr)                               -> Target.Get(n, traverse expr f1 f2 f3 f4 f5)
+  (* | Get(n, expr)                               -> Target.Get(n, traverse expr f1 f2 f3 f4 f5) *)
   | Array (exprList)                           -> Target.Array(List.map (fun x -> traverse x f1 f2 f3 f4 f5) exprList)

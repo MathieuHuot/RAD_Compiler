@@ -64,7 +64,7 @@ type t = Var of Var.t * Type.t
             (* | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t (** map2 x ty2 y ty2 e1 [a1,...,an] [b1,...,bn] = [e1[a1/x,b1/y],...,e1[an/x,bn/y]] *) *)
             | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t (** reduce x y e1 z A means reduce (x,y -> e1) from z on A *)
             | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t   (** scan x ty1 y ty2 e1 z A *)
-            | Get of int * t (** get i [a1,...,an] returns ai *)
+            (* | Get of int * t * get i [a1,...,an] returns ai *)
             | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t(** fold z x ty1 y ty2 e z A means fold A from z with (x:ty1, y:ty2 -> e). It's a fold LEFT operator. *)
             | Array of t list 
             (* | Filter of (Var.t -> bool) *) (* currently not supported as we don't have boolean types *)
@@ -84,7 +84,7 @@ let rec pp fmt = function
   (* | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Format.fprintf fmt "@[map2@;<1 2>(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2  pp expr3 *)
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Format.fprintf fmt "@[reduce@;<1 2>(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2 pp expr3
   | Scan (x, t1, y, t2, expr1, expr2, expr3)  -> Format.fprintf fmt "@[scan@;<1 2>(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2 pp expr3
-  | Get(n, expr)      -> Format.fprintf fmt "get %i@;<1 2>(%a)" n pp expr
+  (* | Get(n, expr)      -> Format.fprintf fmt "get %i@;<1 2>(%a)" n pp expr *)
   | Fold (x, t1, y, t2, expr1, expr2, expr3)  -> Format.fprintf fmt "@[fold(%a:%a,%a:%a.%a)@ (%a)@ (%a)@]" Var.pp x Type.pp t1 Var.pp y Type.pp t2 pp expr1 pp expr2 pp expr3
   | Array (exprList) -> CCList.pp ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ",") ~pp_start:(fun fmt () -> Format.fprintf fmt "@[[@;<0 2>@[") ~pp_stop:(fun fmt () -> Format.fprintf fmt "@]@,]@]") pp fmt exprList
 
@@ -99,15 +99,15 @@ let rec map f expr = match f expr with
   (* | Map2 (x, t1, y, t2, expr1, expr2, expr3) -> Map2 (x, t1, y, t2, map f expr1, map f expr2, map f expr3) *)
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) -> Reduce (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
   | Scan (x, t1, y, t2, expr1, expr2, expr3) -> Scan (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
-  | Get(n, expr) -> Get(n, map f expr)
+  (* | Get(n, expr) -> Get(n, map f expr) *)
   | Fold (x, t1, y, t2, expr1, expr2, expr3) -> Fold (x, t1, y, t2, map f expr1, map f expr2, map f expr3)
   | Array (exprList) -> Array (List.map (map f) exprList)
 
 let rec fold f expr a =
   f expr (match expr with
   | Var (_, _) | Const _ -> a
-  | Apply1 (_, expr)
-  | Get(_, expr) -> a |> fold f expr
+  | Apply1 (_, expr)  -> a |> fold f expr
+  (* | Get(_, expr)  -> a |> fold f expr *)
   | Apply2 (_, expr1,expr2)
   | Let (_, _, expr1, expr2)
   | Map (_, _, expr1, expr2) -> a |> fold f expr1 |> fold f expr2
@@ -200,7 +200,7 @@ let simSubst context expr = map (fun expr ->
                                                              && eqT expr12 expr22 alpha_set
                                                              && eqT expr13 expr23 alpha_set
                                                              &&  eqT expr11 expr21 (PVTSet.add ((y1, t12), (y2, t22)) (PVTSet.add ((x1, t11), (x2, t21)) alpha_set))                    
-    | Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2
+    (* | Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2 *)
     | Array exprList1, Array exprList2 -> CCList.equal (fun expr1 expr2 -> eqT expr1 expr2 alpha_set) exprList1 exprList2
     | _                                                   -> false
     in eqT expr1 expr2 PVTSet.empty
@@ -371,12 +371,12 @@ let rec inferType expr =
             Ok t1
           | _ -> Error "in Fold type of the third argument is not an array"
       )
-  | Get (n, expr) -> (
+  (* | Get (n, expr) -> (
     inferType expr >>= function
     | Type.Array(m, t1) -> if n<m then Ok t1 
                            else Error "trying to get an element out of bounds of an array"
     | _ -> Error "Argument 2 of Zip should be a Type.Array"
-    )
+    ) *)
   | Array exprList -> (
     List.map inferType exprList |> flatten_l >>= function
       | [] -> Error "Empty array"
@@ -443,7 +443,7 @@ module Traverse (S : Strategy.S) = struct
         | [e1;e2;e3] -> Scan(x, t1, y, t2, e1, e2, e3)
         | _ -> assert false
         end
-    | Get(n, expr) -> map f expr >|= fun expr -> Get(n, expr)
+    (* | Get(n, expr) -> map f expr >|= fun expr -> Get(n, expr) *)
     | Fold (x, t1, y, t2, expr1, expr2, expr3) -> 
      applyl (map f) [expr1; expr2; expr3] >|= fun l -> begin match l with 
         | [e1;e2;e3] -> Fold(x, t1, y, t2, e1, e2, e3)
@@ -543,10 +543,10 @@ module Parse = struct
     skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
     >|= fun expr3 -> Fold (x, t1, y, t2, expr1, expr2, expr3)
 
-  let pGet self =
+  (* let pGet self =
     skip_white *> string "get" *> skip_white *> U.int >>= fun n ->
     skip_white *> string "(" *> skip_white *> self <* skip_white <* string ")"
-    >|= fun expr -> Get (n, expr)
+    >|= fun expr -> Get (n, expr) *)
 
   let pArray self = U.list ~sep:"," self >|= fun l -> Array l
 
@@ -567,7 +567,7 @@ module Parse = struct
        <|> try_ (pReduce self)
        <|> try_ (pScan self)
        <|> try_ (pFold self)
-       <|> try_ (pGet self)
+       (* <|> try_ (pGet self) *)
        <|> pArray self)
 
   let of_string = parse_string pTerm

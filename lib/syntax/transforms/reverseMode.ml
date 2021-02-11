@@ -99,7 +99,7 @@ let rec rad (context: gradient_variables) (cont : Target.t)  (expr : t) : Target
     | Array (exprList)          -> let cont = List.fold_left (fun cont expr -> let dexpr, newCont, context = rad context cont expr in newCont) cont exprList in
                                       let newCont = cont in (*TODO:*)
                                       Tuple([Target.from_source expr; newCont]), newCont, context
-    | Get(n, expr)              -> let dexpr, cont, context = rad context cont expr in
+    (* | Get(n, expr)              -> let dexpr, cont, context = rad context cont expr in
                                    begin match Target.inferType cont with 
                                     | Result.Ok(Target.Type.Arrow(tyList,_)) ->
                                       let ty = Target.Type.from_source (Result.get_ok (Source.inferType expr)) in
@@ -109,7 +109,7 @@ let rec rad (context: gradient_variables) (cont : Target.t)  (expr : t) : Target
                                       let newCont = Target.Fun(newContVarList, Target.App(cont, (Target.varToSyn newVarList))) in (*TODO:*)
                                       Tuple([Target.from_source (Get(n, expr)); newCont]), newCont, context
                                     | _ -> failwith "rad: the continuation should be a function"
-                                    end
+                                    end *)
     | Map (x, t, expr1, expr2)  -> failwith "TODO"
     | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
                                 -> failwith "TODO"
@@ -206,7 +206,6 @@ let rec rad2 (context: gradient_variables) (cont : Target.t)  (expr : t) : Targe
                                  let dexpr2, cont, context = rad2 newContext cont expr2 in 
                                  Let(x, Target.Type.from_source ty, Target.from_source expr1, dexpr2), cont, context
   | Array (exprList)          -> failwith "TODO"
-  | Get(n, expr)              -> failwith "TODO"
   | Map (x, t, expr1, expr2)  -> failwith "TODO"
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
                               -> failwith "TODO"
