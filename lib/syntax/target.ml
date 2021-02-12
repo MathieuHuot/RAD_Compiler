@@ -499,7 +499,7 @@ let rec inferType expr =
         let* t4 = inferType expr4 in
         match t2, t3, t4 with
         | Array(n, t2), Array(m, t3), Array(p, t4) ->
-          if not(Type.equal ty1 t2) || not(Type.equal ty2 t3) || not(Type.equal ty2 t4) then
+          if not(Type.equal ty1 t2) || not(Type.equal ty2 t3) || not(Type.equal ty3 t4) then
           Error
             "in Map3 type of one of the function argument does not correspond to the \
              type of the elements of the array"
