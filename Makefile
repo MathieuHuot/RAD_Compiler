@@ -27,6 +27,6 @@ debugrun:
 	OCAMLRUNPARAM=b dune exec $(RELEASE) -- ./bin/main.exe
 
 utop:
-	dune utop $(RELEASE)
+	OCAMLRUNPARAM=b dune utop $(RELEASE)
 
 .PHONY: all build test test-full clean doc viewdoc run debugrun utop
