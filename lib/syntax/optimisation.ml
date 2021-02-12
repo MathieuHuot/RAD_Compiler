@@ -35,9 +35,6 @@ module T = struct
     | Apply2 (Minus, expr1, Apply1 (Minus, expr2)) ->
         (* expr1 - (- expr2) -> expr1 + expr2 *)
         Success (Apply2 (Plus, expr1, expr2))
-    | Let (x, ty, Const c, e) ->
-        (* TODO: move this to inlining optimisation and generalise this to value inlining *)
-        Success (Target.subst x ty (Const c) e)
     | Apply2 (Times, Apply1 (Minus, expr1), expr2)
     | Apply2 (Times, expr1, Apply1 (Minus, expr2)) ->
         (* (- expr1) * expr2 -> - (expr1 * expr2) *)
@@ -140,32 +137,6 @@ module T = struct
         Success (NCase (expr1, varList, Let (x, ty, expr2, expr3)))
     | expr -> Failure expr
 
-  (* TODO turn this into a inlinining optimisation *)
-  let forwardSubstitution : Target.t -> Target.t output = function
-    | Let (x, ty, (Const _ as expr), e) | Let (x, _, (Var (_, ty) as expr), e)
-      ->
-        Success (Target.subst x ty expr e)
-    | NCase (Tuple exprList, varList, expr) as e ->
-        if List.compare_lengths exprList varList <> 0 then
-          failwith "ForwardSubstitution: tuple wrong number of arguments"
-        else
-          let context, rest =
-            List.partition
-              (fun (_, x) ->
-                match x with
-                | Target.Var _ | Target.Const _ -> true
-                | _ -> false)
-              (List.combine varList exprList)
-          in
-          if rest = [] then
-            Success (Target.simSubst (List.combine varList exprList) expr)
-          else if context <> [] then
-            let varList1, exprList1 = List.split rest in
-            Success
-              (NCase (Tuple exprList1, varList1, Target.simSubst context expr))
-          else Failure e
-    | expr -> Failure expr
-
   (* TODO: unsafe, does not terminate
    * Use NCase to make convergent
    * [@ocaml.alert unsafe "Does not terminate"]*)
@@ -190,48 +161,6 @@ module T = struct
           failwith
             "LambdaRemoval: Function applied to wrong number of arguments"
         else Success (NCase (Tuple exprList, varList, expr))
-    (* CBN evaluates a variable which has a function type *)
-    (* TODO: why doing some sort of lazy evaluation for function ? *)
-    (*MH: it's used crefully after rad, but integrated into the more efficient rad2. should be removed eventually *)
-    | Let (x, ty, expr1, expr2) when Target.Type.isArrow ty ->
-        Success (Target.subst x ty expr1 expr2)
-    | NCase (Tuple exprList, varList, expr) as e ->
-        if List.exists (fun (_, ty) -> Target.Type.isArrow ty) varList then
-          let list = List.combine varList exprList in
-          let arrowList, nonArrowList =
-            List.partition (fun ((_, ty), _) -> Target.Type.isArrow ty) list
-          in
-          let var2, expr2 = List.split nonArrowList in
-          Success (NCase (Tuple expr2, var2, Target.simSubst arrowList expr))
-        else Failure e
-    | expr -> Failure expr
-
-  (* TODO: This is just a special case of inlining *)
-  let deadVarElim : Target.t -> Target.t output =
-   fun expr ->
-    (* TODO: change the use of unusedVar *)
-    let unusedVar = Target.listUnusedVar expr in
-    match expr with
-    | Let (x, ty, _, expr) when List.mem (x, ty) unusedVar -> Success expr
-    | NCase (_, varList, expr)
-      when List.for_all (fun y -> List.mem y unusedVar) varList ->
-        Success expr
-    | NCase (Tuple exprList, varList, expr) ->
-        let list = List.combine exprList varList in
-        (* remove each expr bound to an unused var *)
-        let b = ref false in
-        let filteredList =
-          List.filter
-            (fun (_, y) ->
-              if not (List.mem y unusedVar) then true
-              else (
-                b := true;
-                false))
-            list
-        in
-        let filtExpr, filtVar = List.split filteredList in
-        if !b then Success (NCase (Tuple filtExpr, filtVar, expr))
-        else Failure (NCase (Tuple filtExpr, filtVar, expr))
     | expr -> Failure expr
 
     (* TODO: see if useful *)
@@ -315,14 +244,12 @@ module T = struct
   let exact_opti_list =
     [
       (lambdaRemoval, "LR");
-      (forwardSubstitution, "FS");
       (letCommutativity, "LC");
       (realFactorisation, "RF");
       (trigoSimplification, "TS");
       (zeroSimplification, "ZS");
       (simpleAlgebraicSimplifications, "SAS");
       (constantPropagation, "CP");
-      (deadVarElim, "DVE");
     ]
 
   let opti_list =
@@ -334,9 +261,12 @@ module T = struct
     RT.map
       (constantPropagation >> simpleAlgebraicSimplifications
      >> zeroSimplification >> trigoSimplification >> realFactorisation
-     >> letCommutativity >> lambdaRemoval >> deadVarElim)
+     >> letCommutativity >> lambdaRemoval)
       expr
     |> get
+
+
+  let inline_expansion = Inline_expansion.inline_expansion
 end
 
 module S = struct

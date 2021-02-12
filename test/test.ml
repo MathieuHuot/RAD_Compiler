@@ -100,15 +100,34 @@ module T = struct
         let fv1 = freeVar e1 in
         VarSet.subset fv1 fv)
 
+  let test_inline_expansion =
+    QCheck.Test.make ~count:100 ~name:"Inline expansion" arbitrary_closed_term
+      (fun expr ->
+        let e1 = interpret (Optimisation.T.inline_expansion expr) [] in
+        let e2 = interpret expr [] in
+        if weakEqual e1 e2 then true
+        else failwith (Printf.sprintf "%s\n\n%s" (to_string e1) (to_string e2)))
+
+  let test_inline_expansion_freeVar =
+    QCheck.Test.make ~count:100 ~name:"Inline expansion"
+      (arbitrary_term (List.init 10 (fun i -> (("x", i), Type.Real))))
+      (fun expr ->
+        let fv = freeVar expr in
+        let e1 = Optimisation.T.inline_expansion expr in
+        let fv1 = freeVar e1 in
+        VarSet.subset fv1 fv)
+
   let test_opti_list =
-    List.map
-      (fun (opti, opti_name) -> test_opti opti opti_name)
-      Optimisation.T.opti_list
+    test_inline_expansion
+    :: List.map
+         (fun (opti, opti_name) -> test_opti opti opti_name)
+         Optimisation.T.opti_list
 
   let test_opti_freeVar_list =
-    List.map
-      (fun (opti, opti_name) -> test_opti_freeVar opti opti_name)
-      Optimisation.T.opti_list
+    test_inline_expansion_freeVar
+    :: List.map
+         (fun (opti, opti_name) -> test_opti_freeVar opti opti_name)
+         Optimisation.T.opti_list
 
   let test_opti_repeat opti opti_name =
     QCheck.Test.make ~count:10 ~max_gen:50 ~name:("Opt " ^ opti_name)

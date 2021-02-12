@@ -180,12 +180,12 @@ let _ =
   let module TR = Target.Traverse(Strategy.Repeat) in
   let open Optimisation.T in
   let lambdaRem expr = TR.map lambdaRemoval expr |> Rewriter.get in
-  let forwSubst expr = TR.map forwardSubstitution expr |> Rewriter.get in
+  let forwSubst expr = inline_expansion expr in (* TODO *)
   let oneCaseRem expr = TR.map oneCaseRemoval expr |> Rewriter.get in
   let letComm expr = TR.map letCommutativity expr |> Rewriter.get in
   let simpleAlgSimpl expr = TR.map simpleAlgebraicSimplifications expr |> Rewriter.get in
   let zeroSimpl expr = TR.map zeroSimplification expr |> Rewriter.get in
-  let deadVarElim expr = TR.map deadVarElim expr |> Rewriter.get in
+  let deadVarElim expr = inline_expansion expr in (* TODO *)
   let g7 = Anf.SourceAnf.anf g6 in
   let g8 = Transforms.ReverseMode.grad [ (x1, Real); (x2, Real) ] g7 in
   let g9 = Optimisation.T.fullOpti g8 in
