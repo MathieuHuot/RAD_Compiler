@@ -307,7 +307,7 @@ module T = struct
   | Apply1(Power(n), Apply1(Power(m), expr)) -> Success (Apply1(Power(n*m), expr))
   | Apply2(Times, expr1, expr2) when Target.equal expr1 expr2 -> Success (Apply1(Power(2), expr1))
   | Apply1(Power(1), expr) -> Success expr
-  | Apply1(Power(0), expr) -> Success (Const 1.)
+  | Apply1(Power(0), _expr) -> Success (Const 1.)
   | Apply2(Times, Apply1(Power(n1), expr1), Apply1(Power(n2), expr2)) 
     when Target.equal expr1 expr2 -> Success ( Apply1(Power(n1+n2), expr2))
   | expr -> Failure expr
