@@ -1,4 +1,4 @@
-RELEASE=
+RELEASE=--release
 
 all: build test
 
