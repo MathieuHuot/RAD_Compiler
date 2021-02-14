@@ -1,0 +1,66 @@
+\section{Introduction}
+
+\subsection{Problem} % (fold)
+\label{sub:problem}
+
+\TODO{find simple yet telling concrete example here}
+Consider the following 
+TODO: Jacobian, chain rule in maths
+It is easy to write a purely functional implementation of it
+TODO: code using FP
+However, if we run it naively it will take 
+TODO: time or complexity
+A good implementation would instead take
+TODO: time or complexity
+and looks like
+TODO: imperative code
+
+There is a huge difference between the purely functional yet inefficient implementation and the efficient imperative one. The first one is also easy to prove correct, and purely functional code can benefit from a lot of optimisations \cite{}. The imperative version is essentially a manually optimised representation, yet it is error prone. In addition, the imperative code will usually be transformed to SSA-form \cite{} for further optimisations by the compiler. It is often believed \cite{} that a purely functional implementation of reverse-mode differentiation will be unefficient and that there is a need for imperative features such as references or the use of intermediate representations \cite{} to reach good performance.
+\TODO{Add here we want to investigate this for rich HO languages, which offer more possibilities for optimisations and cleaner to write. detail more in problem section that this unified way would be good for ||, opti, correctness, etc.}
+
+\subsection{Contribution} % (fold)
+\label{sub:contribution}
+
+
+\MH{Be clearer and more precise here as to why our contribution solves the problem above.}
+
+This work aims at bridging the gap between proved-correct high-level idealized purely functional differentiation and efficient low-level imperative implementations.  We do this by providing a correct, efficient, and purely functional implementation. This allows for more direct optimisations and paves the way for future work. In short, after detailing more the problem (Sec. \ref{}) and our approach (Sec. \ref{}) we provide a source and target language for differentiation (Sec. \ref{}) which we see as a source-to-source transformation \cite{}. We then propose a macro for differentiation (Sec. \ref{}). To prove our transformation correct, we give our language a denotational semantics using diffeological spaces (Sec. \ref{}) and show correctness via a categorical version of logical relations (Sec. \ref{}). We apply some standard optimisation techniques on the code.
+We finally explore some theoretical guarantees of the resulting code (Sec. \ref{}) and give some experimental results (Sec. \ref{}). 
+
+% \subsubsection{Brief overview} % (fold)
+% \label{sub:brief_overview}
+%of the problem: code example
+
+% % diff prog, what state of the art is, what we propose, roughly our contribution
+% Under the slogan of differentiable programming, Automatic Differentiation has seen a renewal in the machine learning community over the past few years. The need for fast gradient computations of code implementing functions is ubiquitous and core in deep learning. Recent work has either focused on correct differentiation on high-level functional languages or about fast, usually low-level, imperative and unpure implementations. This work aims to bridge the gap between the two, first by providing a high-level source-to-source differentation on a high-level language, which is then optimised in several ways. Doing so, we reach state-of-the-art performance and ultimately produce code that is similar to the manually-optimised imperative code that one could get. 
+% %maybe add that it's principled, explains more things, is correct, and great for generalisation to other languages/libraries/etc.
+
+\subsection{Our approach} % (fold)
+\label{sub:our_approach}
+
+\MH{start from pure HO functional language with smooth primitives, use an optimised (principled) macro, then further classical optimisations. forward def to things in more detail. list of key insights.}
+
+%rename Context?
+
+\subsection{Differentiable programming} % (fold)
+\label{sub:differentiable_programming}
+
+%as a "solution" people found? maybe skip this entirely
+
+%define AD
+%mostly from Matthijs' POPL paper
+(Source-to-source) Automatic Differentiation (AD) is a technique for transforming code that implements 
+a function $f$ into code that computes $f$'s derivative, essentially by using the chain rule for derivatives. 
+Due to its efficiency and numerical stability, AD is the technique of choice whenever derivatives need to be computed 
+of functions that are implemented as programs, particularly in high dimentional settings. 
+Optimisations and Monte Carlo integration algorithms, such as Gradient Descent and Hamiltonian Monte-Carlo methods, 
+rely crucially on the calculation of derivatives. These algorithms are used in virtually everywhere in machine learning 
+and computational statistics, and the calculation of derivatives is usually the computational bottle-neck. 
+AD, roughly speaking, comes in two modes; forward-mode and reverse-mode. 
+When differentiating a function $\RR^n\to\RR^m$, forward-mode tends to be more efficient if $m \gg n$, while reverse-mode 
+is generally more performant if $n \gg m$. As most applications reduce to optimization of Monte-Carlo 
+integration of an objective function $\RR^n\to\RR$ with $n$ very large ($10^4-10^7$), reverse-mode AD is 
+in many ways the more interesting algorithm.
+
+%define diff prog beyond AD, be specific with references/different define-then-run vs Pytorch/Swift etc.
+%Diff Curry has OK intro
