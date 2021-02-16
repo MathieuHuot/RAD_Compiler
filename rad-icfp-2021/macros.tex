@@ -1,4 +1,4 @@
-
+\usepackage{tikz-cd}
 
 \newcommand{\system}{RAD\xspace}
 \newcommand{\dfsmooth}{$\text{d}\widetilde{\textsc{f}}$\xspace}
@@ -21,3 +21,63 @@
 \newcommand{\mh}[1]{\todo[size=\tiny]{mh: #1}{}}
 
 \newcommand{\code}[1]{\texttt{#1}}
+
+\newcommand{\dif}{\mathop{}\!\mathrm{d}}
+\newcommand{\Diff}{\mathbf{Diff}}
+\newcommand{\sem}[1]{\llbracket #1\rrbracket}
+\newcommand{\semgl}[1]{\llparenthesis #1\rrparenthesis}
+\newcommand{\defeq}{\stackrel {\mathrm{def}}=}
+
+%-- Syntax --
+\makeatletter
+\newcommand\@TyAlph[1]{%
+\ifcase #1\or \tau\or \sigma\or \rho\else \@ctrerr \fi%
+}
+\newcommand\ty[1][1]{{\@TyAlph{#1}}}
+
+\newcommand\tvar[1][1]{{\@TyVarAlph{#1}}}
+\newcommand\@TyVarAlph[1]{%
+\ifcase #1\or \alpha\or \beta\or \gamma\else \@ctrerr \fi%
+}
+
+\newcommand\var[1][1]{{\@VarAlph{#1}}}
+\newcommand\@VarAlph[1]{%
+\ifcase #1\or x\or y\or z\or u\or v\or w\else \@ctrerr \fi%
+}
+
+\newcommand\trm[1][1]{{\@TermAlph{#1}}}
+\newcommand\@TermAlph[1]{%
+\ifcase #1\or t\or s\or r\else \@ctrerr \fi%
+}
+
+\newcommand\val[1][1]{%
+\ifcase #1\or v\or w\or u\else \@ctrerr \fi%
+}
+
+\newcommand\op[1][1]{%
+\ifcase #1\or \mathsf{op}\or \mathsf{op}'\or \mathsf{op}''\else \@ctrerr \fi%
+}
+\makeatother
+
+\newcommand\Dsynsymbol[1][]{\scalebox{0.8}{$\overrightarrow{\mathcal{D}}$}_{#1}}
+\newcommand\Dsyn[2][]{\Dsynsymbol[#1](#2)}
+
+\newcommand\Dsynrevsymbol[1][]{\scalebox{0.8}{$\overleftarrow{\mathcal{D}}$}_{#1}}
+\newcommand\Dsynrev[2][]{\Dsynrevsymbol[#1](#2)}
+
+\newcommand\letin[3]{\mathbf{let}\,#1=\,#2\,\mathbf{in}\,#3}
+\newcommand\SSSynHO{\mathbf{SSSynHO}}
+\newcommand\SSSyn{\mathbf{SSSyn}}
+\newcommand\TSSyn{\mathbf{TSSyn}}
+\newcommand\TTSynHO{\mathbf{TTSynHO}}
+\newcommand\TTSyn{\mathbf{TTSyn}}
+
+\newcommand\Syn{\mathbf{Syn}}
+
+\newcommand\IH{\stackrel{I.H.}{=}}
+
+\newtheorem{notation}{Notation}
+\newcommand\UNFSymbol{\mathbf{UNF}}
+\newcommand\UNF[1]{\UNFSymbol(#1)}
+\newcommand\tPair[2]{\langle #1, #2\rangle}
+\newcommand\inllambda{\widetilde{\lambda}}

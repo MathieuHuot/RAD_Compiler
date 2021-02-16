@@ -1,0 +1,27 @@
+\section{Simple case}
+
+\subsection{Language}
+
+We consider a simple first-order language. 
+TODO
+
+\subsection{Naive reverse-mode}
+
+
+\subsection{Optimisations}
+
+
+\subsection{Correctness}
+
+
+\subsection{Cheap gradient principle}
+
+
+\subsubsection*{Key insight:}
+
+As is well known (see e.g. \cite{pearlmutter2008reverse}), duplication of a variable $\Delta$ is turned into $+$ by reverse mode.
+TODO: explain this is the hard part to make pure and efficient, and shows up in the case of non-unary operators, and things like let binding.
+In the inefficient representation, every operator was seen as a unary operator using all the available variables and returning them in addition to the extra return value. 
+In essence, we are putting boxes locally around places where the compute-flow might be non-linear and turning everything into something linear.
+This linearisation of the compute-flow is the key to efficient purely functional reverse-mode. We extend this idea formally in the next sections by introducing a unary form, 
+on which it is easier to do naive reverse-mode that can be optimized. 

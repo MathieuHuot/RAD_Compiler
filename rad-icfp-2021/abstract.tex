@@ -1,7 +1,9 @@
 \begin{abstract}
-Our work aims at bridging the gap between high-level functional reverse-mode differentiation and efficient imperative implementations.
-We define a new source-to-source transformation for reverse-mode differentiation on a standard higher-order purely functional language. 
-Using a logical relations argument, we prove our transformation correct using diffeological spaces as a denotational semantics for our language. 
-We then show that combining our macro with some classical optimisations lead to low-level SSA-like code, which is as efficient as low-level imperative implementations. 
-We prove some theoretical complexity guarantees and provide experimental results which showcase the efficiency of our method. 
+Recent work on automatic differentiation (AD) either focus on expressiveness and correctness, or focus on efficiency. 
+Reverse mode implementations are notoriously hard to optimize as they add unpurity to the transformed program, and harder to prove correct or efficient.
+We start from a high-level picture on AD where we can prove correctness and keep purity, and show how to turn it into efficient lower level code. 
+On a small functional language, we show how the optimized code after AD looks like static single assignment (SSA) code. 
+On a more expressive language with higher-order primitives, we introduce an intermediate representation, which we call unary form (UNF), 
+which enables us to perform efficient reverse-mode on these constructs while keeping purity and efficiency.
+We give a denotational semantics to our language, we show correctness of our reverse-mode transformation, and we prove complexity guarantees. 
 \end{abstract}
