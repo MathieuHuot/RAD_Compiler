@@ -31,12 +31,6 @@ Recursion in DNN: \cite{jeong2018improving}
 \subsection{Discussion and future work} % (fold)
 \label{sub:discussion_and_future_work}
 
-\noindent \textbf{Other Language features.}
-%more primitives, proved correct and more efficient. extend library
-
-\noindent \textbf{Probabilistic Programming.}
-%find something simple and precise, o.w. useless section
-
 \noindent \textbf{More dynamic language}
 %TF is losing ground to Pytorch, Swift tries to renew with Pytorch-like dynamic features. 
 
@@ -44,13 +38,30 @@ Recursion in DNN: \cite{jeong2018improving}
 %maybe?
 
 \noindent \textbf{Limitations.}
-%maybe?
+\begin{itemize}
+    \item memory access for cost function 
+    \item parallelism
+    \item dedicated tensors for ML, and BLaS considerations
+    \item implementation and benchmark
+    \item conditionals
+    \item recursion
+    \item general HO function
+    \item more 2nd order functions, though can be derived by hand once and then it's ok
+    \item dynamic arrays
+    \item more dynamic control flow
+    \item all store vs all recompute reverse-mode, and advanced checkpointing
+    \item numerical accuracy
+    \item fancier types and datatypes (eg dependent, adt) 
+    \item iterated ad and higher derivatives
+    \item use in Probabilistic programming
+    \item non smooth and partial functions, although by simply following the ref book it's as usual in AD
+    \item sparsity
+    \item other optimisations like implicit function theorem
+\end{itemize}
 
 \MH{useful links (Swift is close to our project, and the doc is very readable):}
-
 \begin{verbatim}https://docs.google.com/document/d/1_BirmTqdotglwNTOcYAW-ib6mx_jl-gH9Dbg4WmHZh0/edit# \end{verbatim}
 \begin{verbatim}
-
 	https://github.com/apple/swift/blob/master/docs/DifferentiableProgramming.md#approaches-to-automatic-differentiation
 \end{verbatim}
 
