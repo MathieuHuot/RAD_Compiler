@@ -1,3 +1,26 @@
 \section{A macro for source-to-source reverse-mode differentiation}
 
-\MH{for forward it's as in the fossacs paper. for rad it's a bit more tricky.}
+\subsubsection{Reverse AD for unary operators} 
+
+We define reverse-mode by the following inductively defined macro $\Dsynrevsymbol[\rho]:\TSSyn\to \TTSynHO$, where $\rho$ is some type of our language, on both types and terms.
+
+\[
+\begin{array}{l}
+\Dsynrev[\rho]{A} \defeq A\times (A\To \rho)
+\end{array}    
+\]
+
+\[
+\begin{array}{l}
+	 \Dsynrev[\rho]{var_{i,\Gamma}}:= \var,Y\vdash \tPair{var_{i,\Gamma}}{\lambda \var[2]. Y(Jvar_{i,\Gamma}^T(\var[2]))}\\
+	 \Dsynrev[\rho]{\op_{n,\Gamma}}:= \var,Y\vdash \tPair{\op_{n,\Gamma}}{\lambda \var. Y(J\op_{n,\Gamma}^T(\var))}\\
+	 \Dsynrev[\rho]{\trm;\trm[2]}:= \var,Y\vdash \Dsynrev[\rho]{\trm[2]}(\Dsynrev[\rho]{\trm}(\var,Y))\\
+	 \Dsynrev[\rho]{swap_\sigma}:= \var,Y\vdash \tPair{swap_\sigma}{\lambda \var[2].Y(Jswap_\sigma^T(\var[2]))} \\
+	 \Dsynrev[\rho]{b:\BB\text{ or }\NN}:= \var,Y\vdash \tPair{b}{\lambda \var[2].Y(\underline{0})}\\
+	 \Dsynrev[\rho]{\widehat{\trm}}:= \var,Y\vdash \tMatch{\Dsynrev[\rho]{\trm}}{\var[2],Y'}{\tPair{\widehat{\trm}}{\lambda \var[2].\tMatch{\var[2]}{\var[2]_1,\var[2]_2}{Y'(\var[2]_1)}}}\\
+	 \Dsynrev[\rho]{\ifelse{\trm}{\trm_1}{\trm_2}}:=\var,Y\vdash\ifelse{\trm}{\Dsynrev[\rho]{\trm_1}}{\Dsynrev[\rho]{\trm_2}}\\
+\end{array}
+\]
+
+Observe that we use the transposed matrix of partial derivatives in the differentiation of an operation.
+Moreover, observe that we accumulate such transposed derivatives in reverse order, by making use of continuation passing style.

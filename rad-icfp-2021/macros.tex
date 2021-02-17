@@ -1,5 +1,13 @@
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{suffix}
 \usepackage{tikz-cd}
 \usepackage{mathpartir}
+\usepackage{enumitem}
+\usepackage{stmaryrd}
+\usepackage[all]{xy}
+\usepackage{amssymb}
+\usepackage{twoopt}
 
 \newcommand{\system}{RAD\xspace}
 \newcommand{\dfsmooth}{$\text{d}\widetilde{\textsc{f}}$\xspace}
@@ -118,3 +126,26 @@
 
 \newcommand\TyDinter[2]{\mathsf{TyD}_{#1}(#2)}
 \newcommand\TyD[1]{\mathsf{TyD}(#1)}
+
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\BB}{\mathbb{B}}
+\newcommand\ifelse[3]{\mathbf{if}\,#1\,\mathbf{then}\,#2\,\mathbf{else}\,#3\,}
+\newcommand\ArrayMake[2]{\vbuildk\,#1\,#2}
+\newcommand\ArrayGet[2]{\vgetk\,#1\,#2}
+\newcommand\ArrayFold[3]{\vifoldk\,#1\,#2\,#3}
+\newcommand\ArrayLength[1]{\vlengthk\,#1}
+\newcommand\TensorMake[2]{\boxplus_{i=0}^{#1}#2}
+\newcommand\TensorSum[2]{\sum_{i=0}^{#1}#2}
+\newcommand\TensorAccess[2]{#1{[}#2{]}}
+\newcommand\TensorPred[2]{{[}#1{]}#2}
+
+\newcommand\viteratek{\mathbf{ifold}}
+\newcommand\vifoldk{\viteratek}
+\newcommand\vbuildk{\mathbf{build}}
+\newcommand\vlengthk{\mathbf{length}}
+\newcommand\vgetk{\mathbf{get}}
+\newcommand\ArraySym{\mathbf{array}}
+\newcommand\Array[1]{\ArraySym(#1)}
+\newcommand\To{\to}
+\newcommand\tMatch[4][\,]{\mathbf{case}\,#2\,\mathbf{of}#1\tTuple{#3}\To#4}
+\newcommand{\semu}[1]{\llbracket #1\rrbracket_\mathbf{U}}

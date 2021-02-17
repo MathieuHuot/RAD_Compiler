@@ -1,16 +1,16 @@
-\begin{syntax}
-    \ty, \ty[2], \ty[3] & \gdefinedby & & \syncat{types}                          \\
+\[\begin{array}[t]
+    \ty[1], \ty[2], \ty[3] & \gdefinedby & & \syncat{types}\\
     &\gor& \reals                      & \synname{real numbers}\\
-  \end{syntax}%
+  \end{array}
   ~
-  \begin{syntax}
+  \begin{array}
     &\gor\quad\,& \tProd{\ty_1}{\dots}{\ty_n} & \synname{finite product} \\
   &\gor& \ty \To \ty[2]              & \synname{function}      \\
-  \end{syntax}
+  \end{array}\]
 
- \begin{syntax}
-    \trm, \trm[2], \trm[3] & \gdefinedby & & \syncat{terms}                          \\
-    &    & \var                          & \synname{variable}                        \\
+\[ \begin{array}[t]
+    \trm\, \trm[2]\, \trm[3] & \gdefinedby & & \syncat{terms}\\
+    &    & \var                          & \synname{variable}\\
     &\gor& \cnst
     \ \gor\ \trm+\trm[2]
     \ \gor\ \trm*\trm[2]
@@ -20,4 +20,4 @@
     \ \gor  \tMatch{\trm}{\var_1,\dots, \var_n}{\trm[2]}\hspace{-10pt} \;& \synname{tuples/pattern matching}\\
     &\gor& \fun \var    \trm
     \ \gor  \trm\, \trm[2]               & \synname{function abstraction/app.}\\
-\end{syntax}
+\end{syntax} \]
