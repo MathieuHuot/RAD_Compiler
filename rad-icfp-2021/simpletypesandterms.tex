@@ -1,23 +1,15 @@
-\[\begin{array}[t]
-    \ty[1], \ty[2], \ty[3] & \gdefinedby & & \syncat{types}\\
-    &\gor& \reals                      & \synname{real numbers}\\
-  \end{array}
-  ~
-  \begin{array}
-    &\gor\quad\,& \tProd{\ty_1}{\dots}{\ty_n} & \synname{finite product} \\
-  &\gor& \ty \To \ty[2]              & \synname{function}      \\
-  \end{array}\]
-
-\[ \begin{array}[t]
-    \trm\, \trm[2]\, \trm[3] & \gdefinedby & & \syncat{terms}\\
-    &    & \var                          & \synname{variable}\\
-    &\gor& \cnst
-    \ \gor\ \trm+\trm[2]
-    \ \gor\ \trm*\trm[2]
-    \ \gor\ \sigmoid(\trm)
-    & \synname{operations/constants}                      \\
-    &\gor& \tTriple{\trm_1}{\dots}{\trm_n}
-    \ \gor  \tMatch{\trm}{\var_1,\dots, \var_n}{\trm[2]}\hspace{-10pt} \;& \synname{tuples/pattern matching}\\
-    &\gor& \fun \var    \trm
-    \ \gor  \trm\, \trm[2]               & \synname{function abstraction/app.}\\
-\end{syntax} \]
+\[
+Types:
+\begin{array}{c}
+    \tau :: \reals
+\end{array}
+\]
+\[
+Terms:
+\begin{array}{cc}
+    s,t::= 
+    & \var \\
+    & \csnt \\
+    & \letin{\var}{s}{t}
+\end{array}    
+\]

@@ -55,8 +55,8 @@ Such functions are expremely commonly seen as loss functions in the context of m
 Reverse-mode computes the derivatives backward, using the symmetry of the chain rule.
 This means the compute flow is reverted after the first pass to compute the value of the function and its intermediate values. 
 These values appear in the chain rule so should be stored or recomputed.
-These things make reverse-mode harder to implement efficiently, and especially harder to analyse and optimise. 
-Traditional implementions use references.
+These things make reverse-mode harder to implement efficiently, and especially harder to analyze and optimize. 
+Traditional implementations use references.
 For instance, let 
  \begin{align*}
      \trm\defeq &\letin{w_1}{\var_1 * \var_2}{\\&\letin{w_2}{w_1 * \var_1}{\\&w_2}}
@@ -76,7 +76,10 @@ The tangent part for every variable from the context $\var_i'$ and every interme
 except for the return variable $w_2$ for which  $w_2':=1$. 
 
 As noted in \cite{pearlmutter2008reverse}, in a functional language, one can have a purely functional reverse-mode using continuations. 
-This representation is notoriously inefficient and all the implementions of reverse mode in a functional setting have followed the lines of the imperative version above \cite{pearlmutter2008reverse, wang2018demystifying, baydin2016diffsharp}.
+This representation is notoriously inefficient, and the existing implementations of reverse mode in a functional setting have followed the lines of the imperative version above \cite{pearlmutter2008reverse, wang2018demystifying, baydin2016diffsharp}.
 
-In the next section, we show on a very simple language how we can use standard optimisations to turn this inefficient representation into a very efficient one which is still purely functional.
-The remaining of the paper will generalise this idea and explore some consequences of this new approach. 
+In the next section, we first introduce a very simple first-order language. 
+Then we define reverse-mode on this language as a program transformation. 
+This first transformation is quite inefficient and we how we can use standard optimizations on functional languages to obtain a provably efficient pure program.
+The key idea behind that will be generalized and explored in detail in the rest of the paper is that of turning every operator into a unary one.     
+The remaining of the paper will generalize this idea and explore some consequences of this new approach. 
