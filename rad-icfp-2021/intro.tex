@@ -1,208 +1,218 @@
 \section{Introduction}
 
-% \subsection{Problem} % (fold)
-% \label{sub:problem}
+% % \subsection{Problem} % (fold)
+% % \label{sub:problem}
 
-% \TODO{find simple yet telling concrete example here}
-% Consider the following 
-% TODO: Jacobian, chain rule in maths
-% It is easy to write a purely functional implementation of it
-% TODO: code using FP
-% However, if we run it naively it will take 
-% TODO: time or complexity
-% A good implementation would instead take
-% TODO: time or complexity
-% and looks like
-% TODO: imperative code
+% % \TODO{find simple yet telling concrete example here}
+% % Consider the following 
+% % TODO: Jacobian, chain rule in maths
+% % It is easy to write a purely functional implementation of it
+% % TODO: code using FP
+% % However, if we run it naively it will take 
+% % TODO: time or complexity
+% % A good implementation would instead take
+% % TODO: time or complexity
+% % and looks like
+% % TODO: imperative code
 
-% There is a huge difference between the purely functional yet inefficient implementation and the efficient imperative one. The first one is also easy to prove correct, and purely functional code can benefit from a lot of optimisations \cite{}. The imperative version is essentially a manually optimised representation, yet it is error prone. In addition, the imperative code will usually be transformed to SSA-form \cite{} for further optimisations by the compiler. It is often believed \cite{} that a purely functional implementation of reverse-mode differentiation will be unefficient and that there is a need for imperative features such as references or the use of intermediate representations \cite{} to reach good performance.
-% \TODO{Add here we want to investigate this for rich HO languages, which offer more possibilities for optimisations and cleaner to write. detail more in problem section that this unified way would be good for ||, opti, correctness, etc.}
+% % There is a huge difference between the purely functional yet inefficient implementation and the efficient imperative one. The first one is also easy to prove correct, and purely functional code can benefit from a lot of optimisations \cite{}. The imperative version is essentially a manually optimised representation, yet it is error prone. In addition, the imperative code will usually be transformed to SSA-form \cite{} for further optimisations by the compiler. It is often believed \cite{} that a purely functional implementation of reverse-mode differentiation will be unefficient and that there is a need for imperative features such as references or the use of intermediate representations \cite{} to reach good performance.
+% % \TODO{Add here we want to investigate this for rich HO languages, which offer more possibilities for optimisations and cleaner to write. detail more in problem section that this unified way would be good for ||, opti, correctness, etc.}
 
-% \subsection{Contribution} % (fold)
-% \label{sub:contribution}
+% % \subsection{Contribution} % (fold)
+% % \label{sub:contribution}
 
 
-% \MH{Be clearer and more precise here as to why our contribution solves the problem above.}
+% % \MH{Be clearer and more precise here as to why our contribution solves the problem above.}
 
-% This work aims at bridging the gap between proved-correct high-level idealized purely functional differentiation and efficient low-level imperative implementations.  We do this by providing a correct, efficient, and purely functional implementation. This allows for more direct optimisations and paves the way for future work. In short, after detailing more the problem (Sec. \ref{}) and our approach (Sec. \ref{}) we provide a source and target language for differentiation (Sec. \ref{}) which we see as a source-to-source transformation \cite{}. We then propose a macro for differentiation (Sec. \ref{}). To prove our transformation correct, we give our language a denotational semantics using diffeological spaces (Sec. \ref{}) and show correctness via a categorical version of logical relations (Sec. \ref{}). We apply some standard optimisation techniques on the code.
-% We finally explore some theoretical guarantees of the resulting code (Sec. \ref{}) and give some experimental results (Sec. \ref{}). 
+% % This work aims at bridging the gap between proved-correct high-level idealized purely functional differentiation and efficient low-level imperative implementations.  We do this by providing a correct, efficient, and purely functional implementation. This allows for more direct optimisations and paves the way for future work. In short, after detailing more the problem (Sec. \ref{}) and our approach (Sec. \ref{}) we provide a source and target language for differentiation (Sec. \ref{}) which we see as a source-to-source transformation \cite{}. We then propose a macro for differentiation (Sec. \ref{}). To prove our transformation correct, we give our language a denotational semantics using diffeological spaces (Sec. \ref{}) and show correctness via a categorical version of logical relations (Sec. \ref{}). We apply some standard optimisation techniques on the code.
+% % We finally explore some theoretical guarantees of the resulting code (Sec. \ref{}) and give some experimental results (Sec. \ref{}). 
 
-% % \subsubsection{Brief overview} % (fold)
-% % \label{sub:brief_overview}
-% %of the problem: code example
+% % % \subsubsection{Brief overview} % (fold)
+% % % \label{sub:brief_overview}
+% % %of the problem: code example
 
-% % % diff prog, what state of the art is, what we propose, roughly our contribution
-% % Under the slogan of differentiable programming, Automatic Differentiation has seen a renewal in the machine learning community over the past few years. The need for fast gradient computations of code implementing functions is ubiquitous and core in deep learning. Recent work has either focused on correct differentiation on high-level functional languages or about fast, usually low-level, imperative and unpure implementations. This work aims to bridge the gap between the two, first by providing a high-level source-to-source differentation on a high-level language, which is then optimised in several ways. Doing so, we reach state-of-the-art performance and ultimately produce code that is similar to the manually-optimised imperative code that one could get. 
-% % %maybe add that it's principled, explains more things, is correct, and great for generalisation to other languages/libraries/etc.
+% % % % diff prog, what state of the art is, what we propose, roughly our contribution
+% % % Under the slogan of differentiable programming, Automatic Differentiation has seen a renewal in the machine learning community over the past few years. The need for fast gradient computations of code implementing functions is ubiquitous and core in deep learning. Recent work has either focused on correct differentiation on high-level functional languages or about fast, usually low-level, imperative and unpure implementations. This work aims to bridge the gap between the two, first by providing a high-level source-to-source differentation on a high-level language, which is then optimised in several ways. Doing so, we reach state-of-the-art performance and ultimately produce code that is similar to the manually-optimised imperative code that one could get. 
+% % % %maybe add that it's principled, explains more things, is correct, and great for generalisation to other languages/libraries/etc.
 
-% \subsection{Our approach} % (fold)
-% \label{sub:our_approach}
+% % \subsection{Our approach} % (fold)
+% % \label{sub:our_approach}
 
-% \MH{start from pure HO functional language with smooth primitives, use an optimised (principled) macro, then further classical optimisations. forward def to things in more detail. list of key insights.}
+% % \MH{start from pure HO functional language with smooth primitives, use an optimised (principled) macro, then further classical optimisations. forward def to things in more detail. list of key insights.}
 
-% %rename Context?
+% % %rename Context?
 
-% \subsection{Differentiable programming} % (fold)
-% \label{sub:differentiable_programming}
+% % \subsection{Differentiable programming} % (fold)
+% % \label{sub:differentiable_programming}
 
-% %as a "solution" people found? maybe skip this entirely
+% % %as a "solution" people found? maybe skip this entirely
 
-% %define AD
-% %mostly from Matthijs' POPL paper
-% (Source-to-source) Automatic Differentiation (AD) is a technique for transforming code that implements 
-% a function $f$ into code that computes $f$'s derivative, essentially by using the chain rule for derivatives. 
-% Due to its efficiency and numerical stability, AD is the technique of choice whenever derivatives need to be computed 
-% of functions that are implemented as programs, particularly in high dimentional settings. 
-% Optimisations and Monte Carlo integration algorithms, such as Gradient Descent and Hamiltonian Monte-Carlo methods, 
-% rely crucially on the calculation of derivatives. These algorithms are used in virtually everywhere in machine learning 
-% and computational statistics, and the calculation of derivatives is usually the computational bottle-neck. 
-% AD, roughly speaking, comes in two modes; forward-mode and reverse-mode. 
-% When differentiating a function $\RR^n\to\RR^m$, forward-mode tends to be more efficient if $m \gg n$, while reverse-mode 
-% is generally more performant if $n \gg m$. As most applications reduce to optimization of Monte-Carlo 
-% integration of an objective function $\RR^n\to\RR$ with $n$ very large ($10^4-10^7$), reverse-mode AD is 
-% in many ways the more interesting algorithm.
+% % %define AD
+% % %mostly from Matthijs' POPL paper
+% % (Source-to-source) Automatic Differentiation (AD) is a technique for transforming code that implements 
+% % a function $f$ into code that computes $f$'s derivative, essentially by using the chain rule for derivatives. 
+% % Due to its efficiency and numerical stability, AD is the technique of choice whenever derivatives need to be computed 
+% % of functions that are implemented as programs, particularly in high dimentional settings. 
+% % Optimisations and Monte Carlo integration algorithms, such as Gradient Descent and Hamiltonian Monte-Carlo methods, 
+% % rely crucially on the calculation of derivatives. These algorithms are used in virtually everywhere in machine learning 
+% % and computational statistics, and the calculation of derivatives is usually the computational bottle-neck. 
+% % AD, roughly speaking, comes in two modes; forward-mode and reverse-mode. 
+% % When differentiating a function $\RR^n\to\RR^m$, forward-mode tends to be more efficient if $m \gg n$, while reverse-mode 
+% % is generally more performant if $n \gg m$. As most applications reduce to optimization of Monte-Carlo 
+% % integration of an objective function $\RR^n\to\RR$ with $n$ very large ($10^4-10^7$), reverse-mode AD is 
+% % in many ways the more interesting algorithm.
 
-% %define diff prog beyond AD, be specific with references/different define-then-run vs Pytorch/Swift etc.
-% %Diff Curry has OK intro
+% % %define diff prog beyond AD, be specific with references/different define-then-run vs Pytorch/Swift etc.
+% % %Diff Curry has OK intro
 
-\[
-\begin{tikzcd}
-	& \TSSyn \ar[r,"{\Dsynrev[\rho]{-}}"] 
-	& \TTSynHO_1 \ar[d,"\UNF{-}^{-1}"] &  \\
-	& \SSSyn \ar[u,"\UNF{-}"]  \ar[r,"{\Dsynrev[\rho]{-}^*}"'] 
-	& \TTSynHO_2 \ar[d,"Jacob"] \\
-	& \SSSyn \ar[u,"ANF"] \ar[r,"{\Dsynrev[\rho]{-}^{**}}"'] 
-	&  \TTSynHO_3 \ar[dl,"\partial_2"] \\
-	\SSSynHO \ar[ur,"\partial_1"]  \ar[rrr,bend right=20,color=red,"Example\,1"]
-	& \TTSyn \ar[r,"OPT"'] 
-	& \TTSyn \ar[r,"\partial_3"']
-	& \TTSyn 
-\end{tikzcd}
-\]
+% \[
+% \begin{tikzcd}
+% 	& \TSSyn \ar[r,"{\Dsynrev[\rho]{-}}"] 
+% 	& \TTSynHO_1 \ar[d,"\UNF{-}^{-1}"] &  \\
+% 	& \SSSyn \ar[u,"\UNF{-}"]  \ar[r,"{\Dsynrev[\rho]{-}^*}"'] 
+% 	& \TTSynHO_2 \ar[d,"Jacob"] \\
+% 	& \SSSyn \ar[u,"ANF"] \ar[r,"{\Dsynrev[\rho]{-}^{**}}"'] 
+% 	&  \TTSynHO_3 \ar[dl,"\partial_2"] \\
+% 	\SSSynHO \ar[ur,"\partial_1"]  \ar[rrr,bend right=20,color=red,"Example\,1"]
+% 	& \TTSyn \ar[r,"OPT"'] 
+% 	& \TTSyn \ar[r,"\partial_3"']
+% 	& \TTSyn 
+% \end{tikzcd}
+% \]
 
-\begin{itemize}
-	\item $\SSSynHO$ is a higher-order language and the language the user uses to write a prgram.
-	\item $\partial_1$ denotes partial evaluation of all higher-order variables. We end up with a program whose only higher-order bits are primitive operators.
-	\item $\SSSyn$ is a first-order language with a few higher-order primitives like map,fold,etc.
-	\item $ANF$ is for (weak) A-normal form. Every operator $\op$ is only given variables as arguments. We do this by introducting additional let bindings. It is only used for the $Jacob$ optimisation.
-	\item $\UNF{-}$ is the unary form transformation presented in the next section. Its goal is to deal with the fanout problem before applying the reverse-mode macro.
-	\item $\TSSyn$ is the target language for $\UNF{-}$ and also the source for the reverse-mode macro. It has a bit of a special structure.
-	\item $\Dsynrev[\rho]{-}$ is a reverse-mode macro. It is efficient on unary operators but does not deal well with fanout. Fortunately, it is only given unary operators at this point.
-	\item $\TTSynHO_1$ is the target language of the reverse-mode macro. It is a higher-order language as it needs a continuation for the reverse derivatives.
-	\item $\TTSynHO_2,\TTSynHO_3$ are small variations of $\TTSynHO_1$.
-	\item $\UNF{-}^{-1}$ is an optimisation which removes the overhead caused by $\UNF{-}$. It reverts the primal part of the derivative to the original term.
-	\item $\Dsynrev[\rho]{-}^*$ is an efficient macro for reverse-mode which deals with the fanout problem.
-	\item $Jacob$ stands for an efficient representation of the Jacobian. It needs a weak form of ANF to compute the Jacobian with a single vector and does not need to use a matrix-vector multiplication. In particular, it does not need to store the matrix.
-	\item $\Dsynrev[\rho]{-}^{**}$ is the efficient macro for reverse mode that would really be implemented. It will be quicker to run than the composition of the transformations. 
-	\item $\partial_2$ stands for partial evaluation. We evaluate (CBN) the higher-order variables binding the lambdas we introduced and inlined with the reverse-mode macro
-	\item $\TTSyn$ is the target language of the previous partial evaluation and the final language we use.
-	\item $OPT$ is an optimisation. First, we remplace the previously inlined lambdas by let bindings, and then apply forward substitution.
-	\item $\partial_3$  is optionnal. We partially evaluate more and do algebraic simplifications, like $0+\trm\to\trm, 1*\trm\to \trm$.
-	\item $Example\,1$ is detailed below.
-\end{itemize}
+% \begin{itemize}
+% 	\item $\SSSynHO$ is a higher-order language and the language the user uses to write a prgram.
+% 	\item $\partial_1$ denotes partial evaluation of all higher-order variables. We end up with a program whose only higher-order bits are primitive operators.
+% 	\item $\SSSyn$ is a first-order language with a few higher-order primitives like map,fold,etc.
+% 	\item $ANF$ is for (weak) A-normal form. Every operator $\op$ is only given variables as arguments. We do this by introducting additional let bindings. It is only used for the $Jacob$ optimisation.
+% 	\item $\UNF{-}$ is the unary form transformation presented in the next section. Its goal is to deal with the fanout problem before applying the reverse-mode macro.
+% 	\item $\TSSyn$ is the target language for $\UNF{-}$ and also the source for the reverse-mode macro. It has a bit of a special structure.
+% 	\item $\Dsynrev[\rho]{-}$ is a reverse-mode macro. It is efficient on unary operators but does not deal well with fanout. Fortunately, it is only given unary operators at this point.
+% 	\item $\TTSynHO_1$ is the target language of the reverse-mode macro. It is a higher-order language as it needs a continuation for the reverse derivatives.
+% 	\item $\TTSynHO_2,\TTSynHO_3$ are small variations of $\TTSynHO_1$.
+% 	\item $\UNF{-}^{-1}$ is an optimisation which removes the overhead caused by $\UNF{-}$. It reverts the primal part of the derivative to the original term.
+% 	\item $\Dsynrev[\rho]{-}^*$ is an efficient macro for reverse-mode which deals with the fanout problem.
+% 	\item $Jacob$ stands for an efficient representation of the Jacobian. It needs a weak form of ANF to compute the Jacobian with a single vector and does not need to use a matrix-vector multiplication. In particular, it does not need to store the matrix.
+% 	\item $\Dsynrev[\rho]{-}^{**}$ is the efficient macro for reverse mode that would really be implemented. It will be quicker to run than the composition of the transformations. 
+% 	\item $\partial_2$ stands for partial evaluation. We evaluate (CBN) the higher-order variables binding the lambdas we introduced and inlined with the reverse-mode macro
+% 	\item $\TTSyn$ is the target language of the previous partial evaluation and the final language we use.
+% 	\item $OPT$ is an optimisation. First, we remplace the previously inlined lambdas by let bindings, and then apply forward substitution.
+% 	\item $\partial_3$  is optionnal. We partially evaluate more and do algebraic simplifications, like $0+\trm\to\trm, 1*\trm\to \trm$.
+% 	\item $Example\,1$ is detailed below.
+% \end{itemize}
 
-\MH{I could add a different name for the target of ANF, of Jacob, and of OPT.}
+% \MH{I could add a different name for the target of ANF, of Jacob, and of OPT.}
 
-\begin{example}
-	Let 
-\begin{align*}
-	\var_1,\var_2,\var_3:\RR\vdash \trm:=\big(\lambda f:\RR\to\RR. (f(\var_1))*\var_1\big)(\lambda \var[2]. \var[2]* \var_2)
-\end{align*}
-After $\partial_1$ we obtain 
-\begin{align*}
-	(\letin{\var[2]}{\var_1}{\var[2]*\var_2})*\var_1
-\end{align*}
-After $ANF$ we obtain
-\begin{align*}
-	&\letin{w_1}{\var_1 * \var_2}{\\&\letin{w_2}{w_1 * \var_1}{\\&w_2}}
-\end{align*}
-After $\Dsynrev[\rho]{-}^*$ we obtain
-	\begin{align*}
-		&\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.Y\big(J^1(\var_1,\var_2,\var_3)^T(\var[2]_1,...,\var[2]_4)\big)} }{
-		\\
-		&\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'\big(J^2(\var_1,\var_2,\var_3,w_1)^T(\var[2]_1,...,\var[2]_5)\big)}}{\\ 
-		& w_2'}}
-	\end{align*}
-where $Y$ is a continuation variable of type $\RR^3\to\RR^3$, $J^1,J^2$ are Jacobian matrices for $*$ operators which also return their context, $\inllambda$ is just a normal $\lambda$ but inlined for future optimisation.
+% \begin{example}
+% 	Let 
+% \begin{align*}
+% 	\var_1,\var_2,\var_3:\RR\vdash \trm:=\big(\lambda f:\RR\to\RR. (f(\var_1))*\var_1\big)(\lambda \var[2]. \var[2]* \var_2)
+% \end{align*}
+% After $\partial_1$ we obtain 
+% \begin{align*}
+% 	(\letin{\var[2]}{\var_1}{\var[2]*\var_2})*\var_1
+% \end{align*}
+% After $ANF$ we obtain
+% \begin{align*}
+% 	&\letin{w_1}{\var_1 * \var_2}{\\&\letin{w_2}{w_1 * \var_1}{\\&w_2}}
+% \end{align*}
+% After $\Dsynrev[\rho]{-}^*$ we obtain
+% 	\begin{align*}
+% 		&\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.Y\big(J^1(\var_1,\var_2,\var_3)^T(\var[2]_1,...,\var[2]_4)\big)} }{
+% 		\\
+% 		&\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'\big(J^2(\var_1,\var_2,\var_3,w_1)^T(\var[2]_1,...,\var[2]_5)\big)}}{\\ 
+% 		& w_2'}}
+% 	\end{align*}
+% where $Y$ is a continuation variable of type $\RR^3\to\RR^3$, $J^1,J^2$ are Jacobian matrices for $*$ operators which also return their context, $\inllambda$ is just a normal $\lambda$ but inlined for future optimisation.
 
-After applying $Jacob$, we obtain
-	\begin{align*}
-		&\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.Y(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)} }{
-		\\
-		&\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}}{\\ 
-		& w_2'}}
-	\end{align*}
-To actually compute the reverse-derivative of the full term, we substitute the identity to $Y$ and apply the whole term to $(0,0,0,0,1)$, the functional equivalent to initialing the sensitivities in the imperative reverse-mode algorithm. We obtain
+% After applying $Jacob$, we obtain
+% 	\begin{align*}
+% 		&\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.Y(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)} }{
+% 		\\
+% 		&\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}}{\\ 
+% 		& w_2'}}
+% 	\end{align*}
+% To actually compute the reverse-derivative of the full term, we substitute the identity to $Y$ and apply the whole term to $(0,0,0,0,1)$, the functional equivalent to initialing the sensitivities in the imperative reverse-mode algorithm. We obtain
 
-\begin{align*}
-		&\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)} }{
-		\\
-		&\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}}{\\ 
-		& w_2'(0,0,0,0,1)}}
-	\end{align*}
+% \begin{align*}
+% 		&\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)} }{
+% 		\\
+% 		&\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}}{\\ 
+% 		& w_2'(0,0,0,0,1)}}
+% 	\end{align*}
 
-After $\partial_2$, we get
-	\begin{align*}
-		&\letin{w_1}{\var_1 * \var_2}{\\
-		&\letin{w_2}{w_1 * \var_1}{\\
-		&\bigg[\inllambda \var[2]_1...\var[2]_5.\Big(\inllambda \var[2]_1'...\var[2]_4'.(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)\Big)(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)\bigg](0,0,0,0,1)
-		}
-		}
-	\end{align*}
+% After $\partial_2$, we get
+% 	\begin{align*}
+% 		&\letin{w_1}{\var_1 * \var_2}{\\
+% 		&\letin{w_2}{w_1 * \var_1}{\\
+% 		&\bigg[\inllambda \var[2]_1...\var[2]_5.\Big(\inllambda \var[2]_1'...\var[2]_4'.(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)\Big)(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)\bigg](0,0,0,0,1)
+% 		}
+% 		}
+% 	\end{align*}
 
-	Now let's apply the first part of $OPT$:
-	\begin{align*}
-		&\letin{w_1}{\var_1 * \var_2}{\\
-		&\letin{w_2}{w_1 * \var_1}{\\
-		&\letin{(\var[2]_1\ldots\var[2]_5)}{(0,0,0,0,1)}{\\
-		& \letin{(\var[2]_1'\ldots\var[2]_4')}{(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}{\\
-		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2'+\var_1*\var[2]_4',\var[2]_3')
-		}}}}
-	\end{align*}
-Let's unsugar the lets:
-	\begin{align*}
-		&\letin{w_1}{\var_1 * \var_2}{\\
-		&\letin{w_2}{w_1 * \var_1}{\\
-		&\letin{\var[2]_1}{0}{\\
-		&\letin{\var[2]_2}{0}{\\
-		&\letin{\var[2]_3}{0}{\\
-		&\letin{\var[2]_4}{0}{\\
-		&\letin{\var[2]_5}{1}{\\
-		& \letin{\var[2]_1'}{\var[2]_1+w_1 * \var[2]_5}{\\
-		&\letin{ {\color{red} \var[2]_2'} }{  {\color{red} \var[2]_2} }{\\
-		&\letin{ {\color{red} \var[2]_3'} }{ {\color{red} \var[2]_3}  }{\\
-		&\letin{\var[2]_4'}{\var[2]_4+ \var_1 * \var[2]_5}{\\
-		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2'+\var_1*\var[2]_4',\var[2]_3')
-		}}}}}}}}}}}
-	\end{align*}
-	We apply the second part of $OPT$ to remove the variables in red:
-	\begin{align*}
-		&\letin{w_1}{\var_1 * \var_2}{\\
-		&\letin{w_2}{w_1 * \var_1}{\\
-		&\letin{\var[2]_1}{0}{\\
-		&\letin{\var[2]_2}{0}{\\
-		&\letin{\var[2]_3}{0}{\\
-		&\letin{\var[2]_4}{0}{\\
-		&\letin{\var[2]_5}{1}{\\
-		& \letin{\var[2]_1'}{\var[2]_1+w_1 * \var[2]_5}{\\
-		&\letin{\var[2]_4'}{\var[2]_4+ \var_1 * \var[2]_5}{\\
-		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2+\var_1*\var[2]_4',\var[2]_3)
-		}}}}}}}}}
-	\end{align*}
-	We apply some algebraic simplifications in $\partial_3$
-	\begin{align*}
-		&\letin{w_1}{\var_1 * \var_2}{\\
-		&\letin{w_2}{w_1 * \var_1}{\\
-		& \letin{\var[2]_1'}{w_1}{\\
-		&\letin{\var[2]_4'}{\var_1}{\\
-		&(\var[2]_1'+\var_2*\var[2]_4',\var_1*\var[2]_4',0)
-		}}}}
-	\end{align*}
-	We can optimise some more with $\partial_3$, and we finally obtain
-	\begin{align*}
-		&\letin{w_1}{\var_1 * \var_2}{\\
-		&\letin{w_2}{w_1 * \var_1}{\\
-		&(w_1+\var_2*\var_1,\var_1*\var_1,0)
-		}}
-	\end{align*}
-\end{example}
+% 	Now let's apply the first part of $OPT$:
+% 	\begin{align*}
+% 		&\letin{w_1}{\var_1 * \var_2}{\\
+% 		&\letin{w_2}{w_1 * \var_1}{\\
+% 		&\letin{(\var[2]_1\ldots\var[2]_5)}{(0,0,0,0,1)}{\\
+% 		& \letin{(\var[2]_1'\ldots\var[2]_4')}{(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}{\\
+% 		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2'+\var_1*\var[2]_4',\var[2]_3')
+% 		}}}}
+% 	\end{align*}
+% Let's unsugar the lets:
+% 	\begin{align*}
+% 		&\letin{w_1}{\var_1 * \var_2}{\\
+% 		&\letin{w_2}{w_1 * \var_1}{\\
+% 		&\letin{\var[2]_1}{0}{\\
+% 		&\letin{\var[2]_2}{0}{\\
+% 		&\letin{\var[2]_3}{0}{\\
+% 		&\letin{\var[2]_4}{0}{\\
+% 		&\letin{\var[2]_5}{1}{\\
+% 		& \letin{\var[2]_1'}{\var[2]_1+w_1 * \var[2]_5}{\\
+% 		&\letin{ {\color{red} \var[2]_2'} }{  {\color{red} \var[2]_2} }{\\
+% 		&\letin{ {\color{red} \var[2]_3'} }{ {\color{red} \var[2]_3}  }{\\
+% 		&\letin{\var[2]_4'}{\var[2]_4+ \var_1 * \var[2]_5}{\\
+% 		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2'+\var_1*\var[2]_4',\var[2]_3')
+% 		}}}}}}}}}}}
+% 	\end{align*}
+% 	We apply the second part of $OPT$ to remove the variables in red:
+% 	\begin{align*}
+% 		&\letin{w_1}{\var_1 * \var_2}{\\
+% 		&\letin{w_2}{w_1 * \var_1}{\\
+% 		&\letin{\var[2]_1}{0}{\\
+% 		&\letin{\var[2]_2}{0}{\\
+% 		&\letin{\var[2]_3}{0}{\\
+% 		&\letin{\var[2]_4}{0}{\\
+% 		&\letin{\var[2]_5}{1}{\\
+% 		& \letin{\var[2]_1'}{\var[2]_1+w_1 * \var[2]_5}{\\
+% 		&\letin{\var[2]_4'}{\var[2]_4+ \var_1 * \var[2]_5}{\\
+% 		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2+\var_1*\var[2]_4',\var[2]_3)
+% 		}}}}}}}}}
+% 	\end{align*}
+% 	We apply some algebraic simplifications in $\partial_3$
+% 	\begin{align*}
+% 		&\letin{w_1}{\var_1 * \var_2}{\\
+% 		&\letin{w_2}{w_1 * \var_1}{\\
+% 		& \letin{\var[2]_1'}{w_1}{\\
+% 		&\letin{\var[2]_4'}{\var_1}{\\
+% 		&(\var[2]_1'+\var_2*\var[2]_4',\var_1*\var[2]_4',0)
+% 		}}}}
+% 	\end{align*}
+% 	We can optimise some more with $\partial_3$, and we finally obtain
+% 	\begin{align*}
+% 		&\letin{w_1}{\var_1 * \var_2}{\\
+% 		&\letin{w_2}{w_1 * \var_1}{\\
+% 		&(w_1+\var_2*\var_1,\var_1*\var_1,0)
+% 		}}
+% 	\end{align*}
+% \end{example}
+
+\subsection{Motivation}
+
+\subsection{Problem}
+
+\subsection{Examples}
+
+\subsection{Contribution}
+
+\subsection{Outline of the paper}

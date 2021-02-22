@@ -1,85 +1,93 @@
 \section{Rudiments of AD}
 
-\subsection{Rudiments of differentiation and dual numbers.}
-Recall that the derivative of a function $f:\RR\to \RR$, if it exists, is a function
-$\nabla f:\RR\to \RR$ such that $\nabla f(x_0)=\frac {\dif f(x)}{\dif x}(x_0)$ is the gradient of $f$ at $x_0$. 
+% \subsection{Rudiments of differentiation and dual numbers.}
+% Recall that the derivative of a function $f:\RR\to \RR$, if it exists, is a function
+% $\nabla f:\RR\to \RR$ such that $\nabla f(x_0)=\frac {\dif f(x)}{\dif x}(x_0)$ is the gradient of $f$ at $x_0$. 
 
-To find $\nabla f$ in a compositional way, two generalizations are reasonable:
-\begin{itemize}
-\item We need both $f$ and $\nabla f$ when calculating $\nabla (f;g)$
-of a composition $f;g$, using the chain rule, so we are really interested in the pair $(f,\nabla f):\RR\to \RR\times \RR$;
-\item In building $f$ we will need to consider functions of multiple arguments, such as $+:\RR^2\to \RR$, and these functions should propagate derivatives.
-\end{itemize}
-Thus we are more generally interested in transforming a function $g:\RR^n\to \RR$ into a function
-$h:(\RR\times \RR)^n\to \RR\times \RR$ in such a way that for any
-$f_1\dots f_n:\RR\to\RR$, 
-\begin{equation}
-  \label{eqn:dualnumber}
-  (f_1,\nabla f_1,\dots, f_n,\nabla f_n);h
-  =
-  ((f_1,\dots, f_n);g,\nabla ((f_1, \dots, f_n);g))\text.
-\end{equation}
+% To find $\nabla f$ in a compositional way, two generalizations are reasonable:
+% \begin{itemize}
+% \item We need both $f$ and $\nabla f$ when calculating $\nabla (f;g)$
+% of a composition $f;g$, using the chain rule, so we are really interested in the pair $(f,\nabla f):\RR\to \RR\times \RR$;
+% \item In building $f$ we will need to consider functions of multiple arguments, such as $+:\RR^2\to \RR$, and these functions should propagate derivatives.
+% \end{itemize}
+% Thus we are more generally interested in transforming a function $g:\RR^n\to \RR$ into a function
+% $h:(\RR\times \RR)^n\to \RR\times \RR$ in such a way that for any
+% $f_1\dots f_n:\RR\to\RR$, 
+% \begin{equation}
+%   \label{eqn:dualnumber}
+%   (f_1,\nabla f_1,\dots, f_n,\nabla f_n);h
+%   =
+%   ((f_1,\dots, f_n);g,\nabla ((f_1, \dots, f_n);g))\text.
+% \end{equation}
 
-An intuition for $h$ is often given in terms of dual numbers.
-The transformed function operates on pairs of numbers, $(x,x')$, and it is common
-to think of such a pair as $x+x'\epsilon$ for an `infinitesimal' $\epsilon$.
-But while this is a helpful intuition, the formalization of infinitesimals can be intricate, 
-and the development in this paper is focussed on the elementary formulation in~\eqref{eqn:dualnumber}. 
+% An intuition for $h$ is often given in terms of dual numbers.
+% The transformed function operates on pairs of numbers, $(x,x')$, and it is common
+% to think of such a pair as $x+x'\epsilon$ for an `infinitesimal' $\epsilon$.
+% But while this is a helpful intuition, the formalization of infinitesimals can be intricate, 
+% and the development in this paper is focussed on the elementary formulation in~\eqref{eqn:dualnumber}. 
 
-The reader may also notice that $h$ encodes all the partial derivatives of
-$g$. For example, 
-if $g \colon \RR^2\to \RR$, then with $f_1(x)\defeq x$ and $f_2(x)\defeq x_2$, by applying \eqref{eqn:dualnumber} to $x_1$ we obtain
-$h(x_1,1,x_2,0)=(g(x_1,x_2), \frac {\partial g(x,x_2)}{\partial x}(x_1))$
-and similarly 
-$h(x_1,0,x_2,1)=(g(x_1,x_2), \frac {\partial g(x_1,x)}{\partial x}(x_2))$.
-And conversely, if $g$ is differentiable in each argument, then
-a unique $h$ satisfying \eqref{eqn:dualnumber} can be found by taking linear
-combinations of partial derivatives:
-\[\textstyle h(x_1,x_1',x_2,x_2')=(g(x_1,x_2),x_1' \cdot\frac {\partial g(x,x_2)}{\partial x}(x_1)+x_2'\cdot \frac {\partial g(x_1,x)}{\partial x}(x_2))\text.\]
+% The reader may also notice that $h$ encodes all the partial derivatives of
+% $g$. For example, 
+% if $g \colon \RR^2\to \RR$, then with $f_1(x)\defeq x$ and $f_2(x)\defeq x_2$, by applying \eqref{eqn:dualnumber} to $x_1$ we obtain
+% $h(x_1,1,x_2,0)=(g(x_1,x_2), \frac {\partial g(x,x_2)}{\partial x}(x_1))$
+% and similarly 
+% $h(x_1,0,x_2,1)=(g(x_1,x_2), \frac {\partial g(x_1,x)}{\partial x}(x_2))$.
+% And conversely, if $g$ is differentiable in each argument, then
+% a unique $h$ satisfying \eqref{eqn:dualnumber} can be found by taking linear
+% combinations of partial derivatives:
+% \[\textstyle h(x_1,x_1',x_2,x_2')=(g(x_1,x_2),x_1' \cdot\frac {\partial g(x,x_2)}{\partial x}(x_1)+x_2'\cdot \frac {\partial g(x_1,x)}{\partial x}(x_2))\text.\]
 
-In summary, the idea of differentiation with dual numbers is 
-to transform a differentiable function
-$g:\RR^n\to \RR$ to a function $h:\RR^{2n}\to \RR^2$ which captures~$g$ and all its partial derivatives. We packaged this up in~\eqref{eqn:dualnumber} as a sort-of invariant which is useful for building derivatives of compound functions $\RR\to\RR$ in a compositional way.
-The idea of automatic differentiation is to perform this transformation at the source code level. 
+% In summary, the idea of differentiation with dual numbers is 
+% to transform a differentiable function
+% $g:\RR^n\to \RR$ to a function $h:\RR^{2n}\to \RR^2$ which captures~$g$ and all its partial derivatives. We packaged this up in~\eqref{eqn:dualnumber} as a sort-of invariant which is useful for building derivatives of compound functions $\RR\to\RR$ in a compositional way.
+% The idea of automatic differentiation is to perform this transformation at the source code level. 
 
-The two main ways in which it is performed in practice is by operator overloading \cite{} or by source code transformation. We focus our work on the latter.
+% The two main ways in which it is performed in practice is by operator overloading \cite{} or by source code transformation. We focus our work on the latter.
 
-\subsection{Reverse-mode AD}
+% \subsection{Reverse-mode AD}
 
-AD comes in two main flavors: forward mode and reverse mode. 
-Forward mode computes a directional derivative of the Jacobian while reverse-mode computes a directional derivative of the transpose Jaobian. 
-This has a significant impact in practice as this means reverse mode can compute the whole gradient of a function $f:\RR^n\to \RR$ in one pass, whereas forward mode needs $n$ passes. 
-Assuming that both have about the same complexity, this can have a huge impact in practice. 
-Such functions are expremely commonly seen as loss functions in the context of machine learning for instance.
+% AD comes in two main flavors: forward mode and reverse mode. 
+% Forward mode computes a directional derivative of the Jacobian while reverse-mode computes a directional derivative of the transpose Jaobian. 
+% This has a significant impact in practice as this means reverse mode can compute the whole gradient of a function $f:\RR^n\to \RR$ in one pass, whereas forward mode needs $n$ passes. 
+% Assuming that both have about the same complexity, this can have a huge impact in practice. 
+% Such functions are expremely commonly seen as loss functions in the context of machine learning for instance.
 
-Reverse-mode computes the derivatives backward, using the symmetry of the chain rule.
-This means the compute flow is reverted after the first pass to compute the value of the function and its intermediate values. 
-These values appear in the chain rule so should be stored or recomputed.
-These things make reverse-mode harder to implement efficiently, and especially harder to analyze and optimize. 
-Traditional implementations use references.
-For instance, let 
- \begin{align*}
-     \trm\defeq &\letin{w_1}{\var_1 * \var_2}{\\&\letin{w_2}{w_1 * \var_1}{\\&w_2}}
- \end{align*}
- The imperative version of the reverse differentiation of $\trm$ is
-	\begin{align*}
-		&w_1=\var_1 * \var_2 \\
-		&w_2=w_1 * \var_1 \\
-        &\var_1':=0~;~\var_2':=0 \\
-        &w_1':=0 \\
-		&w_2':=1 \\
-		&w_1'+= \var_1 * w_2'; \var_1'+= w_1*w_2' \\
-		&\var_1'+= \var_2 * w_1'; \var_2'+=\var_1 * w_1'\\
-		&\text{return }(\var_1',\var_2')  
-	\end{align*}
-The tangent part for every variable from the context $\var_i'$ and every intermediate variable $w_i'$ is initialized at $0$, 
-except for the return variable $w_2$ for which  $w_2':=1$. 
+% Reverse-mode computes the derivatives backward, using the symmetry of the chain rule.
+% This means the compute flow is reverted after the first pass to compute the value of the function and its intermediate values. 
+% These values appear in the chain rule so should be stored or recomputed.
+% These things make reverse-mode harder to implement efficiently, and especially harder to analyze and optimize. 
+% Traditional implementations use references.
+% For instance, let 
+%  \begin{align*}
+%      \trm\defeq &\letin{w_1}{\var_1 * \var_2}{\\&\letin{w_2}{w_1 * \var_1}{\\&w_2}}
+%  \end{align*}
+%  The imperative version of the reverse differentiation of $\trm$ is
+% 	\begin{align*}
+% 		&w_1=\var_1 * \var_2 \\
+% 		&w_2=w_1 * \var_1 \\
+%         &\var_1':=0~;~\var_2':=0 \\
+%         &w_1':=0 \\
+% 		&w_2':=1 \\
+% 		&w_1'+= \var_1 * w_2'; \var_1'+= w_1*w_2' \\
+% 		&\var_1'+= \var_2 * w_1'; \var_2'+=\var_1 * w_1'\\
+% 		&\text{return }(\var_1',\var_2')  
+% 	\end{align*}
+% The tangent part for every variable from the context $\var_i'$ and every intermediate variable $w_i'$ is initialized at $0$, 
+% except for the return variable $w_2$ for which  $w_2':=1$. 
 
-As noted in \cite{pearlmutter2008reverse}, in a functional language, one can have a purely functional reverse-mode using continuations. 
-This representation is notoriously inefficient, and the existing implementations of reverse mode in a functional setting have followed the lines of the imperative version above \cite{pearlmutter2008reverse, wang2018demystifying, baydin2016diffsharp}.
+% As noted in \cite{pearlmutter2008reverse}, in a functional language, one can have a purely functional reverse-mode using continuations. 
+% This representation is notoriously inefficient, and the existing implementations of reverse mode in a functional setting have followed the lines of the imperative version above \cite{pearlmutter2008reverse, wang2018demystifying, baydin2016diffsharp}.
 
-In the next section, we first introduce a very simple first-order language. 
-Then we define reverse-mode on this language as a program transformation. 
-This first transformation is quite inefficient and we how we can use standard optimizations on functional languages to obtain a provably efficient pure program.
-The key idea behind that will be generalized and explored in detail in the rest of the paper is that of turning every operator into a unary one.     
-The remaining of the paper will generalize this idea and explore some consequences of this new approach. 
+% In the next section, we first introduce a very simple first-order language. 
+% Then we define reverse-mode on this language as a program transformation. 
+% This first transformation is quite inefficient and we how we can use standard optimizations on functional languages to obtain a provably efficient pure program.
+% The key idea behind that will be generalized and explored in detail in the rest of the paper is that of turning every operator into a unary one.     
+% The remaining of the paper will generalize this idea and explore some consequences of this new approach. 
+
+\subsection{AD as source-code transformation}
+
+\subsection{Reverse-mode differentiation}
+
+\subsection{Purely functional inefficient reverse-mode}
+
+\subsection{Insights for efficient reverse-mode}
