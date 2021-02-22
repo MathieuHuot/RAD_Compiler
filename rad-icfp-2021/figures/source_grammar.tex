@@ -1,0 +1,34 @@
+\begin{figure*}[t]
+\setlength{\tabcolsep}{0.3em}
+\centering
+\begin{tabular}{|l c l|l|}
+\hline
+\multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
+!e! & \mbox{::=} & !sum(x in e) e! & \grammarcomment{Collection Aggregation} \\
+% & $\mid$ & !build(x <- e) e! \\
+& $\mid$ & !{ e -> e, ... }! & \grammarcomment{Dictionary Construction}\\
+% & $\mid$ & ![[ e ]]! & \grammarcomment{Set Construction}\\
+% & $\mid$ & !dom(e)! & \grammarcomment{Key Set of Dictionary}\\
+& $\mid$ & !e(e)! & \grammarcomment{Dictionary Lookup}\\
+& $\mid$ & !< a = e, ... >! & \grammarcomment{Record Construction}\\
+& $\mid$ & !e.a! & \grammarcomment{Field Access}\\
+& $\mid$ & !let x = e in e! & \grammarcomment{Variable Binding}\\
+& $\mid$ & !if(e) then e else e! & \grammarcomment{Conditional}\\
+& $\mid$ & !e + e! $\mid$ !e * e! & \grammarcomment{Addition \& Multiplication}\\
+& $\mid$ & !n! $\mid$ !r! $\mid$ !false! $\mid$ !true! & \grammarcomment{Numeric \& Boolean Values}\\
+& $\mid$ & !dn! & \grammarcomment{Dense Integer Value}\\
+% & $\mid$ & !"some_text"! & \grammarcomment{String Literal}\\ 
+\hline
+!T! & \mbox{::=} & !{ T -> T }! & \grammarcomment{Dictionary Type} \\
+& $\mid$ & !< a:T, ... >! & \grammarcomment{Record Type}\\
+& $\mid$ & !S! & \grammarcomment{Scalar Type}\\
+!S! & \mbox{::=} & !int! $\mid$ !real! $\mid$ !bool! & \grammarcomment{Numeric \& Boolean Types}\\
+& $\mid$ & !denseint! & \grammarcomment{Dense Integer Type}\\
+% & $\mid$ & !string! & \grammarcomment{String Type}\\
+\hline
+\end{tabular}
+\vspace{0.2cm}
+\caption{Grammar of the core part of the language.}
+% \vspace{-0.4cm}
+\label{fig:lang}
+\end{figure*}
