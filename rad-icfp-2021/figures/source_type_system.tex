@@ -1,100 +1,59 @@
-% \begin{figure*}[t]
-%     \centering
-%     \begin{tabular}{c}
-%     $\Gamma \vdash$ !e1!: !{ T1 -> T2 }! $\quad$ $\Gamma$, !x!: !<key:T1,val:T2>! $\vdash$ !e2!: !T3! \\\hline
-%     !sum(x <- e1) e2!: !T3!
-%     \end{tabular}
-    
-%     \begin{tabular}{c}
-%     !k_1!: !T1! $\quad$ !v_1!: !T2! $\quad$ ... $\quad$ !k_n!: !T1! $\quad$ !v_n!: !T2!\\\hline
-%     !{ k_1 -> v_1, ..., k_n -> v_n }!: !{ T1 -> T2 }!
-%     \end{tabular}
-%     \hspace{0.5cm}
-%     \begin{tabular}{c}
-%     !e1!: !{ T1 -> T2 }! $\quad$ !e2!: !T1!\\\hline
-%     !e1(e2)!: !T2!
-%     \end{tabular}
-%     \hspace{0.5cm}
-%     \begin{tabular}{c}
-%     !e_1!: !T_1! $\quad$ ... $\quad$ !e_n!: !T_k!\\\hline
-%     !<a_1=e_1,...,a_k=e_k>!: !<a_1:T_1,...,a_n:T_k>!
-%     \end{tabular}
-%     \hspace{0.5cm}
-%     \begin{tabular}{c}
-%     !e!: !<a_1:T_1,...,a_k:T_k>!\\\hline
-%     !e.a_i!: !T_i!
-%     \end{tabular}
-%     \hspace{0.5cm}
-%     \begin{tabular}{c}
-%     $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma$, !x!: !T1! $\vdash$ !e2!: !T2! \\\hline
-%     !let x = e1 in e2!: !T2!
-%     \end{tabular}
-    
-%     \begin{tabular}{c}
-%     !e1!: !bool! $\quad$ !e2!: !T! $\quad$ !e3!: !T! \\\hline
-%     !if(e1) then e2 else e3!: !T!
-%     \end{tabular}
-%     \hspace{0.5cm}
-%     \begin{tabular}{c}
-%     !e1!: !T! $\quad$ !e2!: !T!\\\hline
-%     !e1 + e2!: !T!
-%     \end{tabular}
-%     \hspace{0.5cm}
-%     \begin{tabular}{c}
-%     !e1!: !T1! $\quad$ !e2!: !T2!\\\hline
-%     !e1 * e2!: !T1$\otimes$T2!
-%     \end{tabular}
-    
-    
-%     \begin{tabular}{c}
-%     !e!: !S1$\otimes$S2!\\\hline
-%     !e!: !S1$\vee$S2!
-%     \end{tabular}
-%     \hspace{0.5cm}
-%     \begin{tabular}{c}
-%     !e!: !S$\otimes${T1->T2}!\\\hline
-%     !e!: !{T1->S$\otimes$T2}!
-%     \end{tabular}
-%     \hspace{0.5cm}
-%     \begin{tabular}{c}
-%     !e!: !S$\otimes$<a1:T1, ...>!\\\hline
-%     !e!: !<a1:S$\otimes$T1, ...>!
-%     \end{tabular}
-    
-%     \begin{tabular}{c}
-%     !e!: !{T1->T2}$\otimes$T0!\\\hline
-%     !e!: !{T1->T2$\otimes$T0}!
-%     \end{tabular}
-%     \hspace{0.5cm}
-%     \begin{tabular}{c}
-%     !e!: !<a1:T1, ...>$\otimes$T0!\\\hline
-%     !e!: !<a1:T1$\otimes$T0, ...>!
-%     \end{tabular}
-%     \vspace{-0.2cm}
-%     \caption{Type system of \lang.}
-%     \vspace{-0.4cm}
-%     \label{fig:typesystem}
-%     \end{figure*}
+\begin{figure*}[tb]
+    \centering
+    \begin{tabular}{c} 
+    \\\hline
+    $\Gamma \vdash$ !x!: !T!
+    \end{tabular}(!x!: !T!$\in\Gamma$)
+    \hspace{0.5cm}
+    \begin{tabular}{c} 
+        \\\hline
+        $\Gamma \vdash$ !c!: $\reals$
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+    $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma$, !x!: !T1! $\vdash$ !e2!: !T2! \\\hline
+    !let x = e1 in e2!: !T2!
+    \end{tabular}
 
-    \begin{figure}[tb]
-        \fbox{
-          \parbox{\textwidth}{
-      
-            \[
-                \begin{array}{ll}
-                  \inferrule{
-                    (\var : \ty) \in \Gamma
-                  }{
-                    \Gamma \vdash \var\ty
-                  }
-                &
-                 \inferrule{
-                    (\var : \ty) \in \Gamma
-                  }{
-                    \Gamma \vdash \var\ty
-                  }
-                \end{array} 
-                \]
-        \caption{Type system}
-        \label{fig:type_system}}
-        \end{figure}
+    \begin{tabular}{c}
+    $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma \vdash$ !e2!: !T2! \\\hline  
+    $\Gamma \vdash$ !<e1,e2>!: !T1! $\times$ !T2!
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        $\Gamma \vdash$ !e!: $\reals$ \\\hline  
+        $\Gamma \vdash$ !op1 e!: $\reals$
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        $\Gamma \vdash$ !e1!: $\reals$ $\quad$ $\Gamma \vdash$ !e2!: $\reals$ \\\hline  
+        $\Gamma \vdash$ !e1 op2 e2!: $\reals$
+        \end{tabular}
+ 
+
+    \begin{tabular}{c}
+        $\Gamma$, !x!: $\reals$ $\vdash$ !e1!: $\reals$ $\quad$ $\Gamma$ $\vdash$ !e2!: $\Array{\reals}$
+        \\\hline  
+        $\Gamma \vdash$ !map (x.e1) e2!: $\Array{\reals}$
+    \end{tabular}
+
+    \begin{tabular}{c}
+        $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
+        $\quad$ $\Gamma$ $\vdash$ !e2!: $\Array{\reals}$
+        $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
+        \\\hline  
+        $\Gamma \vdash$ !map2 (x,y.e1) e2 e3!: $\Array{\reals}$
+    \end{tabular}
+
+    \begin{tabular}{c}
+        $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
+        $\quad$ $\Gamma$ $\vdash$ !e2!: $\reals$
+        $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
+        \\\hline  
+        $\Gamma \vdash$ !foldl (x,y.e1) e2 e3!: $\reals$
+    \end{tabular}
+    \vspace{-0.2cm}
+    \caption{Type system of the source language}
+    \vspace{-0.4cm}
+    \label{fig:source_typesystem}
+    \end{figure*}

@@ -4,31 +4,20 @@
 \begin{tabular}{|l c l|l|}
 \hline
 \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
-!e! & \mbox{::=} & !sum(x in e) e! & \grammarcomment{Collection Aggregation} \\
-% & $\mid$ & !build(x <- e) e! \\
-& $\mid$ & !{ e -> e, ... }! & \grammarcomment{Dictionary Construction}\\
-% & $\mid$ & ![[ e ]]! & \grammarcomment{Set Construction}\\
-% & $\mid$ & !dom(e)! & \grammarcomment{Key Set of Dictionary}\\
-& $\mid$ & !e(e)! & \grammarcomment{Dictionary Lookup}\\
-& $\mid$ & !< a = e, ... >! & \grammarcomment{Record Construction}\\
-& $\mid$ & !e.a! & \grammarcomment{Field Access}\\
+!e! & \mbox{::=} & !x! & \grammarcomment{Variable}\\
+& $\mid$ & !c! & \grammarcomment{Real constant}\\
 & $\mid$ & !let x = e in e! & \grammarcomment{Variable Binding}\\
-& $\mid$ & !if(e) then e else e! & \grammarcomment{Conditional}\\
-& $\mid$ & !e + e! $\mid$ !e * e! & \grammarcomment{Addition \& Multiplication}\\
-& $\mid$ & !n! $\mid$ !r! $\mid$ !false! $\mid$ !true! & \grammarcomment{Numeric \& Boolean Values}\\
-& $\mid$ & !dn! & \grammarcomment{Dense Integer Value}\\
-% & $\mid$ & !"some_text"! & \grammarcomment{String Literal}\\ 
+& $\mid$ & !< e, e >! & \grammarcomment{Pair Construction}\\
+& $\mid$ & !e op2 e! $\mid$ !op1 e! & \grammarcomment{Binary and Unary operations}\\
+& $\mid$ & !map (x.e) e! $\mid$ !map2 (x,y.e) e e! & \grammarcomment{Array map and map2}\\
+& $\mid$ & !foldl (x,y.e) e e! & \grammarcomment{Array fold left}\\
 \hline
-!T! & \mbox{::=} & !{ T -> T }! & \grammarcomment{Dictionary Type} \\
-& $\mid$ & !< a:T, ... >! & \grammarcomment{Record Type}\\
-& $\mid$ & !S! & \grammarcomment{Scalar Type}\\
-!S! & \mbox{::=} & !int! $\mid$ !real! $\mid$ !bool! & \grammarcomment{Numeric \& Boolean Types}\\
-& $\mid$ & !denseint! & \grammarcomment{Dense Integer Type}\\
-% & $\mid$ & !string! & \grammarcomment{String Type}\\
+!T! & \mbox{::=} & $\reals$ & \grammarcomment{Real Type} \\
+& $\mid$ & !T! $\times$ !T! & \grammarcomment{Product Type}\\
+& $\mid$ & $\Array{\reals}$ & \grammarcomment{Real Array Type}\\
 \hline
 \end{tabular}
-\vspace{0.2cm}
-\caption{Grammar of the core part of the language.}
-% \vspace{-0.4cm}
-\label{fig:lang}
+\vspace{-0.2cm}
+\caption{Grammar of the source language.}
+\label{fig:source_grammar}
 \end{figure*}

@@ -9,6 +9,42 @@
 \usepackage{amssymb}
 \usepackage{twoopt}
 \usepackage{array}
+\usepackage{listings}
+
+\lstdefinelanguage{llql}%
+{morekeywords={
+  if,then,else,let,in,
+  op2,op1,map,map2,foldl,
+  scanl,scanr,map3,fun,reduce
+  },%
+  sensitive,%
+  morecomment=[l]//,%
+  morecomment=[s]{/*}{*/},%
+  morestring=[b]",%
+  morestring=[b]',%
+  showstringspaces=false,%
+  morecomment=[s][\color{gray}]{@}{\ },%
+    breaklines=true,%
+  mathescape=true,%
+showspaces=false,
+showtabs=false,
+showstringspaces=false,
+breakatwhitespace=true,
+  aboveskip=1pt,
+  belowskip=1pt,
+  lineskip=-0.2pt,
+   numbersep=5pt,
+   numberstyle=\tiny\ttfamily,
+   basicstyle=\small\ttfamily,
+   keywordstyle=\bfseries\color{blue!70!black},%
+   columns=fullflexible,
+  frame=single,
+  escapeinside={(*@}{@*)}
+}[keywords,comments,strings]%
+
+\lstset{language=llql}
+\lstMakeShortInline[columns=fixed]!
+
 
 \newcommand{\system}{RAD\xspace}
 \newcommand{\dfsmooth}{$\text{d}\widetilde{\textsc{f}}$\xspace}
@@ -145,9 +181,12 @@
 \newcommand\vbuildk{\mathbf{build}}
 \newcommand\vlengthk{\mathbf{length}}
 \newcommand\vgetk{\mathbf{get}}
-\newcommand\ArraySym{\mathbf{array}}
-\newcommand\Array[1]{\ArraySym(#1)}
+\newcommand\ArraySym{\mathbf{A}}
+\newcommand\Array[1]{\ArraySym[#1]}
 \newcommand\To{\to}
 \newcommand\tMatch[4][\,]{\mathbf{case}\,#2\,\mathbf{of}#1\tTuple{#3}\To#4}
 \newcommand{\semu}[1]{\llbracket #1\rrbracket_\mathbf{U}}
 \newcommand{\grammarcomment}[1]{\textit{\small #1}}
+
+\newcommand{\Source}{\mathbf{Source}}
+\newcommand{\Target}{\mathbf{Target}}
