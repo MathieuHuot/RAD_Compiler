@@ -1,0 +1,59 @@
+\begin{figure*}[tb]
+    \centering
+    \begin{tabular}{c} 
+    \\\hline
+    $\Gamma \vdash$ !x!: !T!
+    \end{tabular}(!x!: !T!$\in\Gamma$)
+    \hspace{0.5cm}
+    \begin{tabular}{c} 
+        \\\hline
+        $\Gamma \vdash$ !c!: $\reals$
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+    $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma$, !x!: !T1! $\vdash$ !e2!: !T2! \\\hline
+    !let x = e1 in e2!: !T2!
+    \end{tabular}
+
+    \begin{tabular}{c}
+    $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma \vdash$ !e2!: !T2! \\\hline  
+    $\Gamma \vdash$ !<e1,e2>!: !T1! $\times$ !T2!
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        $\Gamma \vdash$ !e!: $\reals$ \\\hline  
+        $\Gamma \vdash$ !op1 e!: $\reals$
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        $\Gamma \vdash$ !e1!: $\reals$ $\quad$ $\Gamma \vdash$ !e2!: $\reals$ \\\hline  
+        $\Gamma \vdash$ !e1 op2 e2!: $\reals$
+        \end{tabular}
+ 
+
+    \begin{tabular}{c}
+        $\Gamma$, !x!: $\reals$ $\vdash$ !e1!: $\reals$ $\quad$ $\Gamma$ $\vdash$ !e2!: $\Array{\reals}$
+        \\\hline  
+        $\Gamma \vdash$ !map (x.e1) e2!: $\Array{\reals}$
+    \end{tabular}
+
+    \begin{tabular}{c}
+        $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
+        $\quad$ $\Gamma$ $\vdash$ !e2!: $\Array{\reals}$
+        $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
+        \\\hline  
+        $\Gamma \vdash$ !map2 (x,y.e1) e2 e3!: $\Array{\reals}$
+    \end{tabular}
+
+    \begin{tabular}{c}
+        $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
+        $\quad$ $\Gamma$ $\vdash$ !e2!: $\reals$
+        $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
+        \\\hline  
+        $\Gamma \vdash$ !foldl (x,y.e1) e2 e3!: $\reals$
+    \end{tabular}
+    \vspace{-0.2cm}
+    \caption{Type system of the Source UNF}
+    \vspace{-0.4cm}
+    \label{fig:source_unf_typesystem}
+    \end{figure*}

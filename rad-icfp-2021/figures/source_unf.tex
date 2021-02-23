@@ -1,0 +1,19 @@
+\begin{figure*}[t]
+    \setlength{\tabcolsep}{0.3em}
+    \centering
+    \begin{tabular}{|l c l|l|}
+    \hline
+    \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
+    !T! & \mbox{::=} & ... & \grammarcomment{Same as source} \\
+    \hline
+    !e! & \mbox{::=} & !var!$_{i,\Gamma}$ & \grammarcomment{Variable}\\
+    & $\mid$ & !op!$_{n,\Gamma}$ & \grammarcomment{Operations, for $0\leq n\leq 2$}\\
+    & $\mid$ & !e;e! & \grammarcomment{Sequential composition}\\
+    & $\mid$ & !map!$_{x.e}$ $\mid$ !map2!$_{x,y.e}$ & \grammarcomment{Map and map2}\\
+    & $\mid$ & !foldl!$_{x,y.e}$ & \grammarcomment{Fold left}\\
+    \hline
+    \end{tabular}
+    \vspace{-0.2cm}
+    \caption{Grammar of the source UNF}
+    \label{fig:unf_source_grammar}
+    \end{figure*}
