@@ -1,13 +1,13 @@
 \begin{figure*}[t]
     \begin{tabular}{r c l}
-    $\UNFSymbol$(!c!) &=& \\
-    $\UNFSymbol$(!let x = e1 in e2!) &=&  \\ 
-    $\UNFSymbol$(!< e1, e2 >!) &=& \\ 
-    $\UNFSymbol$(!e1 op2 e2!) &=& \\
-    $\UNFSymbol$(!op1 e!) &=& \\
-    $\UNFSymbol$(!map (x.e1) e2!) &=& \\
-    $\UNFSymbol$(!map2 (x,y.e1) e2 e3!) &=& \\ 
-    $\UNFSymbol$(!foldl (x,y.e1) e2 e3!) &=&  \\  
+    $\UNFSymbol$(!c!) &=& !c!$_{\Gamma}$ \text{seen as a 0-ary operator}\\
+    $\UNFSymbol$(!let x = e1 in e2!) &=& $\UNFSymbol$(e1);$\UNFSymbol$(e2) \\ 
+    $\UNFSymbol$(!< e1, e2 >!) &=& $\UNFSymbol$(e1);$\UNFSymbol$(e2) \\ 
+    $\UNFSymbol$(!e1 op2 e2!) &=& $\UNFSymbol$(e1);$\UNFSymbol$(e2); !op!$_{\Gamma,2}$\\
+    $\UNFSymbol$(!op1 e!) &=& $\UNFSymbol$(e); !op!$_{\Gamma,1}$ \\
+    $\UNFSymbol$(!map (x.e1) e2!) &=& $\UNFSymbol$(e2); !map!$_{x.e}$\\
+    $\UNFSymbol$(!map2 (x,y.e1) e2 e3!) &=& $\UNFSymbol$(e2); $\UNFSymbol$(e3); !map2!$_{x,y.e}$ \\ 
+    $\UNFSymbol$(!foldl (x,y.e1) e2 e3!) &=& $\UNFSymbol$(e2); $\UNFSymbol$(e3); !foldl!$_{x,y.e}$ \\  
     \end{tabular}
     \caption{Reverse-mode differentiation from Source UNF to Target UNF}
     \label{fig:diff_macro}

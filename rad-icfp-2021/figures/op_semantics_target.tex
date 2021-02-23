@@ -1,0 +1,52 @@
+\begin{figure*}[tb]
+    \centering
+    \begin{tabular}{c}   
+    \\\hline
+    !shift1! $[v_1,\ldots,v_n] \to [1,v1,\ldots,v_{n-1}]$
+\end{tabular}
+
+\begin{tabular}{c}   
+    \\\hline
+    !scanl! !x,y.e! $v$ $[] \to [v]$
+\end{tabular}
+
+\begin{tabular}{c}   
+    \\\hline
+    !scanl! !x,y.e! $v$ $[v_1,\ldots,v_n] \to v$::(!scanl! !x,y.e! !e!$[v/x,v_1/y]$ $[v_2,\ldots,v_n]$)
+\end{tabular}
+
+\begin{tabular}{c}   
+    \\\hline
+    !scanr! !x,y.e! $v$ $[] \to [v]$
+\end{tabular}
+
+\begin{tabular}{c}   
+    \\\hline
+    !scanr! !x,y.e! $v$ $[v_1,\ldots,v_n] \to$ (!scanl! !x,y.e! !e!$[v/x,v_1/y]$ $[v_2,\ldots,v_n]$)::$v$
+\end{tabular}
+
+\begin{tabular}{c}   
+    \\\hline
+    !foldl! !x,y.e! $v$ $[] \to v$
+\end{tabular}
+
+\begin{tabular}{c}   
+    \\\hline
+    !foldl! !x,y.e! $v$ $[v_1,\ldots,v_n] \to$ !foldl! !x,y.e! !e!$[v/x,v_1/y]$ $[v_2,\ldots,v_n]$)
+\end{tabular}
+
+\begin{tabular}{c}   
+    \\\hline
+    !reduce! !x,y.e! $v$ $[] \to v$
+\end{tabular}
+
+\begin{tabular}{c}   
+    \\\hline
+    !reduce! !x,y.e! $v$ $[v_1,\ldots,v_n] \to$ !reduce! !x,y.e! !e!$[v/x,v_1/y]$ $[v_2,\ldots,v_n]$)
+\end{tabular}
+
+\vspace{-0.2cm}
+\caption{Operational semantics of the target language}
+\vspace{-0.4cm}
+\label{fig:op_semantics_target}
+\end{figure*}
