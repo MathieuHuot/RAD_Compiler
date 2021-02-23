@@ -1,51 +1,5 @@
 \section{Simple case}
 
-\subsection{Language}
-
-We first consider a very simple first-order language. The types and terms are as follows:
- \input{simpletypesandterms}
-
-The type system is given in Figure \ref{fig:types1}.
-
-% \begin{figure}[b]
-%     \framebox{\scalebox{0.82}{\begin{minipage}{1.2\linewidth}\noindent\input{simpletypesystemsource}\end{minipage}}}
-%     \caption{Typing rules for the simple language.\label{fig:types1}}
-% \end{figure}
-
-Reverse-mode introduces pairs and continuations, so we need to enrich the target language of differentiation with these constructs.
-The target language is given in Figure \ref{fig:types2}.
-
-% \begin{figure}[b]
-%     \framebox{\scalebox{0.82}{\begin{minipage}{1.2\linewidth}\noindent\input{simpletypesystemtarget}\end{minipage}}}
-%     \caption{Typing rules for the simple language.\label{fig:types2}}
-% \end{figure}
-
-\subsection{Naive reverse-mode}
-
-We define the macro $\Dsynrevsymbol[][]{}$ by induction on the syntax of the source language as follows:
-
-% \begin{figure}[b]
-%     \framebox{\scalebox{0.82}{\begin{minipage}{1.2\linewidth}\noindent\input{simplenaivediffmacro}\end{minipage}}}
-%     \caption{Typing rules for the simple language.\label{fig:simplediff}}
-% \end{figure}
-
-We show that our macro $\Dsynrev[]{t}$ is well-typed on the restricted language above. Given $x:\RR^n\vdash t:\RR$, we define the type $\TyD{t}\defeq\TyDinter{x:\RR^n}{t}$ where $\TyDinter{L}{t}$ is defined by induction on the structure of $t$ as follows:
-\begin{itemize}
-	\item $\TyDinter{x:\RR^n,y_1:\RR,\ldots,y_k:\RR}{\letin{y}{s}{t}}\defeq \TyDinter{x:\RR^n,y_1:\RR,\ldots,y_k:\RR,y:\RR}{t}$
-	\item $\TyDinter{x:\RR^n,y_1:\RR,\ldots,y_k:\RR}{\cnst}\defeq \RR\times (\RR^{n+k+1}\to \RR^{n})$
-	\item $\TyDinter{x:\RR^n,y_1:\RR,\ldots,y_k:\RR}{x_i}\defeq\RR\times (\RR^{n+k+1}\to \RR^{n})$
-	\item $\TyDinter{x:\RR^n,y_1:\RR,\ldots,y_k:\RR}{y_i}\defeq\RR\times (\RR^{n+k+1}\to \RR^{n})$
-	\item $\TyDinter{x:\RR^n,y_1:\RR,\ldots,y_k:\RR}{\Op_1(y_i)}\defeq \RR\times (\RR^{n+k+1}\to \RR^{n})$ and the same with $\Op_1(x_i)$
-	\item $\TyDinter{x:\RR^n,y_1:\RR,\ldots,y_k:\RR}{\Op_2(y_i,y_j)}\defeq \RR\times (\RR^{n+k+1}\to \RR^{n})$
-\end{itemize}
-
-In other words, most items can be summarised as $\TyDinter{x:\RR^n,y_1:\RR,\ldots,y_k:\RR}{W}\defeq \RR\times (\RR^{n+k+1}\to \RR^{n+k})$ where $W$ is an almost immediate expression.
-
-\begin{lemma}
-	The macro $\Dsynrev[]{t}$ is well-typed. More precisely, if $x:\RR^n\vdash t:\RR$, then $(x,x'):\RR^n\times (\RR^n\to\RR^n)\vdash \Dsynrev[x]{t}:\TyD{t}$.
-\end{lemma}
-
-
 \subsection{Semantics} 
 \label{sub:Semantics}
 
