@@ -1,0 +1,36 @@
+\begin{figure*}[tb]
+    \centering
+    \begin{tabular}{c} 
+    \\\hline
+    $\Gamma\times(\Gamma\to \rho)  \vdash$ !<var!$_{\Gamma,i}$!, J!$^T$!var!$_{\Gamma,i}$!>!: $\Gamma\times$!Ti!$\times(\Gamma\times$!Ti!$\to \rho)$ 
+    \end{tabular}($\Gamma=$!T1!$\times\ldots\times$!Tn!)
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        \\\hline
+        $\Gamma\times\reals^{\times n} \vdash$ !op!$_{\Gamma,n}$ : $\Gamma\times\reals^{\times(n+1)}$
+    \end{tabular}
+
+    \begin{tabular}{c}
+    !T0!$\times$(!T0!->$\rho$) $\vdash$ !<e1, e2>!: !T1!$\times$(!T1!->$\rho$) $\quad$ !T1!$\times$!T1!->$\rho$ $\vdash$ !<e3, e4>!: !T2!$\times$(!T2!->$\rho$) \\\hline
+    !T0!$\times$(!T0!->$\rho$) $\vdash$ !<e1;e3, e4!$\circ$!e2!: !T2!$\times$(!T2!->$\rho$)
+    \end{tabular}
+
+    \begin{tabular}{c}
+        \\\hline  
+        $\Gamma \times \Array{\reals}\times(\Gamma \times \Array{\reals}\to \rho) \vdash$ !<map!$_{x.e}$!, J!$^T$!map!$_{x.e}$!>!: $\Gamma \times \Array{\reals} \times \Array{\reals} \times(\Gamma \times \Array{\reals} \times \Array{\reals} \to\rho) $
+    \end{tabular}
+
+    \begin{tabular}{c}
+        \\\hline  
+        $\Gamma \times \Array{\reals} \times \Array{\reals}\times(\Gamma \times \Array{\reals} \times \Array{\reals}\to\rho) \vdash$ !<map2!$_{x,y.e}$!, J!$^T$!map2!$_{x,y.e}$!>!: $\Gamma \times \Array{\reals} \times \Array{\reals} \times \Array{\reals}\times(\Gamma \times \Array{\reals} \times \Array{\reals} \times \Array{\reals}\to\rho)$
+    \end{tabular}
+
+    \begin{tabular}{c}
+        \\\hline  
+        $\Gamma \times \Array{\reals}\times(\Gamma \times \Array{\reals}\to\rho) \vdash$ !<foldl!$_{x,y.e}$!, J!$^T$!foldl!$_{x,y.e}$!>!: $\Gamma \times \Array{\reals} \times \reals\times(\Gamma \times \Array{\reals} \times \reals\to\rho)$
+    \end{tabular}
+    \vspace{-0.2cm}
+    \caption{Type system of the Target UNF}
+    \vspace{-0.4cm}
+    \label{fig:target_unf_typesystem}
+    \end{figure*}

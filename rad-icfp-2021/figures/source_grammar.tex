@@ -4,6 +4,10 @@
 \begin{tabular}{|l c l|l|}
 \hline
 \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
+!T! & \mbox{::=} & $\reals$ & \grammarcomment{Real Type} \\
+& $\mid$ & !T! $\times$ !T! & \grammarcomment{Product Type}\\
+& $\mid$ & $\Array{\reals}$ & \grammarcomment{Real Array Type}\\
+\hline
 !e! & \mbox{::=} & !x! & \grammarcomment{Variable}\\
 & $\mid$ & !c! & \grammarcomment{Real constant}\\
 & $\mid$ & !let x = e in e! & \grammarcomment{Variable Binding}\\
@@ -11,10 +15,6 @@
 & $\mid$ & !e op2 e! $\mid$ !op1 e! & \grammarcomment{Binary and Unary operations}\\
 & $\mid$ & !map (x.e) e! $\mid$ !map2 (x,y.e) e e! & \grammarcomment{Array map and map2}\\
 & $\mid$ & !foldl (x,y.e) e e! & \grammarcomment{Array fold left}\\
-\hline
-!T! & \mbox{::=} & $\reals$ & \grammarcomment{Real Type} \\
-& $\mid$ & !T! $\times$ !T! & \grammarcomment{Product Type}\\
-& $\mid$ & $\Array{\reals}$ & \grammarcomment{Real Array Type}\\
 \hline
 \end{tabular}
 \vspace{-0.2cm}
