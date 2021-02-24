@@ -16,110 +16,6 @@
 % % %define diff prog beyond AD, be specific with references/different define-then-run vs Pytorch/Swift etc.
 % % %Diff Curry has OK intro
 
-% \begin{example}
-% 	Let 
-% \begin{align*}
-% 	\var_1,\var_2,\var_3:\RR\vdash \trm:=\big(\lambda f:\RR\to\RR. (f(\var_1))*\var_1\big)(\lambda \var[2]. \var[2]* \var_2)
-% \end{align*}
-% After $\partial_1$ we obtain 
-% \begin{align*}
-% 	(\letin{\var[2]}{\var_1}{\var[2]*\var_2})*\var_1
-% \end{align*}
-% After $ANF$ we obtain
-% \begin{align*}
-% 	&\letin{w_1}{\var_1 * \var_2}{\\&\letin{w_2}{w_1 * \var_1}{\\&w_2}}
-% \end{align*}
-% After $\Dsynrev[\rho]{-}^*$ we obtain
-% 	\begin{align*}
-% 		&\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.Y\big(J^1(\var_1,\var_2,\var_3)^T(\var[2]_1,...,\var[2]_4)\big)} }{
-% 		\\
-% 		&\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'\big(J^2(\var_1,\var_2,\var_3,w_1)^T(\var[2]_1,...,\var[2]_5)\big)}}{\\ 
-% 		& w_2'}}
-% 	\end{align*}
-% where $Y$ is a continuation variable of type $\RR^3\to\RR^3$, $J^1,J^2$ are Jacobian matrices for $*$ operators which also return their context, $\inllambda$ is just a normal $\lambda$ but inlined for future optimisation.
-
-% After applying $Jacob$, we obtain
-% 	\begin{align*}
-% 		&\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.Y(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)} }{
-% 		\\
-% 		&\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}}{\\ 
-% 		& w_2'}}
-% 	\end{align*}
-% To actually compute the reverse-derivative of the full term, we substitute the identity to $Y$ and apply the whole term to $(0,0,0,0,1)$, the functional equivalent to initialing the sensitivities in the imperative reverse-mode algorithm. We obtain
-
-% \begin{align*}
-% 		&\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)} }{
-% 		\\
-% 		&\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}}{\\ 
-% 		& w_2'(0,0,0,0,1)}}
-% 	\end{align*}
-
-% After $\partial_2$, we get
-% 	\begin{align*}
-% 		&\letin{w_1}{\var_1 * \var_2}{\\
-% 		&\letin{w_2}{w_1 * \var_1}{\\
-% 		&\bigg[\inllambda \var[2]_1...\var[2]_5.\Big(\inllambda \var[2]_1'...\var[2]_4'.(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)\Big)(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)\bigg](0,0,0,0,1)
-% 		}
-% 		}
-% 	\end{align*}
-
-% 	Now let's apply the first part of $OPT$:
-% 	\begin{align*}
-% 		&\letin{w_1}{\var_1 * \var_2}{\\
-% 		&\letin{w_2}{w_1 * \var_1}{\\
-% 		&\letin{(\var[2]_1\ldots\var[2]_5)}{(0,0,0,0,1)}{\\
-% 		& \letin{(\var[2]_1'\ldots\var[2]_4')}{(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}{\\
-% 		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2'+\var_1*\var[2]_4',\var[2]_3')
-% 		}}}}
-% 	\end{align*}
-% Let's unsugar the lets:
-% 	\begin{align*}
-% 		&\letin{w_1}{\var_1 * \var_2}{\\
-% 		&\letin{w_2}{w_1 * \var_1}{\\
-% 		&\letin{\var[2]_1}{0}{\\
-% 		&\letin{\var[2]_2}{0}{\\
-% 		&\letin{\var[2]_3}{0}{\\
-% 		&\letin{\var[2]_4}{0}{\\
-% 		&\letin{\var[2]_5}{1}{\\
-% 		& \letin{\var[2]_1'}{\var[2]_1+w_1 * \var[2]_5}{\\
-% 		&\letin{ {\color{red} \var[2]_2'} }{  {\color{red} \var[2]_2} }{\\
-% 		&\letin{ {\color{red} \var[2]_3'} }{ {\color{red} \var[2]_3}  }{\\
-% 		&\letin{\var[2]_4'}{\var[2]_4+ \var_1 * \var[2]_5}{\\
-% 		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2'+\var_1*\var[2]_4',\var[2]_3')
-% 		}}}}}}}}}}}
-% 	\end{align*}
-% 	We apply the second part of $OPT$ to remove the variables in red:
-% 	\begin{align*}
-% 		&\letin{w_1}{\var_1 * \var_2}{\\
-% 		&\letin{w_2}{w_1 * \var_1}{\\
-% 		&\letin{\var[2]_1}{0}{\\
-% 		&\letin{\var[2]_2}{0}{\\
-% 		&\letin{\var[2]_3}{0}{\\
-% 		&\letin{\var[2]_4}{0}{\\
-% 		&\letin{\var[2]_5}{1}{\\
-% 		& \letin{\var[2]_1'}{\var[2]_1+w_1 * \var[2]_5}{\\
-% 		&\letin{\var[2]_4'}{\var[2]_4+ \var_1 * \var[2]_5}{\\
-% 		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2+\var_1*\var[2]_4',\var[2]_3)
-% 		}}}}}}}}}
-% 	\end{align*}
-% 	We apply some algebraic simplifications in $\partial_3$
-% 	\begin{align*}
-% 		&\letin{w_1}{\var_1 * \var_2}{\\
-% 		&\letin{w_2}{w_1 * \var_1}{\\
-% 		& \letin{\var[2]_1'}{w_1}{\\
-% 		&\letin{\var[2]_4'}{\var_1}{\\
-% 		&(\var[2]_1'+\var_2*\var[2]_4',\var_1*\var[2]_4',0)
-% 		}}}}
-% 	\end{align*}
-% 	We can optimise some more with $\partial_3$, and we finally obtain
-% 	\begin{align*}
-% 		&\letin{w_1}{\var_1 * \var_2}{\\
-% 		&\letin{w_2}{w_1 * \var_1}{\\
-% 		&(w_1+\var_2*\var_1,\var_1*\var_1,0)
-% 		}}
-% 	\end{align*}
-% \end{example}
-
 \subsection{Motivation}
 
 In 2008, Pearlmutter and Siskind \cite{pearlmutter2008reverse} introduced AD in a functional setting. 
@@ -155,15 +51,7 @@ They don't seem to come with more theoretical justification, are error prone, an
 This makes these systems harder to prove correct. The problem is thus to stay provably correct and pure, and yet efficient. What's more is we would like something easily provably efficient. 
 A real implementation on top of our work would of course optimise further, potentially using hand-crafted operations as well, but it would be based on more solid grounds.
 
-\subsection{Examples}
 
-We introduce a general idea of how to do reverse-mode in a functional setting that is efficient and pure. 
-On simple first-order terms, the output code looks like SSA code\cite{}.
-
-\MH{TODO: example !let!.}
-
-On arrays, two simple operations of interest are the dot-product of two vectors and the product of the elements of a vector.
-\MH{TODO: examples $\prod_i v_i, \sum_i v_i$ and/or dot-product.}
 
 \subsection{Contribution}
 
@@ -178,6 +66,75 @@ On arrays, two simple operations of interest are the dot-product of two vectors 
     \item recover efficiency via standard optimisation techniques as opposed to ad-hoc ones
     \item detailed comparison with other work and limitations to our work, some ideas around limitations
 \end{itemize}
+
+\subsection{Examples}
+
+\MH{I think it might be better after contribution to show how concrete our work is on some example. Need to say I don't detail UNF here.}
+We introduce a general idea of how to do reverse-mode in a functional setting that is efficient and pure. 
+Let's have a look at what we obtain on a few examples.
+
+\begin{example}[First-order term]
+On simple first-order terms, the output code looks like SSA code \cite{}.
+Let's consider $\letin{w_1}{\var_1 * \var_2}{\letin{w_2}{w_1 * \var_1}{w_2}}$ in the context $\Gamma:=\{x1,x2,x3:\RR\}$.\\
+After our inefficient reverse-mode transformation we obtain
+\begin{align*}
+    &\letin{w_1,w_1'}{\tPair{\var_1 * \var_2}{\inllambda \var[2]_1...\var[2]_4.Id(\var[2]_1+\var_2*\var[2]_4,\var[2]_2+\var_1*\var[2]_4,\var[2]_3)} }{
+    \\
+    &\letin{w_2,w_2'}{\tPair{w_1 * \var_1}{\inllambda \var[2]_1...\var[2]_5.w_1'(\var[2]_1+w_1 * \var[2]_5,\var[2]_2,\var[2]_3,\var[2]_4+ \var_1 * \var[2]_5)}}{\\ 
+    & w_2'(0,0,0,0,1)}}
+\end{align*}
+where $Id$ is the identity function $\RR^3\to\RR^3$, $\inllambda$ is just a normal $\lambda$ tagged for inlining.
+The part $(0,0,0,0,1)$ comes as an equivalent to initialing the tangent variables in the imperative reverse-mode algorithm. 
+
+After some general partial evaluation that will be detailed further in the paper, we obtain     
+    	\begin{align*} 
+    		&\letin{w_1}{\var_1 * \var_2}{\\
+    		&\letin{w_2}{w_1 * \var_1}{\\
+    		&\letin{\var[2]_1}{0}{\\
+    		&\letin{\var[2]_2}{0}{\\
+    		&\letin{\var[2]_3}{0}{\\
+    		&\letin{\var[2]_4}{0}{\\
+    		&\letin{\var[2]_5}{1}{\\
+    		& \letin{\var[2]_1'}{\var[2]_1+w_1 * \var[2]_5}{\\
+    		&\letin{\var[2]_4'}{\var[2]_4+ \var_1 * \var[2]_5}{\\
+    		&(\var[2]_1'+\var_2*\var[2]_4',\var[2]_2+\var_1*\var[2]_4',\var[2]_3)
+    		}}}}}}}}}
+    	\end{align*}  
+This is equivalent to the SSA form of what the imperative reverse-mode differentiation of our initial term would be.
+Of course this can be further optimised to give
+    	\begin{align*}
+    		&\letin{w_1}{\var_1 * \var_2}{\\
+    		&\letin{w_2}{w_1 * \var_1}{\\
+    		&(w_1+\var_2*\var_1,\var_1*\var_1,0)
+    		}}
+    	\end{align*}
+    \end{example}
+
+ \begin{example}[Simple operations on arrays]
+    On arrays, three simple operations of interest are the dot-product of two vectors, and the product or sum of the elements of a vector.
+    In a functional setting, these can be defined as follows:
+\begin{center}
+    \begin{tabular}{{r c l}}
+        !prod(A)! &:=& !reduce * 1 A! \\
+        !sum(A)! &:=& !reduce + 0 A! \\
+        !dot(A,B)! &:=& !reduce + 0 (map2 * A B)!     
+    \end{tabular}
+\end{center}
+where !reduce! is a known fold left operator for which the function argument is associative and is faster than a fold left.
+
+The gradient of each of these construct w.r.t. !A! will be:
+\begin{center}
+    \begin{tabular}{{r c l}}
+        $\nabla_A$!prod(A)! &:=& !map2 * (scanr x 1 A) (shift1(scanl * 1 A))!\\
+        $\nabla_A$!sum(A)! &:=& !map (x,y -> 1) A!\\
+        $\nabla_A$!dot(A,B)! &:=& !map2 * B (map (x,y -> 1) A! 
+    \end{tabular}
+\end{center}
+where !shift1 [v1,...,vn] = [1,v1,...,v(n-1)]! is a simple operator yet perhaps strange at first naturally showing up in our constructions.
+!scanl! and !scanr! are respectively scan left and scan right. These are like fold but store all intermediate results in an array.
+We obtain these gradients, which are efficient and usually derived by hand, as special cases of our work.
+They are obtained automatically in our case.
+\end{example}   
 
 \subsection{Outline of the paper}
 
