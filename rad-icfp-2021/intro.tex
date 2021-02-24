@@ -151,7 +151,7 @@ The problems that this raises and that our paper deals with are the following. F
 as opposed to a domain specific language. The latter usually has more static information and a specific representation to perform optimisations.
 Then, a lot of optimisations performed on AD implementations consist of a lot of hand-crafted derivatives for a lot of useful operations like matrix-matrix multiplication, dot-product, etc.
 They don't seem to come with more theoretical justification, are error prone, and can hardly fit more general optimisations.
-\MH{TODO: maybe the example and ref that ML systems ake 90percent of the time outside of numpy.}
+\MH{TODO: maybe the example and ref that ML systems spend 90percent of the time outside of numpy.}
 This makes these systems harder to prove correct. The problem is thus to stay provably correct and pure, and yet efficient. What's more is we would like something easily provably efficient. 
 A real implementation on top of our work would of course optimise further, potentially using hand-crafted operations as well, but it would be based on more solid grounds.
 
