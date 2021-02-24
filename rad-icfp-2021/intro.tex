@@ -75,6 +75,7 @@ Let's have a look at what we obtain on a few examples.
 
 \begin{example}[First-order term]
 On simple first-order terms, the output code looks like SSA code \cite{}.
+\MH{need to rewrite following my notation.}
 Let's consider $\letin{w_1}{\var_1 * \var_2}{\letin{w_2}{w_1 * \var_1}{w_2}}$ in the context $\Gamma:=\{x1,x2,x3:\RR\}$.\\
 After our inefficient reverse-mode transformation we obtain
 \begin{align*}
@@ -138,6 +139,13 @@ They are obtained automatically in our case.
 
 \subsection{Outline of the paper}
 
-Our work looks like a compilation scheme, which is the following:
-
+Our work looks like the following compilation scheme
 \input{figures/compilation_scheme}
+
+In Section~\ref{sec:background} we recall reduminents of automatic differentiation, and in particular the idea of reverse-mode and the cheap gradient principle.
+Next, in Section~\ref{sec:simplediff} we introduce the source language we want to differentiate. We also introduce our new intermediate representation UNF, and a simple reverse-mode macro on this representation.
+In Section~\ref{sec:efficientrad} we translate back from UNF to a purely functional target language and show several general optimisations to make our reverse-mode transformation efficient.
+In the next Section~\ref{sec:complexity} we show that the previous optimisations are sufficient to ensure our transformation has the right complexity.
+Section~\ref{sec:correctness} shows that our construction is correct and we give standard semantics to our source and target languages. 
+In Section~\ref{sec:generalisation} we show how to generalise the previous sections for a richer source language. 
+Finally, related work and some limitations to our approach are presentend in Section~\ref{sec:conclusion}.
