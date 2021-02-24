@@ -122,30 +122,48 @@
 
 \subsection{Motivation}
 
-\begin{itemize}
-    \item rewrite Pearlmutter's paper
-    \item purely functional yet efficient, where P's paper used references
-    \item no purity means harder to optimise, lack of real FP, parallelism, modularity
-    \item show how $\prod_i v_i$ for a vector $v$ is done in some functional AD systems
-    \item modularity, claritity and understanding are key.
-\end{itemize} 
+In 2008, Pearlmutter and Siskind \cite{pearlmutter2008reverse} introduced AD in a functional setting. 
+They introduced reverse-mode in their setting. 
+Reverse-mode can compute in one pass the whole gradient of a function $\RR^n\to\RR$, and this is very fast.
+By comparison, the easier forward-mode transformation would need $n$ passes. 
+These functions $\RR^n\to\RR$ actually appear a lot in practice, for instance as loss functions in machine learning.
+Reverse-mode is thus important as it computes a whole gradient very quickly for these functions. 
+To be as efficient as the usual imperative version of reverse-mode, the transformation in \cite{pearlmutter2008reverse} introduced references.
+
+The lack of purity of reverse-mode is known to make it significantly harder to optimise and find parrallelism. 
+None of the current implementations of reverse-mode in a functional setting are pure \cite{}, and often complicated heuristics with no guarantees are used \cite{}.
+It means that for every important non trivial operation, a hand-crafted reverse-derivative must be given to be efficient.
+In other words functional implementations seem to stuggle to abstract away from imperative code.
+
+For example, \MH{TODO: show how $\prod_i v_i$ for a vector $v$ is done in some functional AD systems}.
+For real world AD systems, modularity is key. They need to be expressive but have a lot of optimised derivatives for operators that are used a lot.
+This is easily seen on numpy \MH{TODO: explain a bit better why torch is good by using optimised grad for numpy.}
+An efficient purely functional reverse-mode transformation would be more easily explainable, optimisable, and potentially reusable.
 
 \subsection{Problem}
 
-How to go from nice theory to efficient practice?
-\begin{itemize}
-    \item tradeoff expressivity versus static knowledge to do Optimisations
-    \item general optimisation versus ad-hoc hand-writen choice
-    \item how to stay provably correct and pure
-    \item how to be probably efficient?
-\end{itemize}
+Following \cite{pearlmutter2008reverse}, it is relatively easy to define a purely functional reverse-mode on a first-order language using continuations. 
+As remarked by the authors, this is highly inefficient. 
+The problem we tackle in this paper is how to go from a simple and general setting where we can relatively easily prove correctness of reverse-mode, 
+to a representation that matches more efficient implementations.
+
+The problems that this raises and that our paper deals with are the following. First, there is a tradeoff between a general expressive language 
+as opposed to a domain specific language. The latter usually has more static information and a specific representation to perform optimisations.
+Then, a lot of optimisations performed on AD implementations consist of a lot of hand-crafted derivatives for a lot of useful operations like matrix-matrix multiplication, dot-product, etc.
+They don't seem to come with more theoretical justification, are error prone, and can hardly fit more general optimisations.
+\MH{TODO: maybe the example and ref that ML systems ake 90percent of the time outside of numpy.}
+This makes these systems harder to prove correct. The problem is thus to stay provably correct and pure, and yet efficient. What's more is we would like something easily provably efficient. 
+A real implementation on top of our work would of course optimise further, potentially using hand-crafted operations as well, but it would be based on more solid grounds.
 
 \subsection{Examples}
 
-\begin{itemize}
-    \item $\Dsynrevsymbol$ of !let! and optimise
-    \item $\Dsynrevsymbol$ of $\prod_i v_i, \sum_i v_i$ and/or dot-product.
-\end{itemize}
+We introduce a general idea of how to do reverse-mode in a functional setting that is efficient and pure. 
+On simple first-order terms, the output code looks like SSA code\cite{}.
+
+\MH{TODO: example !let!.}
+
+On arrays, two simple operations of interest are the dot-product of two vectors and the product of the elements of a vector.
+\MH{TODO: examples $\prod_i v_i, \sum_i v_i$ and/or dot-product.}
 
 \subsection{Contribution}
 
