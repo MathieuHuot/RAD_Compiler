@@ -4,9 +4,11 @@
     \begin{tabular}{|l c l|l|}
     \hline
     \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
-    !T! & \mbox{::=} & ... & \grammarcomment{Real Type} \\
+    !T! & \mbox{::=} & ... & \grammarcomment{Same as before} \\
+    & $\mid$ & $\Array{T}$ & \grammarcomment{General Array Type}\\
     \hline
-    !e! & \mbox{::=} & !x! & \grammarcomment{Variable}\\
+    !e! & \mbox{::=} & ... & \grammarcomment{Same as before} \\
+    & $\mid$ & !if b then e else e! & \grammarcomment{Conditionals}\\
     \hline
     \end{tabular}
     \vspace{-0.2cm}

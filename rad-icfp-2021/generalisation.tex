@@ -5,13 +5,25 @@ Extended source language:
 
 \input{figures/generalisation_source_grammar}
 
-\input{figures/generalisation_source_typesystem}
+% \input{figures/generalisation_source_typesystem}
+
+Note that we recover !zip A B! as !map2 (fun x,y -> (x,y)) A B)!. 
+We can lift the restriction on the function of !foldl! by changing a part in $\invUNFSymbol$ of !foldl!.
+\begin{center}
+\begin{tabular}{r c l}
+    !Y((x1,...,xm),...)! & -> &  !Y((x1,...,xm) + map2! \\
+        && !(fun z1 z2 -> let E = map2 (fun x,y -> z2(x,y)) A e3 in! \\
+        &&  !let F = zip B E in!\\
+        && !foldl (fun (x,y), acc  -> x*acc+y) z1 F)! \\
+        && $\nabla_{\Gamma}$!e2! $\nabla_{\Gamma}$!e1,...)!
+\end{tabular}
+\end{center}
 
 Extended target language:
 
-\input{figures/generalisation_target_grammar}
+% \input{figures/generalisation_target_grammar}
 
-\input{figures/generalisation_target_typesystem}
+% \input{figures/generalisation_target_typesystem}
 
 \subsection{Arrays}
 

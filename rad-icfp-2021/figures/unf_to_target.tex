@@ -15,23 +15,22 @@
     &&where $\Gamma=$!T1!$\times...\times$!Tm! \\
     $\invUNFSymbol$(!J!$^T$!op!$_{\Gamma,n}$) &=& !fun Y -> fun (x1:T1,...,xm:Tm,z:Ti) ->!\\ 
     && Y$(x_1,...,x_{m-n},x_{m-n+1}+\partial_1op_n*z,...,xm+\partial_nop_n*z)$ \\
-    && where $\Gamma=$!T1!$\times...\times$!Tm! and $\partial_iop_n$ is the $i$-th partial derivative of $op_n$ \\
+    && where $\partial_iop_n$ is the $i$-th partial derivative of $op_n$ \\
     $\invUNFSymbol$(!J!$^T$!map!$_{\Gamma,x.e}$) &=&  !fun Y -> fun (x1:T1,...,xm:Tm,X',Z) ->!\\
-    && Y((x1,...,xm)+$\nabla_{\Gamma}e \times$(!reduce! + 0 Z),\\
+    && Y((x1,...,xm)+$\nabla_{\Gamma}e *$(!reduce! + 0 Z),\\
     && !map2 (fun (a,b) -> a+!$\nabla_{\{x\}}e *$!b) X' Z'!) \\
     $\invUNFSymbol$(!J!$^T$!map2!$_{\Gamma,x,y.e}$) &=&  !fun Y -> fun (x1:T1,...,xm:Tm,X1',X2',Z) ->!\\
-    && Y((x1,...,xm)+$\nabla_{\Gamma}e \times$(!reduce! + 0 Z),\\
+    && Y((x1,...,xm)+$\nabla_{\Gamma}e *$(!reduce! + 0 Z),\\
     && !map2 (fun (a,b) -> a+!$\nabla_{\{x1\}}e *$!b) X1' Z'!, \\
     && !map2 (fun (a,b) -> a+!$\nabla_{\{x2\}}e *$!b) X2' Z'!) \\
-    && where $X1'$, $X2'$ are the tangent arrays for the two arrays arguments of !map2! \\
-    && and $Z$ the tangent part for the return array of !map2! \\
+    && where $X1'$, $X2'$ are the tangent arrays for the two arrays arguments \\
+    && of !map2! and $Z$ the tangent part for the return array of !map2! \\
     $\invUNFSymbol$(!J!$^T$!foldl!$_{\Gamma,x,y.e1}$) &=&  !fun Y -> fun (x1:T1,...,xm:Tm,X',z) ->!\\
     && !let A = scanl (fun (x,y) -> e1) e2 e3 in! \\
     && !let B = map2 (fun (x,y) ->! $\nabla_{\{x1\}}$!e1(x,y)) A e3 in!\\
     && !let C = shift1 (map2 (fun (x,y) ->! $\nabla_{\{x2\}}$!e1(x,y)) A e3) in!\\
     && !let D = scanr (fun (x,y) -> x*y) 1 B in!\\
-    && Y((x1,...,xm)+TODO, \\
-    && !map3 (fun (a,b,c) -> a+b*c*z) X' D C!)
+    && Y(x1,...,xm, !map3 (fun (a,b,c) -> a+b*c*z) X' D C!)
     \end{tabular}
     \caption{UNF transformation from Target UNF to Target}
     \label{fig:unf_to_target}
