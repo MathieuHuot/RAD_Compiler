@@ -4,11 +4,16 @@
 \subsection{Summary} % (fold)
 \label{sub:summary}
 
+We have shown how to compute provably efficient gradients via reverse derivatives in a purely functional way 
+on a simple yet expressive language with array functions.
+We introduced a novel intermediate representation, unary form, 
+and used it combined with standard functional optimisations to perform our reverse-mode transformation.
+
 \subsection{Related Work} % (fold)
 \label{sub:related_work}
 
 Relatively recent work in AD (2008-2020):
-\cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,wang2018demystifying,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing}
+\cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,wang2018demystifying,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing,bernstein2020differentiating}
 
 Some work in ML where some kind of iteration/recursion is used.
 Dynamic neural networks: \cite{jin2017manipulability,wu2016deep}
