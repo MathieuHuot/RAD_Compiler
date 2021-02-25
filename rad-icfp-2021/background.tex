@@ -138,7 +138,9 @@ Forward-mode only computes one directional derivative, for instance one partial 
 By using the symmetry in the chain rule, there is a way to compute the whole gradient faster, and this method is reverse-mode differentiation.
 Suppose given a function $f=f_n\circ...\circ f_1 :\RR^n\to\RR$. 
 The simplest way to see this mathematically, is first to say that forward mode essentially computes $(Jf)v=Jf_n(Jf_{n-1}(...(Jf_1v))...)$ for a direction $v\in\RR^n$. 
-Reverse-mode, on the other hand, computes $(Jf)^Tv =Jf_1T^(Jf_{2}^T(...(Jf_n^Tv))...)$ for a vector $v\in\RR$. 
+Reverse-mode, on the other hand, computes $(Jf)^Tv =J^Tf_1(J^Tf_{2}(...(J^Tf_nv))...)$ for a vector $v\in\RR$.
+In particular, taking $v=1$ computes the gradient of $f$.
+
 Because the compute flow of the function is reversed, the actual implementation of reverse-mode is way more tricky. 
 %%TODO: from Matthijs' paper, need to rewrite.
 Reverse-mode AD is only well-understood as a source-code transformation (also called define-then-run
@@ -153,12 +155,52 @@ that a compiler would detect go entirely unused in such systems.
 
 \subsection{Purely functional inefficient reverse-mode}
 
-Following \cite{pearlmutter2008reverse}, there is an easy way to define an inefficient yet purely functional reverse-mode transformation for first-order programs.
-\MH{TODO: finish}
+Following \cite{pearlmutter2008reverse}, there is a simple way to define an inefficient yet purely functional reverse-mode transformation for first-order programs.
+We review a slight modification of the transformation we presented, which is also better explained on an example. 
+
+Let the term we want to differentiate be $x1:\RR,...,xn:\RR\vdash exp(cos(xi))$.
+Following the chain rule, we need the jacobian matrices of $cos$ at $xi$ and of $exp$ at $cos(xi)$. 
+Instead of considering these as operations from $\RR\to\RR$, we consider then as functions from the whole context. So $cos$ and $exp$ are seen as functions $\RR^n\to\RR$.
+If we just do that though, we lose compositionality. 
+So $cos$ will also return its context and is now seen as a function $\sem{cos}:\RR^n\to\RR^{n+1}$.
+similarly for $exp$, but also taking the return value of $\sem{cos}$ as an extra argument, the one it will actually use and not simply return. 
+We thus obtain $\sem{exp}:\RR^{n+1}\to\RR^{n+2}$. Now their jacobians matrices $J\sem{cos} \in Mat_{n,n+1}$, $J\sem{exp} \in Mat_{n+1,n+2}$ also compose nicely.
+The same can be done for binary (or more) operators and let bindings (assuming no nested lets). 
+This transforms a first-order program to a function $f:\RR^n\to\RR^{n+m}$ of the form $f_m\circ...\circ f_1$. 
+If the original program was of type $\RR$, then the return value of the original program is the last compononent of $f$.
+Following the mathematical presentation of reverse-mode above, the gradient of the the original program is then obtained as 
+\[\nabla f= J^Tf(0,...,0,1)=J^Tf_1(J^Tf_{2}(...(J^Tf_m(0,...,0,1)))...)\]
+
+To actually reverse the order of computation needed for this transpose of jacobians, we use a sort of simple continuation.
+$f_i$ is turned into $\Dsynrevsymbol{f_i}:=<f_i, \lambda Y. Y\circ J^Tf_i>$ where $Y:\RR^{n+i-1}\to \RR^n$. 
+We recover compositionality by noting that $<f_{i+1}(f_i), (\lambda Y. Y\circ J^Tf_{i+1}>)(\lambda Y. Y\circ J^Tf_i)>$ reduces to
+$<f_{i+1}\circ f_i, \lambda Y. Y\circ J^Tf_i \circ J^Tf_{i+1}>$, and thus by induction we can obtain $<f, \lambda Y. YJ^Tf>$.
+By applying the identity continuation $\RR^n\to\RR^n$ on the second component then the result to $(0,...,0,1)$, 
+we have obtained a purely functional to compute $\nabla f$. 
+
+This method is quite inefficient though. First, we have to carry a continuation and $\beta$-reduce a lot of higher-order functions.
+Second, each $J^Tf_{i+1}$ is a potentially huge matrix if $n$ or $m$ is big.
+
+The imperative version of reverse mode for a binary operator $op(x,y)$ is something like $x'+= \partial_1op(x,y);y'+= \partial_2op(x,y)$. 
+It is for these cases that mutation is usually key. 
+If we see out term as a directed graph, reverse mode needs to backpropagate from the end of the graph to the starting nodes via every path.
+It's hard to keep track of all these information in parallel in a functional way.
+One of the key simple ideas that we used was to transform every operator into a unary one. 
+This sssentially trivialises the compute flow to a line. 
+Even if the starting program was a straight line program, 
+having non unary operators was a source of inefficiency which justified mutation in the first place.
+By returning every variable every time, the problem of using a variable several time does not need to be dealt with via mutation. 
+This simple idea of transforming a program into essentially a straight line is what our new intermediate representation unary-form does. 
 
 \subsection{Insights for efficient reverse-mode}
 
-\begin{itemize}
-    \item a
-    \item  
-\end{itemize}
+If we look at $J^Tf_{i+1}$, we notice that this function is almost the identity, except at the last row. 
+Even on the last row, if the original term was a unary or binary operator like $cos, exp, +, *$, 
+the row is zero except for at most 2 indices (1 for unary operators).
+This means we can use a more compact representation $J^T\sem{op(xi,xj)}:=\lambda (y1,...,y(n+i)).(y1,...,y(n+i))+[i]\partial_1op(xi,xj)+[j]\partial_2op(xi,xj)$, 
+where $[k]$ means that the element is added at the $k$-th index of the tuple.
+
+We know in advance that such jacobian functions are going to be applied one to another, so we can use partial evaluation to $\beta$-reduce all of these $\lambda$s.
+Because each function is almost the identity, we obtain a lot of substitutions of the form $[x/y]$ where both $x$ and $y$ are variables. 
+This allows us to drastically reduce the size of $J^Tf$. In fact, for simple programs this is basically enough to get an efficient purely functional reverse derivative transformation.
+We develop this idea further for a richer language.
