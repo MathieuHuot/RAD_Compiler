@@ -1,4 +1,4 @@
-\section{Rudiments of AD}
+\section{Reverse-mode in Automatic Differentiation}
 \label{sec:background}
 
 % \subsection{Rudiments of differentiation and dual numbers.}
@@ -85,10 +85,80 @@
 % The key idea behind that will be generalized and explored in detail in the rest of the paper is that of turning every operator into a unary one.     
 % The remaining of the paper will generalize this idea and explore some consequences of this new approach. 
 
-\subsection{AD as source-code transformation}
+\subsection{Rudiments of forward-mode AD and dual numbers}
+
+Recall that the derivative of a function $f:\RR\to \RR$, if it exists, is a function
+$\nabla f:\RR\to \RR$ such that $\nabla f(x_0)=\frac {\dif f(x)}{\dif x}(x_0)$ is the gradient of $f$ at $x_0$. 
+
+To find $\nabla f$ in a compositional way, two generalizations are reasonable:
+\begin{itemize}
+\item We need both $f$ and $\nabla f$ when calculating $\nabla (f;g)$
+of a composition $f;g$, using the chain rule, so we are really interested in the pair $(f,\nabla f):\RR\to \RR\times \RR$;
+\item In building $f$ we will need to consider functions of multiple arguments, such as $+:\RR^2\to \RR$, and these functions should propagate derivatives.
+\end{itemize}
+Thus we are more generally interested in transforming a function $g:\RR^n\to \RR$ into a function
+$h:(\RR\times \RR)^n\to \RR\times \RR$ in such a way that for any
+$f_1\dots f_n:\RR\to\RR$, 
+\begin{equation}
+  \label{eqn:dualnumber}
+  (f_1,\nabla f_1,\dots, f_n,\nabla f_n);h
+  =
+  ((f_1,\dots, f_n);g,\nabla ((f_1, \dots, f_n);g))\text.
+\end{equation}
+
+An intuition for $h$ is often given in terms of dual numbers.
+The transformed function operates on pairs of numbers, $(x,x')$, and it is common
+to think of such a pair as $x+x'\epsilon$ for an `infinitesimal' $\epsilon$.
+But while this is a helpful intuition, the formalization of infinitesimals can be intricate, 
+and the development in this paper is focussed on the elementary formulation in~\eqref{eqn:dualnumber}. 
+
+The reader may also notice that $h$ encodes all the partial derivatives of
+$g$. For example, 
+if $g \colon \RR^2\to \RR$, then with $f_1(x)\defeq x$ and $f_2(x)\defeq x_2$, by applying \eqref{eqn:dualnumber} to $x_1$ we obtain
+$h(x_1,1,x_2,0)=(g(x_1,x_2), \frac {\partial g(x,x_2)}{\partial x}(x_1))$
+and similarly 
+$h(x_1,0,x_2,1)=(g(x_1,x_2), \frac {\partial g(x_1,x)}{\partial x}(x_2))$.
+And conversely, if $g$ is differentiable in each argument, then
+a unique $h$ satisfying \eqref{eqn:dualnumber} can be found by taking linear
+combinations of partial derivatives:
+\[\textstyle h(x_1,x_1',x_2,x_2')=(g(x_1,x_2),x_1' \cdot\frac {\partial g(x,x_2)}{\partial x}(x_1)+x_2'\cdot \frac {\partial g(x_1,x)}{\partial x}(x_2))\text.\]
+
+In summary, the idea of differentiation with dual numbers is 
+to transform a differentiable function
+$g:\RR^n\to \RR$ to a function $h:\RR^{2n}\to \RR^2$ which captures~$g$ and all its partial derivatives. We packaged this up in~\eqref{eqn:dualnumber} as a sort-of invariant which is useful for building derivatives of compound functions $\RR\to\RR$ in a compositional way.
+The idea of automatic differentiation is to perform this transformation at the source code level. 
+
+The two main ways in which it is performed in practice is by operator overloading or by source code transformation (see e.g. \cite{griewank2008evaluating} Chapter 6). 
+Our work focus on a compiled version so we focus on source code transformation which is more fitted in this case.
 
 \subsection{Reverse-mode differentiation}
 
+The problem with the previous approach shows up when one wants to compute the full gradient of a function $\RR^n\to\RR$, for a large $n$. 
+Forward-mode only computes one directional derivative, for instance one partial derivative. This implies $n$ passes must be performed through the forward derivative to compute the whole gradient.
+By using the symmetry in the chain rule, there is a way to compute the whole gradient faster, and this method is reverse-mode differentiation.
+Suppose given a function $f=f_n\circ...\circ f_1 :\RR^n\to\RR$. 
+The simplest way to see this mathematically, is first to say that forward mode essentially computes $(Jf)v=Jf_n(Jf_{n-1}(...(Jf_1v))...)$ for a direction $v\in\RR^n$. 
+Reverse-mode, on the other hand, computes $(Jf)^Tv =Jf_1T^(Jf_{2}^T(...(Jf_n^Tv))...)$ for a vector $v\in\RR$. 
+Because the compute flow of the function is reversed, the actual implementation of reverse-mode is way more tricky. 
+%%TODO: from Matthijs' paper, need to rewrite.
+Reverse-mode AD is only well-understood as a source-code transformation (also called define-then-run
+style AD) on limited programming languages. Typically, its implementations
+on more expressive languages that have features such as higher-order functions and conditionals
+make use of define-by-run approaches. These approaches first build a computation graph during runtime, effectively evaluating the program until a straight-line
+first-order program is left, and then they evaluate this new program \cite{carpenter2015stan,paszke2017automatic}. 
+Such approaches have the severe downside that the differentiated code cannot benefit from existing optimizing compiler architectures. As such, these AD libraries
+need to be implemented using carefully, manually optimized code, that for example does not contain any common subexpressions. This implementation process
+is precarious and labour intensive. Further, some whole-program optimizations
+that a compiler would detect go entirely unused in such systems.
+
 \subsection{Purely functional inefficient reverse-mode}
 
+Following \cite{pearlmutter2008reverse}, there is an easy way to define an inefficient yet purely functional reverse-mode transformation for first-order programs.
+\MH{TODO: finish}
+
 \subsection{Insights for efficient reverse-mode}
+
+\begin{itemize}
+    \item a
+    \item  
+\end{itemize}
