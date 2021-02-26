@@ -3,13 +3,49 @@
 
 \subsection{Target Language} 
 
+The last language we present, which we call the target language, is an extension to the source language. 
+The types and terms are presented in Figure~\ref{fig:target_grammar}.
+The language contains lambda abstractions for dealing with continuations. 
+We are not interested here with partial applications and our language is pure, so functions take $n$ arguments.
+Lambda abstractions and applications are going to be removed during partial evaluation and this notation makes reading slightly easier.
+
 \input{figures/target_grammar}
+
+In addition, we require the set of operations to be closed under partial differentiation. 
+In more detail, for every unary scalar operation !op1!, 
+we assumed given an operator $\partial_1$!op1! whose semantics should be the derivative of !op1!.
+For every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2! 
+representing respectively the first and second partial derivative of !op2!.
+Similarly, we need to add some functions on arrays. 
+!scanl! is a !foldl! that stores all intermediate results. 
+!scanr! is similar, but reads the array from right to left, and also stores from right to left.
+!reduce! is a !foldl! for which the function is associative. 
+This means in practice that it can be computed faster.
+We also include a !map3! operator. 
+Though not necessary as it can be simulated with two !map2!, it is a convenient notation and can somtimes run faster in practice.
+Finally, we add a somewhat strange operator which we call !shift1!. 
+It takes an array of size $n$,  shifts all the element of the array by one, 
+forgetting the last element, and puts a one in the first place. 
+This operator naturally shows up when differentiating !foldl!.
+
+The type system for the extended grammar of target is in Figure~\ref{fig:target_typesystem}. 
 
 \input{figures/target_type_system}
 
-\input{figures/op_semantics_target}
+A standard semantics of this language is given in Section~\ref{sec:correctness}.
+
+We now present our transformation from target UNF to target. 
+The transformation is presented in Figure~\ref{fig:unf_to_target}.
 
 \input{figures/unf_to_target}
+
+\begin{remark}
+    One could rightfully wonder: where did reverse-mode really happened here?
+    In a way, source UNF does not seem to do much. 
+    Then $\Dsynrevsymbol$ is very simple on UNF.
+    So perhaps everything happens when going from target UNF to target?
+    \MH{finish or remove.}
+\end{remark}
 
 \subsection{Efficient representation}
 

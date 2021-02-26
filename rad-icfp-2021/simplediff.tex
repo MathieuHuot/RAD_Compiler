@@ -22,7 +22,7 @@ The general case is also useful and presented in Section~\ref{sec:generalisation
 
 \subsection{Source Unary Form} 
 
-Following the intuition higlighted in Section~\ref{subsec:insights}, we present a new language which we call unary form (UNF). 
+Following the intuition highlighted in Section~\ref{subsec:insights}, we present a new language which we call unary form (UNF). 
 It simply consists of a composition of unary operators. That said, we want to compile our source language to this intermediate representation, 
 and we need to remember some information about the initial term. 
 
@@ -35,7 +35,7 @@ Every term is indexed by a well-defined contex $\Gamma$ from the source language
 In addition, a variable has a integer index $1\leq i\leq n$ where $n$ is the size of the context $\Gamma$.
 Every constant, unary, or binary operator is summarised as an $n$-ary operator !op!$_n$.
 Sequential composition is denoted by !;! and !e1;e2! means that !e1! should be performed, and then !e2!.
-Every array operator !map!, !map2!, !foldl! has an extra index which represents a well-formed term in the source language.
+Every array operator !map!, !map2! and !foldl! has an extra index which represents a well-formed term in the source language.
 
 The types are the same as in the source language. 
 A context $\Gamma=\{$!x1: T1,...,xn:Tn!$\}$ can always be seen as a type !T1!$\times$...$\times$!Tn!.
@@ -85,11 +85,15 @@ One thing to note is that one can only form pairs.
 
 We are now able to present a simple transformation for purely functional reverse-mode on UNF.
 This transformation is somehow straightforward as some of the work was put into the design of UNF.
-Our main takeaway for this paper is that reverse-mode is complicated beause there is a lot happening in the same time. 
-But by decoupling the problems, it becomes muche easier. UNF is somehow dealing with the inherent type-dependency of reverse-mode.
+Our main takeaway for this paper is that reverse-mode is complicated because there is a lot happening at the same time. 
+But by decoupling the problems, it becomes much easier. UNF is somehow dealing with the inherent type-dependency of reverse-mode.
 Then the macro $\Dsynrevsymbol$ adds Jacobians. It allows to compute gradients in a compositional way.
-Finally, we'll see in the next section how to compile back to a normal language and optimise our transformation to get efficiency.
+Finally, we'll see in the next section how to compile back to a more standard language and optimize our transformation to get efficiency.
 
 The differentiation macro is given in Figure~\ref{fig:diff_macro}.
+One might be surprised that the macro does not seem to do much, and it is partly correct.
+We tried to decompose reverse-mode into more elementary small steps, and each step is slightly non trivial and dealing with one aspect of reverse-mode.
+The perhaps slightly more involved transformation is the one coming next,  going from target UNF to our target language.
 
 \input{figures/macro_diff}
+
