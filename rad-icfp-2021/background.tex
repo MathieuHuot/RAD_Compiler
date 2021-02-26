@@ -192,7 +192,8 @@ having non unary operators was a source of inefficiency which justified mutation
 By returning every variable every time, the problem of using a variable several time does not need to be dealt with via mutation. 
 This simple idea of transforming a program into essentially a straight line is what our new intermediate representation unary-form does. 
 
-\subsection{Insights for efficient reverse-mode}
+\subsection{Insights for efficient reverse-mode}\
+\label{subsec:insights}
 
 If we look at $J^Tf_{i+1}$, we notice that this function is almost the identity, except at the last row. 
 Even on the last row, if the original term was a unary or binary operator like $cos, exp, +, *$, 

@@ -11,8 +11,8 @@
 !e! & \mbox{::=} & !x! & \grammarcomment{Variable}\\
 & $\mid$ & !c! & \grammarcomment{Real constant}\\
 & $\mid$ & !let x = e in e! & \grammarcomment{Variable Binding}\\
-& $\mid$ & !< e, e >! & \grammarcomment{Pair Construction}\\
-& $\mid$ & !e op2 e! $\mid$ !op1 e! & \grammarcomment{Binary and Unary operations}\\
+& $\mid$ & !< e, e >! $\mid$ $\pi_1$(!e) $\mid$ $\pi_2$(!e) & \grammarcomment{Pair Constructor/Destructor}\\
+& $\mid$ & !e op2 e! $\mid$ !op1 e! & \grammarcomment{Binary/Unary operations}\\
 & $\mid$ & !map (x.e) e! $\mid$ !map2 (x,y.e) e e! & \grammarcomment{Array map and map2}\\
 & $\mid$ & !foldl (x,y.e) e e! & \grammarcomment{Array fold left}\\
 \hline

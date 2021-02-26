@@ -3,15 +3,58 @@
 
 \subsection{Source Language} 
 
+We consider a standard call-by-value language. 
+It is a first-order language with array constructs and a few typical second-order array operations. 
+The types !T1,T2! and terms !e1,e2! are in Figure~\ref{fig:source_grammar}.
+
 \input{figures/source_grammar}
+
+The typing rules are in Figure~\ref{fig:source_typesystem}. We have included a minimal set of array operations for the sake of illustration, 
+but it is not difficult to add further operations. For scalar operations, we assume given a set of operations. 
+!op1! and !op2! denote respectively unary and binary smooth operations on reals. 
+We use infix notation for binary operators.
+Typical examples include !cos, exp, +, *!. 
+For the sake of simplicity in the development, the function in the array operations !map, map2, foldl! are quite restricted with and free variables. 
+We also restrict to arrays of reals.
+The general case is also useful and presented in Section~\ref{sec:generalisation}.
 
 \input{figures/source_type_system}
 
 \subsection{Source Unary Form} 
 
+Following the intuition higlighted in Section~\ref{subsec:insights}, we present a new language which we call unary form (UNF). 
+It simply consists of a composition of unary operators. That said, we want to compile our source language to this intermediate representation, 
+and we need to remember some information about the initial term. 
+
+The grammar of our source UNF is given in Figure~\ref{fig:unf_source_grammar}. 
+
 \input{figures/source_unf}
 
+There are a few notable things in this syntax. 
+Every term is indexed by a well-defined contex $\Gamma$ from the source language.
+In addition, a variable has a integer index $1\leq i\leq n$ where $n$ is the size of the context $\Gamma$.
+Every constant, unary, or binary operator is summarised as an $n$-ary operator !op!$_n$.
+Sequential composition is denoted by !;! and !e1;e2! means that !e1! should be performed, and then !e2!.
+Every array operator !map!, !map2!, !foldl! has an extra index which represents a well-formed term in the source language.
+
+The types are the same as in the source language. 
+A context $\Gamma=\{$!x1: T1,...,xn:Tn!$\}$ can always be seen as a type !T1!$\times$...$\times$!Tn!.
+UNF is very syntactic and does not really use variables. 
+In fact it consists only of constants and composition. 
+For this reason, we denote contexts as types in the indices of the terms, and $\times$ is used for context extension.
+But we do emphasize that we mean contexts and the actual variables are remembered and
+this will be key when compiling to the target language after differentiation. 
+
+The typing rules are detailed in Figure~\ref{fig:source_unf_typesystem}.
+By $\reals^{\times n}$ we mean the product $\reals\times...\times\reals$ of $n$ factors $\reals$.
+
+\MH{need to explain that return values produce some kind of ANF and introduce new vars!}
+
 \input{figures/source_unf_typesystem}
+
+We give a translation from our source language to source UNF in Figure~\ref{fig:source_to_unf}.
+
+\MH{explain kind of monadic ; need theorem saying this makes sense.}
 
 \input{figures/source_to_unf}
 

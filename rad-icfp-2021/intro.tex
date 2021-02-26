@@ -81,11 +81,11 @@ Our contribution tries to make these claims precise. Our detailed  contribution 
 
 We introduce a general idea of how to do reverse-mode in a functional setting that is efficient and pure.
 We recall some basics of reverse-mode differentiation in Section~\ref{sec:background}.
-Let's have a look at what we obtain on a few examples.
+Let us have a look at what we obtain on a few examples.
 
 \begin{example}[First-order term]
 On simple first-order terms, the output code looks like SSA code \cite{cytron1989efficient}.
-Let's consider  the term !let w1 = x1 * x2 in let w2 = w1 * x1 in w2! in the context $\Gamma:=\{x1,x2,x3:\RR\}$.\\
+Let us consider  the term !let w1 = x1 * x2 in let w2 = w1 * x1 in w2! in the context $\Gamma:=\{x1,x2,x3:\RR\}$.\\
 After our (inefficient) reverse-mode transformation, we obtain
 \begin{center}
     \begin{tabular}{l}
@@ -153,7 +153,7 @@ They are obtained automatically in our case.
 Our work looks like the following compilation scheme
 \input{figures/compilation_scheme}
 
-In Section~\ref{sec:background} we recall reduminents of automatic differentiation, and in particular the idea of reverse-mode and the cheap gradient principle.
+In Section~\ref{sec:background} we recall rudiments of automatic differentiation, and in particular the idea of reverse-mode and the cheap gradient principle.
 Next, in Section~\ref{sec:simplediff} we introduce the source language we want to differentiate. We also introduce our new intermediate representation UNF, and a simple reverse-mode macro on this representation.
 In Section~\ref{sec:efficientrad} we translate back from UNF to a purely functional target language and show several general optimisations to make our reverse-mode transformation efficient.
 In the next Section~\ref{sec:complexity} we show that the previous optimisations are sufficient to ensure our transformation has the right complexity.
