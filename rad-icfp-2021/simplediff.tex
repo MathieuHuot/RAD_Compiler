@@ -83,4 +83,13 @@ One thing to note is that one can only form pairs.
 
 \subsection{Macro for reverse mode}
 
+We are now able to present a simple transformation for purely functional reverse-mode on UNF.
+This transformation is somehow straightforward as some of the work was put into the design of UNF.
+Our main takeaway for this paper is that reverse-mode is complicated beause there is a lot happening in the same time. 
+But by decoupling the problems, it becomes muche easier. UNF is somehow dealing with the inherent type-dependency of reverse-mode.
+Then the macro $\Dsynrevsymbol$ adds Jacobians. It allows to compute gradients in a compositional way.
+Finally, we'll see in the next section how to compile back to a normal language and optimise our transformation to get efficiency.
+
+The differentiation macro is given in Figure~\ref{fig:diff_macro}.
+
 \input{figures/macro_diff}
