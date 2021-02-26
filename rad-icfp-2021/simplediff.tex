@@ -87,13 +87,18 @@ Following the insights from Section~\ref{sec:background}, the composition of pai
 his represents the fact that reverse-mode reverts the computation flow, 
 and that pre-composition (using a continuation) is the simplest way to do this in a purely functional setting.
 On pairs, !;! still represents sequential composition for the first component, and reversed composition is represented by $\circ$ on the second component.
-The grammar and types are given in Figure~\ref{fig:unf_target_grammar}.
+The grammar and types are given in Figure~\ref{fig:unf_target_grammar}. 
 For every constant $C$ from the source UNF, we have a new constant $J^TC$ representing its transpose Jacobian.
+One thing to note is that one can only form pairs in this language. 
+Similarly to the source UNF, sequential composition is the only operation which is not a constant of the language.
 
 \input{figures/target_unf}
 
+Technically, all our terms in target UNF should have an extra index $\rho$ which is a type from Source.
+This will be the return type of the continuation for the jacobian accumulation. 
+In other words, if we want the full gradient of a term $\Gamma\vdash$!e!: $\reals$, $\rho$ should be chosen to be $\Gamma$.
+For every type !T!, let $\Dtype$(!T!)$:=$!T!$\times$(!T!->$\rho$). 
 The typesystem is given in Figure~\ref{fig:target_unf_typesystem}. 
-One thing to note is that one can only form pairs. 
 
 \MH{it's currently a bit wrong. need to slightly change to match with UNF-1.}
 
