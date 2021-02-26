@@ -53,19 +53,37 @@ By $\reals^{\times n}$ we mean the product $\reals\times...\times\reals$ of $n$ 
 \input{figures/source_unf_typesystem}
 
 We give a translation from our source language to source UNF in Figure~\ref{fig:source_to_unf}.
+UNF acts as a sort of stack. 
+The input represents the current stage of the stack, and we return the new value added to the stack.
+All results are kept, so the stack keeps growing. One might be surprised that the transformation for pairs and let is similar.
+The order of UNF really follows what the trace of doing a sequential call-by-value evaluation would look like if the return value does not matter.
+In other words, when evaluating !let x= e1 in e2! in call by value, we first evaluate !e1! and then !e2!. 
+Similarly in !<e1, e2>!, we evaluate !e1! and then !e2!. 
+Our ultimate goal is to return a gradient, not the original term, so what really matters is the order of evaluation, and what is evaluated.
 
-\MH{explain kind of monadic ; need theorem saying this makes sense.}
+$\widehat{;}$ is similar to $;$, with a sort of context propagation effect. 
+It is a bit reminiscent of monadic composition versus the usual composition.
+Technically though, the transformation $\UNFSymbol$ is not quite compositional.
+\MH{explain in detail how to define it.}   
+
+\begin{proposition}
+    Let $\Gamma\vdash$!e!: !T! be a term in the source language.\\
+    Then $\Gamma \vdash \UNF$(!e!):$\Gamma\times\Delta\times$!T! in source UNF for a certain type $\Delta$. 
+\end{proposition}
+
+$\Delta$ corresponds to the list of all the intermediate results from !e!. 
+A different way to say it would be that $\Delta$ is the context made of the bound variables of !e! when !e! is in ANF.
 
 \input{figures/source_to_unf}
 
 \subsection{Target Unary Form}
 
-Now our program in UNF is in an equivalent form to stright line programs. 
+Now our program in UNF is in an equivalent form to straight-line programs. 
 Before presenting our differentiation macro, we present the target language for this macro. 
 We call this intermediate representation target UNF.
 The main idea is similar to source UNF where we only have constants and sequential composition.
 That said, the key difference is that now every constant represents a pair of an operation and what is meant to represent its Jacobian.
-Following the insights from Section~\ref{sec:background}, composition of pairs reverses the order on the second component. T
+Following the insights from Section~\ref{sec:background}, the composition of pairs reverses the order on the second component. T
 his represents the fact that reverse-mode reverts the computation flow, 
 and that pre-composition (using a continuation) is the simplest way to do this in a purely functional setting.
 On pairs, !;! still represents sequential composition for the first component, and reversed composition is represented by $\circ$ on the second component.
