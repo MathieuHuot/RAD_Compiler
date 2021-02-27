@@ -1,8 +1,10 @@
 \begin{figure*}[t]
     \begin{tabular}{r c l}
-    $\UNFSymbol$($\Gamma\vdash $!c!) &=& !c!$_{\Gamma,0}$ \text{constant seen as a 0-ary operator}\\
+    $\UNFSymbol$($\Gamma\vdash $!c!) &=& !c!$_{\Gamma,0}$ constant seen as a 0-ary operator\\
+    $\UNFSymbol$($\Gamma\vdash $!x!) &=& !var!$_{\Gamma,i}$ where !x! is the $i$-th variable in $\Gamma$ \\
     $\UNFSymbol$($\Gamma\vdash $ !let x = e1 in e2!) &=& $\UNFSymbol$(!e1!)$\widehat{;}$ $\UNFSymbol$(!e2!) \\ 
     $\UNFSymbol$($\Gamma\vdash $ !< e1, e2 >!) &=& $\UNFSymbol$(!e1!)$\widehat{;}$ $\UNFSymbol$(!e2!) \\ 
+    $\UNFSymbol$($\Gamma\vdash \pi_i$(!e!)) &=& $\UNFSymbol$(!e!)$\widehat{;}$ $\pi_i$ seen as a unary operator\\
     $\UNFSymbol$($\Gamma\vdash $ !e1 op2 e2!) &=& $\UNFSymbol$(!e1!)$\widehat{;}$ $\UNFSymbol$(!e2!)$\widehat{;}$ !op!$_{\Gamma,2}$\\
     $\UNFSymbol$($\Gamma\vdash $ !op1 e!) &=& $\UNFSymbol$(!e!) $\widehat{;}$ !op!$_{\Gamma,1}$ \\
     $\UNFSymbol$($\Gamma\vdash $ !map (x.e1) e2!) &=& $\UNFSymbol$(!e2!)$\widehat{;}$ !map!$_{\Gamma,x.e}$\\

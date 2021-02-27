@@ -4,15 +4,14 @@
     && if $x_i$: !Ti! is the $i$-th element of the context $\Gamma$ \\
     $\invUNFSymbol$(!op!$_{\Gamma,n}$) &=& !op!$_n(y_k,...,y_{k+n})$ \\
     && where $(y_k,...,y_{k+n})$ are the last $n$ variables of $\Gamma$ \\ 
-    $\invUNFSymbol$(!e1;e2!) &=& !let y=!$\invUNFSymbol$(!e1!) !in! $\invUNFSymbol$(!e2!) \\ 
+    $\invUNFSymbol$(!e1;e2!) &=& !let x,Y = !$\invUNFSymbol$(!e1!) !in! $\invUNFSymbol$(!e2!) \\ 
     && TODO: \\ 
-    $\invUNFSymbol$(!map!$_{\Gamma,x.e}$) &=&  \\ 
-    $\invUNFSymbol$(!map2!$_{\Gamma,x,y.e}$) &=&  \\ 
-    $\invUNFSymbol$(!foldl!$_{\Gamma,x,y.e}$) &=&  \\ 
-    $\invUNFSymbol$(!< e1, e2>!) &=&  \\ 
-    $\invUNFSymbol$(!e2!$\circ$!e2!) &=& \\
-    $\invUNFSymbol$(!J!$^T$!var!$_{\Gamma,i}$) &=& !fun Y -> fun (x1:T1,...,xm:Tm,z:Ti) -> Y(x1,...,xm)! \\
-    &&where $\Gamma=$!T1!$\times...\times$!Tm! \\
+    $\invUNFSymbol$(!map!$_{\Gamma,x.e}$) &=& !map (x.e) X! \\ 
+    $\invUNFSymbol$(!map2!$_{\Gamma,x,y.e}$) &=& !map2 (x,y.e) X1 X2! \\ 
+    $\invUNFSymbol$(!foldl!$_{\Gamma,x,y.e}$) &=& !foldl (x,y.e) z X! \\ 
+    $\invUNFSymbol$(!< e1, e2>!) &=& <$\invUNFSymbol$(!e1!), $\invUNFSymbol$(!e2!)> \\ 
+    $\invUNFSymbol$(!J!$^T$!var!$_{\Gamma,i}$) &=& !fun Y -> fun (x1:T1,...,xm:Tm,z:Ti) ->!\\ 
+    && !Y(x1,...,x(i-i),xi+z,x(i+1),...,xm)! \\
     $\invUNFSymbol$(!J!$^T$!op!$_{\Gamma,n}$) &=& !fun Y -> fun (x1:T1,...,xm:Tm,z:Ti) ->!\\ 
     && Y$(x_1,...,x_{m-n},x_{m-n+1}+\partial_1op_n*z,...,xm+\partial_nop_n*z)$ \\
     && where $\partial_iop_n$ is the $i$-th partial derivative of $op_n$ \\

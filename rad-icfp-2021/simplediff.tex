@@ -68,7 +68,7 @@ Technically though, the transformation $\UNFSymbol$ is not quite compositional.
 
 \begin{proposition}
     Let $\Gamma\vdash$!e!: !T! be a term in the source language.\\
-    Then $\Gamma \vdash \UNF$(!e!):$\Gamma\times\Delta\times$!T! in source UNF for a certain type $\Delta$. 
+    Then $\Gamma \vdash \UNFSymbol$(!e!): $\Gamma\times\Delta\times$!T! in source UNF for a certain type $\Delta$. 
 \end{proposition}
 
 $\Delta$ corresponds to the list of all the intermediate results from !e!. 
@@ -100,8 +100,6 @@ In other words, if we want the full gradient of a term $\Gamma\vdash$!e!: $\real
 For every type !T!, let $\Dtype$(!T!)$:=$!T!$\times$(!T!->$\rho$). 
 The typesystem is given in Figure~\ref{fig:target_unf_typesystem}. 
 
-\MH{it's currently a bit wrong. need to slightly change to match with UNF-1.}
-
 \input{figures/target_unf_typesystem}
 
 \subsection{Macro for reverse mode}
@@ -120,3 +118,9 @@ The perhaps slightly more involved transformation is the one coming next,  going
 
 \input{figures/macro_diff}
 
+Even though the target UNF is designed to achieve this purpose, we have the Following
+
+\begin{proposition}
+    If $\Gamma \vdash$!e!: !T! in source UNF, then
+    $\Dtype(Gamma)\vdash \Dsynrevsymbol$(!e!):  $\Dtype$(!T!) in target UNF.
+\end{proposition}
