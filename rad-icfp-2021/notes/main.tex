@@ -1,0 +1,142 @@
+\input{preamble}
+
+\usepackage{bussproofs} 
+\usepackage{boxedminipage}
+
+\newenvironment{framed}[0]{\begin{boxedminipage}{\linewidth}}{\end{boxedminipage}}
+
+\title{Categorical semantics for UNF}
+\author{Mathieu Huot}
+
+\begin{document}
+{\large
+\texttt{Begun Mai 2021. Draft of \today, \currenttime}
+}
+\begingroup
+\let\newpage\relax
+\maketitle
+\endgroup
+
+\section{Recall UNF}
+
+\begin{figure}[H]
+\setlength{\tabcolsep}{0.3em}
+\centering
+\begin{tabular}{|l c l|l|}
+\hline
+\multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
+!T! & \mbox{::=} & $\reals$ & \grammarcomment{Real Type} \\
+& $\mid$ & !T! $\times$ !T! & \grammarcomment{Product Type}\\
+& $\mid$ & $\Array{\reals}$ & \grammarcomment{Real Array Type}\\
+\hline
+!e! & \mbox{::=} & !x! & \grammarcomment{Variable}\\
+& $\mid$ & !c! & \grammarcomment{Real constant}\\
+& $\mid$ & !let x = e in e! & \grammarcomment{Variable Binding}\\
+& $\mid$ & !< e, e >! $\mid$ $\pi_1$(!e) $\mid$ $\pi_2$(!e) & \grammarcomment{Pair Constructor/Destructor}\\
+& $\mid$ & !e op2 e! $\mid$ !op1 e! & \grammarcomment{Binary/Unary operations}\\
+& $\mid$ & !map (x.e) e! $\mid$ !map2 (x,y.e) e e! & \grammarcomment{Array map and map2}\\
+& $\mid$ & !foldl (x,y.e) e e! & \grammarcomment{Array fold left}\\
+\hline
+\end{tabular}
+\vspace{-0.2cm}
+\caption{Grammar of the source language.}
+\label{fig:source_grammar}
+\end{figure}
+
+\begin{figure}[H]
+    \setlength{\tabcolsep}{0.3em}
+    \centering
+    \begin{tabular}{|l c l|l|}
+    \hline
+    \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
+    !T! & \mbox{::=} & ... & \grammarcomment{Same as source} \\
+    \hline
+    !e! & \mbox{::=} & !var!$_{\Gamma,i}$ & \grammarcomment{Variable}\\
+    & $\mid$ & !op!$_{\Gamma,n}$ & \grammarcomment{Operations, for $0\leq n\leq 2$}\\
+    & $\mid$ & !e;e! & \grammarcomment{Sequential composition}\\
+    & $\mid$ & !map!$_{\Gamma,x.e}$ $\mid$ !map2!$_{\Gamma,x,y.e}$ & \grammarcomment{Map and map2}\\
+    & $\mid$ & !foldl!$_{\Gamma,x,y.e}$ & \grammarcomment{Fold left}\\
+    \hline
+    \end{tabular}
+    \vspace{-0.2cm}
+    \caption{Grammar of the source UNF}
+    \label{fig:unf_source_grammar}
+    \end{figure}
+
+\begin{figure}[H]
+    \begin{tabular}{r c l}
+    $\UNFSymbol$($\Gamma\vdash $!c!) &=& !c!$_{\Gamma,0}$ constant seen as a 0-ary operator\\
+    $\UNFSymbol$($\Gamma\vdash $!x!) &=& !var!$_{\Gamma,i}$ where !x! is the $i$-th variable in $\Gamma$ \\
+    $\UNFSymbol$($\Gamma\vdash $ !let x = e1 in e2!) &=& $\UNFSymbol$(!e1!)$\widehat{;}$ $\UNFSymbol$(!e2!) \\ 
+    $\UNFSymbol$($\Gamma\vdash $ !< e1, e2 >!: !T1!$\times$!T2!) &=& $\UNFSymbol$(!e1!)$\widehat{;}$ $\UNFSymbol$(!e2!) $\widehat{;}$ $\pi_{T1\times T2}$\\ 
+    $\UNFSymbol$($\Gamma\vdash \pi_i$(!e!)) &=& $\UNFSymbol$(!e!)$\widehat{;}$ $\pi_i$ seen as a unary operator\\
+    $\UNFSymbol$($\Gamma\vdash $ !e1 op2 e2!) &=& $\UNFSymbol$(!e1!)$\widehat{;}$ $\UNFSymbol$(!e2!)$\widehat{;}$ !op!$_{\Gamma,2}$\\
+    $\UNFSymbol$($\Gamma\vdash $ !op1 e!) &=& $\UNFSymbol$(!e!) $\widehat{;}$ !op!$_{\Gamma,1}$ \\
+    $\UNFSymbol$($\Gamma\vdash $ !map (x.e1) e2!) &=& $\UNFSymbol$(!e2!)$\widehat{;}$ !map!$_{\Gamma,x.e}$\\
+    $\UNFSymbol$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!)$\widehat{;}$ $\UNFSymbol$(!e3!)$\widehat{;}$ !map2!$_{\Gamma, x,y.e}$ \\ 
+    $\UNFSymbol$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!)$\widehat{;}$ $\UNFSymbol$(!e3!)$\widehat{;}$ !foldl!$_{\Gamma, x,y.e}$ \\  
+    \end{tabular}
+    \caption{UNF transformation from Source to Source UNF}
+    \label{fig:source_to_unf}
+    \end{figure}
+
+$\widehat{;}$ is similar to $;$, with a sort of context propagation effect. 
+It is a bit reminiscent of monadic composition versus the usual composition.
+
+Formally, if $\Gamma\vdash e1: A$, $\Gamma\vdash \UNFSymbol(e1): \Gamma\times\Delta_1\times A$, $\Gamma\vdash e2: B$, $\Gamma\vdash \UNFSymbol(e2): \Gamma\times\Delta_2\times B$, then $\Gamma\vdash \UNFSymbol(e1) \widehat{;} \UNFSymbol(e2): \Gamma\times \Delta_1\times \Delta_2 \times A \times B$.
+This is for most cases above except notably for let binding in which case it is: 
+ $\Gamma\vdash \UNFSymbol(e1) \widehat{;} \UNFSymbol(e2): \Gamma\times A \times \Delta_1\times \Delta_2 \times B$. 
+
+ These types $\Gamma\times A \times \Delta_1\times \Delta_2 \times B$ ought to be unordered and represent just a set of variables, thus the extra annoyance with permutations in an ordered setting. 
+
+ Semantically, $\UNFSymbol(e1) \widehat{;} \UNFSymbol(e2)$ is a macro for $\UNFSymbol(e1) ; \UNFSymbol(\widetilde{e2}); \sigma$ where $\Gamma,\Delta_1,A\vdash \widetilde{e2}:B$ is the weakening of $e2$, and $\sigma: \Gamma\times\Delta_1\times A \times \Delta_2 \times B \to \Gamma\times\Delta_1\times \Delta_2 \times A\times B$ is the obvious permutation with this type.
+The weakening and permutation are slightly changed in the obvious way for let binding to make the thing typecheck. 
+
+
+ \MH{I probably need to add permutations $\sigma$ in the language of UNF then.}
+
+
+\section{Semantics attempts}
+
+Because UNF inspects the code of its agument, it is not invariant under $\beta,\eta$ and so cannot be directly expressed as a structure preserving functor from the syntactic category of the source language modulo $\beta,\eta$ to another category. 
+
+\subsection{Syntactic source category}
+
+Let $\Syn$ be the syntactic category of the source language. Its objects are types of source, and a morphism $\tau \to \sigma$ is a well-typed term of source, modulo only alpha-renaming. Composition is by the usual capture-free substitution. It is a free Cartesian category (+ some List-like structure for arrays, map, and fold) where we do not impose any arithmetic equalities, for instance !cos!(\underline{7}) $\neq$ $\underline{cos(7)}$ in the category.
+
+
+\subsection{The Poly category} 
+
+We define the bicategory $\Polysyn$ with objects those of $\Syn$, $\Polysyn(A,B)=\cup_{P\in\Syn}\Syn(A,P\times B)$, and there is a 2-cell from $f:A\to P_1\times B$ to $g:A\to P_2\times B$ if there is an epimorphism $p:P_1\to P_2$ in $\Syn$ such that $g=f;id\times p$.
+Composition of $f:A\to P_1\times B$ and $g:B\to P_2\times C$ in $\Polysyn$ is given by $f;P_1\times g;\sigma$ in $\Syn$, where $\sigma:P_1\times(P_2\times C)\to (P_1\times P_2)\times C$ is the obvious isomorphism.
+
+Composition of 1-cells is strictly associoative, but the identity $f;id\cong f\cong id;f$ is not strict as $(1\times P)\times A\cong P\times A$ is usually not the identity.
+
+
+\subsection{$\UNFSymbol$ categorically} 
+
+The nice thing with $\Polysyn$ is that its composition reflects the weakening part of $\widehat{;}$. In addition, the hiding of $P$ in $\Polysyn(A,B)=\cup_{P\in\Syn}\Syn(A,P\times B)$ reflects the type $\Delta$ appearing from $\UNFSymbol$ obtained by collecting bound variables in the term. 
+
+The problem is that the hidden state $P$ cannot be accessed anymore. This made me fail defining $\UNFSymbol:\Syn\to\Polysyn$ as a functor.
+
+
+My attempt was to define $\UNFSymbol:\Syn\to\Polysyn$ as follows. 
+\begin{itemize}
+	\item $\UNF{u_A} =\langle id_A,u_A\rangle$
+	\item $\UNF{id_A} = \langle u_A,id_A \rangle$
+	\item $\UNF{\Delta_A} = \langle u_A,\Delta_A \rangle$
+	\item $\UNF{\pi_1} = \langle pi_2, \pi_1 \rangle$
+	\item $\UNF{op_2:\RR^2\to\RR} = \langle id_{\RR^2},op_2\rangle$ 
+\end{itemize}
+where $u_A$ is the unique map $A\to 1$.
+
+The problem comes from the fact that asking $\UNFSymbol$ to be a functor, because it means it should be defined on $\Delta$. The semantics of !let e1 in e2! which is $\Delta;(id\times\sem{e1});\sem{e2}$ is sent to something like $\UNF{\Delta};(id\times \UNF{\sem{e1}});\UNF{\sem{e2}}$, which is not of the form I would like, i.e. $\UNF{\sem{e1}};\UNF{\sem{e2}}$. 
+With the semantics above, everything is duplicated too much. For instance, the semantics of  !let y=z in cos(y)!  via this UNF would have type $1,\Gamma\to \Gamma\times (\Gamma-A)\times A, A$.
+
+
+In practice, representing terms with string diagrams, I want to put a box around $e1$ and $\Delta$ and call this $\UNF{e1}$, whereas the categorical semantics forces me to draw a box around each component separately. 
+
+\MH{another possible way to look at it is that UNF does some sort of localization, turning every operator to a reversible one, which is simply done by making it also return its context. I wonder if it could simply be seen as the localization of $!$. Assuming $1\times A=A$, we have $\Delta;id\times !=id$, so as $!$ would become invertible, so would be $\Delta$. This is sort of what I need in practice for reverse mode: not seeing any $\Delta$, only unary maps, and an iso can always be seen as such in this context, i.e. by making $\Delta$ an iso, it becomes essentially invisible to reverse mode. One obvious problem is that I don't know if I want all types to be isomorphic to 1.}
+
+
+\end{document}

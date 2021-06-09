@@ -1,0 +1,223 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{proof}
+\usepackage{mathpartir}
+\usepackage{a4wide}
+\usepackage{datetime}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage[all,color]{xy}
+\usepackage[normalem]{ulem}
+\usepackage{contour}
+\usepackage{microtype}
+\usepackage{cleveref}
+\usepackage{amsmath}
+\usepackage{a4wide}
+\usepackage{datetime}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{todonotes}
+\usepackage{amsmath}
+\usepackage{a4wide}
+\usepackage{datetime}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\usepackage[backend=biber,sorting=nty]{biblatex}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{suffix}
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{enumitem}
+\usepackage{stmaryrd}
+\usepackage[all]{xy}
+\usepackage{twoopt}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{float}
+
+\bibliography{biblio.bib}
+\newcommand{\SSS}[1]{\todo[inline,author=SS]{#1}}
+\newcommand{\sss}[1]{\todo[size=\tiny]{SS: #1}{}}
+\newcommand{\AG}[1]{\todo[inline,author=AG]{#1}}
+\newcommand{\ag}[1]{\todo[size=\tiny]{ag: #1}{}}
+\newcommand{\MH}[1]{\todo[inline,author=MH]{#1}}
+\newcommand{\mh}[1]{\todo[size=\tiny]{mh: #1}{}}
+
+\newcommand\cat[1]{\mathcal{#1}}
+\newcommand\catB{\cat{B}}
+\newcommand\catC{\cat{C}}
+\newcommand\catD{\cat{D}}
+\newcommand\catE{\cat{E}}
+\newcommand\liftedto{\stackrel{\cdot}{\to}}
+\newcommand\projf{\mathrm{proj}}
+
+
+\lstdefinelanguage{llql}%
+{morekeywords={
+  if,then,else,let,in,
+  op2,op1,map,map2,foldl,
+  scanl,scanr,map3,fun,reduce,shift1,
+  op,var,J,
+  sum,prod,dot,fst,
+  zip
+  },%
+  sensitive,%
+  morecomment=[l]//,%
+  morecomment=[s]{/*}{*/},%
+  morestring=[b]",%
+  morestring=[b]',%
+  showstringspaces=false,%
+  morecomment=[s][\color{gray}]{@}{\ },%
+    breaklines=true,%
+  mathescape=true,%
+showspaces=false,
+showtabs=false,
+showstringspaces=false,
+breakatwhitespace=true,
+  aboveskip=1pt,
+  belowskip=1pt,
+  lineskip=-0.2pt,
+   numbersep=5pt,
+   numberstyle=\tiny\ttfamily,
+   basicstyle=\small\ttfamily,
+   keywordstyle=\bfseries\color{blue!70!black},%
+   columns=fullflexible,
+  frame=single,
+  escapeinside={(*@}{@*)}
+}[keywords,comments,strings]%
+
+\lstset{language=llql}
+\lstMakeShortInline[columns=fixed]!
+
+\newtheorem{notation}{Notation}
+\newtheorem{remark}{Remark}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+%-- Syntax --
+\makeatletter
+\newcommand\@TyAlph[1]{%
+\ifcase #1\or \tau\or \sigma\or \rho\else \@ctrerr \fi%
+}
+\newcommand\ty[1][1]{{\@TyAlph{#1}}}
+
+\newcommand\tvar[1][1]{{\@TyVarAlph{#1}}}
+\newcommand\@TyVarAlph[1]{%
+\ifcase #1\or \alpha\or \beta\or \gamma\else \@ctrerr \fi%
+}
+
+\newcommand\var[1][1]{{\@VarAlph{#1}}}
+\newcommand\@VarAlph[1]{%
+\ifcase #1\or x\or y\or z\or u\or v\or w\else \@ctrerr \fi%
+}
+
+\newcommand\trm[1][1]{{\@TermAlph{#1}}}
+\newcommand\@TermAlph[1]{%
+\ifcase #1\or t\or s\or r\else \@ctrerr \fi%
+}
+
+\newcommand\val[1][1]{%
+\ifcase #1\or v\or w\or u\else \@ctrerr \fi%
+}
+
+\newcommand\op[1][1]{%
+\ifcase #1\or \mathsf{op}\or \mathsf{op}'\or \mathsf{op}''\else \@ctrerr \fi%
+}
+\makeatother
+
+\newcommand\Dsynsymbol[1][]{\scalebox{0.8}{$\overrightarrow{\mathcal{D}}$}_{#1}}
+\newcommand\Dsyn[2][]{\Dsynsymbol[#1](#2)}
+
+\newcommand\Dsynrevsymbol[1][]{\scalebox{0.8}{$\overleftarrow{\mathcal{D}}$}_{#1}}
+\newcommand\Dsynrev[2][]{\Dsynrevsymbol[#1](#2)}
+
+\newcommand\letin[3]{\mathbf{let}\,#1=\,#2\,\mathbf{in}\,#3}
+\newcommand\SSSynHO{\mathbf{SSSynHO}}
+\newcommand\SSSyn{\mathbf{SSSyn}}
+\newcommand\TSSyn{\mathbf{TSSyn}}
+\newcommand\TTSynHO{\mathbf{TTSynHO}}
+\newcommand\TTSyn{\mathbf{TTSyn}}
+
+\newcommand\Syn{\mathbf{Syn}}
+\newcommand\Polysyn{\mathbf{Poly[Syn]}}
+
+\newcommand\IH{\stackrel{I.H.}{=}}
+
+\newcommand\UNFSymbol{\mathbf{UNF}}
+\newcommand\UNF[1]{\UNFSymbol(#1)}
+\newcommand\invUNFSymbol{\mathbf{UNF}^{-1}}
+\newcommand\invUNF[1]{\UNFSymbol^{-1}(#1)}
+\newcommand\tPair[2]{\langle #1, #2\rangle}
+\newcommand\inllambda{\widetilde{\lambda}}
+
+\newcommand\bp[1]{\boldsymbol{(}#1\boldsymbol{)}}
+\newcommand\ctx{\Gamma}
+\newcommand\tinf{\vdash}
+\newcommand\Ginf[3][]{\ctx #1\tinf #2 : #3}
+\newcommand\subst[2]{#1{}[#2]}
+\newcommand\Op{\mathsf{Op}}
+\newcommand\cnst{\underline{c}}
+\newcommand\sigmoid{\varsigma}
+\newcommand\nat{\mathbf{nat}}
+\newcommand\reals{\mathbf{R}}
+\newcommand\bool{\mathbf{bool}}
+\newcommand{\sPair}[2]{( #1, #2 )}
+\newcommand{\sTriple}[3]{(#1, #2, #3)}
+\newcommand{\sTuple}[1]{(#1)}
+\newcommand\tUnit{\bp{}}
+\newcommand\tTriple[3]{\langle #1, #2, #3\rangle}
+\newcommand\tTuple[1]{\langle #1\rangle}
+\newcommand\bProd[2]{\bp{#1 \t* #2}}
+\newcommand\tProd[3]{\bp{#1 \t* #2 \t* #3}}
+
+\newcommand\syncat[1]{\mspace{-25mu}\synname{#1}}
+\newcommand\synname[1]{\qquad\text{#1}}
+\newenvironment{syntax}[1][]{%
+\(
+  \begin{array}[t]{#1l@{\quad\!\!}*3{l@{}}@{\,}l}
+}{
+\end{array}
+\)%
+}
+
+\newcommand\gdefinedby{::=}
+\newcommand\gor{\mathrel{\lvert}}
+
+\newcommand\TyDinter[2]{\mathsf{TyD}_{#1}(#2)}
+\newcommand\TyD[1]{\mathsf{TyD}(#1)}
+
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\BB}{\mathbb{B}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand\ifelse[3]{\mathbf{if}\,#1\,\mathbf{then}\,#2\,\mathbf{else}\,#3\,}
+\newcommand\ArrayMake[2]{\vbuildk\,#1\,#2}
+\newcommand\ArrayGet[2]{\vgetk\,#1\,#2}
+\newcommand\ArrayFold[3]{\vifoldk\,#1\,#2\,#3}
+\newcommand\ArrayLength[1]{\vlengthk\,#1}
+\newcommand\TensorMake[2]{\boxplus_{i=0}^{#1}#2}
+\newcommand\TensorSum[2]{\sum_{i=0}^{#1}#2}
+\newcommand\TensorAccess[2]{#1{[}#2{]}}
+\newcommand\TensorPred[2]{{[}#1{]}#2}
+
+\newcommand\viteratek{\mathbf{ifold}}
+\newcommand\vifoldk{\viteratek}
+\newcommand\vbuildk{\mathbf{build}}
+\newcommand\vlengthk{\mathbf{length}}
+\newcommand\vgetk{\mathbf{get}}
+\newcommand\ArraySym{\mathbf{A}}
+\newcommand\Array[1]{\ArraySym[#1]}
+\newcommand\To{\to}
+\newcommand\tMatch[4][\,]{\mathbf{case}\,#2\,\mathbf{of}#1\tTuple{#3}\To#4}
+\newcommand{\sem}[1]{\llbracket #1\rrbracket}
+\newcommand{\semu}[1]{\llbracket #1\rrbracket_\mathbf{U}}
+\newcommand{\grammarcomment}[1]{\textit{\small #1}}
+
+\newcommand{\Source}{\mathbf{Source}}
+\newcommand{\Target}{\mathbf{Target}}
+
+\newcommand\Dtype{\mathbf{D}}
+
+%\newcommand\Set{\mathbf{Set}}

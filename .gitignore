@@ -34,3 +34,6 @@ rad-icfp-2021/main.synctex(busy)
 *.fdb_latexmk
 *.blg
 *.gz
+*.bcf
+*.xml
+*.xdv
