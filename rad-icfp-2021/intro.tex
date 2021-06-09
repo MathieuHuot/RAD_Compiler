@@ -31,10 +31,10 @@ None of the current implementations of reverse-mode in a functional setting \cit
 It means that for every important non trivial operation, a hand-crafted reverse-derivative must be given to be efficient.
 In other words functional implementations seem to stuggle to abstract away from imperative code.
 
-For example, \MH{TODO: show how $\prod_i v_i$ for a vector $v$ is done in some functional AD systems}.
-For real world AD systems, modularity is key. They need to be expressive but have a lot of optimised derivatives for operators that are used a lot.
-This is easily seen on numpy \MH{TODO: explain a bit better why torch is good by using optimised grad for numpy.}
-An efficient purely functional reverse-mode transformation would be more easily explainable, optimisable, and potentially reusable.
+% For example, \MH{TODO: show how $\prod_i v_i$ for a vector $v$ is done in some functional AD systems}.
+% For real world AD systems, modularity is key. They need to be expressive but have a lot of optimised derivatives for operators that are used a lot.
+% This is easily seen on numpy \MH{TODO: explain a bit better why torch is good by using optimised grad for numpy.}
+An efficient purely functional reverse-mode transformation would be more easily explainable, optimisable, and reusable.
 
 \subsection{Problem}
 
@@ -43,7 +43,7 @@ As remarked by the authors, this is highly inefficient.
 The problem we tackle in this paper is how to go from a simple and general setting where we can relatively easily prove correctness of reverse-mode, 
 to a representation that matches more efficient implementations.
 
-The problems that this raises and that our paper deals with are the following. First, there is a tradeoff between a general expressive language 
+This raises several problems that are dealt with in our paper. First, there is a tradeoff between a general expressive language 
 as opposed to a domain specific language. The latter usually has more static information and a specific representation to perform optimisations.
 Then, a lot of optimisations performed on AD implementations consist of a lot of hand-crafted derivatives for a lot of useful operations like matrix-matrix multiplication, dot-product, etc.
 They don't seem to come with more theoretical justification, are error prone, and can hardly fit more general optimisations.
@@ -68,7 +68,7 @@ Our contribution tries to make these claims precise. Our detailed  contribution 
 \begin{itemize}
     \item introducing an expressive source language with array operations, yet restrictive enough for efficient differentiation
     \item a method for extending our work and modular method for adding and prove correct new primitives as needed in practice 
-    \item a new intermediate representation (I.R.) which we call unary form(UNF), essentially turning every operation as a unary one
+    \item a new intermediate representation (I.R.) which we call unary form (UNF), essentially turning every operation to a unary one
     \item a simple reverse-mode transformation on the I.R.
     \item an expressive purely functional target language and efficient transformation from the I.R. to this language
     \item several useful generalisations in Section~\ref{sec:generalisation}. 
@@ -96,7 +96,7 @@ After our (inefficient) reverse-mode transformation, we obtain
 \end{center}
 The part !(0,0,0,0,1)! comes as an equivalent to initialing the tangent variables in the imperative reverse-mode algorithm. 
 
-After some general partial evaluation that will be detailed further in the paper, we obtain     
+After some general partial evaluation techniques that will be detailed further in the paper, we obtain     
         \begin{center}
             \begin{tabular}{l}
                 !let w1 = x1 * x2 in!\\ 
@@ -112,7 +112,7 @@ After some general partial evaluation that will be detailed further in the paper
             \end{tabular}
         \end{center}  
 For the expert viewer, this is equivalent to the SSA form \cite{cytron1989efficient} of what the imperative reverse-mode differentiation of our initial term would be.\\
-Of course, this term can be further optimised to give
+Of course, this term can be further optimised via constant propagation and algebraic simplifications to give
         \begin{center}
             \begin{tabular}{{c}}
                 !let w1 = x1 * x2 in!\\ 
@@ -137,9 +137,9 @@ where !reduce! is a known fold left operator for which the function argument is 
 The gradient of each of these construct w.r.t. !A! will be:
 \begin{center}
     \begin{tabular}{{r c l}}
-        $\nabla_A$!prod(A)! &:=& !map2 * (scanr x 1 A) (shift1(scanl * 1 A))!\\
-        $\nabla_A$!sum(A)! &:=& !map (x,y -> 1) A!\\
-        $\nabla_A$!dot(A,B)! &:=& !map2 * B (map (x,y -> 1) A! 
+        $\nabla_A$!prod(A)! &:=& !map2 * (scanr * 1 A) (shift1(scanl * 1 A))!\\
+        $\nabla_A$!sum(A)! &:=& !map (x -> 1) A!\\
+        $\nabla_A$!dot(A,B)! &:=& !map2 * B (map (x -> 1) A)! 
     \end{tabular}
 \end{center}
 where !shift1 [v1,...,vn] = [1,v1,...,v(n-1)]! is a simple operator yet perhaps strange at first naturally showing up in our constructions.
