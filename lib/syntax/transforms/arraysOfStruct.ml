@@ -9,7 +9,7 @@ type t = Var of Var.t * Type.t | Const of float | Apply1 of op1 * t | Apply2 of 
 | Fun of ((Var.t * Type.t) list) * t | App of t * (t list) | Tuple of t list | NCase of t * ((Var.t * Type.t) list) * t | Map of Var.t * Type.t * t * t  
 | Map2 of Var.t * Type.t * Var.t * Type.t * t * t * t | Map3 of Var.t * Type.t * Var.t * Type.t * Var.t * Type.t * t * t * t * t 
 | Reduce of Var.t *  Type.t * Var.t * Type.t * t * t * t | Scan of Var.t * Type.t * Var.t * Type.t * t * t * t | Zip of t * t 
-| Unzip of t| Zip3 of t * t * t | Unzip3 of t |(* Get of int * t | *) Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t | Array of t list 
+| Unzip of t| Zip3 of t * t * t | Unzip3 of t | Fold of  Var.t * Type.t * Var.t * Type.t * t * t * t | Array of t list 
 | AoS of t | SoA of t (*TODO: might need more indication in SoA, like some type, or the kind of structure being distributed (pairs, triple, ...) *)
 
 let rec type_embedding (ty: Target.Type.t) : Type.t = match ty with 

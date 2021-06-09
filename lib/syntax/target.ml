@@ -315,7 +315,6 @@ let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
                                                          &&  eqT expr13 expr23 alpha_set   
 | Unzip(expr1), Unzip(expr2)                          -> eqT expr1 expr2 alpha_set
 | Unzip3(expr1), Unzip3(expr2)                        -> eqT expr1 expr2 alpha_set                                                                                             
-(* | Get (n1,expr1), Get (n2,expr2) -> eqT expr1 expr2 alpha_set && n1 = n2 *)
 | Array exprList1, Array exprList2 -> CCList.equal (fun expr1 expr2 -> eqT expr1 expr2 alpha_set) exprList1 exprList2
 | Map3 (x1, t11, y1, t12, z1, t13, expr11, expr12, expr13, expr14), Map3 (x2, t21, y2, t22, z2, t23, expr21, expr22, expr23, expr24)
                                                       -> Type.equal t11 t21 
