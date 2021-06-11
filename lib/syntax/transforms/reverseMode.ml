@@ -96,9 +96,7 @@ let rec rad (context: gradient_variables) (cont : Target.t)  (expr : t) : Target
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
                                    Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context end
-    | Array (exprList)          -> let cont = List.fold_left (fun cont expr -> let dexpr, newCont, context = rad context cont expr in newCont) cont exprList in
-                                      let newCont = cont in (*TODO:*)
-                                      Tuple([Target.from_source expr; newCont]), newCont, context
+    | Array (exprList)          -> failwith "differentiating non honogeneous array not supported"
     | Map (x, t, expr1, expr2)  -> failwith "TODO"
     | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
                                 -> failwith "TODO"
@@ -194,7 +192,8 @@ let rec rad2 (context: gradient_variables) (cont : Target.t)  (expr : t) : Targe
                                  let newContext = context @ [(x,ty)] in
                                  let dexpr2, cont, context = rad2 newContext cont expr2 in 
                                  Let(x, Target.Type.from_source ty, Target.from_source expr1, dexpr2), cont, context
-  | Array (exprList)          -> failwith "TODO"
+  (** TODO: I think I only want to differentiate homogeneous arrays, so not the thing below *)
+  | Array (exprList)          -> failwith "differentiating non honogeneous array not supported"
   | Map (x, t, expr1, expr2)  -> failwith "TODO"
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
                               -> failwith "TODO"

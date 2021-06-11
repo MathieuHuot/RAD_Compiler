@@ -1,8 +1,50 @@
 \section{Correctness}
 \label{sec:correctness}
 
+We now prove that our transformations are correct. 
+ The main result of the section is
+
+ \begin{theorem}
+     For every $\Gamma \vdash$ !e: \reals!, we have 
+     $\sem{\pi_2 \invUNF{\UNF{e}}(Id_\Gamma)(last(1:\reals))}= \nabla_{\Gamma}\sem{e}$.
+ \end{theorem}
+ where $Id_\Gamma$ is the identity function, 
+ $\sem{-}$ an appropriate denotational semantics of smooth functions,
+ and $last(a)$ is the hot-vecteur encoding $(0,\ldots,0,a)$. 
+
 \subsection{Denotational semantics} 
+
+\begin{itemize}
+    \item for Syn
+    \item for target
+    \item for UNF
+\end{itemize}
+
+\MH{find somewhere to put the operational semantics}
 
 \input{figures/op_semantics_target}
 
-\subsection{Correctness via logical relations} 
+\subsection{Correctness} 
+
+ In order to prove correctness, we need some key intermediate lemmas.
+
+ \begin{lemma}
+     $\sem{\pi_1\invUNF{\UNF{e}}}=\sem{e}$.
+ \end{lemma}
+
+ \begin{lemma}
+     $\sem{\pi_2\invUNF{e}}=T^*\sem{\pi_1\invUNF{e}}$
+ \end{lemma}
+
+ From this, we deduce the main theorem
+
+ \begin{theorem}
+     \MH{slight generalisation of the corrolary for compositionality reasons}
+ \end{theorem}
+
+ The main theorem specializes to our case of interest
+
+ \begin{corollary}
+     For every $\Gamma \vdash$ !e: \reals!, we have 
+     $\sem{\pi_2 \invUNF{\UNF{e}}(Id_\Gamma)(last(1:\reals))}= \nabla_{\Gamma}\sem{e}$.
+ \end{corollary}

@@ -183,10 +183,10 @@ Second, each $J^Tf_{i+1}$ is a potentially huge matrix if $n$ or $m$ is big.
 
 The imperative version of reverse mode for a binary operator $op(x,y)$ is something like $x'+= \partial_1op(x,y);y'+= \partial_2op(x,y)$. 
 It is for these cases that mutation is usually key. 
-If we see out term as a directed graph, reverse mode needs to backpropagate from the end of the graph to the starting nodes via every path.
+If we see our term as a directed graph, reverse mode needs to backpropagate from the end of the graph to the starting nodes via every path.
 It's hard to keep track of all these information in parallel in a functional way.
 One of the key simple ideas that we used was to transform every operator into a unary one. 
-This sssentially trivialises the compute flow to a line. 
+This essentially trivialises the compute flow to a line. 
 Even if the starting program was a straight line program, 
 having non unary operators was a source of inefficiency which justified mutation in the first place.
 By returning every variable every time, the problem of using a variable several time does not need to be dealt with via mutation. 
