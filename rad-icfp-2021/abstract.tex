@@ -1,9 +1,14 @@
 \begin{abstract}
-    We introduce an efficient source-code transformation for reverse-mode differentiation on an expressive purely functional language that does not introduce mutation.
-    We show that our transformation is correct and verifies the cheap gradient principle. 
+    Deep learning is moving towards increasingly sophisticated optimization objectives that employ
+    tensors and operations on tensors.
+    Reverse-mode differentiation is used for optimisation, 
+    but it doesn't preserve purity of the underlying program and makes it notoriously harder to optimise.
+    In a purely functional setting, most array operations can be expressed conveniently using map and fold.
+    We present a differentiable programming language, that is the first to deliver en efficient pure and parallel friendly reverse-mode differentiation on
+    an expressive array language. 
+    We show that our transformation is semantically correct and verifies the cheap gradient principle. 
     Our transformation is presented as a compilation scheme through a novel intermediate representation we call unary form.
-    We obtain provably efficient gradients by performing general partial evaluation optimisations after our reverse-mode transformation as opposed to hand-crafted ones.
-    For simple first-order programs, the obtained outputs look like static single assignment (SSA) code. 
-    For arrays, our transformation preserves parallelism as much as possible. 
-    Our work emphasizes modularity and our language can easily be enriched with more optimised primitives as required for some speedups in practice.
+    We obtain provably efficient gradients by performing general partial evaluation optimisations after our reverse-mode transformation as opposed to manually derived ones.
+    For simple first-order programs, the obtained output programs ressemble static single assignment (SSA) code. 
+    We emphasize the modularity of our approach and show how our language can easily be enriched with more optimised primitives as required for some speedups in practice.
 \end{abstract}
