@@ -96,14 +96,35 @@ let rec rad (context: gradient_variables) (cont : Target.t)  (expr : t) : Target
                                    let newContext = context @ [(x,ty)] in
                                    let dexpr2, newNewCont, context = rad newContext newCont expr2 in
                                    Target.NCase(dexpr1, [(x, Target.Type.from_source ty); (newContVar, newContType)], dexpr2), newNewCont, context end
-    | Array (exprList)          -> failwith "differentiating non honogeneous array not supported"
-    | Map (x, t, expr1, expr2)  -> failwith "TODO"
+    | Array (exprList)          -> failwith "differentiating non homogeneous arrays is not supported"
+    | Map (x, t, expr1, expr2)  -> let dexpr1, cont, context = rad context cont expr2 in        
+                                    begin match Target.inferType cont, Target.inferType dexpr1 with 
+                                    | Result.Ok(Target.Type.Arrow(tyList,_)), Result.Ok(tyExpr2) -> 
+                                      let new_var = Syntax.Var.fresh() in 
+                                      let newVarList = (List.map (fun ty -> Syntax.Var.fresh(), ty) tyList) in                         
+                                      let newContVarList =  List.append newVarList [(new_var, tyExpr2)] in
+                                      let newCont = Target.Fun(newContVarList, Target.App(cont, Target.varToSyn newVarList)) in
+                                      (*TODO: currently incomplete, need to add the right partial derivatives still *)
+                                      (* Assuming x:real, need to:
+                                        - compute \grad expr1 as a tuple A
+                                        - compute the real B = reduce + 0 new_var
+                                        - multiply each element of A by B, we obtain the tuple C, probably use a let binding
+                                        - add each element of C to the right place in newVarList
+                                        For the tangent variable corresponding to expr2, call it X, need to
+                                        - compute map2 (a, b -> a+ A[tangent for x] * b) X new_var, call it D
+                                        - add D to newListVar[X]
+                                        *)
+                                      Target.Tuple [ Map (x, Target.Type.from_source t, Target.from_source expr1, Target.from_source expr2) ; newCont ], newCont, context
+                                    | _ -> failwith "rad: the continuation should be a function"
+                                    end 
+    | Fold (x, t1, y, t2, expr1, expr2, expr3) 
+                                  (*TODO: a bit similar to map. *)
+                                -> failwith "TODO"
     | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
+    (*TODO: like fold but using the structure of reduce, can simplify a bit *)
                                 -> failwith "TODO"
     | Scan (x, t1, y, t2, expr1, expr2, expr3) 
                                 ->  failwith "TODO"
-    | Fold (x, t1, y, t2, expr1, expr2, expr3) 
-                                -> failwith "TODO"
 
 let semiNaiveReverseAD (context: gradient_variables) (expr: t) : Target.t =
   let new_var_List = List.map (fun (_,ty) -> Syntax.Var.fresh(), Target.Type.from_source ty) context in 
@@ -192,7 +213,8 @@ let rec rad2 (context: gradient_variables) (cont : Target.t)  (expr : t) : Targe
                                  let newContext = context @ [(x,ty)] in
                                  let dexpr2, cont, context = rad2 newContext cont expr2 in 
                                  Let(x, Target.Type.from_source ty, Target.from_source expr1, dexpr2), cont, context
-  (** TODO: I think I only want to differentiate homogeneous arrays, so not the thing below *)
+  (** TODO: I think I only want to differentiate homogeneous arrays, so not the thing below. 
+      If we do, it would be like differentiating a tuple, so not very optimised/optimisable *)
   | Array (exprList)          -> failwith "differentiating non honogeneous array not supported"
   | Map (x, t, expr1, expr2)  -> failwith "TODO"
   | Reduce (x, t1, y, t2, expr1, expr2, expr3) 
