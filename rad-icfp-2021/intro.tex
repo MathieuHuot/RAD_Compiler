@@ -1,4 +1,5 @@
 \section{Introduction}
+\label{sec:intro}
 
 % % (Source-to-source) Automatic Differentiation (AD) is a technique for transforming code that implements 
 % % a function $f$ into code that computes $f$'s derivative, essentially by using the chain rule for derivatives. 
@@ -140,7 +141,7 @@ The gradient of each of these construct w.r.t. !A! will be:
     \begin{tabular}{{r c l}}
         $\nabla_A$!prod(A)! &:=& !map2 * (scanr * 1 A) (shift1(scanl * 1 A))!\\
         $\nabla_A$!sum(A)! &:=& !map (x -> 1) A!\\
-        $\nabla_A$!dot(A,B)! &:=& !map2 * B (map (x -> 1) A)! 
+        $\nabla_A$!dot(A,B)! &:=& !B! 
     \end{tabular}
 \end{center}
 where !shift1 [v1,...,vn] = [1,v1,...,v(n-1)]! is a simple operator yet perhaps strange at first naturally showing up in our constructions.

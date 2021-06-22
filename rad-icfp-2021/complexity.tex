@@ -3,4 +3,25 @@
 
 \subsection{Cost model}
 
+We follow a simple model similar to the one in \cite{griewank2008evaluating}.
+We assume the cost is divided into 4 elementary measures, being the number of MOVES, ADDS, MULTS, and NLOPS.
+MOVES assumes a flat memory and represents moving a fixed size information  (e.g. 64 bits). 
+ADDS represents the number of additions, 
+MULTS the number of multiplications, 
+and NLOPS the number of elementary non linear operations like !cos!, !exp!.
+
+The gives a complexity function $\cost$ valued in $\RR^4$. 
+For instance, we have 
+
+\begin{itemize}
+    \item $\cost(*)=(3,0,1,0)$
+    \item $\cost(+)=(3,1,0,0)$
+    \item $\cost(c)=(1,0,0,0)$
+    \item $\cost($!sin!$)=(2,0,0,1)$
+\end{itemize}
+
+\MH{need cost array operations}
+\MH{need to extend the cost function in a compositional way}
+
+
 \subsection{Cheap gradient principle}

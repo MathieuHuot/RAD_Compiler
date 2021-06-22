@@ -1,16 +1,96 @@
 \section{Appendix}
 
- \subsection{gradient from the introduction}
+ \subsection{Operational semantics}
 
- We show that the gradients from the introduction 
- can be obtained as special instances of our general construction. 
+In Figure~\ref{fig:op_semantics_target} a small step call-by-value operational semantics for the language. 
+\MH{need to add evaluation contexts}
+
+Some operators are less conventional which we now explain.
+!shift1! takes an array of reals of size $n$ and adds a $1$ as first component and forgets about the last component of the array, returning an array of size !n!.
+!scanr! is similar to !scanl! except that the folding starts from the end of the array. 
+It is equivalent to first reversing the input array, performing !scanl!, and reversing the resulting array.
+
+\MH{need to explain that the !scanl!, !scanr! coming from !reduce! are also parallel ones}
+
+\MH{might need to extend with the operators from the generalized section}
+
+\input{figures/op_semantics_target}
+
+ \subsection{Reverse derivative of array operations}
+
+We now prove that the reverse mode transformation is correct on array operations. 
+The proofs consist in showing that unrolling the computation before differentiation 
+and then differentiating gives the same as differentiation and then unrolling. 
+
+ \begin{proposition}
+     The reverse derivative of !map! is correct.
+ \end{proposition}
+
+\begin{proof}
+    
+\end{proof}
+
+ \begin{proposition}
+    The reverse derivative of !map2! is correct.
+\end{proposition}
+
+\begin{proof}
+    
+\end{proof}
+
+\begin{proposition}
+    The reverse derivative of !foldl! is correct.
+\end{proposition}
+
+\begin{proof}
+    
+\end{proof}
+
+\subsection{gradient from the introduction}
+
+We show that the gradients from Section \ref{sec:intro} are obtained as instances of our general construction. 
+The proofs consist in instantiating the general derivatives to these cases 
+and showing that each rewrite step is a simple known optimization.
+
+Similarly to numpy, we use the notation OnesLike(A) to mean map (x -> 1) A 
+and ZerosLike(A) to mean map (x -> 0) A. 
+Finding these constant arrays is key to a lot of optimisations that leverage the ring algebraic structure of the reals to arrays.
+
+\MH{change to make it nice. be more explicit about optimisations. 0 should be ZerosLike. 
+Also, I am freely referring to the variables from the context or bound in theoriginal term, should be clarified.}
 
  \begin{lemma}
      $\nabla_A$!prod(A)! = !map2 * (scanr x 1 A) (shift1(scanl * 1 A))!
  \end{lemma}
 
  \begin{proof}
-
+\begin{align*}
+    \nabla_A \text{prod(A)} 
+    &= \nabla_A(\text{reduce} * 1 A) \\
+    &\defeq  \Big(\lambda A',z.
+    \begin{aligned}
+        & let A_1 = scanl * 1 A in \\
+        & let A_2 = map2 (x,y -> y) A_1 A in\\
+        & let A_3 = shift1 (map2 (x,y -> x) A_1 A) in\\
+        & let A_4 = scanr * 1 A_2 in \\
+        & map3 (a,b,c -> a+b*c*z) A' A_4 A_3
+    \end{aligned}
+    \Big)(0,1)\\
+    &\stackrel{\beta-reduction}{=}  \begin{aligned}
+        & let A_1 = scanl * 1 A in &\\
+        & let A_2 = map2 (x,y -> y) A_1 A in & A_2=  A\\
+        & let A_3 = shift1 (map2 (x,y -> x) A_1 A) in & A_3 = shift1 A1\\
+        & let A_4 = scanr * 1 A_2 in & \\
+        & map3 (a,b,c -> a+b*c*1) 0 A_4 A_3 & map2 * A_4 A_3
+    \end{aligned}\\
+    &=  \begin{aligned}
+        & let A_1 = scanl * 1 A in & \\
+        & let A_3 = shift1 A1 in &\\
+        & let A_4 = scanr * 1 A in &\text{forward substitution} A_2\\
+        & map2 * A_4 A_3
+    \end{aligned}\\
+    &\stackrel{\eta-reduction}{=} map2 * (scanr x 1 A) (shift1(scanl * 1 A))
+\end{align*}
  \end{proof}
 
  \begin{lemma}
@@ -19,19 +99,84 @@
 
  \begin{proof}
 
+\begin{align*}
+    \nabla_A sum(A) 
+    &= \nabla_A reduce + 0 A \\
+    & \defeq \Big(\lambda A',z.
+    \begin{aligned}
+        & let A_1 = scanl * 1 A in \\
+        & let A_2 = map2 (x,y -> 1) A_1 A in \\
+        & let A_3 = shift1 (map2 (x,y -> 1) A_1 A) in \\
+        & let A_4 = scanr * 1 A_2 in \\
+        & map3 (a,b,c -> a+b*c*z) A' A_4 A_3
+    \end{aligned}
+    \Big)(0,1)\\
+    &{\beta-reduction}{=}
+    \begin{aligned}
+        & let A_1 = scanl * 1 A in &\\
+        & let A_2 = map2 (x,y -> y) A_1 A in & A_2= OnesLike(A) \\
+        & let A_3 = shift1 (map2 (x,y -> x) A_1 A) in & A_3 = shift1 OnesLike(A)\\
+        & let A_4 = scanr * 1 A_2 in & \\
+        & map3 (a,b,c -> a+b*c*1) 0 A_4 A_3 & map2 * A_4 A_3
+    \end{aligned}\\
+    &= \begin{aligned}
+        & let A_1 = scanl * 1 A in & \\
+        & let A_2= OnesLike(A) in &  \\
+        & let A_3 = shift1 OnesLike(A) in & A_3 = OnesLike(A) \\
+        & let A_4 = scanr * 1 A_2 in & A_4 = OnesLike(A_2) \\
+        & map2 * A_4 A_3 &
+    \end{aligned}\\
+    &= map2 * OnesLike(A) OnesLike(A) \\
+    &= OnesLike(A)
+\end{align*}
  \end{proof}
 
  \begin{lemma}
-     $\nabla_A$!dot(A,B)! := !map2 * B (map (x -> 1) A)! 
+     $\nabla_A$!dot(A,B)! = !B! 
  \end{lemma}
 
  \begin{proof}
+The reverse derivative of !map2 * A B! is given by 
+\begin{align*}
+    & \lambda A',B',C'. \\
+    & let C_1 =map2 (a,b -> b) A B in \\
+    & let C_2 =map2 (a,b -> a) A B in \\
+    & (map3 (a,b,c -> a+b*c) A' C_1 C', map3 (a,b,c -> a+b*c) A' C_2 C')
+\end{align*}
 
+Let's call this term Y.
+For convenience, let us also rewrite !map2 * B (map (x -> 1) A)! 
+as !let C = map (x -> 1) A in map2 * B C!.
+
+Then the gradient of !dot(A,B)! is given by
+\begin{align*}
+    \nabla dot(A,B) 
+    &= \nabla let C = map (x -> 1) A in map2 * B C\\
+    &\defeq \lambda A',B',C',z. 
+    \left.\begin{aligned}
+        & let A_1 = scanl * 1 A in \\
+        & let A_2 = map2 (x,y -> 1) A_1 A in \\
+        & let A_3 = shift1 (map2 (x,y -> 1) A_1 A) in \\
+        & let A_4 = scanr * 1 A_2 in \\
+        & Y(A', B', map3 (a,b,c -> a+b*c*z) A' A_4 A_3)
+    \end{aligned}\right\}same reduction as previously
+    \\
+    &\quad(0,0,0,1) \\
+    &= Y(0,0,OnesLike(C)) \\
+    &\defeq 
+    \begin{aligned}
+        & let C_1 =map2 (a,b -> b) A B in & C_1 = B\\
+        & let C_2 =map2 (a,b -> a) A B in & C_2 = A\\
+        & (map3 (a,b,c -> a+b*c) 0 C_1 OnesLike(C), & map2 & C_1 OnesLike(C)
+        & map3 (a,b,c -> a+b*c) 0 C_2 OnesLike(C)) & map2 & C_2 OnesLike(C)
+    \end{aligned}\\
+    &= \begin{aligned}
+        & let C_1 = B & \text{forward substitution}\\
+        & let C_2 = A \text{forward substitution}\\
+        & map2 & C_1 OnesLike(C) & C_1
+        & map2 & C_2 OnesLike(C) & C_2
+    \end{aligned}\\
+    &= (B, A)
+\end{align*}
+So if we are only interested in the gradient w.r.t. A, this indeed gives us B.
  \end{proof}
-
- \subsection{Operational semantics}
-
- \subsection{Reverse derivative of array operations}
-
- 
-
