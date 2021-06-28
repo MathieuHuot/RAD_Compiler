@@ -1,7 +1,27 @@
-\section{Efficient reverse-mode}
-\label{sec:efficientrad}
+\section{Simple pure reverse-mode differentiation}
+\label{sec:simplediff}
 
-\subsection{Target Language} 
+\subsection{Source Language} 
+
+We consider a standard call-by-value language. 
+It is a first-order language with array constructs and a few typical second-order array operations. 
+The types !T1,T2! and terms !e1,e2! are in Figure~\ref{fig:source_grammar}.
+
+\input{figures/source_grammar}
+
+The typing rules are in Figure~\ref{fig:source_typesystem}. We have included a minimal set of array operations for the sake of illustration, 
+but it is not difficult to add further operations. For scalar operations, we assume given a set of operations. 
+!op1! and !op2! denote respectively unary and binary smooth operations on reals. 
+We use infix notation for binary operators.
+Typical examples include !cos, exp, +, *!. 
+For the sake of simplicity in the development, the function in the array operations !map, map2, foldl! are quite restricted with and free variables. 
+We also restrict to arrays of reals.
+The general case is also useful and presented in Section~\ref{sec:generalisation}.
+
+\input{figures/source_type_system}
+
+
+\subsection{Target Language}
 
 The last language we present, which we call the target language, is an extension to the source language. 
 The types and terms are presented in Figure~\ref{fig:target_grammar}.
@@ -39,16 +59,10 @@ The transformation is presented in Figure~\ref{fig:unf_to_target}.
 
 \input{figures/unf_to_target}
 
-\begin{remark}
-    One could rightfully wonder: where did reverse-mode really happened here?
-    In a way, source UNF does not seem to do much. 
-    Then $\Dsynrevsymbol$ is very simple on UNF.
-    So perhaps everything happens when going from target UNF to target?
-    \MH{finish or remove.}
-\end{remark}
+\subsection{Macro for pure reverse mode transformation} % (fold)
+\label{sub:Macro for pure reverse mode transformation}
 
+\subsection{Partial evaluation and optimisation} % (fold)
+\label{sub:Partial evaluation and optimisation}
 
-
-\subsection{Efficient representation}
-
-\subsection{Optimisations via partial evaluation}
+% subsectionPartial evaluation and optimisation (end)
