@@ -13,7 +13,8 @@
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !< e1, e2 >!) &=&
             !let x1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
             &&!let x2,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e2) in!\\
-            && <~<x,y>, TODO >\\ 
+            &&!< <x,y>, fun (x1,...,xn,z) -> !\\
+            &&!Y(x1,...,xn,!$\pi_1$!(z),!$\pi_2$!(z)) >!\\ 
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash \pi_1$(!e!:AxB)) &=&
             !let (x,y),Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
             && !<x, fun (x1,...,xn,z) -> Y(x1,...,xn,(z,!$0_B$!))>! \\
@@ -22,28 +23,26 @@
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !op1 e!) &=&  
             !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
             && !<op1 x, fun (x1,...,xn,z) -> ! \\
-            && !Y((x1,...,xn)!$\widehat{+}$!TODO >! \\
+            && !Y(x1,...,xn,!$\partial$!op1(x)*z) >! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !e1 op2 e2!) &=& 
             !let x1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
             && !let x2,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e2) in! \\
             && !<x1 op2 x2, fun (x1,...,xn,z) ->! \\
-            && !Y((x1,...,xn)!$\widehat{+}$!TODO >! \\
+            && !Y2(x1,...,xn,!$\partial_1$!op2(x1,x2)*z,!$\partial_2$!op2(x1,x2)*z>! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map (x.e1) e2!) &=& 
             !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
-            && !let B,r =!$\grad_{\Gamma}$!e1,!$\grad_{\{x\}}$!e1 in!\\
+            && !let B =!$\grad_{\Gamma}$!e1 in!\\
             && !<map (x.e1) A, fun (x1,...,xn,Z) -> !\\
             && !Y1( (x1,...,xn)!$\widehat{+}$!(B*(reduce + 0 Z)),!\\
             && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$e1)[a/x]!*b) A Z )>! \\
-            && TODO: currently bit wrong at last line and second\\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=&  
             !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
             && !let B,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e3) in! \\
-            && !let B,r1,r2 =!$\grad_{\Gamma}$!e1,!$\grad_{\{x\}}$!e1,!$\grad_{\{y\}}$!e1 in!\\
+            && !let C =!$\grad_{\Gamma}$!e1 in!\\
             && !<map2 (x,y.e1) A B, fun (x1,...,xn,Z) -> !\\
-            && !Y2( (x1,...,xn)!$\widehat{+}$!(B*(reduce + 0 Z)),!\\
+            && !Y2( (x1,...,xn)!$\widehat{+}$!(C*(reduce + 0 Z)),!\\
             && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x]*b) A Z,!\\
             && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e1)[a/x]*b) B Z )>!\\
-            && TODO: currently bit wrong at last line and second\\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=&
             !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
             && !let B,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e3) in! \\
@@ -53,7 +52,7 @@
             && !let F = scanr * 1 D! \\
             && !<foldl (x,y.e1) A B, fun (x1,...,xn,z) ->! \\
             && !Y2(x1,...,xn, map2 (x,y. x*y*z) E F>! \\
-            && TODO: wrong and foldl recomputed after scanl \\
+            && TODO: foldl recomputed after scanl, wrong on the zero element \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=& 
             TODO:exactly like fold, except the scanl is parallel \\    
         \end{tabular}
