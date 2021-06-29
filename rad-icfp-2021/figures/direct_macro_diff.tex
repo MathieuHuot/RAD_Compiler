@@ -33,20 +33,29 @@
             && !let B,r =!$\grad_{\Gamma}$!e1,!$\grad_{\{x\}}$!e1 in!\\
             && !<map (x.e1) A, fun (x1,...,xn,Z) -> !\\
             && !Y1( (x1,...,xn)!$\widehat{+}$!(B*(reduce + 0 Z)),!\\
-            && \quad\quad! map2 (x.r*x) A Z )>! \\
+            && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$e1)[a/x]!*b) A Z )>! \\
             && TODO: currently bit wrong at last line and second\\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=&  
             !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
             && !let B,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e3) in! \\
             && !let B,r1,r2 =!$\grad_{\Gamma}$!e1,!$\grad_{\{x\}}$!e1,!$\grad_{\{y\}}$!e1 in!\\
             && !<map2 (x,y.e1) A B, fun (x1,...,xn,Z) -> !\\
-            && !Y1( (x1,...,xn)!$\widehat{+}$!(B*(reduce + 0 Z)),!\\
-            && \quad\quad! map2 (x.r1*x) A Z,!\\
-            && \quad\quad! map2 (x.r2*x) B Z )>!\\
+            && !Y2( (x1,...,xn)!$\widehat{+}$!(B*(reduce + 0 Z)),!\\
+            && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x]*b) A Z,!\\
+            && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e1)[a/x]*b) B Z )>!\\
             && TODO: currently bit wrong at last line and second\\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=&
-        \\
-        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=& TODO:exactly like fold, except the scanl is parallel  \\    
+            !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
+            && !let B,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e3) in! \\
+            && !let C = scanl (x,y.e1) A B in! \\
+            && !let D = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) C B! \\
+            && !let E = shift1 (map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) C B)! \\
+            && !let F = scanr * 1 D! \\
+            && !<foldl (x,y.e1) A B, fun (x1,...,xn,z) ->! \\
+            && !Y2(x1,...,xn, map2 (x,y. x*y*z) E F>! \\
+            && TODO: wrong and foldl recomputed after scanl \\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=& 
+            TODO:exactly like fold, except the scanl is parallel \\    
         \end{tabular}
     \caption{Reverse-mode transformation from source to target language}
     \label{fig:direct_diff_macro}    
