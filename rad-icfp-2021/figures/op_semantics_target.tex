@@ -1,52 +1,30 @@
 \begin{figure*}[tb]
-    \centering
-    \begin{tabular}{c}   
-    \\\hline
-    !shift1! $[v_1,\ldots,v_n] \to [1,v1,\ldots,v_{n-1}]$
-\end{tabular}
-
-\begin{tabular}{c}   
-    \\\hline
-    !scanl! !x,y.e! $v$ $[] \to [v]$
-\end{tabular}
-
-\begin{tabular}{c}   
-    \\\hline
-    !scanl! !x,y.e! $v$ $[v_1,\ldots,v_n] \to v$::(!scanl! !x,y.e! !e!$[v/x,v_1/y]$ $[v_2,\ldots,v_n]$)
-\end{tabular}
-
-\begin{tabular}{c}   
-    \\\hline
-    !scanr! !x,y.e! $v$ $[] \to [v]$
-\end{tabular}
-
-\begin{tabular}{c}   
-    \\\hline
-    !scanr! !x,y.e! $v$ $[v_1,\ldots,v_n] \to$ (!scanl! !x,y.e! !e!$[v/x,v_1/y]$ $[v_2,\ldots,v_n]$)::$v$
-\end{tabular}
-
-\begin{tabular}{c}   
-    \\\hline
-    !foldl! !x,y.e! $v$ $[] \to v$
-\end{tabular}
-
-\begin{tabular}{c}   
-    \\\hline
-    !foldl! !x,y.e! $v$ $[v_1,\ldots,v_n] \to$ !foldl! !x,y.e! !e!$[v/x,v_1/y]$ $[v_2,\ldots,v_n]$)
-\end{tabular}
-
-\begin{tabular}{c}   
-    \\\hline
-    !reduce! !x,y.e! $v$ $[] \to v$
-\end{tabular}
-
-\begin{tabular}{c}   
-    \\\hline
-    !reduce! !x,y.e! $v$ $[v_1,\ldots,v_n] \to$ !reduce! !x,y.e! !e!$[v/x,v_1/y]$ $[v_2,\ldots,v_n]$)
-\end{tabular}
-
+\begin{tabular}{|l c l|}
+    \hline
+    !op1 v! & \transto & !op1 v! \\ \hline
+    !v1 op2 v2! & \transto & !v1 op2 v2!\\ \hline
+    !let x=v in e! & \transto & !e[v/x]!  \\ \hline
+    $\pi_i$!<v1, v2>! & \transto & !vi!\\ \hline
+    !(fun (x1,...,xn) -> e)(v1...vn)! & \transto & !e[v1/x1,...,vn/xn]! \\ \hline
+    !shift1 [v1,...,vn]! & \transto & ![1,v1,...,v(n-1)]! \\ \hline
+    !scanl (x,y.e) v []! & \transto & ![v]! \\\hline
+    !scanl (x,y.e) v [v1,...,vn]! & \transto & !v::(scanl (x,y.e) e[v/x,v1/y] [v2,...,vn])!\\ \hline
+    !scanr (x,y.e) v []! & \transto & ![v]! \\ \hline
+    !scanr (x,y.e) v [v1,...,vn]! & \transto & !(scanl (x,y.e) e[v/x,v1/y] [v2,...,vn])::v! \\ \hline
+    !foldl (x,y.e) v []! & \transto & !v! \\ \hline
+    !foldl (x,y.e) v [v1,...,vn]! & \transto & !foldl (x,y.e) e[v/x,v1/y] [v2,...,vn])! \\ \hline
+    !reduce (x,y.e) v []! & \transto & !v! \\ \hline
+    !reduce (x,y.e) v [v1,...,vn]! & \transto  & !reduce (x,y.e) e[v/x,v1/y] [v2,...,vn])!\\ \hline
+    !map (x.e) [v1,...,vn]! & \transto & ![e[v1/x],...,e[vn/x]]! \\ \hline
+    !map2 (x,y.e) [v11,...,v1n]! & \multirow{2}{*}{\transto} & ![e[v11/x,v21/y],...,e[v1n/x,v2n/y]]! \\ 
+    ![v21,...,v2n]! \\ \hline
+    !map3 (x,y,z.e) [v11,...,v1n]!  & \multirow{2}{*}{\transto} & ![e[v11/x,v21/y,v31/z],...,! \\
+    ![v21,...,v2n] [v31,...,v3n]! && \hspace{0.6em}!e[v1n/x,v2n/y,v3n/z]]! \\ \hline
+    !if true then e1 else e2! & \transto  & !e1! \\ \hline
+    !if false then e1 else e2! & \transto  & !e2! \\ \hline
+    \end{tabular}
 \vspace{-0.2cm}
-\caption{Operational semantics of the target language}
+\caption{Operational semantics of the source and target languages}
 \vspace{-0.4cm}
 \label{fig:op_semantics_target}
 \end{figure*}

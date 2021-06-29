@@ -9,6 +9,7 @@
 \usepackage{twoopt}
 \usepackage{array}
 \usepackage{listings}
+\usepackage{multirow}
 
 \lstdefinelanguage{llql}%
 {morekeywords={
@@ -17,7 +18,10 @@
   scanl,scanr,map3,fun,reduce,shift1,
   op,var,J,
   sum,prod,dot,fst,
-  zip
+  zip,
+  true,false,
+  OnesLike,
+  ZerosLike
   },%
   sensitive,%
   morecomment=[l]//,%

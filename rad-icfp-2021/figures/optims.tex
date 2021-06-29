@@ -1,12 +1,5 @@
 \begin{figure*}[t]
     \begin{tabular}{|l c l|}
-        % \hline
-        % \textit{Vertical Loop Fusion:} & &\\ \hline
-        % !let y=sum(x in e1) {f1(x.key)->x.val} in! & \multirow{2}{*}{\transto} & !sum(x in e1)! \\
-        % !sum(x in y){f2(x.key)->x.val}! & & \tab!  { f2(f1(x.key)) -> x.val }!\\ \hline
-        % !let y=sum(x in e1){x.key->f1(x.val)}! & \multirow{2}{*}{\transto} & !sum(x in e1)! \\
-        % !sum(x in y){x.key->f2(x.val)}! & & \tab!  { x.key -> f2(f1(x.val)) }!\\
-        % \hline \hline
         \hline
         \textit{Inlining and forward substitution}  & &\\ \hline
         !(fun (x1,...,xn) -> e)(e1,...,en)! & \transto & !let x1=e1 in ... let xn=en in e! \\ \hline
@@ -34,5 +27,5 @@
         \end{tabular}
     \caption{Optimisations}
     \label{fig:optim} 
-    TODO: there are way more, like the obvious ones to reduce map3 to map2.   
+    TODO: there are way more, like the obvious ones to reduce map3 to map2. some of them I'm not even sure when to do them because of cash optim...  
 \end{figure*}

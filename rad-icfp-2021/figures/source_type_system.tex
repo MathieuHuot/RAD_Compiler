@@ -11,11 +11,6 @@
     \end{tabular}
     \hspace{0.5cm}
     \begin{tabular}{c}
-    $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma$, !x!: !T1! $\vdash$ !e2!: !T2! \\\hline
-    !let x = e1 in e2!: !T2!
-    \end{tabular}
-
-    \begin{tabular}{c}
     $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma \vdash$ !e2!: !T2! \\\hline  
     $\Gamma \vdash$ !<e1,e2>!: !T1! $\times$ !T2!
     \end{tabular}
@@ -25,6 +20,11 @@
         $\Gamma \vdash$ $\pi_i$!e!: !Ti!
     \end{tabular}($i\in\{1,2\}$)
 
+    \begin{tabular}{c}
+    $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma$, !x!: !T1! $\vdash$ !e2!: !T2! \\\hline
+    !let x = e1 in e2!: !T2!
+    \end{tabular}
+    \hspace{0.5cm}
     \begin{tabular}{c}
         $\Gamma \vdash$ !e!: $\reals$ \\\hline  
         $\Gamma \vdash$ !op1 e!: $\reals$
@@ -40,7 +40,7 @@
         \\\hline  
         $\Gamma \vdash$ !map (x.e1) e2!: $\Array{\reals}$
     \end{tabular}
-
+    \hspace{0.5cm}
     \begin{tabular}{c}
         !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
         $\quad$ $\Gamma$ $\vdash$ !e2!: $\Array{\reals}$
@@ -55,6 +55,14 @@
         $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
         \\\hline  
         $\Gamma \vdash$ !foldl (x,y.e1) e2 e3!: $\reals$
+    \end{tabular}
+
+    \begin{tabular}{c}
+        !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
+        $\quad$ $\Gamma$ $\vdash$ !e2!: $\reals$
+        $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
+        \\\hline  
+        $\Gamma \vdash$ !reduce (x,y.e1) e2 e3!: $\reals$
     \end{tabular}
     \vspace{-0.2cm}
     \caption{Type system of the source language}

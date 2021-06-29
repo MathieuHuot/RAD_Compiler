@@ -3,7 +3,9 @@
  \subsection{Operational semantics}
 
 In Figure~\ref{fig:op_semantics_target} a small step call-by-value operational semantics for the language. 
-\MH{need to add evaluation contexts}
+The evaluation contexts aregiven in Figure~\ref{fig:ev_contexts}. 
+
+\input{figures/ev_contexts}
 
 Some operators are less conventional which we now explain.
 !shift1! takes an array of reals of size $n$ and adds a $1$ as first component and forgets about the last component of the array, returning an array of size !n!.

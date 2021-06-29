@@ -6,14 +6,6 @@
         $\quad$ $\Gamma$ $\vdash$ !e2!: $\reals$
         $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
         \\\hline  
-        $\Gamma \vdash$ !reduce (x,y.e1) e2 e3!: $\reals$
-    \end{tabular}
-
-    \begin{tabular}{c}
-        $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
-        $\quad$ $\Gamma$ $\vdash$ !e2!: $\reals$
-        $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
-        \\\hline  
         $\Gamma \vdash$ !scanl (x,y.e1) e2 e3!: $\Array{\reals}$
     \end{tabular}
 
@@ -44,8 +36,8 @@
         $\Gamma$ $\vdash$ !e!: !G1x...xGn -> T!
         $\quad$ $\Gamma$ $\vdash$ !ei!: !Gi! for all $1\leq i\leq n$
         \\\hline  
-        $\Gamma \vdash$ !ee1...en!: !T!
-    \end{tabular}
+        $\Gamma \vdash$ !e(e1...en)!: !T!
+    \end{tabular}f
 
     \begin{tabular}{c}
         $\Gamma$ $\vdash$ !e!: $\Array{\reals}$

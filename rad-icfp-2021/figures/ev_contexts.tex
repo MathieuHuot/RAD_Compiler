@@ -1,0 +1,44 @@
+\begin{figure*}[t]
+    \begin{tabular}{|l c l|}
+        \hline
+        \multicolumn{3}{|l|}{Evaluation contexts} \\
+        $E$ & \mbox{::=} & 
+        [] 
+        $\mid$ !let x = E in e! 
+        $\mid$ !<E, e>!
+        $\mid$ !<v, E>!
+        $\mid$ $\pi_i$!(E)!
+        $\mid$ !E op2 e!
+        $\mid$ !v op2 e!
+        $\mid$ !op1 E! \\
+        && $\mid$ !map (x.e) E!
+        $\mid$ !map2 (x,y.e) E e!
+        $\mid$ !map2 (x,y.e) v E! \\
+        && $\mid$ !foldl (x,y.e) E e!
+        $\mid$ !foldl (x,y.e) v e! \\
+        && $\mid$ !reduce (x,y.e) E e! 
+        $\mid$ !reduce (x,y.e) v e! \\
+        && $\mid$ !scanl (x,y.e) E e!
+        $\mid$ !scanl (x,y.e) v e! \\
+        && $\mid$ !scanr (x,y.e) E e!
+        $\mid$ !scanr (x,y.e) v e! \\
+        && $\mid$ !map3 (x,y.e) E e e!
+        $\mid$ !map3 (x,y.e) v E e!
+        $\mid$ !map3 (x,y.e) v v E! \\
+        && $\mid$ !shift1 E!
+        $\mid$ !E(e...e)!
+        $\mid$ !e(v...vEe...e)!
+        $\mid$ !if E then e else e!
+        \\ \hline
+        \multicolumn{3}{|l|}{Values} \\ 
+        !v! & \mbox{::=} & 
+        \cnst{}  
+        $\mid$ !<v, v>!
+        $\mid$ !true! 
+        $\mid$ !false!
+        $\mid$ !fun (x1,...,xn) -> e!
+        $\mid$ ![v1,...,vn]! 
+        \\ \hline
+        \end{tabular}
+    \caption{Evaluation contexts and values}
+\label{fig:diff_macro}    \end{figure*}
