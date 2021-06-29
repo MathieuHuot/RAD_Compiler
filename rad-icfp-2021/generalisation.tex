@@ -1,13 +1,22 @@
 \section{Generalisations}
 \label{sec:generalisation}
 
-\MH{I think I only present two: conditionals, and general case for array. partial op can be dealt with before. HO function mentioned at the end}
+% Extended source language:
 
-Extended source language:
-
-\input{figures/generalisation_source_grammar}
+% \input{figures/generalisation_source_grammar}
 
 % \input{figures/generalisation_source_typesystem}
+
+Extended target language:
+
+% \input{figures/generalisation_target_grammar}
+
+% \input{figures/generalisation_target_typesystem}
+
+\subsection{Arrays}
+
+\subsubsection{Lifting the restriction on map and fold}
+\label{ssub:Lifting the restriction on map and fold}
 
 Note that we recover !zip A B! as !map2 (fun x,y -> (x,y)) A B)!. 
 We can lift the restriction on the function of !foldl! by changing a part in $\invUNFSymbol$ of !foldl!.
@@ -21,16 +30,14 @@ We can lift the restriction on the function of !foldl! by changing a part in $\i
 \end{tabular}
 \end{center}
 
-Extended target language:
+\subsubsection{Lifting the restriction on the type of arrays}
+\label{ssub:Lifting the restriction on the type of arrays}
 
-% \input{figures/generalisation_target_grammar}
-
-% \input{figures/generalisation_target_typesystem}
-
-\subsection{Arrays}
 
 \subsection{Conditionals} 
 
+
+
 \subsection{Partial operations} 
 
-\subsection{Higher-order functions}
+

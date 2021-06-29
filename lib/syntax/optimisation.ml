@@ -97,6 +97,7 @@ module T = struct
         else Failure expr
     | expr -> Failure expr
 
+    (*TODO: this rewriting does not cover all the cases I previously covered *)
   let realFactorisation : Target.t -> Target.t output = function
     | Apply2 (Plus, Apply2 (Times, expr1, expr2), Apply2 (Times, expr3, expr4))
       as expr ->
