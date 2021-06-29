@@ -28,7 +28,8 @@
         && $\mid$ !shift1 E!
         $\mid$ !E(e...e)!
         $\mid$ !e(v...vEe...e)!
-        $\mid$ !if E then e else e!
+        $\mid$ !if E then e else e! \\
+        && $\mid$ ![v,...,v,E,e...,e]!
         \\ \hline
         \multicolumn{3}{|l|}{Values} \\ 
         !v! & \mbox{::=} & 
@@ -37,7 +38,7 @@
         $\mid$ !true! 
         $\mid$ !false!
         $\mid$ !fun (x1,...,xn) -> e!
-        $\mid$ ![v1,...,vn]! 
+        $\mid$ ![v,...,v]! 
         \\ \hline
         \end{tabular}
     \caption{Evaluation contexts and values}

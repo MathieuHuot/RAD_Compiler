@@ -1,8 +1,8 @@
 \begin{figure*}[tb]
 \begin{tabular}{|l c l|}
     \hline
-    !op1 v! & \transto & !op1 v! \\ \hline
-    !v1 op2 v2! & \transto & !v1 op2 v2!\\ \hline
+    !op1! \cnst{} & \transto & \underline{op1(c)} \\ \hline
+    \cnst{} !op2! \cnst{}' & \transto & \underline{op2(c,c')}\\ \hline
     !let x=v in e! & \transto & !e[v/x]!  \\ \hline
     $\pi_i$!<v1, v2>! & \transto & !vi!\\ \hline
     !(fun (x1,...,xn) -> e)(v1...vn)! & \transto & !e[v1/x1,...,vn/xn]! \\ \hline

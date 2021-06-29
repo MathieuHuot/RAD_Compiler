@@ -1,5 +1,53 @@
 \begin{figure*}[t]
-    TODO
+    \begin{tabular}{r c l}
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !c!) &=& 
+            !<c, fun (x1,...,xn,z) ->! \\
+            && !Y(x1,...,xn) >!\\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !x!) &=& 
+            !<x, fun (x1,...,xn,z) ->! \\
+            && !Y((x1,...,xn)!$\widehat{+}$![pos(x)]z) >!\\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !let x:A = e1 in e2!) &=& 
+            !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
+            &&!let y,Y2 = !$\directD{\rho}{\Gamma,x:A}{Y1}$!(e2) in!\\ 
+            &&!<y, fun (x1,...,xn,z) -> Y2(x1,...,xn,!$0_{A}$!,z)>!\\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !< e1, e2 >!) &=&
+            !let x1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
+            &&!let x2,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e2) in!\\
+            && <~<x,y>, TODO >\\ 
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash \pi_1$(!e!:AxB)) &=&
+            !let (x,y),Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
+            && !<x, fun (x1,...,xn,z) -> Y(x1,...,xn,(z,!$0_B$!))>! \\
+            && TODO: introduce notation shorthand for multi let \\
+            && TODO: say similarly for $\pi_2$ or need notation for (z,$0_B$) or ($0_A$,z) \\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !op1 e!) &=&  
+            !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
+            && !<op1 x, fun (x1,...,xn,z) -> ! \\
+            && !Y((x1,...,xn)!$\widehat{+}$!TODO >! \\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !e1 op2 e2!) &=& 
+            !let x1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
+            && !let x2,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e2) in! \\
+            && !<x1 op2 x2, fun (x1,...,xn,z) ->! \\
+            && !Y((x1,...,xn)!$\widehat{+}$!TODO >! \\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map (x.e1) e2!) &=& 
+            !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
+            && !let B,r =!$\grad_{\Gamma}$!e1,!$\grad_{\{x\}}$!e1 in!\\
+            && !<map (x.e1) A, fun (x1,...,xn,Z) -> !\\
+            && !Y1( (x1,...,xn)!$\widehat{+}$!(B*(reduce + 0 Z)),!\\
+            && \quad\quad! map2 (x.r*x) A Z )>! \\
+            && TODO: currently bit wrong at last line and second\\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=&  
+            !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
+            && !let B,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e3) in! \\
+            && !let B,r1,r2 =!$\grad_{\Gamma}$!e1,!$\grad_{\{x\}}$!e1,!$\grad_{\{y\}}$!e1 in!\\
+            && !<map2 (x,y.e1) A B, fun (x1,...,xn,Z) -> !\\
+            && !Y1( (x1,...,xn)!$\widehat{+}$!(B*(reduce + 0 Z)),!\\
+            && \quad\quad! map2 (x.r1*x) A Z,!\\
+            && \quad\quad! map2 (x.r2*x) B Z )>!\\
+            && TODO: currently bit wrong at last line and second\\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=&
+        \\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=& TODO:exactly like fold, except the scanl is parallel  \\    
+        \end{tabular}
     \caption{Reverse-mode transformation from source to target language}
     \label{fig:direct_diff_macro}    
 \end{figure*}

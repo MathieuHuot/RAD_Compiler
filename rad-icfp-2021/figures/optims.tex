@@ -23,7 +23,8 @@
         !foldl,reduce + 0 ZerosLike(A)! & \transto & 0 \\ 
         \hline \hline
         \textit{Classic array simplifications}  & & \\ \hline
-        !map (x.e1) (map (y.e2) A)! & \transto & !map (x. let y=e2 in e1) A! \\ \hline
+        !map (x.e1) (map (y.e2) A)! & \transto & !map (y. let x=e2 in e1) A! \\ \hline
+        !map (x.e1) (map2 (y1,y2.e2) A B)! & \transto & !map2 (y1,y2. let x=e2 in e1) A! \\ \hline
         \end{tabular}
     \caption{Optimisations}
     \label{fig:optim} 

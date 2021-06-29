@@ -1,0 +1,34 @@
+Ground types are defined inductively by 
+(TODO: chose whether we want n-ary, binary, or both kind of products)
+$$G::= \RR \mid G\times \ldots \times G \mid A[G]$$
+
+$(\RR,+,\underline{0})$ forms a monoid and this monoid structure extends canonically 
+to a monoid structure $(G,\widehat{+},0_G)$ for every ground type $G$. 
+It is defined inductively on $G$ as follows
+\begin{itemize}
+    \item $0_\RR \defeq \underline{0}$
+    \item $0_{G_1\times G_2}\defeq < O_{G_1}, 0_{G_2} >$
+    \item $0_{A[\RR]_n}\defeq$ ZerosLike($n$) TODO: general array? what about index n?
+    \item $a\widehat{+}_\RR b\defeq a+b$
+    \item $(a_1,\ldots,a_n)\widehat{+}_{G_1\times\ldots\times G_n}(b_1,\ldots,b_n)\defeq (a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n)$
+    \item $A\widehat{+}_{A[\RR]}B \defeq$ !map! + $A$ $B$
+\end{itemize}
+
+A ground context is a context only containing variables of ground type.
+The previous monoid structure again extends canonically on ground contexts $\Gamma$ by defining
+$0_{x1:G1,\ldots,x_n:G_n}\defeq 0_{G_1},\ldots,0_{G_n}$ and 
+$a_1,\ldots,a_n\widehat{+}_{x1:G_1,\ldots, x_n:G_n}b_1,\ldots,b_n\defeq a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n$.
+
+\begin{notation}
+    \begin{itemize}
+        \item Given a context $\Gamma=x_1:A_1,\ldots,x_n:A_n$, $Id_\Gamma\defeq$ !fun! $(y_1,\ldots,y_n)$! -> !$(y_1,\ldots,y_n)$
+        \item 
+        \item If $\Gamma\vdash e:\RR$, $\grad_\Gamma e 
+                    \defeq \directD{\Gamma}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,\underline{1})$
+        \item If $\Gamma=\Gamma_1,\Gamma_2$ and $|\Gamma_1|=k$ and $\grad_{\Gamma_1,\Gamma_2}e=(d_1,\ldots,d_n)$, 
+                then $\grad_{\Gamma_1}(e)\defeq(e_1,\ldots,e_k)$ and $\grad_{\Gamma_2}(e)\defeq(e_{k+1},\ldots,e_n)$
+        \item Given a context $\Gamma=x_1:A_1,\ldots,x_n:A_n$ and a variable !x!, we define !pos x! to be its position $i$ in $\Gamma$, assuming all variables are distinct and that $x$ is indeed in $\Gamma$.
+        \item Given $G_1,\ldots,G_n$ ground types, $1\leq i\leq n$ and a term !e! of type $G_i$, 
+                $[i]e \defeq (0_{G_1},\ldots,0_{G_{i-1}},e,0_{G_{i+1}},\ldots,0_{G_n})$
+    \end{itemize}
+\end{notation}
