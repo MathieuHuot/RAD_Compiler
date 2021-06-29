@@ -1,4 +1,5 @@
 \section{UNF}
+\label{sec:unf}
 
 \subsection{Source UNF} % (fold)
 \label{sub:Source UNF}
@@ -32,30 +33,6 @@ By $\reals^{\times n}$ we mean the product $\reals\times...\times\reals$ of $n$ 
 \MH{need to explain that return values produce some kind of ANF and introduce new vars!}
 
 \input{figures/source_unf_typesystem}
-
-We give a translation from our source language to source UNF in Figure~\ref{fig:source_to_unf}.
-UNF acts as a sort of stack. 
-The input represents the current stage of the stack, and we return the new value added to the stack.
-All results are kept, so the stack keeps growing. One might be surprised that the transformation for pairs and let is similar.
-The order of UNF really follows what the trace of doing a sequential call-by-value evaluation would look like if the return value does not matter.
-In other words, when evaluating !let x= e1 in e2! in call by value, we first evaluate !e1! and then !e2!. 
-Similarly in !<e1, e2>!, we evaluate !e1! and then !e2!. 
-Our ultimate goal is to return a gradient, not the original term, so what really matters is the order of evaluation, and what is evaluated.
-
-$\widehat{;}$ is similar to $;$, with a sort of context propagation effect. 
-It is a bit reminiscent of monadic composition versus the usual composition.
-Technically though, the transformation $\UNFSymbol$ is not quite compositional.
-\MH{explain in detail how to define it.}   
-
-\begin{proposition}
-    Let $\Gamma\vdash$!e!: !T! be a term in the source language.\\
-    Then $\Gamma \vdash \UNFSymbol$(!e!): $\Gamma\times\Delta\times$!T! in source UNF for a certain type $\Delta$. 
-\end{proposition}
-
-$\Delta$ corresponds to the list of all the intermediate results from !e!. 
-A different way to say it would be that $\Delta$ is the context made of the bound variables of !e! when !e! is in ANF.
-
-\input{figures/source_to_unf}
 
 % subsubsectionSource UNF (end)
 
@@ -111,8 +88,33 @@ Even though the target UNF is designed to achieve this purpose, we have the Foll
     $\Dtype(Gamma)\vdash \Dsynrevsymbol$(!e!):  $\Dtype$(!T!) in target UNF.
 \end{proposition}
 
-
 \subsection{transformations to and from UNF} % (fold)
 \label{sub:transformations to and from UNF}
 
-% subsection transformations to and from UNF (end)
+We give a translation from our source language to source UNF in Figure~\ref{fig:source_to_unf}.
+UNF acts as a sort of stack. 
+The input represents the current stage of the stack, and we return the new value added to the stack.
+All results are kept, so the stack keeps growing. One might be surprised that the transformation for pairs and let is similar.
+The order of UNF really follows what the trace of doing a sequential call-by-value evaluation would look like if the return value does not matter.
+In other words, when evaluating !let x= e1 in e2! in call by value, we first evaluate !e1! and then !e2!. 
+Similarly in !<e1, e2>!, we evaluate !e1! and then !e2!. 
+Our ultimate goal is to return a gradient, not the original term, so what really matters is the order of evaluation, and what is evaluated.
+
+$\widehat{;}$ is similar to $;$, with a sort of context propagation effect. 
+It is a bit reminiscent of monadic composition versus the usual composition.
+Technically though, the transformation $\UNFSymbol$ is not quite compositional.
+\MH{explain in detail how to define it.}   
+
+\begin{proposition}
+    Let $\Gamma\vdash$!e!: !T! be a term in the source language.\\
+    Then $\Gamma \vdash \UNFSymbol$(!e!): $\Gamma\times\Delta\times$!T! in source UNF for a certain type $\Delta$. 
+\end{proposition}
+
+$\Delta$ corresponds to the list of all the intermediate results from !e!. 
+A different way to say it would be that $\Delta$ is the context made of the bound variables of !e! when !e! is in ANF.
+
+\input{figures/source_to_unf}
+
+The transformation from the target UNF to the target language is presented in Figure~\ref{fig:unf_to_target}.
+
+\input{figures/unf_to_target}
