@@ -3,8 +3,10 @@
         \hline
         \textit{Inlining and forward substitution}  & &\\ \hline
         !(fun (x1,...,xn) -> e)(e1,...,en)! & \transto & !let x1=e1 in ... let xn=en in e! \\ \hline
-        !let x1=x2 in e! & \transto & !e[x2/x1]! \\
-        !let x1=c in e! \quad\quad(c=0 or c=1) & \transto & !e[c/x1]! \\
+        !let x1=e1 in e2! \quad\quad(!x1!$\not\in$!FV(e2))! & \transto & !e2!  \\ \hline
+        !let x1=x2 in e! & \transto & !e[x2/x1]! \\ \hline
+        !let x1= c in e! \quad\quad\hspace{0.5em}(!c=0! or !c=1!) & \transto & !e[c/x1]! \\ \hline
+        $\pi_i$!<e1, e2>! & \transto & !ei! \\
         \hline \hline
         \textit{Algebraic simplifications}  & & \\ \hline
         !0*e! & \transto & 0 \\ \hline

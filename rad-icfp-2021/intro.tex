@@ -27,10 +27,10 @@ These functions $\RR^n\to\RR$ actually appear a lot in practice, for instance as
 Reverse-mode is thus important as it computes a whole gradient very quickly for these functions. 
 To be as efficient as the usual imperative version of reverse-mode, the transformation in \cite{pearlmutter2008reverse} introduced references.
 
-The lack of purity of reverse-mode is known to make it significantly harder to optimise and find parrallelism. 
+The lack of purity of reverse-mode is known to make it significantly harder to optimise and find parallelism. 
 None of the current implementations of reverse-mode in a functional setting \cite{lantern_icfp,pearlmutter2008reverse,baydin2016diffsharp} are pure, and often complicated heuristics with no guarantees are used, e.g. \cite{xla}.
 It means that for every important non trivial operation, a hand-crafted reverse-derivative must be given to be efficient.
-In other words functional implementations seem to stuggle to abstract away from imperative code.
+In other words functional implementations seem to struggle to abstract away from imperative code.
 
 % For example, \MH{TODO: show how $\prod_i v_i$ for a vector $v$ is done in some functional AD systems}.
 % For real world AD systems, modularity is key. They need to be expressive but have a lot of optimised derivatives for operators that are used a lot.
@@ -134,7 +134,8 @@ Of course, this term can be further optimised via constant propagation and algeb
         !dot(A,B)! &:=& !reduce + 0 (map2 * A B)!     
     \end{tabular}
 \end{center}
-where !reduce! is a known fold left operator for which the function argument is associative and is faster than a fold left.
+where !reduce! is a known fold left operator for which the function argument is associative. 
+It is notably faster to execute than a fold left as it parallel friendly.
 
 The gradient of each of these construct w.r.t. !A! will be:
 \begin{center}
