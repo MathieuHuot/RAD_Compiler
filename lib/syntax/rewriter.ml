@@ -22,6 +22,8 @@ let bind x f = match x with Success x -> f x | Failure _ -> x
 let ( >>= ) = bind
 (** Infix version of {!bind} *)
 
+let is_success = function Success _ -> true | Failure _ -> false
+
 let get = function Success x | Failure x -> x
 (** Extract the value from the {!output} type *)
 
@@ -35,7 +37,7 @@ let seq f1 f2 p =
 (** [seq f1 f2] combine two rewriter [f1] and [f2] by applying both and return [Success]
     if one of them return [Success] *)
 
-let (>>) = seq
+let ( >> ) = seq
 (** Infix version of {!seq} *)
 
 let choose f1 f2 p =

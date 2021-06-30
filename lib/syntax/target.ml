@@ -276,7 +276,7 @@ let module PVTSet = CCSet.Make (struct
 end) in
 let rec eqT expr1 expr2 alpha_set = match expr1, expr2 with
 | Const a,Const b                                     -> eq a b
-| Var (a,ty1),Var (b,ty2)                             -> (Var.equal a b
+| Var (a,ty1),Var (b,ty2)                             -> (Var.equal a b (* TODO: remove Var.equal here *)
                                                           || PVTSet.mem  ((a,ty1),(b,ty2)) alpha_set)
                                                          && Type.equal ty1 ty2
 | Apply1(op1,expr11),Apply1(op2,expr22)               -> equalOp1 op1 op2
