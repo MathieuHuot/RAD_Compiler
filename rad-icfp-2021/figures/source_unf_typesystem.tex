@@ -2,32 +2,51 @@
     \centering
     \begin{tabular}{c} 
     \\\hline
-    $\Gamma \vdash$ !var!$_{\Gamma,i}$: $\Gamma\times$!Ti!
-    \end{tabular}($\Gamma=$!T1!$\times\ldots\times$!Tn!)
+    !T(=A1,...,An)! $\vdash$ !var!$_{T,i}$: !A1,...,An,Ai!
+    \end{tabular}
     \hspace{0.5cm}
     \begin{tabular}{c}
         \\\hline
-        $\Gamma\times\reals^{\times n} \vdash$ !op!$_{\Gamma,n}$ : $\Gamma\times\reals^{\times(n+1)}$
+        !T(=A1,...,An)!, $\reals^{\times(n)}$,$\vdash$ !op!$_{T,n}$ : !A1,...,An!,$\reals^{\times(n+1)}$
     \end{tabular}
 
     \begin{tabular}{c}
-    !T0! $\vdash$ !e1!: !T1! $\quad$ !T1! $\vdash$ !e2!: !T2! \\\hline
-    !T0! $\vdash$ !e1; e2!: !T2!
+    !A1,...,An! $\vdash$ !e1!: !A1,...,An,A! $\quad$ !A1,...,An,A! $\vdash$ !e2!: !A1,...,An,A,B! \\\hline
+    !A1,...,An! $\vdash$ !e1!$\hcomp$!e2!: !A1,...,An,B!
     \end{tabular}
     \hspace{0.5cm}
     \begin{tabular}{c}
-        \\\hline  
-        $\Gamma \times \Array{\reals} \vdash$ !map!$_{\Gamma, x.e}$: $\Gamma \times \Array{\reals} \times \Array{\reals}$
+        !A1,...,An! $\vdash$ !e1!: !A1,...,An,A! $\quad$ !A1,...,An! $\vdash$ !e2!: !A1,...,An,B! \\\hline
+        !A1,...,An! $\vdash$ !e1!$\pcomp$!e2!: !A1,...,An,A,B!
     \end{tabular}
 
     \begin{tabular}{c}
-        \\\hline  
-        $\Gamma \times \Array{\reals} \times \Array{\reals} \vdash$ !map2!$_{\Gamma, x,y.e}$: $\Gamma \times \Array{\reals} \times \Array{\reals} \times \Array{\reals}$
+        \\\hline
+        !T(=A1,...,An),A,B! $\vdash$ !pair!$_{T,A\times B}$ : !A1,...,An,A!$\times$!B!
     \end{tabular}
 
     \begin{tabular}{c}
+        !x1:A1,...,xn:An,x:!$\reals$ $\vdash$ !e!: $\reals$ in Source Language
         \\\hline  
-        $\Gamma \times \Array{\reals} \vdash$ !foldl!$_{\Gamma, x,y.e1, e2}$: $\Gamma \times \Array{\reals} \times \reals$
+        !T(=A1,...,An)!, $\Array{\reals} \vdash$ !map!$_{T, x.e}$: !A1,...,An,!$\Array{\reals}$,$\Array{\reals}$
+    \end{tabular}
+
+    \begin{tabular}{c}
+        !x1:A1,...,xn:An,x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ in Source Language
+        \\\hline  
+        !T(=A1,...,An)!, $\Array{\reals},\Array{\reals} \vdash$ !map2!$_{T, x,y.e}$: !A1,...,An,!$\Array{\reals}$,$\Array{\reals}$,$\Array{\reals}$
+    \end{tabular}
+
+    \begin{tabular}{c}
+        !x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ in Source Language
+        \\\hline  
+        !T(=A1,...,An)!, $\Array{\reals} \vdash$ !foldl!$_{T, x,y.e1, e2}$: !A1,...,An,!$\Array{\reals}$,$\reals$
+    \end{tabular}
+
+    \begin{tabular}{c}
+        !x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ in Source Language
+        \\\hline  
+        !T(=A1,...,An)!, $\Array{\reals} \vdash$ !reduce!$_{T, x,y.e1, e2}$: !A1,...,An,!$\Array{\reals}$,$\reals$
     \end{tabular}
     \vspace{-0.2cm}
     \caption{Type system of the Source UNF}

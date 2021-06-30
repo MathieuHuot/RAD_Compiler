@@ -17,7 +17,7 @@
     !reduce (x,y.e) v [v1,...,vn]! & \transto  & !reduce (x,y.e) e[v/x,v1/y] [v2,...,vn])!\\ \hline
     !map (x.e) [v1,...,vn]! & \transto & ![e[v1/x],...,e[vn/x]]! \\ \hline
     !map2 (x,y.e) [v11,...,v1n]! & \multirow{2}{*}{\transto} & ![e[v11/x,v21/y],...,e[v1n/x,v2n/y]]! \\ 
-    ![v21,...,v2n]! \\ \hline
+    ![v21,...,v2n]! && \\ \hline
     !map3 (x,y,z.e) [v11,...,v1n]!  & \multirow{2}{*}{\transto} & ![e[v11/x,v21/y,v31/z],...,! \\
     ![v21,...,v2n] [v31,...,v3n]! && \hspace{0.6em}!e[v1n/x,v2n/y,v3n/z]]! \\ \hline
     !if true then e1 else e2! & \transto  & !e1! \\ \hline

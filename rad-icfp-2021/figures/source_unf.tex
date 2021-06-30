@@ -4,13 +4,16 @@
     \begin{tabular}{|l c l|l|}
     \hline
     \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
-    !T! & \mbox{::=} & ... & \grammarcomment{Same as source} \\
+    !T! & \mbox{::=} & ![A1,...,An]! & \grammarcomment{Lists of types from source} \\
     \hline
-    !e! & \mbox{::=} & !var!$_{\Gamma,i}$ & \grammarcomment{Variable}\\
-    & $\mid$ & !op!$_{\Gamma,n}$ & \grammarcomment{Operations, for $0\leq n\leq 2$}\\
-    & $\mid$ & !e;e! & \grammarcomment{Sequential composition}\\
-    & $\mid$ & !map!$_{\Gamma,x.e}$ $\mid$ !map2!$_{\Gamma,x,y.e}$ & \grammarcomment{Map and map2}\\
-    & $\mid$ & !foldl!$_{\Gamma,x,y.e}$ & \grammarcomment{Fold left}\\
+    !e! & \mbox{::=} & !var!$_{T,i}$ & \grammarcomment{Variable}\\
+    & $\mid$ & !op!$_{T,n}$ & \grammarcomment{Operations, for $0\leq n\leq 2$}\\
+    & $\mid$ & !pair!$_{T,A\times B}$ & \grammarcomment{Pairing a pair of variables}\\
+    & $\mid$ & !e!$\hcomp$!e! & \grammarcomment{Hiding sequential composition}\\
+    & $\mid$ & !e!$\pcomp$!e! & \grammarcomment{Passing sequential composition}\\
+    & $\mid$ & !map!$_{T,x.e}$ $\mid$ !map2!$_{\Gamma,x,y.e}$ & \grammarcomment{Map and map2}\\
+    & $\mid$ & !foldl!$_{T,x,y.e}$ & \grammarcomment{Fold left}\\
+    & $\mid$ & !reduce!$_{T,x,y.e}$ & \grammarcomment{Reduce}\\
     \hline
     \end{tabular}
     \vspace{-0.2cm}

@@ -2,14 +2,15 @@
     \begin{tabular}{r c l}
     $\UNFSymbol$($\Gamma\vdash $ !c!) &=& !c!$_{\Gamma,0}$ constant seen as a 0-ary operator\\
     $\UNFSymbol$($\Gamma\vdash $ !x!) &=& !var!$_{\Gamma,i}$ where !x! is the $i$-th variable in $\Gamma$ \\
-    $\UNFSymbol$($\Gamma\vdash $ !let x = e1 in e2!) &=& $\UNFSymbol$(!e1!)$\widehat{;}$ $\UNFSymbol$(!e2!) \\ 
-    $\UNFSymbol$($\Gamma\vdash $ !< e1, e2 >!) &=& $\UNFSymbol$(!e1!)$\widehat{;}$ $\UNFSymbol$(!e2!) \\ 
-    $\UNFSymbol$($\Gamma\vdash \pi_i$(!e!)) &=& $\UNFSymbol$(!e!)$\widehat{;}$ $\pi_i$ seen as a unary operator\\
-    $\UNFSymbol$($\Gamma\vdash $ !e1 op2 e2!) &=& $\UNFSymbol$(!e1!)$\widehat{;}$ $\UNFSymbol$(!e2!)$\widehat{;}$ !op!$_{\Gamma,2}$\\
-    $\UNFSymbol$($\Gamma\vdash $ !op1 e!) &=& $\UNFSymbol$(!e!) $\widehat{;}$ !op!$_{\Gamma,1}$ \\
-    $\UNFSymbol$($\Gamma\vdash $ !map (x.e1) e2!) &=& $\UNFSymbol$(!e2!)$\widehat{;}$ !map!$_{\Gamma,x.e}$\\
-    $\UNFSymbol$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!)$\widehat{;}$ $\UNFSymbol$(!e3!)$\widehat{;}$ !map2!$_{\Gamma, x,y.e}$ \\ 
-    $\UNFSymbol$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!)$\widehat{;}$ $\UNFSymbol$(!e3!)$\widehat{;}$ !foldl!$_{\Gamma, x,y.e}$ \\  
+    $\UNFSymbol$($\Gamma\vdash $ !let x = e1 in e2!) &=& $\UNFSymbol$(!e1!) $\hcomp$ $\UNFSymbol$(!e2!) \\ 
+    $\UNFSymbol$($\Gamma\vdash $ !< e1, e2 > :AxB!) &=& $\UNFSymbol$(!e1!) $\pcomp$ $\UNFSymbol$(!e2!); !pair!$_{\Gamma,A\times B}$ \\ 
+    $\UNFSymbol$($\Gamma\vdash \pi_i$(!e!)) &=& $\UNFSymbol$(!e!);$\pi_i$ seen as a unary operator\\
+    $\UNFSymbol$($\Gamma\vdash $ !e1 op2 e2!) &=& $\UNFSymbol$(!e1!) $\pcomp$ $\UNFSymbol$(!e2!)$\hcomp$ !op!$_{\Gamma,2}$\\
+    $\UNFSymbol$($\Gamma\vdash $ !op1 e!) &=& $\UNFSymbol$(!e!) $\hcomp$ !op!$_{\Gamma,1}$ \\
+    $\UNFSymbol$($\Gamma\vdash $ !map (x.e1) e2!) &=& $\UNFSymbol$(!e2!) $\hcomp$ !map!$_{\Gamma,x.e}$\\
+    $\UNFSymbol$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!) $\pcomp$ $\UNFSymbol$(!e3!)$\hcomp$ !map2!$_{\Gamma, x,y.e}$ \\ 
+    $\UNFSymbol$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!) $\pcomp$ $\UNFSymbol$(!e3!)$\hcomp$ !foldl!$_{\Gamma, x,y.e}$ \\
+    $\UNFSymbol$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!) $\pcomp$ $\UNFSymbol$(!e3!)$\hcomp$ !foldl!$_{\Gamma, x,y.e}$ \\   
     \end{tabular}
     \caption{UNF transformation from Source to Source UNF}
     \label{fig:source_to_unf}

@@ -4,15 +4,17 @@
     \begin{tabular}{|l c l|l|}
     \hline
     \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
-    !T! & \mbox{::=} & ... & \grammarcomment{Same as source} \\
-     & $\mid$ &!T -> T! &\\
+    !T! & \mbox{::=} & ![A1,...,An]! & \grammarcomment{Lists of types from target} \\
     \hline
-    !e! & \mbox{::=} & !<var!$_{\Gamma,i}$!, J!$^T$!var!$_{\Gamma,i}$!>! & \grammarcomment{Variable}\\
-    & $\mid$ & !<op!$_{\Gamma,n}$!, J!$^T$!op!$_{\Gamma,n}$!>! & \grammarcomment{Operations, for $0\leq n\leq 2$}\\
-    & $\mid$ & !e;e! & \grammarcomment{Composition}\\
-    & $\mid$ & !<map!$_{\Gamma,x.e}$!, J!$^T$!map!$_{\Gamma,x.e}$!>!  & \grammarcomment{Map}\\
-    & $\mid$ & !<map2!$_{\Gamma,x,y.e}$!, J!$^T$!map2!$_{\Gamma,x,y.e}$!>! & \grammarcomment{Map2}\\
-    & $\mid$ & !<foldl!$_{\Gamma,x,y.e}$!, J!$^T$!foldl!$_{\Gamma,x,y.e}$!>! & \grammarcomment{Fold left}\\
+    !e! & \mbox{::=} & ... & \grammarcomment{Same as source UNF}\\
+    & $\mid$ & !J!$^T$!var!$_{\Gamma,i}$ & \grammarcomment{Jacobian for variable}\\
+    & $\mid$ & !J!$^T$!op!$_{\Gamma,n}$ & \grammarcomment{Jacobian for operation, $0\leq n\leq 2$}\\
+    & $\mid$ & !J!$^T$!map!$_{\Gamma,x.e}$ $\mid$ !J!$^T$!map2!$_{\Gamma,x,y.e}$ & \grammarcomment{Jacobian for map, map2}\\
+    & $\mid$ & !J!$^T$!foldl!$_{\Gamma,x,y.e}$ & \grammarcomment{Jacobian for fold left}\\
+    & $\mid$ & !J!$^T$!reduce!$_{\Gamma,x,y.e}$ & \grammarcomment{Jacobian for reduce}\\
+    & $\mid$ & !e!$\ppcomp$!e! & \grammarcomment{parallel composition}\\
+    & $\mid$ & !proj! & \grammarcomment{projection}\\
+    & $\mid$ & !fun! & \grammarcomment{lambda asbtraction}\\
     \hline
     \end{tabular}
     \vspace{-0.2cm}
