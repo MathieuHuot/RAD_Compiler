@@ -4,10 +4,12 @@
 \subsection{Summary} % (fold)
 \label{sub:summary}
 
-We have shown how to compute provably efficient gradients via reverse derivatives in a purely functional way 
-on a simple yet expressive language with array functions.
-We introduced a novel intermediate representation, unary form, 
-and used it combined with standard functional optimisations to perform our reverse-mode transformation.
+We have introduced a transformation on programs to compute provably efficient (\ref{sec:complexity}) gradients via reverse derivatives in a purely functional way (\ref{sub:Macro for pure reverse mode transformation})
+on a simple yet expressive language with functions on arrays (\ref{sub:sourcelang}), combined with standard functional optimisations (\ref{fig:optim}).  
+We introduced a novel intermediate representation, unary form (\ref{sec:unf}) 
+to decompose our transformation into simpler and more insightful transformations.
+We showed (\ref{sec:generalisation}) how to lift some of the restrictions that
+we introduced on arrays and how to extend our approach.
 
 \subsection{Related Work} % (fold)
 \label{sub:related_work}

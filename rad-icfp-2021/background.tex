@@ -128,8 +128,8 @@ to transform a differentiable function
 $g:\RR^n\to \RR$ to a function $h:\RR^{2n}\to \RR^2$ which captures~$g$ and all its partial derivatives. We packaged this up in~\eqref{eqn:dualnumber} as a sort-of invariant which is useful for building derivatives of compound functions $\RR\to\RR$ in a compositional way.
 The idea of automatic differentiation is to perform this transformation at the source code level. 
 
-The two main ways in which it is performed in practice is by operator overloading or by source code transformation (see e.g. \cite{griewank2008evaluating} Chapter 6). 
-Our work focus on a compiled version so we focus on source code transformation which is more fitted in this case.
+The main two ways in which it is performed in practice is by operator overloading or by source code transformation (see e.g. \cite{griewank2008evaluating} Chapter 6). 
+Our approach focuses on source code transformation which is better fitted for compilation and optimizations.
 
 \subsection{Reverse-mode differentiation}
 
@@ -141,17 +141,18 @@ The simplest way to see this mathematically, is first to say that forward mode e
 Reverse-mode, on the other hand, computes $(Jf)^Tv =J^Tf_1(J^Tf_{2}(...(J^Tf_nv))...)$ for a vector $v\in\RR$.
 In particular, taking $v=1$ computes the gradient of $f$.
 
-Because the compute flow of the function is reversed, the actual implementation of reverse-mode is way more tricky. 
-%%TODO: from Matthijs' paper, need to rewrite.
-Reverse-mode AD is only well-understood as a source-code transformation (also called define-then-run
-style AD) on limited programming languages. Typically, its implementations
-on more expressive languages that have features such as higher-order functions and conditionals
-make use of define-by-run approaches. These approaches first build a computation graph during runtime, effectively evaluating the program until a straight-line
+Because the computation flow of the function is reversed, the actual implementation of reverse-mode is way more tricky. 
+(TODO: paragraph below from Matthijs' paper, need to rewrite.)
+Reverse-mode AD is only well-understood as a source-code transformation 
+(also called define-then-run style AD) on limited programming languages. 
+Typically, its implementations on more expressive languages that have features such as higher-order functions and conditionals
+make use of define-by-run approaches. 
+These approaches first build a computation graph during runtime, effectively evaluating the program until a straight-line
 first-order program is left, and then they evaluate this new program \cite{carpenter2015stan,paszke2017automatic}. 
-Such approaches have the severe downside that the differentiated code cannot benefit from existing optimizing compiler architectures. As such, these AD libraries
-need to be implemented using carefully, manually optimized code, that for example does not contain any common subexpressions. This implementation process
-is precarious and labour intensive. Further, some whole-program optimizations
-that a compiler would detect go entirely unused in such systems.
+Such approaches have the severe downside that the differentiated code cannot benefit from existing optimizing compiler architectures. 
+As such, these AD libraries need to be implemented using carefully, manually optimized code, that for example does not contain any common subexpressions. 
+This implementation process is precarious and labour intensive. 
+Further, some whole-program optimizations that a compiler would detect go entirely unused in such systems.
 
 \subsection{Purely functional inefficient reverse-mode}
 
@@ -160,14 +161,14 @@ We review a slight modification of the transformation we presented, which is als
 
 Let the term we want to differentiate be $x1:\RR,...,xn:\RR\vdash exp(cos(xi))$.
 Following the chain rule, we need the jacobian matrices of $cos$ at $xi$ and of $exp$ at $cos(xi)$. 
-Instead of considering these as operations from $\RR\to\RR$, we consider then as functions from the whole context. So $cos$ and $exp$ are seen as functions $\RR^n\to\RR$.
-If we just do that though, we lose compositionality. 
+Instead of considering these as operations from $\RR\to\RR$, we consider them as functions from the whole context. So $cos$ and $exp$ are seen as functions $\RR^n\to\RR$.
+However, by simply doing this we lose compositionality. 
 So $cos$ will also return its context and is now seen as a function $\sem{cos}:\RR^n\to\RR^{n+1}$.
-similarly for $exp$, but also taking the return value of $\sem{cos}$ as an extra argument, the one it will actually use and not simply return. 
+Similarly for $exp$, but also taking the return value of $\sem{cos}$ as an extra argument, the one it will actually use and not simply return. 
 We thus obtain $\sem{exp}:\RR^{n+1}\to\RR^{n+2}$. Now their jacobians matrices $J\sem{cos} \in Mat_{n,n+1}$, $J\sem{exp} \in Mat_{n+1,n+2}$ also compose nicely.
 The same can be done for binary (or more) operators and let bindings (assuming no nested lets). 
 This transforms a first-order program to a function $f:\RR^n\to\RR^{n+m}$ of the form $f_m\circ...\circ f_1$. 
-If the original program was of type $\RR$, then the return value of the original program is the last compononent of $f$.
+If the original program was of type $\RR$, then the return value of the original program is the last component of $f$.
 Following the mathematical presentation of reverse-mode above, the gradient of the the original program is then obtained as 
 \[\nabla f= J^Tf(0,...,0,1)=J^Tf_1(J^Tf_{2}(...(J^Tf_m(0,...,0,1)))...)\]
 
@@ -178,7 +179,7 @@ $<f_{i+1}\circ f_i, \lambda Y. Y\circ J^Tf_i \circ J^Tf_{i+1}>$, and thus by ind
 By applying the identity continuation $\RR^n\to\RR^n$ on the second component then the result to $(0,...,0,1)$, 
 we have obtained a purely functional to compute $\nabla f$. 
 
-This method is quite inefficient though. First, we have to carry a continuation and $\beta$-reduce a lot of higher-order functions.
+This method is quite inefficient still. First, we have to carry a continuation and $\beta$-reduce a lot of higher-order functions.
 Second, each $J^Tf_{i+1}$ is a potentially huge matrix if $n$ or $m$ is big.
 
 The imperative version of reverse mode for a binary operator $op(x,y)$ is something like $x'+= \partial_1op(x,y);y'+= \partial_2op(x,y)$. 
@@ -186,10 +187,10 @@ It is for these cases that mutation is usually key.
 If we see our term as a directed graph, reverse mode needs to backpropagate from the end of the graph to the starting nodes via every path.
 It's hard to keep track of all these information in parallel in a functional way.
 One of the key simple ideas that we used was to transform every operator into a unary one. 
-This essentially trivialises the compute flow to a line. 
+This essentially trivialises the computation flow to a line. 
 Even if the starting program was a straight line program, 
-having non unary operators was a source of inefficiency which justified mutation in the first place.
-By returning every variable every time, the problem of using a variable several time does not need to be dealt with via mutation. 
+having non-unary operators was a source of inefficiency which justified mutation in the first place.
+By returning every variable every time, the problem of using a variable several times does not need to be dealt with via mutation. 
 This simple idea of transforming a program into essentially a straight line is what our new intermediate representation unary-form does. 
 
 \subsection{Insights for efficient reverse-mode}\
@@ -197,11 +198,11 @@ This simple idea of transforming a program into essentially a straight line is w
 
 If we look at $J^Tf_{i+1}$, we notice that this function is almost the identity, except at the last row. 
 Even on the last row, if the original term was a unary or binary operator like $cos, exp, +, *$, 
-the row is zero except for at most 2 indices (1 for unary operators).
+the row is zero except for at most two indices (one for unary operators).
 This means we can use a more compact representation $J^T\sem{op(xi,xj)}:=\lambda (y1,...,y(n+i)).(y1,...,y(n+i))+[i]\partial_1op(xi,xj)+[j]\partial_2op(xi,xj)$, 
 where $[k]$ means that the element is added at the $k$-th index of the tuple.
 
-We know in advance that such jacobian functions are going to be applied one to another, so we can use partial evaluation to $\beta$-reduce all of these $\lambda$s.
+We know in advance that such jacobian functions are going to be applied one to another and we can use partial evaluation to $\beta$-reduce all of these $\lambda$s.
 Because each function is almost the identity, we obtain a lot of substitutions of the form $[x/y]$ where both $x$ and $y$ are variables. 
-This allows us to drastically reduce the size of $J^Tf$. In fact, for simple programs this is basically enough to get an efficient purely functional reverse derivative transformation.
+This allows us to drastically reduce the size of $J^Tf$. In fact, for simple programs, this is basically enough to get an efficient purely functional reverse derivative transformation.
 We develop this idea further for a richer language.

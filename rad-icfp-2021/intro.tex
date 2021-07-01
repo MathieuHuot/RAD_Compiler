@@ -99,22 +99,32 @@ After our (inefficient) reverse-mode transformation, we obtain
 The part !(0,0,0,0,1)! comes as an equivalent to initialing the tangent variables in the imperative reverse-mode algorithm. 
 
 After some general partial evaluation techniques that will be detailed further in the paper, we obtain     
-        \begin{center}
+        % \begin{center}
+        %     \begin{tabular}{l}
+        %         !let w1 = x1 * x2 in!\\ 
+        %         !let w2 = w1 * x1 in!\\
+        %         !let y1 = 0 in!\\
+        %         !let y2 = 0 in!\\
+        %         !let y3 = 0 in!\\
+        %         !let y4 = 0 in!\\
+        %         !let y5 = 1 in!\\
+        %         !let y1'! != y1+w1*y5 in!\\
+        %         !let y4'! != y4+x1*y5 in!\\
+        %         !(y1'+x2*y4'!!, y2+x1*y4'!!, y3)!
+        %     \end{tabular}
+        % \end{center}
+    \begin{center}
             \begin{tabular}{l}
                 !let w1 = x1 * x2 in!\\ 
                 !let w2 = w1 * x1 in!\\
-                !let y1 = 0 in!\\
-                !let y2 = 0 in!\\
-                !let y3 = 0 in!\\
-                !let y4 = 0 in!\\
-                !let y5 = 1 in!\\
+                !let y1,y2,y3,y4,y5 = 0,0,0,0,1 in!\\
                 !let y1'! != y1+w1*y5 in!\\
                 !let y4'! != y4+x1*y5 in!\\
                 !(y1'+x2*y4'!!, y2+x1*y4'!!, y3)!
             \end{tabular}
-        \end{center}  
+    \end{center}   
 For the expert viewer, this is equivalent to the SSA form \cite{cytron1989efficient} of what the imperative reverse-mode differentiation of our initial term would be.\\
-Of course, this term can be further optimised via constant propagation and algebraic simplifications to give
+This term can be further optimised via constant propagation and algebraic simplifications to give
         \begin{center}
             \begin{tabular}{{c}}
                 !let w1 = x1 * x2 in!\\ 
@@ -146,20 +156,21 @@ The gradient of each of these construct w.r.t. !A! will be:
     \end{tabular}
 \end{center}
 where !shift1 [v1,...,vn] = [1,v1,...,v(n-1)]! is a simple operator yet perhaps strange at first naturally showing up in our constructions.
-!scanl! and !scanr! are respectively scan left and scan right. These are like fold but store all intermediate results in an array.
-We obtain these gradients, which are efficient and usually derived by hand, as special cases of our work.
-They are obtained automatically in our case.
+!scanl! and !scanr! are respectively scan left and scan right. These return all the intermediate result of a fold in an array.
+These gradients are some examples among numerous ones which are usually derived by hand, and are here obtained automatically as special cases of our work.
 \end{example}   
 
 \subsection{Outline of the paper}
 
-Our work looks like the following compilation scheme
+Our main transformation is present on the top of the diagram and presented in Section~\ref{sec:simplediff}. 
+It it decomposed 3 steps which are presented in Section~\ref{sec:unf}.
 \input{figures/compilation_scheme}
 
-In Section~\ref{sec:background} we recall rudiments of automatic differentiation, and in particular the idea of reverse-mode and the cheap gradient principle.
-Next, in Section~\ref{sec:simplediff} we introduce the source language we want to differentiate. We also introduce our new intermediate representation UNF, and a simple reverse-mode macro on this representation.
-In Section~\ref{sec:efficientrad} we translate back from UNF to a purely functional target language and show several general optimisations to make our reverse-mode transformation efficient.
-In the next Section~\ref{sec:complexity} we show that the previous optimisations are sufficient to ensure our transformation has the right complexity.
-Section~\ref{sec:correctness} shows that our construction is correct and we give standard semantics to our source and target languages. 
-In Section~\ref{sec:generalisation} we show how to generalise the previous sections for a richer source language. 
-Finally, related work and some limitations to our approach are presentend in Section~\ref{sec:conclusion}.
+In Section~\ref{sec:background} we recall rudiments of automatic differentiation, forward and reverse-mode differentiation.
+Next, in Section~\ref{sec:simplediff} we introduce the source and target languages for differentiation, and our reverse mode transformation. 
+In Section~\ref{sec:unf} we introduce a new intermediate representation UNF, and a simple reverse-mode macro on this representation.
+We introduce transformations from the source language to UNF and from UNF to the target language.
+Next, in Section~\ref{sec:correctness} we give denotational semantics to our languages and show that our decomposition respects the diagram above and that our reverse mode transformation is correct.
+In Section~\ref{sec:complexity}, we show that our transformation verifies the cheap gradient principle and extra general optimisations.
+In Section~\ref{sec:generalisation} we show how to adapt our work for a richer source language. 
+Finally, related work, limitations to our approach and future work are presented in Section~\ref{sec:conclusion}.
