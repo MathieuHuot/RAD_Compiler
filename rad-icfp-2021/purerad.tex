@@ -77,14 +77,22 @@ We introduce several notations which are useful when defining the transformation
 \subsection{Partial evaluation and optimisation} % (fold)
 \label{sub:Partial evaluation and optimisation}
 
-TODO: how to get gradient or subpart of the gradient from the previous term.
-
-TODO: maybe intuition around here
+Given a term $\Gamma\vdash e : \reals$, we can compute its gradient $\grad_\Gamma e$ from a particular instance of 
+$\directD{\rho}{\Gamma}{Y}(e)$. First, $\rho, Y$ specifies if we want to compute the whole gradient regarding the variables from $\Gamma$ or a subset of it.
+For a subset $\rho\subset \Gamma$, one chooses $Y$ to be the projection function sending a variable 
+$x_i:G$ of $\Gamma$ to $x_i$ if it belongs to $\rho$ and to $0_G$ otherwise.
+In particular, we take $Y=Id_\Gamma$ to compute the whole gradient.
+Next, the gradient will be given by the second part of the pair $\directD{\rho}{\Gamma}{Y}(e)$, 
+and we need to initialise the tangent variables. All of them are set to $0$ except the one corresponding to the output value of !e!, 
+which we initialise at $1$ to run the backpropagation. 
+All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,1)$.
 
 TODO: on the examples
 
 TODO: partial evaluation to get a tuple (i.e no lambdas)
 
-TODO: use the optimisations to be efficient, just on example?
+Though this transformation already has the right complexity, 
+its purity allows us to take the most out of generic optimisations.  
+A list of common optimisations that are useful for this language can be found in Figure~\ref{fig:optim}.
 
-The full list of optimisations can be found on Figure~\ref{fig:optim}.
+TODO: use the optimisations to be efficient on example

@@ -18,8 +18,9 @@
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash \pi_1$(!e!:AxB)) &=&
             !let (x,y),Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
             && !<x, fun (x1,...,xn,z) -> Y(x1,...,xn,(z,!$0_B$!))>! \\
-            && TODO: introduce notation shorthand for multi let \\
-            && TODO: say similarly for $\pi_2$ or need notation for (z,$0_B$) or ($0_A$,z) \\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash \pi_2$(!e!:AxB)) &=&
+            !let (x,y),Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
+            && !<x, fun (x1,...,xn,z) -> Y(x1,...,xn,(!$0_A$,z!))>! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !op1 e!) &=&  
             !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
             && !<op1 x, fun (x1,...,xn,z) -> ! \\
