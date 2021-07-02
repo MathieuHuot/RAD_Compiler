@@ -1,34 +1,49 @@
 \begin{figure*}[tb]
     \centering
     \begin{tabular}{c} 
-    \\\hline
-    $\Dtype(\Gamma) \vdash$ !<var!$_{\Gamma,i}$!, J!$^T$!var!$_{\Gamma,i}$!>!: $\Dtype(\Gamma\times$!Ti!$)$ 
-    \end{tabular}($\Gamma=$!T1!$\times\ldots\times$!Tn!)
-    \hspace{0.5cm}
-    \begin{tabular}{c}
         \\\hline
-        $\Dtype(\Gamma\times\reals^{\times n}) \vdash$ !op!$_{\Gamma,n}$ : $\Dtype(\Gamma\times\reals^{\times(n+1)})$
-    \end{tabular}
+        !T,Ai! $\vdash$ !J!$^T$!var!$_{T;i}$: !T!
+        \end{tabular}(T=A1,...,An)
+        \hspace{0.5cm}
+        \begin{tabular}{c}
+            \\\hline
+            !T,!$\reals^{\times(n+1)} \vdash$ !J!$^T$!op!$_{T;n}$ : !T,!$\reals^{\times(n)}$
+        \end{tabular}(T=A1,...,An)
+    
+        \begin{tabular}{c}
+            \\\hline
+            !T,A$\times$B! $\vdash$ !J!$^T$!pair!$_{T;A\times B}$ : !T,A,B!
+        \end{tabular}(T=A1,...,An)
+    
+        \begin{tabular}{c}
+            \\\hline
+            !T1,T3! $\vdash$ !J!$^T$!proj!$_{T1;T2;T3}$ : !T1,T2,T3!
+        \end{tabular}
+    
+        \begin{tabular}{c}
+            !x1:A1,...,xn:An,x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ \quad in Source Language
+            \\\hline  
+            !T,!$\Array{\reals},\Array{\reals},\Array{\reals} \vdash$ !J!$^T$!map2!$_{T; x,y.e}$: !T,!$\Array{\reals}$,$\Array{\reals}$
+        \end{tabular}(T=A1,...,An)
+    
+        \begin{tabular}{c}
+            !x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ \quad !x1:A1,...,xn:An! $\vdash$ !e2!:$\reals$ \quad in Source Language
+            \\\hline  
+            !T,!$\Array{\reals},\reals \vdash$ !J!$^T$!reduce!$_{T; x,y.e1; e2}$: !T,!$\Array{\reals}$
+        \end{tabular}(T=A1,...,An)
 
-    \begin{tabular}{c}
-    $\Dtype$(!T0!) $\vdash$ !<e1, e2>!: $\Dtype$(!T1!) $\quad$ $\Dtype$(!T1!) $\vdash$ !<e3, e4>!: $\Dtype$(!T2!) \\\hline
-    $\Dtype$(!T0!) $\vdash$ !<e1, e2>; <e3, e4>!: $\Dtype$(!T2!)
-    \end{tabular}
+        \begin{tabular}{c}
+            !T! $\vdash$ !e1: T1!  \quad !T! $\vdash$ !e1: T2!
+            \\ \hline
+            !T! $\vdash$ !<e1, e2>: T1,T2!
+        \end{tabular}
 
-    \begin{tabular}{c}
-        \\\hline  
-        $\Dtype(\Gamma \times \Array{\reals}) \vdash$ !<map!$_{\Gamma,x.e}$!, J!$^T$!map!$_{\Gamma,x.e}$!>!: $\Dtype(\Gamma \times \Array{\reals} \times \Array{\reals})$
-    \end{tabular}
+        \begin{tabular}{c}
+            !T1! $\vdash$ e1: [A -> B]  \quad !T2! $\vdash$ e2: !T3! 
+            \\ \hline
+            !T1! $\vdash$ !e1! $\icomp$ !e2:[C -> B]!
+        \end{tabular}(A=\underline{T2}, C=\underline{T3})
 
-    \begin{tabular}{c}
-        \\\hline  
-        $\Dtype(\Gamma \times \Array{\reals} \times \Array{\reals})\vdash$ !<map2!$_{\Gamma,x,y.e}$!, J!$^T$!map2!$_{\Gamma,x,y.e}$!>!: $\Dtype(\Gamma \times \Array{\reals} \times \Array{\reals} \times \Array{\reals})$
-    \end{tabular}
-
-    \begin{tabular}{c}
-        \\\hline  
-        $\Dtype(\Gamma \times \reals\times\Array{\reals})\vdash$ !<foldl!$_{\Gamma,x,y.e}$!, J!$^T$!foldl!$_{\Gamma,x,y.e}$!>!: $\Dtype(\Gamma \times \reals\times \Array{\reals} \times \reals)$
-    \end{tabular}
     \vspace{-0.2cm}
     \caption{Type system of the Target UNF}
     \vspace{-0.4cm}

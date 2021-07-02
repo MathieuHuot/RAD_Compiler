@@ -2,28 +2,28 @@
     \centering
     \begin{tabular}{c} 
     \\\hline
-    !T(=A1,...,An)! $\vdash$ !var!$_{T;i}$: !A1,...,An,Ai!
-    \end{tabular}
+    !T! $\vdash$ !var!$_{T;i}$: !T,Ai!
+    \end{tabular}(T=A1,...,An)
     \hspace{0.5cm}
     \begin{tabular}{c}
         \\\hline
-        !T(=A1,...,An)!, $\reals^{\times(n)}$,$\vdash$ !op!$_{T;n}$ : !A1,...,An!,$\reals^{\times(n+1)}$
-    \end{tabular}
+        !T,!$\reals^{\times(n)}$,$\vdash$ !op!$_{T;n}$ : !T,!$\reals^{\times(n+1)}$
+    \end{tabular}(T=A1,...,An)
 
     \begin{tabular}{c}
-    !A1,...,An! $\vdash$ !e1!: !A1,...,An,A! $\quad$ !A1,...,An,A! $\vdash$ !e2!: !A1,...,An,A,B! \\\hline
-    !A1,...,An! $\vdash$ !e1!$\comp$!e2!: !A1,...,An,A,B!
-    \end{tabular}
+    !T! $\vdash$ !e1!: !T,A! $\quad$ !T,A! $\vdash$ !e2!: !T,A,B! \\\hline
+    !T! $\vdash$ !e1!$\comp$!e2!: !T,A,B!
+    \end{tabular}(T=A1,...,An)
     \hspace{0.5cm}
     \begin{tabular}{c}
-        !A1,...,An! $\vdash$ !e1!: !A1,...,An,A! $\quad$ !A1,...,An! $\vdash$ !e2!: !A1,...,An,B! \\\hline
-        !A1,...,An! $\vdash$ !e1!$\pcomp$!e2!: !A1,...,An,A,B!
-    \end{tabular}
+        !T! $\vdash$ !e1!: !T,A! $\quad$ !T! $\vdash$ !e2!: !T,B! \\\hline
+        !T! $\vdash$ !e1!$\pcomp$!e2!: !T,A,B!
+    \end{tabular}(T=A1,...,An)
 
     \begin{tabular}{c}
         \\\hline
-        !T(=A1,...,An),A,B! $\vdash$ !pair!$_{T;A\times B}$ : !A1,...,An,A!$\times$!B!
-    \end{tabular}
+        !T,A,B! $\vdash$ !pair!$_{T;A\times B}$ : !T,A!$\times$!B!
+    \end{tabular}(T=A1,...,An)
 
     \begin{tabular}{c}
         \\\hline
@@ -33,14 +33,14 @@
     \begin{tabular}{c}
         !x1:A1,...,xn:An,x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ \quad in Source Language
         \\\hline  
-        !T(=A1,...,An)!, $\Array{\reals},\Array{\reals} \vdash$ !map2!$_{T; x,y.e}$: !A1,...,An,!$\Array{\reals}$,$\Array{\reals}$,$\Array{\reals}$
-    \end{tabular}
+        !T,!$\Array{\reals},\Array{\reals} \vdash$ !map2!$_{T; x,y.e}$: !T,!$\Array{\reals}$,$\Array{\reals}$,$\Array{\reals}$
+    \end{tabular}(T=A1,...,An)
 
     \begin{tabular}{c}
         !x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ \quad !x1:A1,...,xn:An! $\vdash$ !e2!:$\reals$ \quad in Source Language
         \\\hline  
-        !T(=A1,...,An)!, $\Array{\reals} \vdash$ !reduce!$_{T; x,y.e1; e2}$: !A1,...,An,!$\Array{\reals}$,$\reals$
-    \end{tabular}
+        !T,!$\Array{\reals} \vdash$ !reduce!$_{T; x,y.e1; e2}$: !T,!$\Array{\reals}$,$\reals$
+    \end{tabular}(T=A1,...,An)
     \vspace{-0.2cm}
     \caption{Type system of the Source UNF}
     \vspace{-0.4cm}
