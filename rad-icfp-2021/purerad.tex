@@ -89,10 +89,31 @@ All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(
 
 TODO: on the examples
 
-TODO: partial evaluation to get a tuple (i.e no lambdas)
+Following the insight from Section~\ref{subsec:insights}, 
+we don't want to keep all the lambda abstractions as this is costly. 
+Fortunately, the transformation is designed in such a way that we only have applications 
+and we can use partial evaluation to do beta redudction. 
 
-Though this transformation already has the right complexity, 
+By inspection in Figure~\ref{fig:direct_diff_macro}, 
+we see that there is a linear usage of  each continuation $Y$ 
+and that it is always applied to almost the identity. 
+More precisely, we have applications of the form !fun (x1,...,xn) -> Y(e1,...,en)! 
+where the !ei! are !xi! except for at most $k$ (independant of $n$) terms.
+In fact we have $k=2$, except for the !map2! case which requires a more detailed analysis (see Section~\ref{sec:complexity}).
+
+Using the invariant above and the inlining and forward substitution given in Figure~\ref{fig:optim}, this allows us to rewrite
+!fun (x1,...,xn) -> (fun (y1,...,yn) -> (f1,...,fn))(e1,...,en)! 
+$\transto$ 
+!fun (x1,...,xn) -> let y1,...,yn = e1,...,en in (f1,...,fn)!
+$\transto$
+!fun (x1,...,xn) -> (f1[e1/y1],...,fn[en/yn])!
+Now, importantly, every !yi! is used at most once (except for !map2! again and !reduce! which require a more detailed analysis)
+which garantees that this will not blow up the complexity.
+
+TODO: finish explanation, not sure how to conclude at the moment
+
+Though this transformation after the inlining above already has the right complexity, 
 its purity allows us to take the most out of generic optimisations.  
 A list of common optimisations that are useful for this language can be found in Figure~\ref{fig:optim}.
 
-TODO: use the optimisations to be efficient on example
+TODO: use the optimisations to be efficient on examples

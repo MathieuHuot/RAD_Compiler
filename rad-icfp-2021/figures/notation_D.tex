@@ -1,5 +1,4 @@
 Ground types are defined inductively by 
-(TODO: chose whether we want n-ary, binary, or both kind of products)
 $$G::= \RR \mid G\times \ldots \times G \mid A[G]$$
 
 $(\RR,+,\underline{0})$ forms a monoid and this monoid structure extends canonically 
@@ -7,7 +6,7 @@ to a monoid structure $(G,\widehat{+},0_G)$ for every ground type $G$.
 It is defined inductively on $G$ as follows
 \begin{itemize}
     \item $0_\RR \defeq \underline{0}$
-    \item $0_{G_1\times G_2}\defeq < O_{G_1}, 0_{G_2} >$
+    \item $0_{G_1\times \ldots \times G_n}\defeq < O_{G_1},\ldots, 0_{G_n} >$
     \item $0_{A[\RR]_n}\defeq$ ZerosLike($n$) TODO: general array? what about index n?
     \item $a\widehat{+}_\RR b\defeq a+b$
     \item $(a_1,\ldots,a_n)\widehat{+}_{G_1\times\ldots\times G_n}(b_1,\ldots,b_n)\defeq (a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n)$
