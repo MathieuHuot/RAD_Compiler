@@ -7,15 +7,14 @@
     !T! & \mbox{::=} & ![A1,...,An]! & \grammarcomment{Lists of types from target} \\
     \hline
     !e! & \mbox{::=} & ... & \grammarcomment{Same as source UNF}\\
-    & $\mid$ & !J!$^T$!var!$_{\Gamma,i}$ & \grammarcomment{Jacobian for variable}\\
-    & $\mid$ & !J!$^T$!op!$_{\Gamma,n}$ & \grammarcomment{Jacobian for operation, $0\leq n\leq 2$}\\
+    & $\mid$ & !J!$^T$!var!$_{T;i}$ & \grammarcomment{Jacobian for variable}\\
+    & $\mid$ & !J!$^T$!op!$_{T;n}$ & \grammarcomment{Jacobian for operation, $0\leq n\leq 2$}\\
     & $\mid$ & !J!$^T$!pair!$_{T;A\times B}$ & \grammarcomment{Jacobian for pairing}\\
-    & $\mid$ & !J!$^T$!proj!$_{T1;A;T2}$ & \grammarcomment{Jacobian for projection}\\
-    & $\mid$ & !J!$^T$!map2!$_{\Gamma,x,y.e}$ & \grammarcomment{Jacobian for map2}\\
-    & $\mid$ & !J!$^T$!reduce!$_{\Gamma,x,y.e}$ & \grammarcomment{Jacobian for reduce}\\
-    & $\mid$ & !e!$\ppcomp$!e! & \grammarcomment{parallel composition}\\
-
-    & $\mid$ & !fun! & \grammarcomment{lambda asbtraction}\\
+    & $\mid$ & !J!$^T$!proj!$_{T1;T2;T3}$ & \grammarcomment{Jacobian for projection}\\
+    & $\mid$ & !J!$^T$!map2!$_{T;x,y.e}$ & \grammarcomment{Jacobian for map2}\\
+    & $\mid$ & !J!$^T$!reduce!$_{T;x,y.e;e}$ & \grammarcomment{Jacobian for reduce}\\
+    & $\mid$ & !<e, e>! & \grammarcomment{Term pairing}\\
+    & $\mid$ & $\icomp$ & \grammarcomment{Internal function composition}\\
     \hline
     \end{tabular}
     \vspace{-0.2cm}

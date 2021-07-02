@@ -1,10 +1,18 @@
 \begin{figure*}[t]
     \begin{tabular}{r c l}
-    $\Dsynrevsymbol$(!var!$_{\Gamma,i}$) &=& !<var!$_{\Gamma,i}$!, J!$^T$!var!$_{\Gamma,i}$!>! \\
-    $\Dsynrevsymbol$(!op!$_{\Gamma,n}$) &=& !<op!$_{\Gamma,n}$!, J!$^T$!op!$_{\Gamma,n}$!>! \\ 
-    $\Dsynrevsymbol$(!e1;e2!) &=& $\Dsynrevsymbol$(!e1!); $\Dsynrevsymbol$(!e2!)\\ 
-    $\Dsynrevsymbol$(!map2!$_{x,y.e}$) &=& !<map2!$_{x,y.e}$!, J!$^T$!map2!$_{x,y.e}$!>! \\ 
-    $\Dsynrevsymbol$(!reduce!$_{x,y.e}$) &=& !<reduce!$_{x,y.e}$!, J!$^T$!reduce!$_{x,y.e}$!>! \\  
+        $\Dsynrevsymbol_{\rho}$(!A1,...,An!) &=& !A1,...,An,(A1x...xAn)->!$\rho$
+    \end{tabular}
+
+    \medskip
+    \begin{tabular}{r c l}
+    $\Dsynrevsymbol_{\rho}$(!var!$_{T;i}$) &=& !<proj!$_{T;\underline{T}->\rho;[]} \comp$ !var!$_{T,i}$!, proj!$_{[];T;\underline{T}->\rho} \icomp$ (!proj!$_{T;\underline{T}->\rho;[]}$ $\comp$ !Jvar!$_{T;i}$)!>! \\
+    $\Dsynrevsymbol_{\rho}$(!op!$_{\Gamma;n}$) &=& !<op!$_{\Gamma,n}$!, Jop!$_{\Gamma,n}$!>! \\ 
+    $\Dsynrevsymbol_{\rho}$(!pair!$_{T;A\times B}$) &=& \\
+    $\Dsynrevsymbol_{\rho}$(!proj!$_{T1;T2;T3}$) &=& \\
+    $\Dsynrevsymbol_{\rho}$(!e1!$\comp$!e2!) &=& $\Dsynrevsymbol$(!e1!); $\Dsynrevsymbol$(!e2!)\\ 
+    $\Dsynrevsymbol_{\rho}$(!e1!$\pcomp$!e2!) &=& \\
+    $\Dsynrevsymbol_{\rho}$(!map2!$_{T;x,y.e}$) &=& !<map2!$_{x,y.e}$!, J!$^T$!map2!$_{x,y.e}$!>! \\ 
+    $\Dsynrevsymbol_{\rho}$(!reduce!$_{T;x,y.e1;e2}$) &=& !<reduce!$_{x,y.e}$!, J!$^T$!reduce!$_{x,y.e}$!>! \\  
     \end{tabular}
     \caption{Reverse-mode differentiation from Source UNF to Target UNF}
     \label{fig:diff_macro}    
