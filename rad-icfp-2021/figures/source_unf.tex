@@ -6,14 +6,13 @@
     \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
     !T! & \mbox{::=} & ![A1,...,An]! & \grammarcomment{Lists of types from source} \\
     \hline
-    !e! & \mbox{::=} & !var!$_{T,i}$ & \grammarcomment{Variable}\\
-    & $\mid$ & !op!$_{T,n}$ & \grammarcomment{Operations, for $0\leq n\leq 2$}\\
-    & $\mid$ & !pair!$_{T,A\times B}$ & \grammarcomment{Pairing a pair of variables}\\
+    !e! & \mbox{::=} & !var!$_{T;i}$ & \grammarcomment{Variable}\\
+    & $\mid$ & !op!$_{T;n}$ & \grammarcomment{Operations, for $0\leq n\leq 2$}\\
+    & $\mid$ & !pair!$_{T;A\times B}$ & \grammarcomment{Pairing a pair of variables}\\
     & $\mid$ & !e!$\hcomp$!e! & \grammarcomment{Hiding sequential composition}\\
     & $\mid$ & !e!$\pcomp$!e! & \grammarcomment{Passing sequential composition}\\
-    & $\mid$ & !map!$_{T,x.e}$ $\mid$ !map2!$_{\Gamma,x,y.e}$ & \grammarcomment{Map and map2}\\
-    & $\mid$ & !foldl!$_{T,x,y.e}$ & \grammarcomment{Fold left}\\
-    & $\mid$ & !reduce!$_{T,x,y.e}$ & \grammarcomment{Reduce}\\
+    & $\mid$ & !map2!$_{T;x,y.e}$ & \grammarcomment{Map2}\\
+    & $\mid$ & !reduce!$_{T;x,y.e}$ & \grammarcomment{Reduce}\\
     \hline
     \end{tabular}
     \vspace{-0.2cm}

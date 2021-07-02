@@ -29,12 +29,6 @@
             && !let x2,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e2) in! \\
             && !<x1 op2 x2, fun (x1,...,xn,z) ->! \\
             && !Y2(x1,...,xn,!$\partial_1$!op2(x1,x2)*z,!$\partial_2$!op2(x1,x2)*z>! \\
-        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map (x.e1) e2!) &=& 
-            !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
-            && !let B =!$\grad_{\Gamma}$!e1 in!\\
-            && !<map (x.e1) A, fun (x1,...,xn,Z) -> !\\
-            && !Y1( (x1,...,xn)!$\widehat{+}$!(B*(reduce + 0 Z)),!\\
-            && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$e1)[a/x]!*b) A Z )>! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=&  
             !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
             && !let B,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e3) in! \\
@@ -43,18 +37,16 @@
             && !Y2( (x1,...,xn)!$\widehat{+}$!(C*(reduce + 0 Z)),!\\
             && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x]*b) A Z,!\\
             && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e1)[a/x]*b) B Z )>!\\
-        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=&
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=&
             !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
             && !let B,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e3) in! \\
             && !let C = scanl (x,y.e1) A B in! \\
             && !let D = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) C B! \\
             && !let E = shift1 (map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) C B)! \\
             && !let F = scanr * 1 D! \\
-            && !<foldl (x,y.e1) A B, fun (x1,...,xn,z) ->! \\
+            && !<reduce (x,y.e1) A B, fun (x1,...,xn,z) ->! \\
             && !Y2(x1,...,xn, map2 (x,y. x*y*z) E F>! \\
-            && TODO: foldl recomputed after scanl, wrong on the zero element \\
-        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=& 
-            TODO:exactly like fold, except the scanl is parallel \\    
+            && TODO: reduce recomputed after scanl, wrong on the zero element \\
         \end{tabular}
     \caption{Reverse-mode transformation from source to target language}
     \label{fig:direct_diff_macro}    

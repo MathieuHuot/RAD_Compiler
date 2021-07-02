@@ -7,10 +7,8 @@
     $\UNFSymbol$($\Gamma\vdash \pi_i$(!e!)) &=& $\UNFSymbol$(!e!);$\pi_i$ seen as a unary operator\\
     $\UNFSymbol$($\Gamma\vdash $ !e1 op2 e2!) &=& $\UNFSymbol$(!e1!) $\pcomp$ $\UNFSymbol$(!e2!)$\hcomp$ !op!$_{\Gamma,2}$\\
     $\UNFSymbol$($\Gamma\vdash $ !op1 e!) &=& $\UNFSymbol$(!e!) $\hcomp$ !op!$_{\Gamma,1}$ \\
-    $\UNFSymbol$($\Gamma\vdash $ !map (x.e1) e2!) &=& $\UNFSymbol$(!e2!) $\hcomp$ !map!$_{\Gamma,x.e}$\\
     $\UNFSymbol$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!) $\pcomp$ $\UNFSymbol$(!e3!)$\hcomp$ !map2!$_{\Gamma, x,y.e}$ \\ 
-    $\UNFSymbol$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!) $\pcomp$ $\UNFSymbol$(!e3!)$\hcomp$ !foldl!$_{\Gamma, x,y.e}$ \\
-    $\UNFSymbol$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!) $\pcomp$ $\UNFSymbol$(!e3!)$\hcomp$ !foldl!$_{\Gamma, x,y.e}$ \\   
+    $\UNFSymbol$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!) $\pcomp$ $\UNFSymbol$(!e3!)$\hcomp$ !reduce!$_{\Gamma, x,y.e}$ \\ 
     \end{tabular}
     \caption{UNF transformation from Source to Source UNF}
     \label{fig:source_to_unf}

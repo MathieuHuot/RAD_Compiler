@@ -2,12 +2,12 @@
     \centering
     \begin{tabular}{c} 
     \\\hline
-    !T(=A1,...,An)! $\vdash$ !var!$_{T,i}$: !A1,...,An,Ai!
+    !T(=A1,...,An)! $\vdash$ !var!$_{T;i}$: !A1,...,An,Ai!
     \end{tabular}
     \hspace{0.5cm}
     \begin{tabular}{c}
         \\\hline
-        !T(=A1,...,An)!, $\reals^{\times(n)}$,$\vdash$ !op!$_{T,n}$ : !A1,...,An!,$\reals^{\times(n+1)}$
+        !T(=A1,...,An)!, $\reals^{\times(n)}$,$\vdash$ !op!$_{T;n}$ : !A1,...,An!,$\reals^{\times(n+1)}$
     \end{tabular}
 
     \begin{tabular}{c}
@@ -22,31 +22,19 @@
 
     \begin{tabular}{c}
         \\\hline
-        !T(=A1,...,An),A,B! $\vdash$ !pair!$_{T,A\times B}$ : !A1,...,An,A!$\times$!B!
-    \end{tabular}
-
-    \begin{tabular}{c}
-        !x1:A1,...,xn:An,x:!$\reals$ $\vdash$ !e!: $\reals$ in Source Language
-        \\\hline  
-        !T(=A1,...,An)!, $\Array{\reals} \vdash$ !map!$_{T, x.e}$: !A1,...,An,!$\Array{\reals}$,$\Array{\reals}$
+        !T(=A1,...,An),A,B! $\vdash$ !pair!$_{T;A\times B}$ : !A1,...,An,A!$\times$!B!
     \end{tabular}
 
     \begin{tabular}{c}
         !x1:A1,...,xn:An,x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ in Source Language
         \\\hline  
-        !T(=A1,...,An)!, $\Array{\reals},\Array{\reals} \vdash$ !map2!$_{T, x,y.e}$: !A1,...,An,!$\Array{\reals}$,$\Array{\reals}$,$\Array{\reals}$
+        !T(=A1,...,An)!, $\Array{\reals},\Array{\reals} \vdash$ !map2!$_{T; x,y.e}$: !A1,...,An,!$\Array{\reals}$,$\Array{\reals}$,$\Array{\reals}$
     \end{tabular}
 
     \begin{tabular}{c}
         !x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ in Source Language
         \\\hline  
-        !T(=A1,...,An)!, $\Array{\reals} \vdash$ !foldl!$_{T, x,y.e1, e2}$: !A1,...,An,!$\Array{\reals}$,$\reals$
-    \end{tabular}
-
-    \begin{tabular}{c}
-        !x:!$\reals$!,y:!$\reals$ $\vdash$ !e!: $\reals$ in Source Language
-        \\\hline  
-        !T(=A1,...,An)!, $\Array{\reals} \vdash$ !reduce!$_{T, x,y.e1, e2}$: !A1,...,An,!$\Array{\reals}$,$\reals$
+        !T(=A1,...,An)!, $\Array{\reals} \vdash$ !reduce!$_{T; x,y.e1}$: !A1,...,An,!$\Array{\reals}$,$\reals$
     \end{tabular}
     \vspace{-0.2cm}
     \caption{Type system of the Source UNF}

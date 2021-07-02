@@ -36,25 +36,11 @@
         \end{tabular}
  
     \begin{tabular}{c}
-        !x!: $\reals$ $\vdash$ !e1!: $\reals$ $\quad$ $\Gamma$ $\vdash$ !e2!: $\Array{\reals}$
-        \\\hline  
-        $\Gamma \vdash$ !map (x.e1) e2!: $\Array{\reals}$
-    \end{tabular}
-    \hspace{0.5cm}
-    \begin{tabular}{c}
-        !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
+        $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
         $\quad$ $\Gamma$ $\vdash$ !e2!: $\Array{\reals}$
         $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
         \\\hline  
         $\Gamma \vdash$ !map2 (x,y.e1) e2 e3!: $\Array{\reals}$
-    \end{tabular}
-
-    \begin{tabular}{c}
-        !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
-        $\quad$ $\Gamma$ $\vdash$ !e2!: $\reals$
-        $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
-        \\\hline  
-        $\Gamma \vdash$ !foldl (x,y.e1) e2 e3!: $\reals$
     \end{tabular}
 
     \begin{tabular}{c}
