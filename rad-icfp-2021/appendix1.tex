@@ -40,8 +40,25 @@ and then differentiating gives the same as differentiation and then unrolling.
     
 \end{proof}
 
+\begin{lemma}
+    if !op2! is an associative binary operation with unit $\Gamma \vdash$ !v:! $\reals$, then 
+    $\frac{\partial op2(v,e)}{\partial y_1}\times\frac{\partial v}{\partial x_i}=0$ 
+    and $\frac{\partial op2(e,v)}{\partial y_2}\times\frac{\partial v}{\partial x_i}=0$ for all $x_i$.
+\end{lemma}
+
+\begin{proof}
+    For any $\Gamma \vdash$ !e:! $\reals$, we have !v op2 e!=!e!.
+    Differentiating and using the chain rule we get 
+    $$\frac{\partial op2(v,e)}{\partial y_1}\times\frac{\partial v}{\partial x_i}
+    +\frac{\partial op2(v,e)}{\partial y_2}\times\frac{\partial e}{\partial x_i}
+    = \frac{\partial e}{\partial x_i}$$
+As $\frac{\partial e}{\partial x_i}$ is arbitrary, 
+this shows that $\frac{\partial op2(v,e)}{\partial y_2}=1$ and $\frac{\partial op2(v,e)}{\partial y_1}\times\frac{\partial v}{\partial x_i}=0$.
+Similarly for the other case.
+\end{proof}
+
 \begin{proposition}
-    The reverse derivative of !foldl! is correct.
+    The reverse derivative of !reduce! is correct.
 \end{proposition}
 
 \begin{proof}

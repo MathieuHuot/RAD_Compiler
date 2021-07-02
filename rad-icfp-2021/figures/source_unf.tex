@@ -9,7 +9,8 @@
     !e! & \mbox{::=} & !var!$_{T;i}$ & \grammarcomment{Variable}\\
     & $\mid$ & !op!$_{T;n}$ & \grammarcomment{Operations, for $0\leq n\leq 2$}\\
     & $\mid$ & !pair!$_{T;A\times B}$ & \grammarcomment{Pairing a pair of variables}\\
-    & $\mid$ & !e!$\hcomp$!e! & \grammarcomment{Hiding sequential composition}\\
+    & $\mid$ & !proj!$_{T1;A;T2}$  & \grammarcomment{Projection}\\
+    & $\mid$ & !e!$\comp$!e! & \grammarcomment{Sequential composition}\\
     & $\mid$ & !e!$\pcomp$!e! & \grammarcomment{Passing sequential composition}\\
     & $\mid$ & !map2!$_{T;x,y.e}$ & \grammarcomment{Map2}\\
     & $\mid$ & !reduce!$_{T;x,y.e}$ & \grammarcomment{Reduce}\\

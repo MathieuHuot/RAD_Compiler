@@ -9,11 +9,12 @@
     !e! & \mbox{::=} & ... & \grammarcomment{Same as source UNF}\\
     & $\mid$ & !J!$^T$!var!$_{\Gamma,i}$ & \grammarcomment{Jacobian for variable}\\
     & $\mid$ & !J!$^T$!op!$_{\Gamma,n}$ & \grammarcomment{Jacobian for operation, $0\leq n\leq 2$}\\
-    & $\mid$ & !J!$^T$!map!$_{\Gamma,x.e}$ $\mid$ !J!$^T$!map2!$_{\Gamma,x,y.e}$ & \grammarcomment{Jacobian for map, map2}\\
-    & $\mid$ & !J!$^T$!foldl!$_{\Gamma,x,y.e}$ & \grammarcomment{Jacobian for fold left}\\
+    & $\mid$ & !J!$^T$!pair!$_{T;A\times B}$ & \grammarcomment{Jacobian for pairing}\\
+    & $\mid$ & !J!$^T$!proj!$_{T1;A;T2}$ & \grammarcomment{Jacobian for projection}\\
+    & $\mid$ & !J!$^T$!map2!$_{\Gamma,x,y.e}$ & \grammarcomment{Jacobian for map2}\\
     & $\mid$ & !J!$^T$!reduce!$_{\Gamma,x,y.e}$ & \grammarcomment{Jacobian for reduce}\\
     & $\mid$ & !e!$\ppcomp$!e! & \grammarcomment{parallel composition}\\
-    & $\mid$ & !proj! & \grammarcomment{projection}\\
+
     & $\mid$ & !fun! & \grammarcomment{lambda asbtraction}\\
     \hline
     \end{tabular}

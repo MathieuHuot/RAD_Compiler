@@ -12,7 +12,7 @@
 
     \begin{tabular}{c}
     !A1,...,An! $\vdash$ !e1!: !A1,...,An,A! $\quad$ !A1,...,An,A! $\vdash$ !e2!: !A1,...,An,A,B! \\\hline
-    !A1,...,An! $\vdash$ !e1!$\hcomp$!e2!: !A1,...,An,B!
+    !A1,...,An! $\vdash$ !e1!$\comp$!e2!: !A1,...,An,A,B!
     \end{tabular}
     \hspace{0.5cm}
     \begin{tabular}{c}
@@ -23,6 +23,11 @@
     \begin{tabular}{c}
         \\\hline
         !T(=A1,...,An),A,B! $\vdash$ !pair!$_{T;A\times B}$ : !A1,...,An,A!$\times$!B!
+    \end{tabular}
+
+    \begin{tabular}{c}
+        \\\hline
+        !T1,A,T2! $\vdash$ !proj!$_{T1;A;T2}$ : !T1,T2!
     \end{tabular}
 
     \begin{tabular}{c}
