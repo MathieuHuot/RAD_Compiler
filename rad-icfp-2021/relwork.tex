@@ -18,10 +18,6 @@ we introduced on arrays and how to extend our approach to a richer language with
 \subsection{Related Work} % (fold)
 \label{sub:related_work}
 
-Relatively recent work in AD (2008-2020):
-\cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,wang2018demystifying,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing,bernstein2020differentiating}
-
-
 \noindent \textbf{Usage of iteration mechanics}
 A immense effort in machine learning for the past decade has been in finding
 good architectures, to limit computational costs, 
@@ -73,6 +69,11 @@ fitted intermediate representation for optimisations is of key interest, and act
 \cite{elliott2018simple}: bit similar because using CT as useful language, but we take impl and opti more seriously.
 \cite{shaikhha2019efficient}: similar approach but here more complicated for reversemode, would be interesting to investigate more loop fusions here.
 
+Relatively recent work in AD (2008-2020):
+\cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,wang2018demystifying,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing,bernstein2020differentiating}
+
+Good recent surveys: \cite{van2018automatic,baydin2017automatic}
+
 \subsection{Discussion and future work} % (fold)
 \label{sub:discussion_and_future_work}
 
@@ -90,34 +91,54 @@ There is always a tension between dynamicity and the possibility for static opti
 and we believe our language offers a good tradeoff, but it will be interesting to tailor it 
 further for specific applications.
 
-\noindent \textbf{Limitations and future work}
+\noindent \textbf{Cost function and memory accesses}
+Our cost model \ref{sub:costModel} is simple but has limits. 
+In particular, it does not capture well cost in term of
+parallel computing, and memory management (cache optimisation is one of best way to optimise such linear algebra intensive computations).
+For instance, in the earlier days of automatic differentiation, 
+advanced checkpointing techniques were used to avoid storing all the intermediate values just to save memory 
+and try avoiding saturation of RAM. 
+These problems are harder to analyse and eventually it seems to come down to a lot of experimenting and benchmarking.
+
+\noindent \textbf{Parallelism and GPU}
+We tried to locally preserve parallelism as much as possible, 
+and having a pure transformation should help with found parallelism. 
+It would be interesting to implement on transformations and see how they perform on GPU.
+It is well-kwown that the addition of references provoked by the standard reverse-mode transformation
+restricts a lot of optimisations and it is not hard to find examples in C where the compiler does not detect simple optimisations 
+because of the references introduced by reverse-mode.
+
+\noindent \textbf{implementation, BLaS, benchmark}
+
+\noindent \textbf{Higher-order functions}
+Matthijs'work, use of defunctionalization, question efficiency and usefulness, 
+interested in functions like root of function or minimal of a function. Implicit function theorem
+
+\noindent \textbf{More array primitives}
+filter, flatten, gather, scanl, ...
+can be derived by hand once and then it's ok
+
+\noindent \textbf{Recursion}
+
+\noindent \textbf{Higher derivatives}
+
+\noindent \textbf{Sparse data and matrix representation}
+
+
 \begin{itemize}
-    \item memory access for cost function 
-    \item parallelism
-    \item dedicated tensors for ML, and BLaS considerations
-    \item implementation and benchmark
-    \item conditionals
-    \item recursion
-    \item general HO function
-    \item more 2nd order functions, though can be derived by hand once and then it's ok
-    \item more dynamic arrays
-    \item more dynamic control flow
-    \item all store vs all recompute reverse-mode, and advanced checkpointing
-    \item numerical accuracy
     \item fancier types and datatypes (eg dependent, adt) 
-    \item iterated ad and higher derivatives
     \item use in Probabilistic programming
-    \item non smooth and partial functions, although by simply following the ref book it's as usual in AD
-    \item sparsity and data manipulation
     \item other optimisations like implicit function theorem
 \end{itemize}
 
-\MH{useful links (Swift is close to our project, and the doc is very readable):}
-\begin{verbatim}https://docs.google.com/document/d/1_BirmTqdotglwNTOcYAW-ib6mx_jl-gH9Dbg4WmHZh0/edit# \end{verbatim}
-\begin{verbatim}
-	https://github.com/apple/swift/blob/master/docs/DifferentiableProgramming.md#approaches-to-automatic-differentiation
-\end{verbatim}
+% \MH{useful links (Swift is close to our project, and the doc is very readable):}
+% \begin{verbatim}https://docs.google.com/document/d/1_BirmTqdotglwNTOcYAW-ib6mx_jl-gH9Dbg4WmHZh0/edit# \end{verbatim}
+% \begin{verbatim}
+% 	https://github.com/apple/swift/blob/master/docs/DifferentiableProgramming.md#approaches-to-automatic-differentiation
+% \end{verbatim}
 
-\MH{understand related work sentence from Diff. Curry paper: The idea of using closures as back-propagators is receiving recent attention. For example Julia Zy- gote [15] and Swift AD adopts this design. Other recent work follows similar ideas [27, 26] but is using meta-programming as an implementation technique.}
+\MH{understand related work sentence from Diff. Curry paper: The idea of using closures as back-propagators is receiving recent attention. 
+    For example Julia Zygote \cite{innes2019zygote} and Swift AD \cite{wei2018first} chose this design. 
+    Other recent work follows similar ideas [27, 26] but is using meta-programming as an implementation technique.}
 
 \clearpage
