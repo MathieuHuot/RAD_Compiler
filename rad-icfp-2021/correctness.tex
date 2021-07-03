@@ -98,12 +98,15 @@ This comparison precisely give the UNF transformation.
     TODO
 \end{definition}
 
+
 \begin{proposition}{construction above gives UNF}
     TODO
 \end{proposition}
 
-
-
+In a similar vein, we form a concategory from the syntactic multicategory for Target.
+We then use the universal property of $\ConcatT$ to construct a functor from $\ConcatT$ to this concategory.
+This allows us to compare terms of Target UNF and terms of Target. 
+$UNF^-1$ arises in this way.
 
 \begin{definition}{Concat from multicat}
     TODO
@@ -113,21 +116,18 @@ This comparison precisely give the UNF transformation.
     TODO
 \end{proposition}
 
+What remains to explain now is the reverse mode transformation between Source UNF and Target UNF.
+We construct a functor $D:\ConcatS\to\ConcatT$. 
+This functor will easily be shown to compute reverse mode derivatives.
+Because terms of Source UNF in $\ConcatS$, we observe the effect of $D$ on them
+and show that it matches the syntactic $\Dsynrevsymbol_{\rho}$ 
+from Section~\ref{sub:Simple reverse mode transformation}.
 
-
-
-
-
-\begin{definition}{lax functor between concat}
+\begin{definition}{D as a lax functor}
     TODO
 \end{definition}
 
-
-\begin{example}{D as a lax functor}
-    TODO
-\end{example}
-
-\begin{proposition}{semantic of D syntactic matches D lax functor}
+\begin{proposition}{semantic of syntactic D matches D lax functor}
     TODO
 \end{proposition}
 
@@ -135,17 +135,40 @@ This comparison precisely give the UNF transformation.
 \subsection{Correctness theorem} % (fold)
 \label{sub:Correctness theorem}
 
+First, we start from the correctness of $D$ which is easy to establish, 
+and then somehow propagate this information to Source and Target.
+
+\begin{proposition}{Correctness $D$}
+    TODO
+\end{proposition}
+
+Recall that the intuition from Source UNF is that it consist of terms of Source that also return their context.
+From there, the intuition for the Jacobian of a primitive in Target UNF is that it should be the Jacobian of
+the corresponding term in Target. 
+
+\MH{I don't want to talk too much about the cotangent bundle functor, but to phrase correctness properties clearly I might have to.}
+
 \begin{proposition}{The transpose Jacobian of !map2! and !reduce! are correct.}
     TODO
 \end{proposition}
+
+From this, we can now deduce that the composite transformation doing UNF then $D$ and then $UNF^-1$ is correct
+in the sense that it produces a term which computes the gradient of the original term.
 
 \begin{theorem}{UNF;D;$UNF^-1$ correct}
     TODO
 \end{theorem}
 
+By inspection of what that composition actually give on terms from Source, 
+we show that the previous composition of transformation indeed gives the transformation 
+$\directD{\rho}{\Gamma}{Y}$ from Section~\ref{sub:Macro for pure reverse mode transformation}. 
+
 \begin{proposition}{UNF;D;$UNF^-1$=D}
     TODO
 \end{proposition}
+
+Without any more work, the previous claims have shown that 
+$\directD{\rho}{\Gamma}{Y}$ is correct.
 
 \begin{theorem}{D is correct}
     TODO
