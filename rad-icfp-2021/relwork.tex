@@ -94,18 +94,17 @@ further for specific applications.
 \noindent \textbf{Cost function and memory accesses}
 Our cost model \ref{sub:costModel} is simple but has limits. 
 In particular, it does not capture well cost in term of
-parallel computing, and memory management (cache optimisation is one of best way to optimise such linear algebra intensive computations).
+parallel computing, and memory management (cache optimization is one of best way to optimize such linear algebra intensive computations).
 For instance, in the earlier days of automatic differentiation, 
 advanced checkpointing techniques were used to avoid storing all the intermediate values just to save memory 
 and try avoiding saturation of RAM. 
-These problems are harder to analyse and eventually it seems to come down to a lot of experimenting and benchmarking.
+These problems are harder to analyze and, eventually, it seems to come down to a lot of experimenting and benchmarking.
 
 \noindent \textbf{Parallelism and GPU}
-We tried to locally preserve parallelism as much as possible, 
-and having a pure transformation should help with found parallelism. 
+We tried to locally preserve parallelism. Having a pure transformation should help with found parallelism. 
 It would be interesting to implement on transformations and see how they perform on GPU.
-It is well-kwown that the addition of references provoked by the standard reverse-mode transformation
-restricts a lot of optimisations and it is not hard to find examples in C where the compiler does not detect simple optimisations 
+It is well-known that the addition of references provoked by the standard reverse-mode transformation
+restricts a lot of optimizations and it is not hard to find examples in C where the compiler does not detect simple optimisations 
 because of the references introduced by reverse-mode.
 
 \noindent \textbf{implementation, BLaS, benchmark}
@@ -124,22 +123,19 @@ can be derived by hand once and then it's ok
 
 \noindent \textbf{Sparse data and matrix representation}
 
+\noindent \textbf{Further applications}
+Reverse-mode differentiation is notoriously difficult to grasp, implement, and optimize.
+We hope this work could help develop a new perspective on pure reverse-mode automatic differentiation.
+Other applications include the use of fancier datatypes e.g. dependent types, 
+in probabilistic programming, e.g. for HMC or Variational Inference. 
+It is also of interest to see how to extend this work with other techniques which 
+have had renewed interest such as implicit differentiation \cite{blondel2021efficient,lorraine2020optimizing}.
 
-\begin{itemize}
-    \item fancier types and datatypes (eg dependent, adt) 
-    \item use in Probabilistic programming
-    \item other optimisations like implicit function theorem
-\end{itemize}
-
-% \MH{useful links (Swift is close to our project, and the doc is very readable):}
-% \begin{verbatim}https://docs.google.com/document/d/1_BirmTqdotglwNTOcYAW-ib6mx_jl-gH9Dbg4WmHZh0/edit# \end{verbatim}
-% \begin{verbatim}
 % 	https://github.com/apple/swift/blob/master/docs/DifferentiableProgramming.md#approaches-to-automatic-differentiation
-% \end{verbatim}
 
 \MH{understand related work sentence from Diff. Curry paper: The idea of using closures as back-propagators is receiving recent attention. 
     For example Julia Zygote \cite{innes2019zygote} and Swift AD \cite{wei2018first} chose this design. 
     Other recent work follows similar ideas [27, 26] but is using meta-programming as an implementation technique.}
 
-\MH{should talk a bit about very recent reverse AD in Dex \cite{paszke2021getting}}
+\MH{should talk a bit about the recent paper: reverse AD in Dex \cite{paszke2021getting}}
 \clearpage
