@@ -14,8 +14,8 @@ where $\sem{-}$ is ab appropriate denotational semantics of smooth functions.
 \label{sub:Denotational semantics source and Target}
 
 It is standard to give a denotational semantics of a first-order language in a Cartesian category.
-An alternative approach consists in giving a semantics in a multicategory.
-A multicategory generalises a category by allowing multimorphims, that is morphisms from a list of objects to an object.
+An alternative approach consists of giving semantics in a multicategory.
+A multicategory generalizes a category by allowing multimorphisms, that is, morphisms from a list of objects to an object.
 Most categorical structures from category theory can be phrases similarly in multicategories.
 
 In terms of semantics, a term $x_1:A_1,\ldots,x_n:A_n\vdash e:A$ is interpreted as a morphism $\sem{e}:[\sem{A_1},\ldots,\sem{A_n}]\to \sem{A}$ in a multicategory.
@@ -24,7 +24,7 @@ Substitution is still interpreted as composition.
 One can consider a syntactic model for a language, which consists in a free multicategory.
 Our source and target languages induce syntactic multicategories as follows.
 
-\begin{definition}{Syntactic multicategory for Source}
+\begin{definition}[Syntactic multicategory for Source]
     Let $\SynSource$ be the multicategory whose objects are types of Source, and where a morphism 
     $[A_1,\ldots,A_n]\to A$ is a term $x_1:A_1,\ldots,x_n:A_n\vdash e:A$ of Source modulo the $\eta\beta$-laws.
     Composition is by substitution.
@@ -38,10 +38,10 @@ and every object $F(\reals)\in\catC$ and morphisms $F(\underline{c})\in\catC(1;F
 $F(op1)\in\catC(F(\reals);F(\reals))$, $F(op2)\in\catC(F(\reals),F(\reals);F(\reals))$, there is a unique
 multifunctor $F:\SynSource\to\catC$ respecting the interpretation and preserving all the structure.
 
-We can for instance use this to give a simple semantics of Source 
+We can, for instance, use this to give a simple semantics of Source 
 in the multicategory of Cartesian spaces and smooth maps between them. 
 
-\begin{definition}{CartSp}
+\begin{definition}[CartSp]
     TODO, its definition and semantics of Source in it.
 \end{definition}
 
@@ -50,13 +50,13 @@ TODO: what about semantics Target?
 \subsection{Semantics for UNF using concategories} % (fold)
 \label{sub:Semantics for UNF using concategories}
 
-One main reason for introducing UNF is to have a better control 
-of the computation flow of the term, similarly to what ANF or CPS do. 
+One main reason for introducing UNF is to have a better handle over
+the computation flow of the term, similar to what ANF or CPS provide. 
 A convenient categorical setting for this is to use string diagrams.
 To better fit the standard denotational semantics of languages, 
 we can instead use concategories. 
 
-Concategories are a generalisation of categories and multicategories in that 
+Concategories are a generalization of categories and multicategories in that 
 they allow morphisms both from and to a list of objects. 
 Similarly to categories and multicategories, 
 most categorical abstractions used for the semantics of languages are easily adapted to them.
@@ -67,23 +67,50 @@ Two such examples are of particular interest for us,
 because they will allow us to interpret Source and Target UNF, 
 but also explain the UNF and $UNF^{-1}$ transformations.
 
-\begin{example}{Concat1}
-    TODO
-\end{example}
+\begin{definition}[$\ConcatS$]
+Let $\ConcatS$ the syntactic Cartesian concategory whose types are those of Source and 
+with primitives given by $op1: \reals \to \reals$, $op2: \reals,\reals \to \reals$ $map2_{x,y.e}$
+and $reduce_{x,y.e1;e2}$.
+\MH{actually I just need projection and a representing object for pairs, it might be weaker than Cartesian?}
+\end{definition}
 
+One may notice that the syntax of $\ConcatS$ is somewhere in between the syntax of Source and of Source UNF.
 We can interpret Source UNF in $\ConcatS$ as follows.
 
-TODO
+\begin{tabular}{l c r}
+   $\seml$!var!$_{T;i} \semr$ &=& \\
+   $\seml$!op!$_{T;n} \semr$ &=& \\
+   $\seml$!pair!$_{T;A\times B} \semr$ &=& \\
+   $\seml$!proj!$_{T1;T2;T3} \semr$ &=& \\
+   $\seml$!e!$\comp$!e!$\semr$  &=& \\
+   $\seml$!e!$\pcomp$!e!$\semr$ &=& \\
+   $\seml$!map2!$_{T;x,y.e}\semr$  &=& \\
+   $\seml$!reduce!$_{T;x,y.e;e}\semr$  &=& \\
+\end{tabular}
 
-Similarly, we introduce a second concategory for the Target part.
+Similarly, we introduce a second concategory for the Target part of our transformations.
 
-\begin{example}{Concat2}
-    TODO
-\end{example}
+\begin{definition}[$\ConcatT$]
+Let $\ConcatT$ be the syntactic Cartesian concategory whose types are those of Target and 
+with primitives given by $op1: \reals \to \reals$, $op2: \reals,\reals \to \reals$ $map2_{x,y.e}$, 
+$reduce_{x,y.e1;e2}$, TODO
+\MH{not too sure, should I say what a Cartesian concat is?}
+\end{definition}
 
 We can interpret Target UNF in $\ConcatT$ as follows.
 
-TODO
+\begin{tabular}{l c r}
+    $\seml$!var!$_{T;i} \semr$ &=& \\
+    $\seml$!op!$_{T;n} \semr$ &=& \\
+    $\seml$!pair!$_{T;A\times B} \semr$ &=& \\
+    $\seml$!proj!$_{T1;T2;T3} \semr$ &=& \\
+    $\seml$!e!$\comp$!e!$\semr$  &=& \\
+    $\seml$!e!$\pcomp$!e!$\semr$ &=& \\
+    $\seml$!map2!$_{T;x,y.e}\semr$  &=& \\
+    $\seml$!reduce!$_{T;x,y.e;e}\semr$  &=& \\
+ \end{tabular}
+\MH{Do I need any kind of proposition saying that this makes sense?
+Might need to define on types as well to be clearer: It's an identity on type functor...}
 
 \subsection{Semantics for UNF transformations} % (fold)
 \label{sub:Semantics for UNF transformations}
@@ -92,14 +119,14 @@ We interpret Source in a new multicategory,
 whose morphisms are particular morphisms of $\ConcatS$.
 As Source UNF is itself interpreted in $\ConcatS$, 
 this gives us a way to compare terms in Source with terms in Source UNF.
-This comparison precisely give the UNF transformation.
+This comparison precisely gives the UNF transformation.
 
-\begin{definition}{Mutlicat from concat}
+\begin{definition}[Mutlicat from concat]
     TODO
 \end{definition}
 
 
-\begin{proposition}{construction above gives UNF}
+\begin{proposition}[construction above gives UNF]
     TODO
 \end{proposition}
 
@@ -108,26 +135,26 @@ We then use the universal property of $\ConcatT$ to construct a functor from $\C
 This allows us to compare terms of Target UNF and terms of Target. 
 $UNF^-1$ arises in this way.
 
-\begin{definition}{Concat from multicat}
+\begin{definition}[Concat from multicat]
     TODO
 \end{definition}
 
-\begin{proposition}{Initiality of concat2 gives $UNF^-1$}
+\begin{proposition}[Initiality of concat2 gives $UNF^-1$]
     TODO
 \end{proposition}
 
 What remains to explain now is the reverse mode transformation between Source UNF and Target UNF.
 We construct a functor $D:\ConcatS\to\ConcatT$. 
-This functor will easily be shown to compute reverse mode derivatives.
+This functor will easily be shown to compute reverse-mode derivatives.
 Because terms of Source UNF in $\ConcatS$, we observe the effect of $D$ on them
 and show that it matches the syntactic $\Dsynrevsymbol_{\rho}$ 
 from Section~\ref{sub:Simple reverse mode transformation}.
 
-\begin{definition}{D as a lax functor}
+\begin{definition}[D as a lax functor]
     TODO
 \end{definition}
 
-\begin{proposition}{semantic of syntactic D matches D lax functor}
+\begin{proposition}[semantic of syntactic D matches D lax functor]
     TODO
 \end{proposition}
 
@@ -135,41 +162,41 @@ from Section~\ref{sub:Simple reverse mode transformation}.
 \subsection{Correctness theorem} % (fold)
 \label{sub:Correctness theorem}
 
-First, we start from the correctness of $D$ which is easy to establish, 
-and then somehow propagate this information to Source and Target.
+First, we start from the correctness of $D$, which is easy to establish, 
+and then propagate this information to Source and Target.
 
-\begin{proposition}{Correctness $D$}
+\begin{proposition}[Correctness $D$]
     TODO
 \end{proposition}
 
-Recall that the intuition from Source UNF is that it consist of terms of Source that also return their context.
+Recall that the intuition from Source UNF is that it consists of terms of Source that also return their context.
 From there, the intuition for the Jacobian of a primitive in Target UNF is that it should be the Jacobian of
 the corresponding term in Target. 
 
 \MH{I don't want to talk too much about the cotangent bundle functor, but to phrase correctness properties clearly I might have to.}
 
-\begin{proposition}{The transpose Jacobian of !map2! and !reduce! are correct.}
+\begin{proposition}[The transpose Jacobian of !map2! and !reduce! are correct.]
     TODO
 \end{proposition}
 
 From this, we can now deduce that the composite transformation doing UNF then $D$ and then $UNF^-1$ is correct
-in the sense that it produces a term which computes the gradient of the original term.
+in the sense that it produces a term that computes the gradient of the original term.
 
-\begin{theorem}{UNF;D;$UNF^-1$ correct}
+\begin{theorem}[UNF;D;$UNF^-1$ correct]
     TODO
 \end{theorem}
 
-By inspection of what that composition actually give on terms from Source, 
+By inspection of what that composition actually gives on terms of Source, 
 we show that the previous composition of transformation indeed gives the transformation 
 $\directD{\rho}{\Gamma}{Y}$ from Section~\ref{sub:Macro for pure reverse mode transformation}. 
 
-\begin{proposition}{UNF;D;$UNF^-1$=D}
+\begin{proposition}[UNF;D;$UNF^-1$=D]
     TODO
 \end{proposition}
 
 Without any more work, the previous claims have shown that 
 $\directD{\rho}{\Gamma}{Y}$ is correct.
 
-\begin{theorem}{D is correct}
+\begin{theorem}[D is correct]
     TODO
 \end{theorem}
