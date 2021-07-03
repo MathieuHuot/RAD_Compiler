@@ -2,7 +2,7 @@
 \label{sec:correctness}
 
 This section provides a categorical analysis of our language and transformations.
-The end goal is to prove the correctness of the reverse mode transformation from Section~\ref{sub:Macro for pure reverse mode transformation}.
+The end result is the correctness of the reverse mode transformation from Section~\ref{sub:Macro for pure reverse mode transformation}:
 
  \begin{theorem}
      For every $\Gamma \vdash$ !e:!$\reals$, we have 
@@ -13,23 +13,39 @@ where $\sem{-}$ is ab appropriate denotational semantics of smooth functions.
 \subsection{Denotational semantics source and Target} % (fold)
 \label{sub:Denotational semantics source and Target}
 
-\begin{definition}{multicategory}
-    TODO
+It is standard to give a denotational semantics of a first-order language in a Cartesian category.
+An alternative approach consists in giving a semantics in a multicategory.
+A multicategory generalises a category by allowing multimorphims, that is morphisms from a list of objects to an object.
+Most categorical structures from category theory can be phrases similarly in multicategories.
+
+In terms of semantics, a term $x_1:A_1,\ldots,x_n:A_n\vdash e:A$ is interpreted as a morphism $\sem{e}:[\sem{A_1},\ldots,\sem{A_n}]\to \sem{A}$ in a multicategory.
+Substitution is still interpreted as composition. 
+
+One can consider a syntactic model for a language, which consists in a free multicategory.
+Our source and target languages induce syntactic multicategories as follows.
+
+\begin{definition}{Syntactic multicategory for Source}
+    Let $\SynSource$ be the multicategory whose objects are types of Source, and where a morphism 
+    $[A_1,\ldots,A_n]\to A$ is a term $x_1:A_1,\ldots,x_n:A_n\vdash e:A$ of Source modulo the $\eta\beta$-laws.
+    Composition is by substitution.
 \end{definition}
 
-\begin{definition}{free multicategory}
-    TODO
-\end{definition}
+We similarly define $\SynTarget$, the syntactic multicategory for Target.
 
-\begin{example}{Source and Target as syntactic multicategories}
-    TODO
-\end{example}
+As is standard, $\SynSource$ satisfies the following universal property: 
+for every Cartesian multicategory $\catC$ with arrays map and reduce,
+and every object $F(\reals)\in\catC$ and morphisms $F(\underline{c})\in\catC(1;F(\reals))$, 
+$F(op1)\in\catC(F(\reals);F(\reals))$, $F(op2)\in\catC(F(\reals),F(\reals);F(\reals))$, there is a unique
+multifunctor $F:\SynSource\to\catC$ respecting the interpretation and preserving all the structure.
+
+We can for instance use this to give a simple semantics of Source 
+in the multicategory of Cartesian spaces and smooth maps between them. 
 
 \begin{definition}{CartSp}
-    TODO
+    TODO, its definition and semantics of Source in it.
 \end{definition}
 
-TODO: semantics of Source in CartSp, what about semantics Target?
+TODO: what about semantics Target?
 
 \subsection{Semantics for UNF using concategories} % (fold)
 \label{sub:Semantics for UNF using concategories}
