@@ -1,39 +1,99 @@
 \section{Correctness}
 \label{sec:correctness}
 
-We now prove that our transformations are correct. 
- The main result of the section is
+This section provides a categorical analysis of our language and transformations.
+The end goal is to prove the correctness of the reverse mode transformation from Section~\ref{sub:Macro for pure reverse mode transformation}.
 
  \begin{theorem}
-    TODO: rephrase following Section~\ref{sec:simplediff}.
-     For every $\Gamma \vdash$ !e: \reals!, we have 
-     $\sem{\pi_2 \invUNF{\UNF{e}}(Id_\Gamma)(last(1:\reals))}= \nabla_{\Gamma}\sem{e}$.
+     For every $\Gamma \vdash$ !e:!$\reals$, we have 
+     $\sem{\grad_\Gamma e}= \grad_\Gamma\sem{e}$.
  \end{theorem}
- where $Id_\Gamma$ is the identity function, 
- $\sem{-}$ an appropriate denotational semantics of smooth functions,
- and $last(a)$ is the hot-vecteur encoding $(0,\ldots,0,a)$. 
+where $\sem{-}$ is ab appropriate denotational semantics of smooth functions.
 
-\subsection{Denotational semantics for the source and target languages} 
+\subsection{Denotational semantics source and Target} % (fold)
+\label{sub:Denotational semantics source and Target}
 
+\begin{definition}{multicategory}
+    TODO
+\end{definition}
 
-\begin{itemize}
-    \item syntactic (multi?)category category
-    \item semantics in Manifolds or Eucl: TODO: need be clearer arrays of fixed size in syntax, should reflect the semantics
-    \item semantics for the array part
-\end{itemize}
+\begin{definition}{free multicategory}
+    TODO
+\end{definition}
 
- \subsection{UNF semantics} % (fold)
- \label{sub:UNF semantics}
- 
-\begin{itemize}
-    \item TODO: what do I do here?
-\end{itemize}
+\begin{example}{Source and Target as syntactic multicategories}
+    TODO
+\end{example}
 
+\begin{definition}{CartSp}
+    TODO
+\end{definition}
 
- \subsection{Correctness transformations} % (fold)
- \label{sub:Correctness transformations}
+TODO: semantics of Source in CartSp, what about semantics Target?
 
+\subsection{Semantics for UNF using concategories} % (fold)
+\label{sub:Semantics for UNF using concategories}
 
- \subsection{Correctness optimisations} % (fold)
- \label{sub:Correctness optimisations}
- 
+\begin{definition}{concategory}
+    TODO
+\end{definition}
+
+\begin{definition}{free concategory}
+    TODO
+\end{definition}
+
+\begin{example}{Concat1, Concat2}
+    TODO
+\end{example}
+
+TODO: semantics of UN1, UNF2 inside Concat1, Concat2
+
+\subsection{Semantics for UNF transformations} % (fold)
+\label{sub:Semantics for UNF transformations}
+
+\begin{definition}{Mutlicat from concat}
+    TODO
+\end{definition}
+
+\begin{proposition}{construction above gives UNF}
+    TODO
+\end{proposition}
+
+\begin{definition}{lax functor between concat}
+    TODO
+\end{definition}
+
+\begin{example}{D as a lax functor}
+    TODO
+\end{example}
+
+\begin{proposition}{semantic of D syntactic matches D lax functor}
+    TODO
+\end{proposition}
+
+\begin{definition}{Concat from multicat}
+    TODO
+\end{definition}
+
+\begin{proposition}{Initiality of concat2 gives $UNF^-1$}
+    TODO
+\end{proposition}
+
+\subsection{Correctness theorem} % (fold)
+\label{sub:Correctness theorem}
+
+\begin{proposition}{The transpose Jacobian of !map2! and !reduce! are correct.}
+    TODO
+\end{proposition}
+
+\begin{theorem}{UNF;D;$UNF^-1$ correct}
+    TODO
+\end{theorem}
+
+\begin{proposition}{UNF;D;$UNF^-1$=D}
+    TODO
+\end{proposition}
+
+\begin{theorem}{D is correct}
+    TODO
+\end{theorem}
