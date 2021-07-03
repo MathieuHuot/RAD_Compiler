@@ -1,22 +1,11 @@
 \section{Generalisations}
 \label{sec:generalisation}
 
-% Extended source language:
 
-% \input{figures/generalisation_source_grammar}
+\subsection{Lifting the restriction on map and fold}
+\label{sub:Lifting the restriction on map and fold}
 
-% \input{figures/generalisation_source_typesystem}
-
-Extended target language:
-
-% \input{figures/generalisation_target_grammar}
-
-% \input{figures/generalisation_target_typesystem}
-
-\subsection{Arrays}
-
-\subsubsection{Lifting the restriction on map and fold}
-\label{ssub:Lifting the restriction on map and fold}
+TODO: not sure about this, and my derivative for reduce/foldl is currently a bit wrong
 
 Note that we recover !zip A B! as !map2 (fun x,y -> (x,y)) A B)!. 
 We can lift the restriction on the function of !foldl! by changing a part in $\invUNFSymbol$ of !foldl!.
@@ -30,15 +19,74 @@ We can lift the restriction on the function of !foldl! by changing a part in $\i
 \end{tabular}
 \end{center}
 
-\subsubsection{Lifting the restriction on the type of arrays}
-\label{ssub:Lifting the restriction on the type of arrays}
+\subsection{Adding more array operators}
+\label{sub:Adding more array operators}
 
 
-\subsection{Conditionals} 
+\subsection{Adding more scalar operators} % (fold)
+\label{sub:Adding more scalar operators}
 
+We assumed the unary and binary operators were denoted by smooth functions $\RR^n\to\RR$. 
+There is no additional difficulty in considering operators which are partial functions 
+like division or operators which are not smooth at a point like square root.
 
+These functions are then given intentional derivatives which provide valid derivatives 
+on the domain of definition and differentiability of the operator. 
+These functions are well known to be the bete noire of AD \cite{griewank2008evaluating} 
+and we do not provide novel solutions to these.  
+Several recent work have shown how to give semantics to such operators in the context of AD \cite{vakar2020denotational,mazza2021automatic,sherman2021,lee2020correctness}.
 
-\subsection{Partial operations} 
+\subsection{Adding conditionals} % (fold)
+\label{sub:Adding conditionals}
 
-TODO: could also be section/new section for adding operators to the language, e.g. scan, foldr in the source language
+Adding conditionals to the source language can be done easily, for instance via defining
+
+\begin{tabular}{r c l}
+$\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) &=& !if e1 then !$\directD{\rho}{\Gamma}{Y}$!(e2) else !$\directD{\rho}{\Gamma}{Y}$!(e3)! 
+\end{tabular}
+
+The problem is that this could break the complexity of reverse mode because of the non linear usage of $Y$, and makes everything harder to optimise.
+
+A slighly better option would be to define 
+
+\begin{tabular}{r c l}
+    $\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) 
+    &=& !let b=e1 in!   \\
+    && !<if b then e2 else e3, fun (x1,...,xn,z) ->! \\
+    && !Y(b*!$\directD{\rho}{\Gamma}{Y}$!(e2)(x1,...,xn,z)+!\\
+    && \quad!(1-b)*!$\directD{\rho}{\Gamma}{Y}$!(e3)(x1,...,xn,z))>!
+\end{tabular}
+
+It is slighly better because both derivatives of !e2! and !e3! are put together which might unlock some optimisations, but there is still a non linear usage of the variables.
+One solution, if we know we want to compute the whole gradient of the expression, is to define instead
+
+\begin{tabular}{r c l}
+    $\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) 
+    &=& !let b=e1 in!   \\
+    && !<if b then e2 else e3, fun (x1,...,xn,z) ->! \\
+    && !Y((x1,...,xn)!$\widehat{+}$($\grad_\Gamma$!(e2)*b!$\widehat{+}\grad_\Gamma$!(e3)*(1-b))*z)>!\\
+\end{tabular}
+
+This time, there is linear usage of !Y,z! and the !xi!. 
+
+TODO: explain why it's correct?\\
+TODO: adding conditionals does not break differentiability as long as no non smooth function like max(0,-):R->B\\
+TODO: re explain how it's usually done by partial eval of the conditional first.
+
+\subsection{Adding general arrays} % (fold)
+\label{sub:Adding general arrays}
+
+We now show how to consider arrays over any ground type $G$. 
+
+TODO: introduce sum and tensor of semantics of ground type\\
+TODO: then * becomes a dot product\\
+TODO: minor changes from there\\
+TODO: except I'm not sure with reduce and shift1...
+
+Though this has the right complexity, it is an interesting avenue for future research to find
+better representations to allow for more optimisations. 
+In particular, representations looking like Einsum \cite{van2011numpy} could be of interest 
+and has been recently studied in the context of AD \cite{laue2018computing,laue2020simple}.
+
+TODO: more generally about tensors \cite{liao2019differentiable,bernstein2020differentiating}
 
