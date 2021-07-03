@@ -19,39 +19,38 @@
 
 \subsection{Motivation}
 
-In 2008, Pearlmutter and Siskind \cite{pearlmutter2008reverse} introduced Automatic Differentiation (AD) in a functional setting. 
-They introduced reverse-mode in their setting. 
-Reverse-mode can compute in one pass the whole gradient of a function $\RR^n\to\RR$, and this is very fast.
+In 2008, Pearlmutter and Siskind~\cite{pearlmutter2008reverse} introduced Automatic Differentiation (AD) in a functional setting, where they introduced reverse-mode. 
+Reverse-mode computes in a single fast pass the whole gradient of a function $\RR^n\to\RR$.
 By comparison, the easier forward-mode transformation would need $n$ passes. 
-These functions $\RR^n\to\RR$ actually appear a lot in practice, for instance as loss functions in machine learning.
-Reverse-mode is thus important as it computes a whole gradient very quickly for these functions. 
-To be as efficient as the usual imperative version of reverse-mode, the transformation in \cite{pearlmutter2008reverse} introduced references.
+These functions $\RR^n\to\RR$ appear a lot in practice: for instance, as loss functions in machine learning.
+Reverse-mode is thus important, as it computes the whole gradient of such functions very quickly. 
+However, in order to be as efficient as the usual imperative version of reverse-mode, the transformation in~\cite{pearlmutter2008reverse} resorted to references.
 
-The lack of purity of reverse-mode is known to make it significantly harder to optimise and find parallelism. 
-None of the current implementations of reverse-mode in a functional setting \cite{lantern_icfp,pearlmutter2008reverse,baydin2016diffsharp} are pure, and often complicated heuristics with no guarantees are used, e.g. \cite{xla}.
-It means that for every important non trivial operation, a hand-crafted reverse-derivative must be given to be efficient.
-In other words functional implementations seem to struggle to abstract away from imperative code.
+The lack of purity of reverse-mode is known to make it significantly harder to optimize and parallelize. 
+None of the current implementations of reverse-mode in a functional setting~\cite{lantern_icfp,pearlmutter2008reverse,baydin2016diffsharp} are pure, and often complicated heuristics with no guarantees are used, e.g.~\cite{xla}.
+
+This means that for every important non trivial operation, a hand-crafted reverse-derivative must be given, to optimize for efficiency.
+In other words, abstracting away from imperative code is still a hurdle that functional implementations need to overcome.
 
 % For example, \MH{TODO: show how $\prod_i v_i$ for a vector $v$ is done in some functional AD systems}.
 % For real world AD systems, modularity is key. They need to be expressive but have a lot of optimised derivatives for operators that are used a lot.
 % This is easily seen on numpy \MH{TODO: explain a bit better why torch is good by using optimised grad for numpy.}
 % An efficient purely functional reverse-mode transformation would be more easily explainable, optimisable, and potentially reusable.
- An efficient purely functional reverse-mode transformation would be more easily explainable, optimisable, and reusable.
+An efficient purely functional reverse-mode transformation would be more easily explainable, optimizable, and reusable.
 
- \subsection{Problem}
+\subsection{Problem}
 
 Following \cite{pearlmutter2008reverse}, it is relatively easy to define a purely functional reverse-mode on a first-order language using continuations. 
-As remarked by the authors, this is highly inefficient. 
-The problem we tackle in this paper is how to go from a simple and general setting where we can relatively easily prove correctness of reverse-mode, 
-to a representation that matches more efficient implementations.
+Yet, as remarked by the authors, this is highly inefficient. 
+The problem we tackle in this paper is how to go from a simple and general setting, where we can relatively easily prove correctness of reverse-mode, 
+to a representation that leads to more efficient implementations.
 
-This raises several problems that are dealt with in our paper. First, there is a tradeoff between a general expressive language 
-as opposed to a domain specific language. The latter usually has more static information and a specific representation to perform optimisations.
-Then, a lot of optimisations performed on AD implementations consist of a lot of hand-crafted derivatives for a lot of useful operations like matrix-matrix multiplication, dot-product, etc.
-They don't seem to come with more theoretical justification, are error prone, and can hardly fit more general optimisations.
+This raises several issues that are dealt with throughout the paper. First, there is a tradeoff to reach between a general expressive language and a domain specific one. The latter usually has more static information and a specific representation that lends itself to better optimizations.
+Then, a lot of optimizations performed on AD implementations consist of a lot of hand-crafted derivatives for a lot of useful operations like matrix-matrix multiplication, dot-product, etc.
+They don't seem to come with more theoretical justification, are error prone, and can hardly fit more general optimizations.
 \MH{TODO: maybe the example and ref that ML systems spend 90percent of the time outside of numpy.}
 This makes these systems harder to prove correct. The problem is thus to stay provably correct and pure, and yet efficient. What's more is we would like something easily provably efficient. 
-A real implementation on top of our work would of course optimise further, potentially using hand-crafted operations as well, but it would be based on more solid grounds.
+A real implementation on top of our work would of course optimize further, potentially using hand-crafted operations as well, but it would be based on more solid grounds.
 
 \subsection{Summary of contributions}
 
