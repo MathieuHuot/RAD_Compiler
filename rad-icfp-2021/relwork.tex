@@ -4,12 +4,16 @@
 \subsection{Summary} % (fold)
 \label{sub:summary}
 
-We have introduced a transformation on programs to compute provably efficient (\ref{sec:complexity}) gradients via reverse derivatives in a purely functional way (\ref{sub:Macro for pure reverse mode transformation})
-on a simple yet expressive language with functions on arrays (\ref{sub:sourcelang}), combined with standard functional optimisations (\ref{fig:optim}).  
+We have introduced a transformation on programs to compute provably efficient (\ref{sec:complexity}) 
+gradients via reverse derivatives in a purely functional way (\ref{sub:Macro for pure reverse mode transformation})
+on a simple yet expressive language with functions on arrays (\ref{sub:sourcelang}), 
+combined with standard functional optimisations (\ref{fig:optim}).  
 We introduced a novel intermediate representation, unary form (\ref{sec:unf}) 
-to decompose our transformation into simpler and more insightful transformations.
+to decompose our transformation into simpler transformations.
+We gave denotational semantics to our languages and our transformations (\ref{sec:correctness}) 
+and showed correctness of the reverse-mode transformation (\ref{sub:Correctness theorem}).
 We showed (\ref{sec:generalisation}) how to lift some of the restrictions that
-we introduced on arrays and how to extend our approach.
+we introduced on arrays and how to extend our approach to a richer language with more primitive operations and conditionals.
 
 \subsection{Related Work} % (fold)
 \label{sub:related_work}
@@ -33,6 +37,19 @@ Recursion in DNN: \cite{jeong2018improving}
 \noindent \textbf{Numerical DSLs.} 
 
 \noindent \textbf{Correctness of AD in functional languages.}
+Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotational,brunel2019backpropagation,barthe2020versatility,mazza2021automatic} have focused on correctness of AD in a purely functional setting, 
+often leaving efficiency on the side, especially for reverse-mode differentiation. 
+We see our work as a complement and a first bridge between these works 
+and more practical considerations of efficiency and implementations, 
+which often require a lot more care than is acknowledegd in more theoretical works.
+
+An exception is \cite{abadi-plotkin2020} which gives a reverse-mode transformation that is proved correct and with the right complexity.
+This work is purely first-order, does not have arrays and uses a non standard semantics. 
+Our work is more canonical in the sense that it can more directly be implemented in a standard call-by-value language.
+They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
+Instead, they follow the principle of unrolling for recursive calls and evaluating the conditional before differentiating, 
+which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
+This is a well-known limit in TensorFlow which TeaserFlow EagerMode tries to bypass. 
 
 \noindent \textbf{Comparison to other recent papers.}
 
@@ -40,12 +57,20 @@ Recursion in DNN: \cite{jeong2018improving}
 \label{sub:discussion_and_future_work}
 
 \noindent \textbf{More dynamic language}
-%TF is losing ground to Pytorch, Swift tries to renew with Pytorch-like dynamic features. 
+JAX \cite{bradbury2020jax,frostig2018compiling} is a modern framework that provides state-of-the-art automatic differentiation. 
+One feature that makes it popular is that it uses JIT compilation, 
+which seems to be the best avenue to help best ML practionners as it allows them 
+to quickly experiment but also benefit from the full power of static optimisations.
+We are interested in seeing how our work could sit in a JIT compiler. 
 
 \noindent \textbf{More optimisations.}
-%maybe?
+As pointed in \ref{sub:Adding general arrays} it would be interesting to have a more principled representation 
+of tensors which could lead to more optimisations. 
+There is always a tension between dynamicity and the possibility for static optimisations 
+and we believe our language offers a good tradeoff, but it will be interesting to tailor it 
+further for specific applications.
 
-\noindent \textbf{Limitations.}
+\noindent \textbf{Limitations and future work}
 \begin{itemize}
     \item memory access for cost function 
     \item parallelism
