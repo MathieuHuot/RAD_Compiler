@@ -21,23 +21,28 @@ we introduced on arrays and how to extend our approach to a richer language with
 Relatively recent work in AD (2008-2020):
 \cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,wang2018demystifying,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing,bernstein2020differentiating}
 
-Some work in ML where some kind of iteration/recursion is used.
-Dynamic neural networks: \cite{jin2017manipulability,wu2016deep}
-Recursive NN: \cite{socher2011parsing,biancofiore2017recursive}
-Reccurent NN: \cite{bahdanau2014neural,luong2015effective}
-Tree LSTM: \cite{tai2015improved,chen2016enhanced}
-Dynamic Recursive NN: \cite{guo2019dynamic}. It's recent with very few citations, but their point is close to ours. 
-Top-down Tree LSTM: \cite{zhang2015top}
-Recursion in DNN: \cite{jeong2018improving}
 
-\noindent \textbf{Automatic Differentiation.} 
-
-\noindent \textbf{Array Languages and Fusion.}
-
-\noindent \textbf{Numerical DSLs.} 
+\noindent \textbf{Usage of iteration mechanics}
+A immense effort in machine learning for the past decade has been in finding
+good architectures, to limit computational costs, 
+avoid vanishing and exploding gradients, 
+and have better building blocks of large complicated systems than traditional layers of a neural network.
+Different approaches 
+(Dynamic neural networks \cite{jin2017manipulability,wu2016deep}, 
+Recursive NN \cite{socher2011parsing,biancofiore2017recursive}, 
+Reccurent NN \cite{bahdanau2014neural,luong2015effective}, 
+Tree LSTM \cite{tai2015improved,chen2016enhanced}, 
+Dynamic Recursive NN \cite{guo2019dynamic}, 
+Top-down Tree LSTM \cite{zhang2015top}, 
+Recursion in DNN \cite{jeong2018improving}) 
+have found that recursive data structures such as trees are good candidates.
+We have emphasized here on differentiating fold left on arrays for efficiency, 
+but one should be able to adapt this on any algebraic data type. 
+It will be interesting to see if and how we recover efficient backpropagation on the proposed architectures 
+which is usually derived by hand and one main goal of these papers.
 
 \noindent \textbf{Correctness of AD in functional languages.}
-Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotational,brunel2019backpropagation,barthe2020versatility,mazza2021automatic} have focused on correctness of AD in a purely functional setting, 
+Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotational,brunel2019backpropagation,barthe2020versatility,mazza2021automatic,ee2020correctness} have focused on correctness of AD in a purely functional setting, 
 often leaving efficiency on the side, especially for reverse-mode differentiation. 
 We see our work as a complement and a first bridge between these works 
 and more practical considerations of efficiency and implementations, 
@@ -49,9 +54,24 @@ Our work is more canonical in the sense that it can more directly be implemented
 They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
 Instead, they follow the principle of unrolling for recursive calls and evaluating the conditional before differentiating, 
 which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
-This is a well-known limit in TensorFlow which TeaserFlow EagerMode tries to bypass. 
+This is a well-known limit in TensorFlow \cite{abadi2016tensorflow} which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
+
+\noindent \textbf{Array Languages and AD}
+
+Given the enormous computation needs for state-of-the-art large scale machine learning applications, 
+which require extremely efficient tensor computations and automatic differentiation for backpropagation, 
+combining array languages and automatic differentiation (tensor calculus) in the best 
+fitted intermediate representation for optimisations is of key interest, and active research.
+\cite{bernstein2020differentiating} 
+\cite{laue2018computing,laue2020simple}
 
 \noindent \textbf{Comparison to other recent papers.}
+
+\cite{ee2020correctness}: non diff function
+\cite{sherman2021}: non diff HO functions
+\cite{pearlmutter2008reverse}: based on this
+\cite{elliott2018simple}: bit similar because using CT as useful language, but we take impl and opti more seriously.
+\cite{shaikhha2019efficient}: similar approach but here more complicated for reversemode, would be interesting to investigate more loop fusions here.
 
 \subsection{Discussion and future work} % (fold)
 \label{sub:discussion_and_future_work}
