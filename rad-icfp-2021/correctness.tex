@@ -50,22 +50,49 @@ TODO: what about semantics Target?
 \subsection{Semantics for UNF using concategories} % (fold)
 \label{sub:Semantics for UNF using concategories}
 
-\begin{definition}{concategory}
-    TODO
-\end{definition}
+One main reason for introducing UNF is to have a better control 
+of the computation flow of the term, similarly to what ANF or CPS do. 
+A convenient categorical setting for this is to use string diagrams.
+To better fit the standard denotational semantics of languages, 
+we can instead use concategories. 
 
-\begin{definition}{free concategory}
-    TODO
-\end{definition}
+Concategories are a generalisation of categories and multicategories in that 
+they allow morphisms both from and to a list of objects. 
+Similarly to categories and multicategories, 
+most categorical abstractions used for the semantics of languages are easily adapted to them.
 
-\begin{example}{Concat1, Concat2}
+In particular, one can form a syntactic concategory, 
+which satisfies a similar universal property as syntactic multicategories.
+Two such examples are of particular interest for us, 
+because they will allow us to interpret Source and Target UNF, 
+but also explain the UNF and $UNF^{-1}$ transformations.
+
+\begin{example}{Concat1}
     TODO
 \end{example}
 
-TODO: semantics of UN1, UNF2 inside Concat1, Concat2
+We can interpret Source UNF in $\ConcatS$ as follows.
+
+TODO
+
+Similarly, we introduce a second concategory for the Target part.
+
+\begin{example}{Concat2}
+    TODO
+\end{example}
+
+We can interpret Target UNF in $\ConcatT$ as follows.
+
+TODO
 
 \subsection{Semantics for UNF transformations} % (fold)
 \label{sub:Semantics for UNF transformations}
+
+We interpret Source in a new multicategory, 
+whose morphisms are particular morphisms of $\ConcatS$.
+As Source UNF is itself interpreted in $\ConcatS$, 
+this gives us a way to compare terms in Source with terms in Source UNF.
+This comparison precisely give the UNF transformation.
 
 \begin{definition}{Mutlicat from concat}
     TODO
@@ -75,9 +102,26 @@ TODO: semantics of UN1, UNF2 inside Concat1, Concat2
     TODO
 \end{proposition}
 
+
+
+
+\begin{definition}{Concat from multicat}
+    TODO
+\end{definition}
+
+\begin{proposition}{Initiality of concat2 gives $UNF^-1$}
+    TODO
+\end{proposition}
+
+
+
+
+
+
 \begin{definition}{lax functor between concat}
     TODO
 \end{definition}
+
 
 \begin{example}{D as a lax functor}
     TODO
@@ -87,13 +131,6 @@ TODO: semantics of UN1, UNF2 inside Concat1, Concat2
     TODO
 \end{proposition}
 
-\begin{definition}{Concat from multicat}
-    TODO
-\end{definition}
-
-\begin{proposition}{Initiality of concat2 gives $UNF^-1$}
-    TODO
-\end{proposition}
 
 \subsection{Correctness theorem} % (fold)
 \label{sub:Correctness theorem}
