@@ -22,7 +22,9 @@ but again this can be easily generalised (\S\ref{sec:generalisation}).
 Typical examples include !cos, exp, +, *!. 
 We use infix notation for binary operators.
 
-For the sake of simplicity in the presentation, the bound function in !reduce! 
+!reduce! is a fold left operator for which the function is assumed to be associative, 
+and the provided initial value should be a unit of the binary operation.
+It is a well-known parallel friendly construct. For the sake of simplicity in the presentation, the bound function in !reduce! 
 is restricted to having no free variables. For the same reason, we currently restrict to arrays of reals.
 We show how to lift these restrictions in Section~\ref{sec:generalisation}.
 
@@ -38,24 +40,25 @@ we assumed given an operator $\partial_1$!op1! whose semantics should be the der
 For every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2! 
 representing respectively the first and second partial derivative of !op2!.
 
-TODO:redo
 Similarly, the target language contains more array primitives which are used to define the reverse derivatives of array operations. 
-!scanl! is a !foldl! that stores all intermediate results. 
-!scanr! is similar, but reads the array from right to left, and also stores from right to left.
-!reduce! is a !foldl! for which the function is associative. 
-This means in practice that it can be computed faster.
-Finally, we add a somewhat strange operator which we call !shift1!. 
+Scan left !scanl! is similar to fold left but also stores all the intermediate results in a array, which it returns.
+In the same vein, scan right !scanr! perform a fold left by reading the array from right to left and also storing 
+the intermediate results in a array from right to left.
+
+Finally, we add a new shift operator !shift1!. 
 It takes an array of size $n$,  shifts all the element of the array by one, 
 forgetting the last element, and puts a one in the first place. 
-This operator naturally shows up when differentiating !reduce!.
+This somewhat ad-hoc operator naturally shows up when differentiating fold-like operators.
 
 The types and terms are presented in Figure~\ref{fig:target_grammar}.
-We are not interested here with partial applications and our language is pure, so functions take $n$ arguments.
-Lambda abstractions and applications will be removed during partial evaluation and this notation makes reading slightly easier.
+Our lambda abstractions take $n$ arguments as we are not interested here with partial applications. 
+In fact, the lambda abstractions introduced by reverse-mode will be removed during partial evaluation 
+and the notation with lambda abstractions having $n$ bound variables makes reading slightly easier.
+We note that we don't actually need the full power of higher-order because we only use lambda abstractions over variables of ground types
+and let expressions binding such lambda abstractions. So we only require the target language to be second-order.
+The type system for the extended grammar of the target language is presented in Figure~\ref{fig:target_typesystem}. 
 
 \input{figures/target_grammar}
-
-The type system for the extended grammar of the target language is presented in Figure~\ref{fig:target_typesystem}. 
 
 \input{figures/target_type_system}
 
@@ -63,13 +66,14 @@ The type system for the extended grammar of the target language is presented in 
 \label{sub:Macro for pure reverse mode transformation}
 
 TODO:redo
-In Figure~\ref{fig:direct_diff_macro} we present the direct transformation for pure reverse mode differentiation.
+In Figure~\ref{fig:direct_diff_macro} we present our direct transformation from the source language to the target language for pure reverse mode differentiation.
 We explain in the next Section (\ref{sub:Partial evaluation and optimisation}) how to optimise it further and compute the gradient.
-This transformation may be hard to read and prove correct. 
-In Section~\ref{sec:unf} we decompose this transformation into several easier 
-and more intuitive steps via a new intermediate representation which we call UNF.
+Admittedly, this transformation may be hard to read, and prove correct. 
+In Section~\ref{sec:unf} we decompose this transformation into three simpler steps via a novel intermediate representation (UNF).
 
-TODO: on the examples
+\begin{example}
+    TODO
+\end{example}
 
 We introduce several notations which are useful when defining the transformation for reverse-mode.
 
@@ -90,7 +94,9 @@ and we need to initialise the tangent variables. All of them are set to $0$ exce
 which we initialise at $1$ to run the backpropagation. 
 All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,1)$.
 
-TODO: on the examples
+\begin{example}
+    TODO
+\end{example}
 
 Following the insight from Section~\ref{subsec:insights}, 
 we don't want to keep all the lambda abstractions as this is costly. 
@@ -110,6 +116,8 @@ $\transto$
 !fun (x1,...,xn) -> let y1,...,yn = e1,...,en in (f1,...,fn)!
 $\transto$
 !fun (x1,...,xn) -> (f1[e1/y1],...,fn[en/yn])!
+
+TODO: redo
 Now, importantly, every !yi! is used at most once (except for !map2! again and !reduce! which require a more detailed analysis)
 which garantees that this will not blow up the complexity.
 
