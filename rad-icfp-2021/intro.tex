@@ -32,10 +32,6 @@ None of the current implementations of reverse-mode in a functional setting~\cit
 This means that for every important non trivial operation, a hand-crafted reverse-derivative must be given, to optimize for efficiency.
 In other words, abstracting away from imperative code is still a hurdle that functional implementations need to overcome.
 
-% For example, \MH{TODO: show how $\prod_i v_i$ for a vector $v$ is done in some functional AD systems}.
-% For real world AD systems, modularity is key. They need to be expressive but have a lot of optimised derivatives for operators that are used a lot.
-% This is easily seen on numpy \MH{TODO: explain a bit better why torch is good by using optimised grad for numpy.}
-% An efficient purely functional reverse-mode transformation would be more easily explainable, optimisable, and potentially reusable.
 An efficient purely functional reverse-mode transformation would be more easily explainable, optimizable, and reusable.
 
 TODO: rewrite for more theory people. some ideas: for canonical than Plotkin's thing because normal semantics, complexity proof compared to all other recent papers, 

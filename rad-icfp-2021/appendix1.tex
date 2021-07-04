@@ -74,7 +74,7 @@ and showing that each rewrite step is a simple known optimization.
 
 Similarly to numpy, we use the notation OnesLike(A) to mean map (x -> 1) A 
 and ZerosLike(A) to mean map (x -> 0) A. 
-Finding these constant arrays is key to a lot of optimisations that leverage the ring algebraic structure of the reals to arrays.
+Finding these constant arrays is key to a lot of optimizations that leverage the ring algebraic structure of the reals to arrays.
 
 \MH{be more explicit about optimisations. 0 should be ZerosLike. A bit outdated compared to current D transformation.
 Also, I am freely referring to the variables from the context or bound in the original term, should be clarified.}
@@ -113,7 +113,7 @@ The gradient of  derivative $\nabla_A$!prod(A)! is given by
  \end{lemma}
 
  \begin{proof}
-The gradient of  derivative $\nabla_A$!sum(A)! is given by
+The gradient of !sum(A)! is given by
 
     \begin{tabular}{c l r}
     & $\nabla_A$ !sum(A)! & \\
@@ -122,13 +122,12 @@ The gradient of  derivative $\nabla_A$!sum(A)! is given by
     & !let A2 = map2 (x,y -> 1) A1 A in! & \\
     & !let A3 = shift1 (map2 (x,y -> 1) A1 A) in! & \\
     & !let A4 = scanr * 1 A2 in! & \\
-    & !map3 (a,b,c -> a+b*c*z) A' A4 A3! &
-    &  \Big)(0,1) & \\
+    & !map3 (a,b,c -> a+b*c*z) A' A4 A3!\Big)(0,1) & \\
     $\stackrel{\beta-reduction}{=}$  & !let A1 = scanl * 1 A in! & \\
     & !let A2 = map2 (x,y -> y) A1 A in! & !A2=OnesLike(A)! \\
     & !let A3 = shift1 (map2 (x,y -> x) A1 A) in! & !A3=shift1 OnesLike(A)!\\
     & !let A4 = scanr * 1 A2 in! & \\
-    & !map3 (a,b,c -> a+b*c*1) 0 A4 A3! & !map2 * A4 A3! & \\
+    & !map3 (a,b,c -> a+b*c*1) 0 A4 A3! & !map2 * A4 A3! \\
     = & !let A1 = scanl * 1 A in! & \\
     & !let A2= OnesLike(A) in! &  \\
     & !let A3 = shift1 OnesLike(A) in! & !A3=OnesLike(A)! \\
