@@ -7,28 +7,47 @@
 \label{sub:sourcelang}
 
 We consider a standard call-by-value language. 
-It consist in a first-order functional language enriched with arrays and a few typical second-order array operations. 
+It consists of a first-order functional language with arrays and a few typical second-order array operations. 
 The types !T1,T2! and terms !e1,e2! are given in Figure~\ref{fig:source_grammar}.
+We have included a minimal set of array operations for the sake of illustration,  it is not hard to add more.
+See Section~\ref{sec:generalisation}.
 
 \input{figures/source_grammar}
 
-The typing rules are in Figure~\ref{fig:source_typesystem}. We have included a minimal set of array operations for the sake of illustration, 
-but it is not difficult to add further operations. 
+The typing rules are given in Figure~\ref{fig:source_typesystem}. 
 For scalar operations, we assume given a set of operations, including $+$ and $*$. 
-!op1! and !op2! denote respectively a unary and a binary smooth operation on reals. 
+!op1! and !op2! denote respectively a unary and a binary operation on reals. 
+These operations represent smooth total functions, 
+but again this can be easily generalised (\S\ref{sec:generalisation}).  
 Typical examples include !cos, exp, +, *!. 
 We use infix notation for binary operators.
-For the sake of simplicity in the presentation, a bound function in an array operation !map, map2, foldl! is restricted to having no free variables.
-For the same reason, we restrict arrays of reals.
-The general cases are presented in Section~\ref{sec:generalisation}.
+
+For the sake of simplicity in the presentation, the bound function in !reduce! 
+is restricted to having no free variables. For the same reason, we currently restrict to arrays of reals.
+We show how to lift these restrictions in Section~\ref{sec:generalisation}.
 
 \input{figures/source_type_system}
 
 \subsection{Target Language}
 
-The target language for differentiation is an extension to the source language, 
-which is higher-order as needed to carry the continuation used to have a pure reverse-mode transformation, 
-and contains more array primitives. In addition, we require the set of operations to be closed under partial differentiation. 
+The target language of our source-code transformation is an extension to the source language.
+It is a higher-order language, as our purely functional reverse-mode introduces a continuation.
+The set of scalar operations should also be closed under partial differentiation. 
+In more detail, for every unary scalar operation !op1!, 
+we assumed given an operator $\partial_1$!op1! whose semantics should be the derivative of !op1!.
+For every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2! 
+representing respectively the first and second partial derivative of !op2!.
+
+TODO:redo
+Similarly, the target language contains more array primitives which are used to define the reverse derivatives of array operations. 
+!scanl! is a !foldl! that stores all intermediate results. 
+!scanr! is similar, but reads the array from right to left, and also stores from right to left.
+!reduce! is a !foldl! for which the function is associative. 
+This means in practice that it can be computed faster.
+Finally, we add a somewhat strange operator which we call !shift1!. 
+It takes an array of size $n$,  shifts all the element of the array by one, 
+forgetting the last element, and puts a one in the first place. 
+This operator naturally shows up when differentiating !reduce!.
 
 The types and terms are presented in Figure~\ref{fig:target_grammar}.
 We are not interested here with partial applications and our language is pure, so functions take $n$ arguments.
@@ -36,31 +55,14 @@ Lambda abstractions and applications will be removed during partial evaluation a
 
 \input{figures/target_grammar}
 
-In more detail, for every unary scalar operation !op1!, 
-we assumed given an operator $\partial_1$!op1! whose semantics should be the derivative of !op1!.
-For every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2! 
-representing respectively the first and second partial derivative of !op2!.
-Similarly, some additional operations on arrays are needed. 
-!scanl! is a !foldl! that stores all intermediate results. 
-!scanr! is similar, but reads the array from right to left, and also stores from right to left.
-!reduce! is a !foldl! for which the function is associative. 
-This means in practice that it can be computed faster.
-We also include a !map3! operator. 
-Though not necessary as it can be simulated with two !map2!, it is a convenient notation and can sometimes run faster in practice.
-Finally, we add a somewhat strange operator which we call !shift1!. 
-It takes an array of size $n$,  shifts all the element of the array by one, 
-forgetting the last element, and puts a one in the first place. 
-This operator naturally shows up when differentiating !foldl!.
-
-The type system for the extended grammar of target is presented in Figure~\ref{fig:target_typesystem}. 
+The type system for the extended grammar of the target language is presented in Figure~\ref{fig:target_typesystem}. 
 
 \input{figures/target_type_system}
-
-A standard semantics of this language is given in Section~\ref{sec:correctness}.
 
 \subsection{Macro for pure reverse mode transformation} % (fold)
 \label{sub:Macro for pure reverse mode transformation}
 
+TODO:redo
 In Figure~\ref{fig:direct_diff_macro} we present the direct transformation for pure reverse mode differentiation.
 We explain in the next Section (\ref{sub:Partial evaluation and optimisation}) how to optimise it further and compute the gradient.
 This transformation may be hard to read and prove correct. 
