@@ -133,18 +133,6 @@ and we need to initialize the tangent variables. All of them are set to $0$ exce
 which we initialize at $1$ to run the backpropagation. 
 All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,1)$.
 
-\begin{example}
-    The gradient of the terms from the introduction is
-
-    \begin{tabular}{c r}
-        & $\grad_\Gamma$(!let w1 = x1 * x2 in let w2 = w1 * x1 in w2!) \\
-        =& TODO \\
-        \\
-        $\grad_\Gamma$(!prod(A)!) \\
-        =& \\
-    \end{tabular}
-\end{example}
-
 Following the insight from Section~\ref{subsec:insights}, 
 we don't want to keep all the lambda abstractions as this is costly. 
 Fortunately, the transformation is designed in such a way that we only have applications 
@@ -164,13 +152,34 @@ $\transto$
 $\transto$
 !fun (x1,...,xn) -> (f1[e1/y1],...,fn[en/yn])!
 
-Now, importantly, every !yi! is used at most once (except for !map2! again and !reduce! which require a more detailed analysis)
-which garantees that this will not blow up the complexity.
+TODO: finish explanation
 
-TODO: finish explanation, not sure how to conclude at the moment
+\begin{example}
+    The gradient of the terms from the introduction reduces to
+
+    \begin{tabular}{c l}
+        & $\grad_\Gamma$(!let w1 = x1 * x2 in let w2 = w1 * x1 in w2!) \\
+        =& TODO \\
+    \end{tabular}
+    \medskip
+
+    \begin{tabular}{c l}
+        & $\grad_\Gamma$(!prod(A)!) \\
+        =& TODO \\
+    \end{tabular}
+\end{example}
 
 Though this transformation after the inlining above already has the right complexity, 
 its purity allows us to make the most out of generic optimizations.  
 A list of common optimizations that are useful for this language can be found in Figure~\ref{fig:optim}.
 
-TODO: use the optimizations to be efficient on examples
+\begin{example}
+As shown in appendix \ref{sub:gradintro}, the optimizations from Figure~\ref{fig:optim} 
+are sufficient to show that the gradients of the terms of the introduction reduce to the following.
+
+\begin{tabular}{{r c l}}
+    $\nabla_A$!prod(A)! &:=& !map2 * (scanr * 1 A) (shift1(scanl * 1 A))!\\
+    $\nabla_A$!sum(A)! &:=& !map (x -> 1) A!\\
+    $\nabla_A$!dot(A,B)! &:=& !B! 
+\end{tabular}
+\end{example}
