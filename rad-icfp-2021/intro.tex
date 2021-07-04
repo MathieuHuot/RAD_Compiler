@@ -75,25 +75,24 @@ We summarize the key ideas of our work. Reverse-mode can be made efficient
 
 Our contribution makes these claims precise. In detail we introduce
 \begin{itemize}
-    \item an expressive source language with array operations, yet restrictive enough for efficient differentiation (\ref{sub:sourcelang})
-    \item a method for extending our work and modular method for adding and prove correct new primitives as needed in practice (\ref{sec:generalisation})
-    \item a new intermediate representation (I.R), UNF, essentially turning every operation to a unary one which inputs and outputs a tuple (\ref{sec:unf})
-    \item a transformation to and from the I.R. from the main language \ref{sub:transformations to and from UNF}
-    \item a simple reverse-mode transformation on the I.R. (\ref{sub:Simple reverse mode transformation})
-    \item the direct reverse-mode transformation obtained from the source to the target language (\ref{sub:Macro for pure reverse mode transformation})
-    \item denotational semantics of our languages and transformations using multicategories and concategories \ref{sec:correctness}
-    \item correctness of the transformations \ref{sec:correctness}
-    \item complexity guarantees \ref{sec:complexity}
-    \item how efficiency is recovered via standard optimization techniques \ref{sub:Optimisations}
-    \item several additions to the source language (\ref{sec:generalisation}) \MH{should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.}
-    \item a detailed comparison with other work and some limitations to our work in Section~\ref{sec:conclusion}
+    \item an expressive source language with array operations, yet restrictive enough for efficient differentiation (\S\ref{sub:sourcelang})
+    \item a method for extending our work and modular method for adding and prove correct new primitives as needed in practice (\S\ref{sec:generalisation})
+    \item a new intermediate representation (I.R), UNF, essentially turning every operation to a unary one which inputs and outputs a tuple (\S\ref{sec:unf})
+    \item a transformation to and from the I.R. from the main language (\S\ref{sub:transformations to and from UNF})
+    \item a simple reverse-mode transformation on the I.R. (\S\ref{sub:Simple reverse mode transformation})
+    \item the direct reverse-mode transformation obtained from the source to the target language (\S\ref{sub:Macro for pure reverse mode transformation})
+    \item denotational semantics of our languages and transformations using multicategories and concategories (\S\ref{sec:correctness})
+    \item correctness of the transformations (\S\ref{sec:correctness})
+    \item complexity guarantees (\S\ref{sec:complexity})
+    \item how efficiency is recovered via standard optimization techniques (\S\ref{sub:Optimisations})
+    \item several additions to the source language (\S\ref{sec:generalisation}) \MH{should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.}
+    \item a detailed comparison with other work and some limitations to our work (\S\ref{sec:conclusion})
 \end{itemize}
 
 \subsection{Examples}
 
-We introduce a general idea of how to do reverse-mode in a functional setting that is efficient and pure.
+We introduce the general idea of how we do efficient reverse-mode in a functional setting on some examples.
 We recall some basics of reverse-mode differentiation in Section~\ref{sec:background}.
-Let us have a look at what we obtain on a few examples.
 
 \begin{example}[First-order term]
 On simple first-order terms, the output code looks like SSA code \cite{cytron1989efficient}.
