@@ -16,44 +16,44 @@
             &&!let y,Y2 = !$\directD{\rho}{\Gamma,x:A}{Y1}$!(e2) in!\\ 
             &&!<y, fun (x1,...,xn,z) -> Y2(x1,...,xn,!$0_{A}$!,z)>!\\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !< e1, e2 >!) &=&
-            !let x1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
-            &&!let x2,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e2) in!\\
-            &&!< <x,y>, fun (x1,...,xn,z) -> !\\
+            !let y1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
+            &&!let y2,Y2 = !$\directD{\rho}{\Gamma,x1}{Y1}$!(e2) in!\\
+            &&!< <y1,y2>, fun (x1,...,xn,z) -> !\\
             &&!Y(x1,...,xn,!$\pi_1$!(z),!$\pi_2$!(z)) >!\\ 
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash \pi_1$(!e!:AxB)) &=&
-            !let (x,y),Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
-            && !<x, fun (x1,...,xn,z) -> Y(x1,...,xn,(z,!$0_B$!))>! \\
+            !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
+            && !<!$\pi_1$!x, fun (x1,...,xn,z) -> Y(x1,...,xn,(z,!$0_B$!))>! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash \pi_2$(!e!:AxB)) &=&
-            !let (x,y),Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
-            && !<x, fun (x1,...,xn,z) -> Y(x1,...,xn,(!$0_A$,z!))>! \\
+            !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
+            && !<!$\pi_2$!x, fun (x1,...,xn,z) -> Y(x1,...,xn,(!$0_A$,z!))>! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !op1 e!) &=&  
             !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
             && !<op1 x, fun (x1,...,xn,z) -> ! \\
             && !Y(x1,...,xn,!$\partial$!op1(x)*z) >! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !e1 op2 e2!) &=& 
             !let x1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
-            && !let x2,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e2) in! \\
+            && !let x2,Y2 = !$\directD{\rho}{\Gamma,x1}{Y1}$!(e2) in! \\
             && !<x1 op2 x2, fun (x1,...,xn,z) ->! \\
             && !Y2(x1,...,xn,!$\partial_1$!op2(x1,x2)*z,!$\partial_2$!op2(x1,x2)*z>! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=&  
             !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
-            && !let B,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e3) in! \\
-            && !let C =!$\grad_{\Gamma}$!e1 in!\\
+            && !let B,Y2 = !$\directD{\rho}{\Gamma,A}{Y1}$!(e3) in! \\
+            && !let G=!$\grad_{\Gamma}$!e1 in!\\
             && !<map2 (x,y.e1) A B, fun (x1,...,xn,Z) -> !\\
-            && !Y2( (x1,...,xn)!$\widehat{+}$!(C*(reduce + 0 Z)),!\\
+            && !Y2( (x1,...,xn)!$\widehat{+}$!(G*(reduce + 0 Z)),!\\
             && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x]*b) A Z,!\\
             && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e1)[a/x]*b) B Z )>!\\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=&
-            !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
-            && !let B,Y2 = !$\directD{\rho}{\Gamma}{Y1}$!(e3) in! \\
-            && !let C = scanl (x,y.e1) A B in! \\
-            && !let D = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) C B! \\
-            && !let E = shift1 (map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) C B)! \\
-            && !let F = scanr * 1 D! \\
-            && !<reduce (x,y.e1) A B, fun (x1,...,xn,z) ->! \\
-            && !Y2(x1,...,xn, map2 (x,y. x*y*z) E F>! \\
+            !let y1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
+            && !let A,Y2 = !$\directD{\rho}{\Gamma,y1}{Y1}$!(e3) in! \\
+            && !let A0 = scanl (x,y.e1) y1 A in! \\
+            && !let A1 = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) A0 A! \\
+            && !let A2 = shift1 (map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) A0 A)! \\
+            && !let A3 = scanr * 1 A1! \\
+            && !<reduce (x,y.e1) y1 A, fun (x1,...,xn,z) ->! \\
+            && !Y2(x1,...,xn, map2 (x,y. x*y*z) A2 A3>! \\
             && TODO: reduce recomputed after scanl, wrong on the zero element \\
-            && TODO: need to correct the weakenings everywhere
+            && TODO: I don't need the index $\Gamma'$ of $D$ to be $\Gamma$ but to \underline{contain} $\Gamma$, for pos(x) to be defined
         \end{tabular}
     \caption{Reverse-mode transformation from source to target language}
     \label{fig:direct_diff_macro}    

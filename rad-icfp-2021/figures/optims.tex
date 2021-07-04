@@ -6,7 +6,6 @@
         !let x1=e1 in e2! \quad\quad(!x1!$\not\in$!FV(e2))! & \transto & !e2!  \\ \hline
         !let x1=x2 in e! & \transto & !e[x2/x1]! \\ \hline
         !let x1= c in e! \quad\quad\hspace{0.5em}(!c=0! or !c=1!) & \transto & !e[c/x1]! \\ \hline
-        $\pi_i$!<e1, e2>! & \transto & !ei! \\
         \hline \hline
         \textit{Algebraic simplifications}  & & \\ \hline
         !0*e! & \transto & 0 \\ \hline
@@ -27,8 +26,20 @@
         \textit{Classic array simplifications}  & & \\ \hline
         !map (x.e1) (map (y.e2) A)! & \transto & !map (y. let x=e2 in e1) A! \\ \hline
         !map (x.e1) (map2 (y1,y2.e2) A B)! & \transto & !map2 (y1,y2. let x=e2 in e1) A! \\ \hline
+        \textit{Tuple partial evaluation}  & & \\ \hline
+        $\pi_i$!<e1,...,en>! & \transto & !ei! \\
+        \hline \hline
+        \textit{Let normalisation}  & & \\ \hline
+        !let x=(let y=e1 in e2) in e3! & \transto & !let y=e1 in let x=e2 in e3! \\ \hline
+        !f(let x=e1 in e2)! & \transto & !let x=e1 in f(e2)! \\
+        \hline \hline
+        \textit{Conditionals} & & \\ \hline
+        !if e1 then e2 else e2! & \transto & e2 \\ \hline
+        !if true then e2 else e3! & \transto & e2 \\ \hline
+        !if false then e2 else e3! & \transto & e3 \\ \hline
+        !f(if e1 then e2 else e3)! & \transto & !if e1 then f(e2) else f(e3)! \\ \hline
         \end{tabular}
     \caption{Optimisations}
     \label{fig:optim} 
-    TODO: there are way more, like the obvious ones to reduce map3 to map2. some of them I'm not even sure when to do them because of cash optim...  
+    TODO: some of them I'm not sure when to do them because of cash optim...  
 \end{figure*}
