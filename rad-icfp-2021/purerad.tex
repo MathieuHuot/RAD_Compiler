@@ -65,43 +65,74 @@ The type system for the extended grammar of the target language is presented in 
 \subsection{Macro for pure reverse mode transformation} % (fold)
 \label{sub:Macro for pure reverse mode transformation}
 
-TODO:redo
 In Figure~\ref{fig:direct_diff_macro} we present our direct transformation from the source language to the target language for pure reverse mode differentiation.
-We explain in the next Section (\ref{sub:Partial evaluation and optimisation}) how to optimise it further and compute the gradient.
-Admittedly, this transformation may be hard to read, and prove correct. 
+We explain in the next Section (\ref{sub:Partial evaluation and optimisation}) how to optimize it further and compute the gradient.
+Admittedly, this transformation may be hard to read, and it is not straightforward to show its correctness directly. 
 In Section~\ref{sec:unf} we decompose this transformation into three simpler steps via a novel intermediate representation (UNF).
 
 \begin{example}
-    TODO
+    The reverse-mode transformation of the terms from the introduction is
+
+    \begin{tabular}{c r}
+        &$\directD{\rho}{\Gamma}{Y}$(!let w1 = x1 * x2 in let w2 = w1 * x1 in w2!) \\
+        =& TODO \\
+        \\
+        $\directD{\rho}{\Gamma}{Y}$(!prod(A)!) \\
+        =& \\
+        % !dot(A,B)!
+    \end{tabular}
 \end{example}
 
-We introduce several notations which are useful when defining the transformation for reverse-mode.
+The idea is that $\rho$ represents the return type of the derivative part, which should be !A1x...,xAn! 
+if we want the whole gradient of a term !e! in context $\Gamma$=!x1:A1,...,xn:An!.
+The subscript $\Gamma$ represents the current context, 
+which is locally augmented for instance when differentiating a !let! rule.
+For non-unary operations, we differentiate the arguents from left to right and add their derivatives to the current stack, 
+which is modeled by the continuation $Y$. 
+Importantly for performance, each continuation variable $Y$ is only used once.
+
+We now introduce several notations which are useful when defining the transformation for reverse-mode.
 
 \input{figures/notation_D}
+
+We have the following typing lemma for $\directD{\rho}{\Gamma}{Y}$.
+\begin{lemma}[Typing $\directD{\rho}{\Gamma}{Y}$]
+    If $\Gamma \vdash$ !e: A!, then $\Gamma$!,Y: !$\Gamma\to \rho \vdash \directD{\rho}{\Gamma}{Y}$!(e): !$\directD{\rho}{\Gamma}{Y}$!(A)!.
+\end{lemma}
 
 \input{figures/direct_macro_diff}
 
 \subsection{Partial evaluation and optimisation} % (fold)
 \label{sub:Partial evaluation and optimisation}
 
+TODO: redo
 Given a term $\Gamma\vdash e : \reals$, we can compute its gradient $\grad_\Gamma e$ from a particular instance of 
 $\directD{\rho}{\Gamma}{Y}(e)$. First, $\rho, Y$ specifies if we want to compute the whole gradient regarding the variables from $\Gamma$ or a subset of it.
 For a subset $\rho\subset \Gamma$, one chooses $Y$ to be the projection function sending a variable 
 $x_i:G$ of $\Gamma$ to $x_i$ if it belongs to $\rho$ and to $0_G$ otherwise.
 In particular, we take $Y=Id_\Gamma$ to compute the whole gradient.
 Next, the gradient will be given by the second part of the pair $\directD{\rho}{\Gamma}{Y}(e)$, 
-and we need to initialise the tangent variables. All of them are set to $0$ except the one corresponding to the output value of !e!, 
-which we initialise at $1$ to run the backpropagation. 
+and we need to initialize the tangent variables. All of them are set to $0$ except the one corresponding to the output value of !e!, 
+which we initialize at $1$ to run the backpropagation. 
 All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,1)$.
 
 \begin{example}
-    TODO
+    The gradient of the terms from the introduction is
+
+    \begin{tabular}{c r}
+        & $\grad_\Gamma$(!let w1 = x1 * x2 in let w2 = w1 * x1 in w2!) \\
+        =& TODO \\
+        \\
+        $\grad_\Gamma$(!prod(A)!) \\
+        =& \\
+        % !dot(A,B)!
+    \end{tabular}
 \end{example}
 
 Following the insight from Section~\ref{subsec:insights}, 
 we don't want to keep all the lambda abstractions as this is costly. 
 Fortunately, the transformation is designed in such a way that we only have applications 
-and we can use partial evaluation to do beta redudction. 
+and we can use partial evaluation to do beta-reduction. 
 
 By inspection in Figure~\ref{fig:direct_diff_macro}, 
 we see that there is a linear usage of  each continuation $Y$ 
@@ -117,14 +148,13 @@ $\transto$
 $\transto$
 !fun (x1,...,xn) -> (f1[e1/y1],...,fn[en/yn])!
 
-TODO: redo
 Now, importantly, every !yi! is used at most once (except for !map2! again and !reduce! which require a more detailed analysis)
 which garantees that this will not blow up the complexity.
 
 TODO: finish explanation, not sure how to conclude at the moment
 
 Though this transformation after the inlining above already has the right complexity, 
-its purity allows us to take the most out of generic optimisations.  
-A list of common optimisations that are useful for this language can be found in Figure~\ref{fig:optim}.
+its purity allows us to make the most out of generic optimizations.  
+A list of common optimizations that are useful for this language can be found in Figure~\ref{fig:optim}.
 
-TODO: use the optimisations to be efficient on examples
+TODO: use the optimizations to be efficient on examples
