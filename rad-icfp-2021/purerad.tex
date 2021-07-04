@@ -71,15 +71,32 @@ Admittedly, this transformation may be hard to read, and it is not straightforwa
 In Section~\ref{sec:unf} we decompose this transformation into three simpler steps via a novel intermediate representation (UNF).
 
 \begin{example}
-    The reverse-mode transformation of the terms from the introduction is
+    The reverse-mode transformation of the terms from the introduction are given by
 
-    \begin{tabular}{c r}
+    \begin{tabular}{c l}
         &$\directD{\rho}{\Gamma}{Y}$(!let w1 = x1 * x2 in let w2 = w1 * x1 in w2!) \\
-        =& TODO \\
-        \\
-        $\directD{\rho}{\Gamma}{Y}$(!prod(A)!) \\
-        =& \\
-        % !dot(A,B)!
+        =& !let w1,Y1=!\\
+        & \quad\quad !let y11,Y11= <x1, fun (y1,y2,y3,z) -> Y(y1+z,y2,y3)> in! \\
+        & \quad\quad !let y12,Y12= <x2, fun (y1,y2,y3,y4,z) -> Y11(y1,y2+z,y3,y4)> in! \\
+        & \quad\quad !<y11 * y12, fun (y1,y2,y3,z) -> Y12(y1,y2,y3,y12*z,y11*z) > in! \\
+        & !let w2,Y2=!\\
+        & \quad\quad !let y21,Y21= <w1, fun (y1,y2,y3,y4,z) -> Y(y1,y2,y3,y4+z)> in! \\
+        & \quad\quad !let y22,Y22= <x1, fun (y1,y2,y3,y4,y5,z) -> Y11(y1+z,y2,y3,y4,y5)> in! \\
+        & \quad\quad !<y21 * y22, fun (y1,y2,y3,y4,z) -> Y22(y1,y2,y3,y4,y22*z,y21*z) > in! \\
+        & !let y,Y3= <w, fun (y1,y2,y3,y4,z) -> Y2(y1,y2,y3,y4+z)> in! \\
+        & !<y, fun (y1,y2,y3,z) -> Y3(y1,y2,y3,0,z) >!
+    \end{tabular}
+    \medskip
+
+    \begin{tabular}{c l}
+        &$\directD{\rho}{\Gamma}{Y}$(!prod(A)!) \\
+        =& !let x,Y1= <0, fun (X,z) -> Y(X)> in! \\
+        & !let B,Y2= <A, fun (X,x,Z) -> Y(X+Z,x)> in!\\
+        & !let A0= scanl * x B in!\\
+        & !let A1= map2 (a,b.b) A0 B in!\\
+        & !let A2= shift1 (map2 (a,b.a) A0 B) in!\\
+        & !let A3= scanr * 1 A1 in!\\
+        & !<prod(B), fun (X,z) -> Y2(X,0,map2 (a,b. a*z*b) A2 A3)>! 
     \end{tabular}
 \end{example}
 
@@ -125,7 +142,6 @@ All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(
         \\
         $\grad_\Gamma$(!prod(A)!) \\
         =& \\
-        % !dot(A,B)!
     \end{tabular}
 \end{example}
 
