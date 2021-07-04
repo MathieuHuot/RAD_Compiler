@@ -1,6 +1,6 @@
 \begin{figure*}[t]
     \begin{tabular}{r c l}
-        $\directD{\rho}{\Gamma}{Y}$(!A!) &=&  !A! $\times$ (\Gamma \times$ !A! $\to \rho$)
+        $\directD{\rho}{\Gamma}{Y}$(!A!) &=&  !A! $\times (\Gamma \times$ !A! $\to \rho$)\\
     \end{tabular}
     \medskip
 
@@ -53,6 +53,7 @@
             && !<reduce (x,y.e1) A B, fun (x1,...,xn,z) ->! \\
             && !Y2(x1,...,xn, map2 (x,y. x*y*z) E F>! \\
             && TODO: reduce recomputed after scanl, wrong on the zero element \\
+            && TODO: need to correct the weakenings everywhere
         \end{tabular}
     \caption{Reverse-mode transformation from source to target language}
     \label{fig:direct_diff_macro}    

@@ -71,46 +71,61 @@ but also explain the UNF and $UNF^{-1}$ transformations.
 Let $\ConcatS$ the syntactic Cartesian concategory whose types are those of Source and 
 with primitives given by $op1: \reals \to \reals$, $op2: \reals,\reals \to \reals$ $map2_{x,y.e}$
 and $reduce_{x,y.e1;e2}$.
-\MH{actually I just need projection and a representing object for pairs, it might be weaker than Cartesian?}
+\MH{actually I just need projection and a representing object for pairs, it might be weaker than Cartesian? edit: I think I need Cartesian.}
 \end{definition}
 
 One may notice that the syntax of $\ConcatS$ is somewhere in between the syntax of Source and of Source UNF.
+
+\begin{notation}[Morphisms in a Cartesian concategory]
+    TODO: projection, unique map, $\concatcomp$, swap, pair, id, ...
+\end{notation}
+
 We can interpret Source UNF in $\ConcatS$ as follows.
 
 \begin{tabular}{l c l}
-   $\seml$!var!$_{T;i} \semr$ &=& TODO \\
-   $\seml$!op!$_{T;n} \semr$ &=& \\
-   $\seml$!pair!$_{T;A\times B} \semr$ &=& \\
-   $\seml$!proj!$_{T1;T2;T3} \semr$ &=& \\
-   $\seml$!e!$\comp$!e!$\semr$  &=& \\
-   $\seml$!e!$\pcomp$!e!$\semr$ &=& \\
-   $\seml$!map2!$_{T;x,y.e}\semr$  &=& \\
-   $\seml$!reduce!$_{T;x,y.e;e}\semr$  &=& \\
+   $\seml$!var!$_{T;i} \semr$ &=& $<id_\Gamma,\pi_i>$ \\
+   $\seml$!op!$_{T;n} \semr$ &=& $id_\Gamma\concatcomp op_n$\\
+   $\seml$!pair!$_{T;A\times B} \semr$ &=& $pair_{T;A\times B}$ \\
+   $\seml$!proj!$_{T1;T2;T3} \semr$ &=& $id_{T1}\concatcomp 1_{T2}\concatcomp id_{T3}$\\
+   $\seml$!e1!$\comp$!e2!$\semr$  &=& $\seml$!e1!$\semr \comp \seml$!e2!$\semr$ \\
+   $\seml$!e1!$\pcomp$!e2!$\semr$ &=& $\seml$!e1!$\semr \comp (\seml$!e2!$\semr\concatcomp id )\comp swap$ \\
+   $\seml$!map2!$_{T;x,y.e}\semr$  &=& $id_\Gamma\concatcomp map2_{x,y.e}$ \\
+   $\seml$!reduce!$_{T;x,y.e;e}\semr$ &=& $id_\Gamma\concatcomp reduce_{x,y.e1;e2}$ \\
 \end{tabular}
 
 Similarly, we introduce a second concategory for the Target part of our transformations.
 
 \begin{definition}[$\ConcatT$]
 Let $\ConcatT$ be the syntactic Cartesian concategory whose types are those of Target and 
-with primitives given by $op1: \reals \to \reals$, $op2: \reals,\reals \to \reals$ $map2_{x,y.e}$, 
-$reduce_{x,y.e1;e2}$, TODO
-\MH{not too sure, should I say what a Cartesian concat is?}
+with primitives given by 
+$op1: \reals \to \reals$, 
+$op2: \reals,\reals \to \reals$, 
+$map2_{x,y.e}: \Array{\reals},\Array{\reals}\to \Array{\reals}$, 
+$reduce_{x,y.e1;e2}: \Array{\reals} \to \Array{\reals}$, 
+$J^Top1: \reals \to \reals$, 
+$J^Top2: \reals \to \reals, \reals$, 
+$J^Tmap2_{x,y.e}: \Array{\reals} \to \Array{\reals}, \Array{\reals}$, 
+$J^Treduce_{x,y.e1;e2}: \Array{\reals} \to \Array{\reals}$, 
+\MH{not too sure, should I say what a Cartesian concat is? do I need $J^Tproj$?}
 \end{definition}
 
-We can interpret Target UNF in $\ConcatT$ as follows.
+We can interpret Target UNF in $\ConcatT$ as follows. 
+The part common with Source UNF is interpreted in the same way as for Source UNF.
+
+\MH{I think need to explain here the (co)monoid structure induced by $D$}
 
 \begin{tabular}{l c l}
-    $\seml$!var!$_{T;i} \semr$ &=& TODO \\
-    $\seml$!op!$_{T;n} \semr$ &=& \\
-    $\seml$!pair!$_{T;A\times B} \semr$ &=& \\
-    $\seml$!proj!$_{T1;T2;T3} \semr$ &=& \\
-    $\seml$!e!$\comp$!e!$\semr$  &=& \\
-    $\seml$!e!$\pcomp$!e!$\semr$ &=& \\
-    $\seml$!map2!$_{T;x,y.e}\semr$  &=& \\
-    $\seml$!reduce!$_{T;x,y.e;e}\semr$  &=& \\
+    $\seml$!J!$^T$!var!$_{T;i} \semr$ &=& TODO \\
+    $\seml$!J!$^T$!op!$_{T;n} \semr$ &=&  \\
+    $\seml$!J!$^T$!pair!$_{T;A\times B} \semr$ &=& \\
+    $\seml$!J!$^T$!proj!$_{T1;T2;T3} \semr$ &=& \\
+    $\seml$!J!$^T$!map2!$_{T;x,y.e}\semr$  &=& \\
+    $\seml$!J!$^T$!reduce!$_{T;x,y.e;e}\semr$  &=& \\
+    $\seml$!<e1, e2>!$\semr$  &=& !<!$\seml$!e1!$\semr$, $\seml$!e2!$\semr$!>! \\
+    $\seml$!e1!$\icomp$!e2!$\semr$ &=&  \\
  \end{tabular}
 \MH{Do I need any kind of proposition saying that this makes sense?
-Might need to define on types as well to be clearer: It's an identity on type functor...}
+Might need to define on types as well to be clearer: It's an identity on types functor...}
 
 \subsection{Semantics for UNF transformations} % (fold)
 \label{sub:Semantics for UNF transformations}
@@ -122,7 +137,8 @@ this gives us a way to compare terms in Source with terms in Source UNF.
 This comparison precisely gives the UNF transformation.
 
 \begin{definition}[Mutlicat from concat]
-    TODO
+    A multicategory $\catC$ naturally defines a concategory with the same objects as $\catC$ and
+    with morphisms $A\to [B1,...,Bn]$ being $n$ morphisms $A\to Bi$ of $\catC$. 
 \end{definition}
 
 \begin{proposition}[construction above gives UNF]

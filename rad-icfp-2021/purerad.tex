@@ -178,8 +178,8 @@ As shown in appendix \ref{sub:gradintro}, the optimizations from Figure~\ref{fig
 are sufficient to show that the gradients of the terms of the introduction reduce to the following.
 
 \begin{tabular}{{r c l}}
-    $\nabla_A$!prod(A)! &:=& !map2 * (scanr * 1 A) (shift1(scanl * 1 A))!\\
-    $\nabla_A$!sum(A)! &:=& !map (x -> 1) A!\\
-    $\nabla_A$!dot(A,B)! &:=& !B! 
+    $\nabla_A$!prod(A)! &=& !map2 * (scanr * 1 A) (shift1(scanl * 1 A))!\\
+    $\nabla_A$!sum(A)! &=& !map (x -> 1) A!\\
+    $\nabla_A$!dot(A,B)! &=& !B! 
 \end{tabular}
 \end{example}
