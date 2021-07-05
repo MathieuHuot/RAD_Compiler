@@ -66,7 +66,7 @@ The type system for the extended grammar of the target language is presented in 
 \label{sub:Macro for pure reverse mode transformation}
 
 In Figure~\ref{fig:direct_diff_macro} we present our direct transformation from the source language to the target language for pure reverse mode differentiation.
-We explain in the next Section (\ref{sub:Partial evaluation and optimisation}) how to optimize it further and compute the gradient.
+We explain in the next Section (\ref{sub:Partial evaluation and optimization}) how to optimize it further and compute the gradient.
 Admittedly, this transformation may be hard to read, and it is not straightforward to show its correctness directly. 
 In Section~\ref{sec:unf} we decompose this transformation into three simpler steps via a novel intermediate representation (UNF).
 
@@ -119,8 +119,8 @@ We have the following typing lemma for $\directD{\rho}{\Gamma}{Y}$.
 
 \input{figures/direct_macro_diff}
 
-\subsection{Partial evaluation and optimisation} % (fold)
-\label{sub:Partial evaluation and optimisation}
+\subsection{Partial evaluation and optimization} % (fold)
+\label{sub:Partial evaluation and optimization}
 
 TODO: redo
 Given a term $\Gamma\vdash e : \reals$, we can compute its gradient $\grad_\Gamma e$ from a particular instance of 
