@@ -38,6 +38,8 @@ Finally, the former point implies we need a few more array manipulations.
 We write !c::[v1,...,vn]! to be the array ![c,v1,...,vn]!. 
 Given an array ![v1,...,vn]! of size $n>0$, we write !let x,A=[v1,...,vn]! to mean 
 that !x=v1! and !A=[v2,...,vn]!. The reverse derivative of fold left is then
+
+TODO: reduce recomputed after scanl can be fixed here, explain let v,B notation somewhere
 \begin{center}
 \begin{tabular}{r c l}
     $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=&
