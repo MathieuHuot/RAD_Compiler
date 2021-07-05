@@ -124,7 +124,7 @@ We can define $\otimes$ on the types of our language inductively by
 \begin{tabular}{r c l}
     $\reals \otimes A$ & $\defeq$ & $A$ \\
     $(A1 \times ... \times An)\otimes A$ & $\defeq$ & $(A1\otimes A) \times ... \times (An \otimes A)$ \\
-    $\Array{A1} \otimes A$ & $\defeq$ & $\Array{A1\otimes A}$
+    $\Array{A1}{n} \otimes A$ & $\defeq$ & $\Array{A1\otimes A}{n}$
 \end{tabular}
 
 With this definition, we recover that the gradient of $\Gamma \vdash$!e: !$\reals$ is a tuple of type $A1\times...\times An$ as expected.

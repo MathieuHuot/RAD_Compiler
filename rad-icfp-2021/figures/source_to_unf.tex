@@ -7,8 +7,8 @@
     $\UNFSymbol$($\Gamma\vdash \pi_i$(!e!)) &=& $\UNFSymbol$(!e!)$\comp $ $\pi_i$ $\comp$ !proj!$_{\Gamma;A_1\times A_2;A_i}$ $\pi_i$ seen as a unary operator\\
     $\UNFSymbol$($\Gamma\vdash $ !e1 op2 e2!) &=& $\UNFSymbol$(!e1!) $\pcomp$ $\UNFSymbol$(!e2!)$\comp$ !op!$_{\Gamma;2}$ $\comp$ !proj!$_{\Gamma;\reals,\reals;\reals}$ \\
     $\UNFSymbol$($\Gamma\vdash $ !op1 e!) &=& $\UNFSymbol$(!e!) $\comp$ !op!$_{\Gamma;1}$ $\comp$ !proj!$_{\Gamma;\reals;\reals}$ \\
-    $\UNFSymbol$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!) $\pcomp$ $\UNFSymbol$(!e3!) $\comp$ !map2!$_{\Gamma; x,y.e1}$ $\comp$ !proj!$_{\Gamma;\Array{\reals},\Array{\reals};\Array{\reals}}$ \\ 
-    $\UNFSymbol$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e3!)$\comp$ !reduce!$_{\Gamma; x,y.e1; e2}$ $\comp$ !proj!$_{\Gamma;\Array{\reals};\Array{\reals}}$ \\ 
+    $\UNFSymbol$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e2!) $\pcomp$ $\UNFSymbol$(!e3!) $\comp$ !map2!$_{\Gamma; x,y.e1}$ $\comp$ !proj!$_{\Gamma;\Array{\reals}{n},\Array{\reals}{n};\Array{\reals}{n}}$ \\ 
+    $\UNFSymbol$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=& $\UNFSymbol$(!e3!)$\comp$ !reduce!$_{\Gamma; x,y.e1; e2}$ $\comp$ !proj!$_{\Gamma;\Array{\reals}{n};\Array{\reals}{n}}$ \\ 
     \end{tabular}
     \caption{UNF transformation from Source to Source UNF}
     \label{fig:source_to_unf}

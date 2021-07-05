@@ -37,16 +37,16 @@
  
     \begin{tabular}{c}
         $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e$_1$!: $\reals$ 
-        $\quad$ $\Gamma$ $\vdash$ !e$_2$!: $\Array{\reals}$
-        $\quad$ $\Gamma$ $\vdash$ !e$_3$!: $\Array{\reals}$
+        $\quad$ $\Gamma$ $\vdash$ !e$_2$!: $\Array{\reals}{n}$
+        $\quad$ $\Gamma$ $\vdash$ !e$_3$!: $\Array{\reals}{n}$
         \\\hline  
-        $\Gamma \vdash$ !map2 (x,y.e$_1$) e$_2$ e$_3$!: $\Array{\reals}$
+        $\Gamma \vdash$ !map2 (x,y.e$_1$) e$_2$ e$_3$!: $\Array{\reals}{n}$
     \end{tabular}
 
     \begin{tabular}{c}
         !x!: $\reals$, !y!: $\reals$ $\vdash$ !e$_1$!: $\reals$ 
         $\quad$ $\Gamma$ $\vdash$ !e$_2$!: $\reals$
-        $\quad$ $\Gamma$ $\vdash$ !e$_3$!: $\Array{\reals}$
+        $\quad$ $\Gamma$ $\vdash$ !e$_3$!: $\Array{\reals}{n}$
         \\\hline  
         $\Gamma \vdash$ !reduce (x,y.e$_1$) e$_2$ e$_3$!: $\reals$
     \end{tabular}
