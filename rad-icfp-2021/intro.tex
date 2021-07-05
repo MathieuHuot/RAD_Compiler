@@ -57,9 +57,9 @@ A real-world implementation based on our work would of course optimize further, 
 \subsection{Summary of contributions}
 
 We propose a source-code transformation on a simple purely functional language for purely functional reverse-mode differentiation.
-Our transformation is comprised of compilation scheme through a novel intermediate representation: unary form (UNF).
+Our transformation is comprised of a compilation scheme through a novel intermediate representation (IR): unary form (UNF).
 To emphasize the key ideas and for expository purposes, we present our work with a simple yet expressive language in Section~\ref{sec:simplediff}, 
-and show how to extend our work to a richer language in Section~\ref{sec:generalisation}.
+and show how to extend our work to a richer language in Section~\ref{sec:generalization}.
 
 We summarize the key ideas of our work. Reverse-mode can be made efficient
 \begin{itemize}
@@ -72,7 +72,7 @@ We summarize the key ideas of our work. Reverse-mode can be made efficient
 Our contribution makes these claims precise. In more details, we introduce
 \begin{itemize}
     \item an expressive source language with array operations, yet restrictive enough for efficient differentiation (\S\ref{sub:sourcelang})
-    \item a method for extending our work and modular approaches to add and prove correct new primitives as needed in practice (\S\ref{sec:generalisation})
+    \item a method for extending our work and modular approaches to add and prove correct new primitives as needed in practice (\S\ref{sec:generalization})
     \item a new intermediate representation (IR), UNF, essentially turning every operation into a unary one which inputs and outputs a tuple (\S\ref{sec:unf})
     \item a transformation between the IR and the main language (\S\ref{sub:transformations to and from UNF})
     \item a simple reverse-mode transformation on the IR (\S\ref{sub:Simple reverse mode transformation})
@@ -81,7 +81,7 @@ Our contribution makes these claims precise. In more details, we introduce
     \item correctness of the transformations (\S\ref{sec:correctness})
     \item complexity guarantees (\S\ref{sec:complexity})
     \item how efficiency is recovered via standard optimization techniques (\S\ref{sub:Optimizations})
-    \item several additions to the source language (\S\ref{sec:generalisation}) \MH{should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.}
+    \item several additions to the source language (\S\ref{sec:generalization}) \MH{should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.}
     \item a detailed comparison with other work and some limitations to our work (\S\ref{sec:conclusion})
 \end{itemize}
 
@@ -164,5 +164,5 @@ In Section~\ref{sec:unf} we introduce a new intermediate representation UNF, and
 We introduce transformations from the source language to UNF and from UNF to the target language.
 Next, in Section~\ref{sec:correctness} we give denotational semantics to our languages and show that our decomposition respects the diagram above and that our reverse mode transformation is correct.
 In Section~\ref{sec:complexity}, we show that our transformation verifies the cheap gradient principle and extra general optimizations.
-In Section~\ref{sec:generalisation} we show how to adapt our work for a richer source language. 
+In Section~\ref{sec:generalization} we show how to adapt our work for a richer source language. 
 Finally, related work, limitations to our approach and future work are presented in Section~\ref{sec:conclusion}.

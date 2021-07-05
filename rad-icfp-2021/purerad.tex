@@ -10,7 +10,7 @@ We consider a standard call-by-value language.
 It consists of a first-order functional language with arrays and a few typical second-order array operations. 
 The types !T1,T2! and terms !e1,e2! are given in Figure~\ref{fig:source_grammar}.
 We have included a minimal set of array operations for the sake of illustration,  it is not hard to add more.
-See Section~\ref{sec:generalisation}.
+See Section~\ref{sec:generalization}.
 
 \input{figures/source_grammar}
 
@@ -18,7 +18,7 @@ The typing rules are given in Figure~\ref{fig:source_typesystem}.
 For scalar operations, we assume given a set of operations, including $+$ and $*$. 
 !op1! and !op2! denote respectively a unary and a binary operation on reals. 
 These operations represent smooth total functions, 
-but again this can be easily generalised (\S\ref{sec:generalisation}).  
+but again this can be easily generalized (\S\ref{sec:generalization}).  
 Typical examples include !cos, exp, +, *!. 
 We use infix notation for binary operators.
 
@@ -26,7 +26,7 @@ We use infix notation for binary operators.
 and the provided initial value should be a unit of the binary operation.
 It is a well-known parallel friendly construct. For the sake of simplicity in the presentation, the bound function in !reduce! 
 is restricted to having no free variables. For the same reason, we currently restrict to arrays of reals.
-We show how to lift these restrictions in Section~\ref{sec:generalisation}.
+We show how to lift these restrictions in Section~\ref{sec:generalization}.
 
 \input{figures/source_type_system}
 
