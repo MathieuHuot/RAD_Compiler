@@ -3,11 +3,11 @@
     tensors and operations on tensors.
     Reverse-mode differentiation is used for optimization, 
     but it does not preserve purity of the underlying program and makes it notoriously harder to optimize.
-    In a purely functional setting, most array operations can be expressed conveniently using map and fold.
-    We present a differentiable programming language which is the first to deliver on efficient, pure and parallel-friendly reverse-mode differentiation on
+    In a purely functional setting, most array operations can be expressed conveniently using \texttt{map} and \texttt{fold}.
+    We present a differentiable programming language which is the first one to deliver on efficient, pure and parallel-friendly reverse-mode differentiation on
     an expressive array language. 
     We show that our transformation is semantically correct and verifies the cheap gradient principle. 
-    Our transformation is presented as a compilation scheme through a novel intermediate representation that we call `unary form`.
+    Our transformation is presented as a compilation scheme through a novel intermediate representation that we call `unary form'.
     We obtain provably efficient gradients by performing general partial evaluation optimizations after our reverse-mode transformation, as opposed to manually derived ones.
     For simple first-order programs, the obtained output programs resemble static single assignment (SSA) code. 
     We emphasize the modularity of our approach and show how our language can easily be enriched with more optimized primitives, as required for some speedups in practice.
