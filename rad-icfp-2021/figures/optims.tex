@@ -2,11 +2,11 @@
     \begin{tabular}{|l c l|}
         \hline
         \textit{Inlining and forward substitution}  & &\\ \hline
-        !(fun (x1,...,xn) -> e)(e1,...,en)! & \multirow{2}{*}{\transto} & !let x1=e1 in $\ldots$! \\
-        && !let xn=en in e! \\ \hline
-        !let x1=e1 in e2! \quad\quad(!x1!$\not\in$!FV(e2))! & \transto & !e2!  \\ \hline
-        !let x1=x2 in e! & \transto & !e[x2/x1]! \\ \hline
-        !let x1= c in e! \quad\quad\hspace{0.5em}(!c=0! or !c=1!) & \transto & !e[c/x1]! \\ \hline
+        !(fun (x$_1$,$\ldots$,x$_n$) -> e)(e$_1$,$\ldots$,e$_n$)! & \multirow{2}{*}{\transto} & !let x$_1$=e$_1$ in $\ldots$! \\
+        && !let x$_n$=e$_n$ in e! \\ \hline
+        !let x$_1$=e$_1$ in e$_2$! \quad\quad(!x$_1$!$\not\in$!FV(e$_2$))! & \transto & !e$_2$!  \\ \hline
+        !let x$_1$=x$_2$ in e! & \transto & !e[x$_2$/x$_1$]! \\ \hline
+        !let x$_1$= c in e! \quad\quad\hspace{0.5em}(!c=0! or !c=1!) & \transto & !e[c/x$_1$]! \\ \hline
         \hline \hline
         \textit{Algebraic simplifications}  & & \\ \hline
         !0*e! & \transto & 0 \\ \hline
@@ -30,20 +30,20 @@
        
         \hline \hline
         \textit{Classic array simplifications}  & & \\ \hline
-        !map (x.e1) (map (y.e2) A)! & \transto & !map (y. let x=e2 in e1) A! \\ \hline
+        !map (x.e$_1$) (map (y.e$_2$) A)! & \transto & !map (y. let x=e$_2$ in e$_1$) A! \\ \hline
         !map (x.e$_1$) (map2 (y$_1$,y$_2$.e$_2$) A B)! & \transto & !map2 (y$_1$,y$_2$.let x=e$_2$ in e$_1$) A B! \\ \hline
         \textit{Tuple partial evaluation}  & & \\ \hline
-        $\pi_i$!<e1,...,en>! & \transto & !ei! \\
+        $\pi_i$!<e$_1$,$\ldots$,en>! & \transto & !ei! \\
         \hline \hline
         \textit{Let normalisation}  & & \\ \hline
-        !let x=(let y=e1 in e2) in e3! & \transto & !let y=e1 in let x=e2 in e3! \\ \hline
-        !f(let x=e1 in e2)! & \transto & !let x=e1 in f(e2)! \\
+        !let x=(let y=e$_1$ in e$_2$) in e$_3$! & \transto & !let y=e$_1$ in let x=e$_2$ in e$_3$! \\ \hline
+        !f(let x=e$_1$ in e$_2$)! & \transto & !let x=e$_1$ in f(e$_2$)! \\
         \hline \hline
         \textit{Conditionals} & & \\ \hline
-        !if e1 then e2 else e2! & \transto & e2 \\ \hline
-        !if true then e2 else e3! & \transto & e2 \\ \hline
-        !if false then e2 else e3! & \transto & e3 \\ \hline
-        !f(if e1 then e2 else e3)! & \transto & !if e1 then f(e2) else f(e3)! \\ \hline
+        !if e$_1$ then e$_2$ else e$_2$! & \transto & e$_2$ \\ \hline
+        !if true then e$_2$ else e$_3$! & \transto & e$_2$ \\ \hline
+        !if false then e$_2$ else e$_3$! & \transto & e$_3$ \\ \hline
+        !f(if e$_1$ then e$_2$ else e$_3$)! & \transto & !if e$_1$ then f(e$_2$) else f(e$_3$)! \\ \hline
         \end{tabular}
     \caption{Optimizations}
     \label{fig:optim} 

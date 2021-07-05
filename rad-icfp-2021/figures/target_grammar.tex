@@ -4,12 +4,12 @@
     \begin{tabular}{|l c l|l|}
     \hline
     \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
-    !T! & \mbox{::=} & ... & \grammarcomment{Same as Source} \\
+    !T! & \mbox{::=} & $\ldots$ & \grammarcomment{Same as Source} \\
     & $\mid$ & !T->T! & \grammarcomment{Function Type}\\ 
     \hline
-    !e! & \mbox{::=} & ... & \grammarcomment{Same as Source}\\
-    & $\mid$ & !fun (x$_1$,...,x$_n$) -> e! & \grammarcomment{Lambda Abstraction}\\
-    & $\mid$ & !e(e$_1$...e$_n$)! & \grammarcomment{Function Application}\\
+    !e! & \mbox{::=} & $\ldots$ & \grammarcomment{Same as Source}\\
+    & $\mid$ & !fun (x$_1$,$\ldots$,x$_n$) -> e! & \grammarcomment{Lambda Abstraction}\\
+    & $\mid$ & !e(e$_1\ldots$e$_n$)! & \grammarcomment{Function Application}\\
     & $\mid$ & !scanl (x,y.e) e e! $\mid$ !scanr (x,y.e) e e! & \grammarcomment{Array scan left and right}\\
     & $\mid$ & !shift1L e! & \grammarcomment{Array left shifting}\\
     & $\mid$ & !shift1R e! & \grammarcomment{Array right shifting}\\

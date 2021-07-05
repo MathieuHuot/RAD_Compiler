@@ -4,27 +4,22 @@
     !op1! \cnst{} & \transto & \underline{op1(c)} \\ \hline
     \cnst{} !op2! \cnst{}' & \transto & \underline{op2(c,c')}\\ \hline
     !let x=v in e! & \transto & !e[v/x]!  \\ \hline
-    $\pi_i$!<v1, v2>! & \transto & !vi!\\ \hline
-    !(fun (x1,...,xn) -> e)(v1...vn)! & \transto & !e[v1/x1,...,vn/xn]! \\ \hline
-    !shift1L [v1,...,v(n+1)]! & \transto & ![v2,...,v(n+1)]! \\ \hline
+    $\pi_i$!<v$_1$, v$_2$>! & \transto & !vi!\\ \hline
+    !(fun (x$_1$,$\ldots$,x$_n$) -> e)(v$_1$$\ldots$v$_n$)! & \transto & !e[v$_1$/x$_1$,$\ldots$,v$_n$/x$_n$]! \\ \hline
+    !shift1L [v$_1$,$\ldots$,v$_{n+1}$]! & \transto & ![v$_2$,$\ldots$,v$_{n+1}$]! \\ \hline
     !shift1L []! & \transto & ![]! \\ \hline
-    !shift1R [v1,...,v(n+1)]! & \transto & ![v1,...,vn]! \\ \hline
+    !shift1R [v$_1$,$\ldots$,v$_{n+1}$]! & \transto & ![v$_1$,$\ldots$,v$_n$]! \\ \hline
     !shift1R []! & \transto & ![]! \\ \hline
     !scanl (x,y.e) v []! & \transto & ![v]! \\\hline
-    !scanl (x,y.e) v [v1,...,vn]! & \transto & !v::(scanl (x,y.e) e[v/x,v1/y] [v2,...,vn])!\\ \hline
+    !scanl (x,y.e) v [v$_1$,$\ldots$,v$_n$]! & \transto & !v::(scanl (x,y.e) e[v/x,v$_1$/y] [v$_2$,$\ldots$,v$_n$])!\\ \hline
     !scanr (x,y.e) v []! & \transto & ![v]! \\ \hline
-    !scanr (x,y.e) v [v1,...,vn]! & \transto & !(scanl (x,y.e) e[v/x,v1/y] [v2,...,vn])::v! \\ \hline
-    !foldl (x,y.e) v []! & \transto & !v! \\ \hline
-    !foldl (x,y.e) v [v1,...,vn]! & \transto & !foldl (x,y.e) e[v/x,v1/y] [v2,...,vn])! \\ \hline
+    !scanr (x,y.e) v [v$_1$,$\ldots$,v$_n$]! & \transto & !(scanl (x,y.e) e[v/x,v$_1$/y] [v$_2$,$\ldots$,v$_n$])::v! \\ \hline
     !reduce (x,y.e) v []! & \transto & !v! \\ \hline
-    !reduce (x,y.e) v [v1,...,vn]! & \transto  & !reduce (x,y.e) e[v/x,v1/y] [v2,...,vn])!\\ \hline
-    !map (x.e) [v1,...,vn]! & \transto & ![e[v1/x],...,e[vn/x]]! \\ \hline
-    !map2 (x,y.e) [v11,...,v1n]! & \multirow{2}{*}{\transto} & ![e[v11/x,v21/y],...,e[v1n/x,v2n/y]]! \\ 
-    ![v21,...,v2n]! && \\ \hline
-    !map3 (x,y,z.e) [v11,...,v1n]!  & \multirow{2}{*}{\transto} & ![e[v11/x,v21/y,v31/z],...,! \\
-    ![v21,...,v2n] [v31,...,v3n]! && \hspace{0.6em}!e[v1n/x,v2n/y,v3n/z]]! \\ \hline
-    !if true then e1 else e2! & \transto  & !e1! \\ \hline
-    !if false then e1 else e2! & \transto  & !e2! \\ \hline
+    !reduce (x,y.e) v [v$_1$,$\ldots$,v$_n$]! & \transto  & !reduce (x,y.e) e[v/x,v$_1$/y] [v$_2$,$\ldots$,v$_n$])!\\ \hline
+    !map2 (x,y.e) [v$_{11}$,$\ldots$,v$_{1n}$]! & \multirow{2}{*}{\transto} & ![e[v$_{11}$/x,v$_{21}$/y],$\ldots$,e[v$_{1n}$/x,v$_{2n}$/y]]! \\ 
+    ![v$_{21}$,$\ldots$,v$_{2n}$]! && \\ \hline
+    !if true then e$_1$ else e$_2$! & \transto  & !e$_1$! \\ \hline
+    !if false then e$_1$ else e$_2$! & \transto  & !e$_2$! \\ \hline
     \end{tabular}
 \vspace{-0.2cm}
 \caption{Operational semantics of the source and target languages}

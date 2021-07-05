@@ -15,12 +15,12 @@ We can now compute the reverse-mode transformation as follows.
 \begin{center}
 \begin{tabular}{r c l}
 $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) 
-&=& ... as before up until !A3! \\
+&=& $\ldots$ as before up until !A3! \\
 && !let B0 = map2 (a,b ->(!$\grad_\Gamma$!e)[a/x,b/y] A0 A) in!\\
 && !let B1 = scanr !$1_\Gamma$ $\widehat{\times}$ !B0 in! \\
 && !let B2 = reduce !$\widehat{+}$ $0_\Gamma$! B1 in! \\
-&& !<reduce (x,y.e1) y1 A, fun (x1,...,xn,z) ->! \\
-&& !Y((x1,...,xn)!$\widehat{+}$!B2,0,map2 (a,b. a*b*z) A2 A3)!
+&& !<reduce (x,y.e1) y1 A, fun (x1,$\ldots$,xn,z) ->! \\
+&& !Y((x$_1$,$\ldots$,x$_n$)!$\widehat{+}$!B2,0,map2 (a,b. a*b*z) A2 A3)!
 \end{tabular}
 \end{center}
 
@@ -35,9 +35,9 @@ In other words, we need the general scan left computing the intermediate values 
 This should be a different primitive but we will still call it !scanl! in this section.
 
 Finally, the former point implies we need a few more array manipulations. 
-We write !c::[v1,...,vn]! to be the array ![c,v1,...,vn]!. 
-Given an array ![v1,...,vn]! of size $n>0$, we write !let x,A=[v1,...,vn]! to mean 
-that !x=v1! and !A=[v2,...,vn]!. The reverse derivative of fold left is then
+We write !c::[v1,$\ldots$,vn]! to be the array ![c,v1,$\ldots$,vn]!. 
+Given an array ![v1,$\ldots$,vn]! of size $n>0$, we write !let x,A=[v1,$\ldots$,vn]! to mean 
+that !x=v1! and !A=[v2,$\ldots$,vn]!. The reverse derivative of fold left is then
 
 TODO: reduce recomputed after scanl can be fixed here, explain let v,B notation somewhere
 \begin{center}
@@ -49,9 +49,9 @@ TODO: reduce recomputed after scanl can be fixed here, explain let v,B notation 
             && !let A1 = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) A0 A! \\
             && !let A2 = map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) A0 A! \\
             && !let A3 = scanr * 1 A1! \\
-            && !<reduce (x,y.e1) v A, fun (x1,...,xn,z) ->! \\
+            && !<reduce (x,y.e1) v A, fun (x1,$\ldots$,xn,z) ->! \\
             && !let y1,B = map2 (x,y. x*y*z) (1::A2) A3 in! \\
-            && !Y2(x1,...,xn,y1,B)>! \\
+            && !Y2(x1,$\ldots$,xn,y1,B)>! \\
 \end{tabular}
 \end{center}
 
@@ -86,9 +86,9 @@ A slightly better option would be to define
 \begin{tabular}{r c l}
     $\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) 
     &=& !let b=e1 in!   \\
-    && !<if b then e2 else e3, fun (x1,...,xn,z) ->! \\
-    && !Y(b*!$\directD{\rho}{\Gamma}{Y}$!(e2)(x1,...,xn,z)+!\\
-    && \quad!(1-b)*!$\directD{\rho}{\Gamma}{Y}$!(e3)(x1,...,xn,z))>!
+    && !<if b then e2 else e3, fun (x1,$\ldots$,xn,z) ->! \\
+    && !Y(b*!$\directD{\rho}{\Gamma}{Y}$!(e2)(x1,$\ldots$,xn,z)+!\\
+    && \quad!(1-b)*!$\directD{\rho}{\Gamma}{Y}$!(e3)(x1,$\ldots$,xn,z))>!
 \end{tabular}
 
 It is slightly better because both derivatives of !e2! and !e3! are put together, and this might unlock some optimizations, 
@@ -98,11 +98,11 @@ One solution, if we know we want to compute the whole gradient of the expression
 \begin{tabular}{r c l}
     $\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) 
     &=& !let b=e1 in!   \\
-    && !<if b then e2 else e3, fun (x1,...,xn,z) ->! \\
-    && !Y((x1,...,xn)!$\widehat{+}$($\grad_\Gamma$!(e2)*b!$\widehat{+}\grad_\Gamma$!(e3)*(1-b))*z)>!\\
+    && !<if b then e2 else e3, fun (x1,$\ldots$,xn,z) ->! \\
+    && !Y((x1,$\ldots$,xn)!$\widehat{+}$($\grad_\Gamma$!(e2)*b!$\widehat{+}\grad_\Gamma$!(e3)*(1-b))*z)>!\\
 \end{tabular}
 
-This time, there is a linear usage of the continuation variable !Y! (and of the variables !x1,...xn! too).
+This time, there is a linear usage of the continuation variable !Y! (and of the variables !x1,$\ldots$xn! too).
 
 We note that adding conditionals does not break differentiability as long as there are no non-trivial primitives $\reals\to\BB$.
 Non smooth functions such as the Rectified Linear Unit (ReLU) in machine learning which can be defined as $reLU(x)\defeq max(0,x)$ 
@@ -117,7 +117,7 @@ That is, we need to adapt the reverse derivatives of !map2! and !reduce! when th
 
 A ground type $G$ is interpreted as an Euclidean space $A$. 
 It is in particular a real vector space.
-Similarly, a ground context $\Gamma=x1:G1,...,xn:Gn$ is interpreted as $\bigoplus_{1\leq i\leq n}Ai$, where $Ai\defeq\sem{Gi}$.
+Similarly, a ground context $\Gamma=x1:G1,\ldots,xn:Gn$ is interpreted as $\bigoplus_{1\leq i\leq n}Ai$, where $Ai\defeq\sem{Gi}$.
 The denotation of the gradient of a term $\Gamma \vdash$!e: !$G$ at a point is then a matrix, more precisely an element of $()\bigoplus_{1\leq i\leq n}Ai)\otimes A$
 where $\otimes$ is the tensor product of real vector spaces. This space is isomorphic to $\bigoplus_{1\leq i\leq n}Ai\otimes A$.
 
@@ -125,11 +125,11 @@ We can define $\otimes$ on the types of our language inductively by
 
 \begin{tabular}{r c l}
     $\reals \otimes A$ & $\defeq$ & $A$ \\
-    $(A1 \times ... \times An)\otimes A$ & $\defeq$ & $(A1\otimes A) \times ... \times (An \otimes A)$ \\
+    $(A1 \times \ldots \times An)\otimes A$ & $\defeq$ & $(A1\otimes A) \times \ldots \times (An \otimes A)$ \\
     $\Array{A1}{n} \otimes A$ & $\defeq$ & $\Array{A1\otimes A}{n}$
 \end{tabular}
 
-With this definition, we recover that the gradient of $\Gamma \vdash$!e: !$\reals$ is a tuple of type $A1\times...\times An$ as expected.
+With this definition, we recover that the gradient of $\Gamma \vdash$!e: !$\reals$ is a tuple of type $A1\times\ldotstimes An$ as expected.
 TODO: define *, finish D(reduce)
 
 We will need a new primitive $\widehat{*}$ whose denotation is this map.
@@ -142,8 +142,8 @@ Then, using this notation, there are only minimal changes to the reverse derivat
     !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
     && !let B,Y2 = !$\directD{\rho}{\Gamma,A}{Y1}$!(e3) in! \\
     && !let C=!$\grad_{\Gamma}$!e1 in!\\
-    && !<map2 (x,y.e1) A B, fun (x1,...,xn,Z) -> !\\
-    && !Y2( (x1,...,xn)!$\widehat{+}$!(C!$\widehat{*}$!(reduce + 0 Z)),!\\
+    && !<map2 (x,y.e1) A B, fun (x1,$\ldots$,xn,Z) -> !\\
+    && !Y2( (x1,$\ldots$,xn)!$\widehat{+}$!(C!$\widehat{*}$!(reduce + 0 Z)),!\\
     && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x]!$\widehat{*}$!b) A Z,!\\
     && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e1)[a/x]!$\widehat{*}$!b) B Z )>!\\
     \end{tabular}
@@ -158,8 +158,8 @@ Then, using this notation, there are only minimal changes to the reverse derivat
         && !let A1 = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) A0 A! \\
         && !let A2 = shift1 (map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) A0 A)! \\
         && !let A3 = scanr * 1 A1! \\
-        && !<reduce (x,y.e1) y1 A, fun (x1,...,xn,z) ->! \\
-        && !Y((x1,...,xn),0,map2 (a,b. a*b*z) A2 A3)!
+        && !<reduce (x,y.e1) y1 A, fun (x1,$\ldots$,xn,z) ->! \\
+        && !Y((x1,$\ldots$,xn),0,map2 (a,b. a*b*z) A2 A3)!
 \end{tabular}
 \end{center}
 

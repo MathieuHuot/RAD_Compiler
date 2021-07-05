@@ -20,7 +20,7 @@ Sequential composition is denoted by !;! and !e$_{1}$;e$_{2}$! means that !e$_{1
 Every array operator !map!, !map2! and !foldl! has an extra index which represents a well-formed term in the source language.
 
 The types are the same as in the source language. 
-A context $\Gamma=\{$!x$_{1}$: T$_{1}$,...,x$_n$:T$_n$!$\}$ can always be seen as a type !T$_{1}$$\times$...$\times$ T$_n$!.
+A context $\Gamma=\{$!x$_{1}$: T$_{1}$,$\ldots$,x$_n$:T$_n$!$\}$ can always be seen as a type !T$_{1}$$\times\ldots\times$ T$_n$!.
 UNF is very syntactic and does not really use variables. 
 In fact it consists only of constants and composition. 
 For this reason, we denote contexts as types in the indices of the terms, and $\times$ is used for context extension.
@@ -28,7 +28,7 @@ But we do emphasize that we mean contexts and the actual variables are remembere
 this will be key when compiling to the target language after differentiation. 
 
 The typing rules are detailed in Figure~\ref{fig:source_unf_typesystem}.
-By $\reals^{\times n}$ we mean the product $\reals\times...\times\reals$ of $n$ factors $\reals$.
+By $\reals^{\times n}$ we mean the product $\reals\times\ldotstimes\reals$ of $n$ factors $\reals$.
 
 \MH{need to explain that return values produce some kind of ANF and introduce new vars!}
 

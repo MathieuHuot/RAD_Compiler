@@ -2,8 +2,8 @@
     \begin{tabular}{r c l}
     $\invUNFSymbol$(!var!$_{\Gamma;i}$) &=& $x_i$: !Ti! \\
     && if $x_i$: !Ti! is the $i$-th element of the context $\Gamma$ \\
-    $\invUNFSymbol$(!op!$_{\Gamma;n}$) &=& !op!$_n(y_k,...,y_{k+n})$ \\
-    && where $(y_k,...,y_{k+n})$ are the last $n$ variables of $\Gamma$ \\ 
+    $\invUNFSymbol$(!op!$_{\Gamma;n}$) &=& !op!$_n(y_k,\ldots,y_{k+n})$ \\
+    && where $(y_k\ldots y_{k+n})$ are the last $n$ variables of $\Gamma$ \\ 
     $\invUNFSymbol$(!e1!$\comp$!e2!) &=& !let x,Y = !$\invUNFSymbol$(!e1!) !in! $\invUNFSymbol$(!e2!) \\ 
     && TODO: \\ 
     $\invUNFSymbol$(!map2!$_{\Gamma;x,y.e}$) &=& !map2 (x,y.e) X1 X2! \\ 
@@ -13,10 +13,10 @@
     $\invUNFSymbol$(!e1!$\icomp$!e2!) &=& \\
     $\invUNFSymbol$(!proj!) &=& \\
     $\invUNFSymbol$(!pair!) &=& \\
-    $\invUNFSymbol$(!J!$^T$!var!$_{\Gamma;i}$) &=& !(x1,...,x(i-i),xi+z,x(i+1),...,xm)! \\
-    $\invUNFSymbol$(!J!$^T$!op!$_{\Gamma;n}$) &=& $(x_1,...,x_{m-n},x_{m-n+1}+\partial_1op_n*z,...,xm+\partial_nop_n*z)$ \\
+    $\invUNFSymbol$(!J!$^T$!var!$_{\Gamma;i}$) &=& !(x1,$\ldots$,x(i-i),xi+z,x(i+1),$\ldots$,xm)! \\
+    $\invUNFSymbol$(!J!$^T$!op!$_{\Gamma;n}$) &=& $(x_1',\ldots,'x_{m-n},x_{m-n+1}+\partial_1op_n*z,\ldots,xm+\partial_nop_n*z)$ \\
     && where $\partial_iop_n$ is the $i$-th partial derivative of $op_n$ \\
-    $\invUNFSymbol$(!J!$^T$!map2!$_{\Gamma;x,y.e}$) &=&  Y((x1,...,xm)+$\nabla_{\Gamma}e *$(!reduce! + 0 Z),\\
+    $\invUNFSymbol$(!J!$^T$!map2!$_{\Gamma;x,y.e}$) &=&  Y((x1,$\ldots$,xm)+$\nabla_{\Gamma}e *$(!reduce! + 0 Z),\\
     && !map2 (fun (a,b) -> a+!$\nabla_{\{x1\}}e *$!b) X1' Z'!, \\
     && !map2 (fun (a,b) -> a+!$\nabla_{\{x2\}}e *$!b) X2' Z'!) \\
     && where $X1'$, $X2'$ are the tangent arrays for the two arrays arguments \\
@@ -25,7 +25,7 @@
     && !let B = map2 (fun (x,y) ->! $\nabla_{\{x1\}}$!e1(x,y)) A e3 in!\\
     && !let C = shift1 (map2 (fun (x,y) ->! $\nabla_{\{x2\}}$!e1(x,y)) A e3) in!\\
     && !let D = scanr (fun (x,y) -> x*y) 1 B in!\\
-    && Y(x1,...,xm, !map3 (fun (a,b,c) -> a+b*c*z) X' D C!)
+    && Y(x1,$\ldots$,xm, !map3 (fun (a,b,c) -> a+b*c*z) X' D C!)
     \end{tabular}
     \caption{UNF transformation from Target UNF to Target}
     \label{fig:unf_to_target}

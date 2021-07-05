@@ -100,7 +100,7 @@ In Section~\ref{sec:unf} we decompose this transformation into three simpler ste
 \end{example}
 
 The idea is that $\rho$ represents the return type of the derivative part, which should be !A$_{1} \times \ldots \times$ A$_n$! 
-if we want the whole gradient of a term !e! in context !$\Gamma = \;$x$_{1}$:A$_{1}$,...,x$_n$:A$_n$!.
+if we want the whole gradient of a term !e! in context !$\Gamma = \;$x$_{1}$:A$_{1}$,$\ldots$,x$_n$:A$_n$!.
 The subscript $\Gamma$ denotes the current context, 
 which is locally augmented for instance when differentiating a !let! rule.
 For non-unary operations, we differentiate the arguments from left to right and add their derivatives to the current stack, 
@@ -140,16 +140,16 @@ and we can use partial evaluation to do beta-reduction.
 By inspection in Figure~\ref{fig:direct_diff_macro}, 
 we see that there is a linear usage of  each continuation $Y$ 
 and that it is always applied to almost the identity. 
-More precisely, we have applications of the form !fun (x1,...,xn) -> Y(e1,...,en)! 
+More precisely, we have applications of the form !fun (x1,$\ldots$,xn) -> Y(e1,$\ldots$,en)! 
 where the !ei! are !xi! except for at most $k$ (independant of $n$) terms.
 In fact we have $k=2$, except for the !map2! case which requires a more detailed analysis (see Section~\ref{sec:complexity}).
 
 Using the invariant above and the inlining and forward substitution given in Figure~\ref{fig:optim}, this allows us to rewrite
-!fun (x$_{1}$,...,x$_n$) -> (fun (y$_{1}$,...,yn) -> (f$_{1}$,...,f$_n$))(e$_{1}$,...,e$_n$)! 
+!fun (x$_{1}$,$\ldots$,x$_n$) -> (fun (y$_{1}$,$\ldots$,y$_n$) -> (f$_{1}$,$\ldots$,f$_n$))(e$_{1}$,$\ldots$,e$_n$)! 
 $\transto$ 
-!fun (x$_{1}$,...,x$_n$) -> let y$_{1}$,...,y$_n$ = e$_1$,...,e$_n$ in (f$_{1}$,...,f$_n$)!
+!fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!
 $\transto$
-!fun (x$_{1}$,...,x$_n$) -> (f$_{1}$[e$_{1}$/y$_{1}$],...,f$_n$[e$_n$/y$_n$])!
+!fun (x$_{1}$,$\ldots$,x$_n$) -> (f$_{1}$[e$_{1}$/y$_{1}$],$\ldots$,f$_n$[e$_n$/y$_n$])!
 
 TODO: finish explanation
 
