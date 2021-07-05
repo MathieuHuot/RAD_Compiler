@@ -29,6 +29,7 @@
   if,then,else,let,in,
   op2,op1,map,map2,foldl,
   scanl,scanr,map3,fun,reduce,shift1,
+  shift1L, shift1R,
   op,var,J,
   sum,prod,dot,fst,
   zip,
@@ -200,7 +201,7 @@ breakatwhitespace=true,
 \newcommand\vlengthk{\mathbf{length}}
 \newcommand\vgetk{\mathbf{get}}
 \newcommand\ArraySym{\mathbf{A}}
-\newcommand\Array[1]{\ArraySym[#1]}
+\newcommand\Array[2]{\ArraySym[#1]^{#2}}
 \newcommand\To{\to}
 \newcommand\tMatch[4][\,]{\mathbf{case}\,#2\,\mathbf{of}#1\tTuple{#3}\To#4}
 \newcommand{\semu}[1]{\llbracket #1\rrbracket_\mathbf{U}}

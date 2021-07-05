@@ -45,10 +45,9 @@ Scan left !scanl! is similar to fold left but also stores all the intermediate r
 In the same vein, scan right !scanr! perform a fold left by reading the array from right to left and also storing 
 the intermediate results in a array from right to left.
 
-Finally, we add a new shift operator !shift1!. 
-It takes an array of size $n$,  shifts all the element of the array by one, 
-forgetting the last element, and puts a one in the first place. 
-This somewhat ad-hoc operator naturally shows up when differentiating fold-like operators.
+Finally, we add two new shift operator !shift1L, shift1R!. 
+They take an array of size $n$, and shift respectively forget the first and the last element of the array.
+These somewhat ad-hoc operators naturally show up when differentiating fold-like operators.
 
 The types and terms are presented in Figure~\ref{fig:target_grammar}.
 Our lambda abstractions take $n$ arguments as we are not interested here with partial applications. 

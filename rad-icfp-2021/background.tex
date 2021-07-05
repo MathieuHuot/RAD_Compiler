@@ -121,7 +121,12 @@ $h(x_1,0,x_2,1)=(g(x_1,x_2), \frac {\partial g(x_1,x)}{\partial x}(x_2))$.
 And conversely, if $g$ is differentiable in each argument, then
 a unique $h$ satisfying \eqref{eqn:dualnumber} can be found by taking linear
 combinations of partial derivatives:
-\[\textstyle h(x_1,x_1',x_2,x_2')=(g(x_1,x_2),x_1' \cdot\frac {\partial g(x,x_2)}{\partial x}(x_1)+x_2'\cdot \frac {\partial g(x_1,x)}{\partial x}(x_2))\text.\]
+
+\begin{center}
+    \begin{tabular}{r c l}
+        $h(x_1,x_1',x_2,x_2')$ &= & $(g(x_1,x_2),x_1' \cdot\frac {\partial g(x,x_2)}{\partial x}(x_1)+x_2'\cdot \frac {\partial g(x_1,x)}{\partial x}(x_2))$
+    \end{tabular}
+\end{center}
 
 In summary, the idea of differentiation with dual numbers is 
 to transform a differentiable function
@@ -170,7 +175,11 @@ The same can be done for binary (or more) operators and let bindings (assuming n
 This transforms a first-order program to a function $f:\RR^n\to\RR^{n+m}$ of the form $f_m\circ...\circ f_1$. 
 If the original program was of type $\RR$, then the return value of the original program is the last component of $f$.
 Following the mathematical presentation of reverse-mode above, the gradient of the the original program is then obtained as 
-\[\nabla f= J^Tf(0,...,0,1)=J^Tf_1(J^Tf_{2}(...(J^Tf_m(0,...,0,1)))...)\]
+\begin{center}
+    \begin{tabular}{r c l}
+        $\nabla f$ &=& $J^Tf(0,\ldots,0,1)=J^Tf_1(J^Tf_{2}(\ldots(J^Tf_m(0,\ldots,0,1))\ldots)$
+    \end{tabular}
+\end{center}
 
 To actually reverse the order of computation needed for this transpose of jacobians, we use a sort of simple continuation.
 $f_i$ is turned into $\Dsynrevsymbol{f_i}:=<f_i, \lambda Y. Y\circ J^Tf_i>$ where $Y:\RR^{n+i-1}\to \RR^n$. 

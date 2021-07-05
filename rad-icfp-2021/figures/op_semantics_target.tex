@@ -6,7 +6,10 @@
     !let x=v in e! & \transto & !e[v/x]!  \\ \hline
     $\pi_i$!<v1, v2>! & \transto & !vi!\\ \hline
     !(fun (x1,...,xn) -> e)(v1...vn)! & \transto & !e[v1/x1,...,vn/xn]! \\ \hline
-    !shift1 [v1,...,vn]! & \transto & ![1,v1,...,v(n-1)]! \\ \hline
+    !shift1L [v1,...,v(n+1)]! & \transto & ![v2,...,v(n+1)]! \\ \hline
+    !shift1L []! & \transto & ![]! \\ \hline
+    !shift1R [v1,...,v(n+1)]! & \transto & ![v1,...,vn]! \\ \hline
+    !shift1R []! & \transto & ![]! \\ \hline
     !scanl (x,y.e) v []! & \transto & ![v]! \\\hline
     !scanl (x,y.e) v [v1,...,vn]! & \transto & !v::(scanl (x,y.e) e[v/x,v1/y] [v2,...,vn])!\\ \hline
     !scanr (x,y.e) v []! & \transto & ![v]! \\ \hline
