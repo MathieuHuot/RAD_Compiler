@@ -59,8 +59,6 @@ Similarly to numpy, we use the notation OnesLike(A) to mean map (x -> 1) A
 and ZerosLike(A) to mean map (x -> 0) A. 
 Finding these constant arrays is key to a lot of optimizations that leverage the ring algebraic structure of the reals to arrays.
 
-TODO: add ZerosLike ONesLike notation officially somewhere.
-
  \begin{lemma}
     !$\nabla_A$prod(A)= map2 * (scanr * 1 (shift1L A)) (shift1R (scanl * 1 A))!
  \end{lemma}

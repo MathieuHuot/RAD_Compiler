@@ -75,12 +75,12 @@ In Section~\ref{sec:unf} we decompose this transformation into three simpler ste
     \begin{tabular}{c l}
         &$\directD{\rho}{\Gamma}{Y}$(!let w$_1$ = x$_1$ * x$_2$ in let w$_2$ = w$_1$ * x$_1$ in w$_2$!) \\
         =& !let w$_1$,Y$_1$=!\\
-        & \quad\quad !let y$_1$1,Y$_1$1= <x$_1$, fun (y$_1$,y$_2$,y$_3$,z) -> Y(y$_1$+z,y$_2$,y$_3$)> in! \\
+        & \quad\quad !let y$_{11}$,Y$_{11}$= <x$_1$, fun (y$_1$,y$_2$,y$_3$,z) -> Y(y$_1$+z,y$_2$,y$_3$)> in! \\
         & \quad\quad !let y$_{12}$,Y$_{12}$= <x$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{11}$(y$_{1}$,y$_{2}$+z,y$_{3}$,y$_{4}$)> in! \\
         & \quad\quad !<y$_{11}$ * y$_{12}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y$_{12}$(y$_{1}$,y$_{2}$,y$_{3}$,y$_{12}$*z,y$_{11}$*z) > in! \\
         & !let w$_{2}$,Y$_{2}$=!\\
-        & \quad\quad !let y$_{21}$,Y$_{21}$= <w$_{1}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y(y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$+z)> in! \\
-        & \quad\quad !let y$_{22}$,Y$_{22}$= <x$_{1}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,y$_{5}$,z) -> Y$_{11}$(y$_{1}$+z,y$_{2}$,y$_{3}$,y$_{4}$,y$_{5}$)> in! \\
+        & \quad\quad !let y$_{21}$,Y$_{21}$= <w$_{1}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_1$(y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$+z)> in! \\
+        & \quad\quad !let y$_{22}$,Y$_{22}$= <x$_{1}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,y$_{5}$,z) -> Y$_{21}$(y$_{1}$+z,y$_{2}$,y$_{3}$,y$_{4}$,y$_{5}$)> in! \\
         & \quad\quad !<y$_{21}$ * y$_{22}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{22}$(y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,y$_{22}$*z,y$_{21}$*z) > in! \\
         & !let y,Y$_{3}$= <w, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{2}$(y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$+z)> in! \\
         & !<y, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y$_{3}$(y$_{1}$,y$_{2}$,y$_{3}$,0,z) >!
@@ -89,8 +89,8 @@ In Section~\ref{sec:unf} we decompose this transformation into three simpler ste
 
     \begin{tabular}{c l}
         &$\directD{\rho}{\Gamma}{Y}$(!prod(A)!) \\
-        =& !let y,Y$_{1}$= <0, fun (X,z) -> Y(X)> in! \\
-        & !let B,Y$_{2}$= <A, fun (X,x,Z) -> Y(X+Z,x)> in!\\
+        =& !let y,Y$_{1}$= <1, fun (X,z) -> Y(X)> in! \\
+        & !let B,Y$_{2}$= <A, fun (X,x,Z) -> Y$_{1}$(X+Z,x)> in!\\
         & !let A$_{0}$= shift1R (scanl * y B) in!\\
         & !let A$_{1}$= shift1L (map2 (a,b.b) A$_{0}$ B) in!\\
         & !let A$_{2}$= map2 (a,b.a) A$_{0}$ B in!\\
@@ -121,7 +121,6 @@ We have the following typing lemma for $\directD{\rho}{\Gamma}{Y}$.
 \subsection{Partial evaluation and optimization} % (fold)
 \label{sub:Partial evaluation and optimization}
 
-TODO: redo
 Given a term $\Gamma\vdash e : \reals$, we can compute its gradient $\grad_\Gamma e$ from a particular instance of 
 $\directD{\rho}{\Gamma}{Y}(e)$. First, $\rho, Y$ specifies if we want to compute the whole gradient regarding the variables from $\Gamma$ or a subset of it.
 For a subset $\rho\subset \Gamma$, one chooses $Y$ to be the projection function sending a variable 
@@ -145,26 +144,47 @@ where the !ei! are !xi! except for at most $k$ (independant of $n$) terms.
 In fact we have $k=2$, except for the !map2! case which requires a more detailed analysis (see Section~\ref{sec:complexity}).
 
 Using the invariant above and the inlining and forward substitution given in Figure~\ref{fig:optim}, this allows us to rewrite
+
+\begin{tabular}{l}
 !fun (x$_{1}$,$\ldots$,x$_n$) -> (fun (y$_{1}$,$\ldots$,y$_n$) -> (f$_{1}$,$\ldots$,f$_n$))(e$_{1}$,$\ldots$,e$_n$)! 
-$\transto$ 
+$\transto$ \\
 !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!
-$\transto$
+$\transto$ \\
 !fun (x$_{1}$,$\ldots$,x$_n$) -> (f$_{1}$[e$_{1}$/y$_{1}$],$\ldots$,f$_n$[e$_n$/y$_n$])!
+\end{tabular}
 
 TODO: finish explanation
 
 \begin{example}
-    The gradient of the terms from the introduction reduces to
+    After forward substitution and inlining the inner !Y!$_{i}$, the gradient of the terms from the introduction reduces to
 
     \begin{tabular}{c l}
         & $\grad_\Gamma$(!let w$_{1}$ = x$_{1}$ * x$_{2}$ in let w$_{2}$ = w$_{1}$ * x$_{1}$ in w$_{2}$!) \\
-        =& TODO \\
+        =& !let w$_1$,Y$_1$= <x$_1$ * x$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y(y$_{1}$+x$_2$*z,y$_{2}$+x$_1$*z,y$_{3}$) > in! \\
+        & !let w$_{2}$,Y$_{2}$= <w$_{1}$ * x$_{1}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{1}$(y$_{1}$+w$_1$*z,y$_{2}$,y$_{3}$,y$_{4}$+x$_{1}$*z) > in! \\
+        & !let y,Y$_{3}$= <w$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{2}$(y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$+z)> in! \\
+        & !<y, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y$_{3}$(y$_{1}$,y$_{2}$,y$_{3}$,0,z) >!
     \end{tabular}
-    \medskip
 
-    \begin{tabular}{c l}
+After another simplification step, we obtain 
+
+\begin{tabular}{c l}
+    & $\grad_\Gamma$(!let w$_{1}$ = x$_{1}$ * x$_{2}$ in let w$_{2}$ = w$_{1}$ * x$_{1}$ in w$_{2}$!) \\
+    =& !let w$_1$= x$_1$ * x$_{2}$ in! \\
+        & !let w$_{2}$= w$_{1}$ * x$_{1}$ in! \\
+        & !<w$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> !\\
+        & \quad\quad\quad!Y(y$_{1}$+w$_1$*(y$_4$+z)+x$_2$*(y$_4$+x$_1$*(y$_4$+z)),y$_{2}$+x$_1$*(y$_4$+x$_1$*(y$_4$+z)),y$_{3}$) >!
+\end{tabular}
+
+Similarly, for the gradient of !prod(A)! we obtain
+
+\begin{tabular}{c l}
         & $\grad_\Gamma$(!prod(A)!) \\
-        =& TODO \\
+        & !let A$_{0}$= shift1R (scanl * 1 A) in!\\
+        & !let A$_{1}$= shift1L (map2 (a,b.b) A$_{0}$ A) in!\\
+        & !let A$_{2}$= map2 (a,b.a) A$_{0}$ A in!\\
+        & !let A$_{3}$= scanr * 1 A$_{1}$ in!\\
+        & !<prod(A), fun (X,z) -> Y(X+map2 (a,b. a*z*b) A$_{2}$ A$_{3}$)>! 
     \end{tabular}
 \end{example}
 
