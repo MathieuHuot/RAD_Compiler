@@ -2,31 +2,36 @@
     \begin{tabular}{|l c l|}
         \hline
         \textit{Inlining and forward substitution}  & &\\ \hline
-        !(fun (x1,...,xn) -> e)(e1,...,en)! & \transto & !let x1=e1 in ... let xn=en in e! \\ \hline
+        !(fun (x1,...,xn) -> e)(e1,...,en)! & \multirow{2}{*}{\transto} & !let x1=e1 in $\ldots$! \\
+        && !let xn=en in e! \\ \hline
         !let x1=e1 in e2! \quad\quad(!x1!$\not\in$!FV(e2))! & \transto & !e2!  \\ \hline
         !let x1=x2 in e! & \transto & !e[x2/x1]! \\ \hline
         !let x1= c in e! \quad\quad\hspace{0.5em}(!c=0! or !c=1!) & \transto & !e[c/x1]! \\ \hline
         \hline \hline
         \textit{Algebraic simplifications}  & & \\ \hline
         !0*e! & \transto & 0 \\ \hline
-        !0+e!,!1*e! & \transto & !e! \\
+        !0+e, 1*e! & \transto & !e! \\
         \hline \hline
         \textit{Array algebraic simplifications}  & & \\ \hline
-        !map2 * A OnesLike(B)!  & \transto & !A! \\ \hline
-        !map2 + A ZerosLike(B)!  & \transto & !A! \\ \hline
+        !map2 * A OnesLike(B)!  & \multirow{3}{*}{\transto} & \\
+        !map2 + A ZerosLike(B)! && !A!\\
+        !map (x.x) A! && \\ \hline
+        !map2 * A ZerosLike(B)! & \transto & !ZerosLike(B)! \\ \hline
         !map2 (x,y.e) A B! \quad\quad(!y! not free in !e! ) & \transto & !map x.e A!  \\ \hline
         !map2 (x,y.e) A B! \quad\quad(!x! not free in !e! ) & \transto & !map y.e B!  \\ \hline
-        !map (x.x) A! & \transto & A \\ \hline
-        !scanl * OnesLike(A)! & \transto & !OnesLike(A)! \\ \hline
-        !scanr * OnesLike(A)! & \transto & !OnesLike(A)! \\ \hline
-        !shift1L OnesLike(n+1)! & \transto & !OnesLike(n)! \\ \hline
-        !shift1R OnesLike(n+1)! & \transto & !OnesLike(n)! \\ \hline
-        !foldl,reduce * 1 OnesLike(A)! & \transto & 1 \\ \hline
-        !foldl,reduce + 0 ZerosLike(A)! & \transto & 0 \\ 
+        !scanl * 1 OnesLike(A)! && \\
+        !scanr * 1 OnesLike(A)! & \transto & !1! \\
+        !reduce * 1 OnesLike(A)! && \\ \hline
+        !scanl + 0 ZerosLike(A)! && \\
+        !scanr + 0 ZerosLike(A)! & \transto & !0! \\
+        !reduce + 0 ZerosLike(A)! && \\ \hline
+        !shift1L OnesLike(n+1)! & \multirow{2}{*}{\transto} & !OnesLike(n)! \\ 
+        !shift1R OnesLike(n+1)! && \\ \hline
+       
         \hline \hline
         \textit{Classic array simplifications}  & & \\ \hline
         !map (x.e1) (map (y.e2) A)! & \transto & !map (y. let x=e2 in e1) A! \\ \hline
-        !map (x.e1) (map2 (y1,y2.e2) A B)! & \transto & !map2 (y1,y2. let x=e2 in e1) A! \\ \hline
+        !map (x.e$_1$) (map2 (y$_1$,y$_2$.e$_2$) A B)! & \transto & !map2 (y$_1$,y$_2$.let x=e$_2$ in e$_1$) A B! \\ \hline
         \textit{Tuple partial evaluation}  & & \\ \hline
         $\pi_i$!<e1,...,en>! & \transto & !ei! \\
         \hline \hline
@@ -42,5 +47,4 @@
         \end{tabular}
     \caption{Optimizations}
     \label{fig:optim} 
-    TODO: some of them I'm not sure when to do them because of cash optim...  
 \end{figure*}
