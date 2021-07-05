@@ -27,9 +27,9 @@ $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!)
 \subsection{Adding more array operators}
 \label{sub:Adding more array operators}
 
-There are two main differences with fold left !foldl! copmpared to !reduce!. 
+There are two main differences with fold left !foldl! compared to !reduce!. 
 First, in !foldl (x,y.e) v A! the starting accumulation element !v! is not a unit for !(x,y.e)!,
-so it will have non trivial derivatives in general and we need to account for that.
+so it will have non-trivial derivatives in general and we need to account for that.
 Second, we will need a more general !scanl! which allows !(x,y.e)! as a function argument. 
 In other words, we need the general scan left computing the intermediate values of a fold left.
 This should be a different primitive but we will still call it !scanl! in this section.
@@ -77,9 +77,9 @@ Adding conditionals to the source language can be done easily, for instance via 
 $\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) &=& !if e1 then !$\directD{\rho}{\Gamma}{Y}$!(e2) else !$\directD{\rho}{\Gamma}{Y}$!(e3)! 
 \end{tabular}
 
-The problem is that this could break the complexity of reverse mode because of the non linear usage of $Y$, and makes everything harder to optimise.
+The problem is that this could break the complexity of reverse mode because of the non-linear usage of $Y$, and makes everything harder to optimize.
 
-A slighly better option would be to define 
+A slightly better option would be to define 
 
 \begin{tabular}{r c l}
     $\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) 
@@ -90,7 +90,7 @@ A slighly better option would be to define
 \end{tabular}
 
 It is slightly better because both derivatives of !e2! and !e3! are put together, and this might unlock some optimizations, 
-but there is still a non linear usage of the continuation variable !Y!.
+but there is still a non-linear usage of the continuation variable !Y!.
 One solution, if we know we want to compute the whole gradient of the expression, is to define instead
 
 \begin{tabular}{r c l}
@@ -113,16 +113,57 @@ the condition is evaluated before differentiation is applied, and so conditional
 We now show how to generalise our reverse-mode transformation to be defined on arrays over any ground type $G$.
 That is, we need to adapt the reverse derivatives of !map2! and !reduce! when they have more general function arguments.
 
+A ground type $G$ is interpreted as an Euclidean space $A$. 
+It is in particular a real vector space.
+Similarly, a ground context $\Gamma=x1:G1,...,xn:Gn$ is interpreted as $\bigoplus_{1\leq i\leq n}Ai$, where $Ai\defeq\sem{Gi}$.
+The denotation of the gradient of a term $\Gamma \vdash$!e: !$G$ at a point is then a matrix, more precisely an element of $()\bigoplus_{1\leq i\leq n}Ai)\otimes A$
+where $\otimes$ is the tensor product of real vector spaces. This space is isomorphic to $\bigoplus_{1\leq i\leq n}Ai\otimes A$.
 
-TODO: introduce sum and tensor of semantics of ground type\\
-TODO: then * becomes a dot product\\
-TODO: minor changes from there\\
-TODO: except I'm not sure with reduce and shift1...
+We can define $\otimes$ on the types of our language inductively by
 
-Though this has the right complexity, it is an interesting avenue for future research to find
-better representations to allow for more optimisations. 
+\begin{tabular}{r c l}
+    $\reals \otimes A$ & $\defeq$ & $A$ \\
+    $(A1 \times ... \times An)\otimes A$ & $\defeq$ & $(A1\otimes A) \times ... \times (An \otimes A)$ \\
+    $\Array{A1} \otimes A$ & $\defeq$ & $\Array{A1\otimes A}$
+\end{tabular}
+
+With this definition, we recover that the gradient of $\Gamma \vdash$!e: !$\reals$ is a tuple of type $A1\times...\times An$ as expected.
+TODO: define *, finish D(reduce)
+
+We will need a new primitive $\widehat{*}$ whose denotation is this map.
+
+Then, using this notation, there are only minimal changes to the reverse derivatives of !map2! and !reduce!.
+
+\begin{center}
+\begin{tabular}{r c l}
+    $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map2 (x,y.e1: G) e2 e3!) &=&  
+    !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
+    && !let B,Y2 = !$\directD{\rho}{\Gamma,A}{Y1}$!(e3) in! \\
+    && !let C=!$\grad_{\Gamma}$!e1 in!\\
+    && !<map2 (x,y.e1) A B, fun (x1,...,xn,Z) -> !\\
+    && !Y2( (x1,...,xn)!$\widehat{+}$!(C!$\widehat{*}$!(reduce + 0 Z)),!\\
+    && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x]!$\widehat{*}$!b) A Z,!\\
+    && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e1)[a/x]!$\widehat{*}$!b) B Z )>!\\
+    \end{tabular}
+    \end{center}
+
+\begin{center}
+\begin{tabular}{r c l}
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) 
+        &=&  !let y1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
+        && !let A,Y2 = !$\directD{\rho}{\Gamma,y1}{Y1}$!(e3) in! \\
+        && !let A0 = scanl (x,y.e1) y1 A in! \\
+        && !let A1 = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) A0 A! \\
+        && !let A2 = shift1 (map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) A0 A)! \\
+        && !let A3 = scanr * 1 A1! \\
+        && !<reduce (x,y.e1) y1 A, fun (x1,...,xn,z) ->! \\
+        && !Y((x1,...,xn),0,map2 (a,b. a*b*z) A2 A3)!
+\end{tabular}
+\end{center}
+
+Evidently, one can combine all the generalizations from the previous subsections.
+Even though this transformation has the correct complexity, it is open for future research to find
+even better representations to allow for more optimizations. 
 In particular, representations looking like Einsum \cite{van2011numpy} could be of interest 
 and has been recently studied in the context of AD \cite{laue2018computing,laue2020simple}.
-
-TODO: more generally about tensors \cite{liao2019differentiable,bernstein2020differentiating}
-
+More generally, there is growing interest in tensor calculus \cite{liao2019differentiable,bernstein2020differentiating}.
