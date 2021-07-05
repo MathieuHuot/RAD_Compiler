@@ -37,7 +37,7 @@
 %%   Right brace   \}     Tilde         \~}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{acmart}
-[2020/11/15 v1.75 Typesetting articles for the Association for Computing Machinery]
+[2021/05/01 v1.78 Typesetting articles for the Association for Computing Machinery]
 \def\@classname{acmart}
 \InputIfFileExists{acmart-preload-hook.tex}{%
   \ClassWarning{\@classname}{%
@@ -120,6 +120,10 @@
   \PackageError{\@classname}{The option balance can be either true or
     false}}
 \ExecuteOptionsX{balance}
+\define@boolkey+{acmart.cls}[@ACM@]{pbalance}[true]{}{%
+  \PackageError{\@classname}{The option pbalance can be either true or
+    false}}
+\ExecuteOptionsX{pbalance=false}
 \define@boolkey+{acmart.cls}[@ACM@]{natbib}[true]{%
   \if@ACM@natbib
     \PackageInfo{\@classname}{Explicitly selecting natbib mode}%
@@ -487,6 +491,7 @@
         \rule\z@\footnotesep\ignorespaces#1\@finalstrut\strutbox}%
     \color@endgroup}}
 \def\@makefnmark{\hbox{\@textsuperscript{\normalfont\@thefnmark}}}
+\RequirePackage{hyperxmp}
 \let\@footnotemark@nolink\@footnotemark
 \let\@footnotetext@nolink\@footnotetext
 \RequirePackage[bookmarksnumbered,unicode]{hyperref}
@@ -526,7 +531,6 @@
   \fi
   \hypersetup{pdflang={en},
     pdfdisplaydoctitle}}
-\RequirePackage{hyperxmp}
 \if@ACM@natbib
   \let\citeN\cite
   \let\cite\citep
@@ -1268,9 +1272,12 @@
   DC, USA}%
 \fi
 \def\acmBooktitle#1{\gdef\@acmBooktitle{#1}}
+\acmBooktitle{}
+\ifx\acmConference@name\@undefined\else
 \acmBooktitle{Proceedings of \acmConference@name
        \ifx\acmConference@name\acmConference@shortname\else
-         \ (\acmConference@shortname)\fi}
+       \ (\acmConference@shortname)\fi}
+\fi
 \def\@editorsAbbrev{(Ed.)}
 \def\@acmEditors{}
 \def\editor#1{\ifx\@acmEditors\@empty
@@ -1302,12 +1309,16 @@
           \@acmSubmissionID\fi}}%
       \gdef\authors{Anonymous Author(s)}%
     \else
-      \gdef\addresses{\@author{#2}}%
+      \expandafter\gdef\expandafter\addresses\expandafter{%
+        \expandafter\@author\expandafter{%
+          \csname typeset@author\the\num@authors\endcsname{#2}}}%
       \gdef\authors{#2}%
     \fi
   \else
     \if@ACM@anonymous\else
-      \g@addto@macro\addresses{\and\@author{#2}}%
+    \expandafter\g@addto@macro\expandafter\addresses\expandafter{%
+      \expandafter\and\expandafter\@author\expandafter{%
+        \csname typeset@author\the\num@authors\endcsname{#2}}}%
       \g@addto@macro\authors{\and#2}%
     \fi
   \fi
@@ -1358,7 +1369,14 @@
   \if@ACM@anonymous\else
     \g@addto@macro\addresses{\email{#1}{#2}}%
   \fi}
-\def\orcid#1{\unskip\ignorespaces}
+\def\orcid#1{\unskip\ignorespaces%
+  \IfBeginWith{#1}{http}{%
+    \expandafter\gdef\csname
+        typeset@author\the\num@authors\endcsname##1{%
+          \href{#1}{##1}}}{%
+    \expandafter\gdef\csname
+        typeset@author\the\num@authors\endcsname##1{%
+          \href{https://orcid.org/#1}{##1}}}}
 \def\authorsaddresses#1{\def\@authorsaddresses{#1}}
 \authorsaddresses{\@mkauthorsaddresses}
 \def\@titlenotes{}
@@ -1466,8 +1484,11 @@
   \fi}{\ClassError{\@classname}{The option printacmref can be either true or false}}
 \AtEndDocument{\if@ACM@nonacm\else\if@ACM@printacmref\else
   \ifnum\getrefnumber{TotPages}>1\relax
-  \ClassWarningNoLine{\@classname}{ACM reference format is mandatory
-    for papers over one page}%
+  \ClassWarningNoLine{\@classname}{%
+    ACM reference format is mandatory \MessageBreak
+    for papers over one page. \MessageBreak
+    Please add printacmref=true to the \MessageBreak
+    \string\settopmatter\space command.}%
   \fi\fi\fi}
 \define@boolkey+{@ACM@topmatter@}[@ACM@]{printfolios}[true]{%
   \if@ACM@printfolios
@@ -1887,7 +1908,7 @@
        \else
          \@specialsection{Keywords}%
        \fi
-         \noindent\@keywords}\par\egroup
+         \noindent\@keywords\par}\egroup
    \fi
   \let\metadata@authors=\authors
   \nxandlist{, }{, }{, }\metadata@authors
@@ -1916,6 +1937,8 @@
   \@afterheading
 }
 \def\@specialsection#1{%
+  \let\@vspace\@vspace@orig
+  \let\@vspacer\@vspacer@orig
   \ifcase\ACM@format@nr
   \relax % manuscript
     \par\medskip\small\noindent#1: %
@@ -1936,12 +1959,26 @@
   \or % sigchi-a
     \section*{#1}%
     \fi
+  \let\@vspace\@vspace@acm
+  \let\@vspacer\@vspacer@acm
 }
 \def\@printtopmatter{%
   \ifx\@startPage\@empty
      \gdef\@startPage{1}%
   \else
      \setcounter{page}{\@startPage}%
+  \fi
+  \@tempdima=\ht\mktitle@bx
+  \advance\@tempdima by \dp\mktitle@bx
+  \ifdim\@tempdima>0.9\textheight
+    \loop
+      \setbox\@tempboxa=\vsplit \mktitle@bx to 0.9\textheight
+      \thispagestyle{firstpagestyle}%
+      \noindent\unvbox\@tempboxa
+      \clearpage
+      \@tempdima=\ht\mktitle@bx
+      \advance\@tempdima by \dp\mktitle@bx
+    \ifdim\@tempdima>0.9\textheight\repeat
   \fi
   \thispagestyle{firstpagestyle}%
   \noindent
@@ -2245,7 +2282,7 @@
       \fi
     \fi
      \global\let\and\@typeset@author@line}%
-  \global\setbox\mktitle@bx=\vbox{\noindent\box\mktitle@bx\par\medskip
+  \global\setbox\mktitle@bx=\vbox{\noindent\unvbox\mktitle@bx\par\medskip
     \noindent\addresses\@typeset@author@line
    \par\medskip}%
 }
@@ -2311,7 +2348,7 @@
 }%
   \hsize=\textwidth
   \global\setbox\mktitle@bx=\vbox{\noindent
-    \box\mktitle@bx\par\medskip\leavevmode
+    \unvbox\mktitle@bx\par\medskip\leavevmode
     \lineskip=1pc\relax\centering\hspace*{-1em}%
     \addresses\let\and\@typeset@author@bx\and\par\bigskip}}
 \def\@mkauthors@iv{%
@@ -2366,12 +2403,13 @@
   \def\streetaddress##1{\unskip, ##1}%
   \def\postcode##1{\unskip, ##1}%
   \def\position##1{\unskip\ignorespaces}%
-  \def\institution##1{\unskip, ##1}%
+  \gdef\@ACM@institution@separator{, }%
+  \def\institution##1{\unskip\@ACM@institution@separator ##1\gdef\@ACM@institution@separator{ and }}%
   \def\city##1{\unskip, ##1}%
   \def\state##1{\unskip, ##1}%
   \renewcommand\department[2][0]{\unskip\@addpunct, ##2}%
   \def\country##1{\unskip, ##1}%
-  \def\and{\unskip; }%
+  \def\and{\unskip; \gdef\@ACM@institution@separator{, }}%
   \def\@author##1{##1}%
   \def\email##1##2{\unskip, \nolinkurl{##2}}%
   \addresses
@@ -2388,7 +2426,7 @@
   \ifx\@teaserfigures\@empty\else
     \def\@teaser##1{\par\bigskip\bgroup
       \captionsetup{type=figure}##1\egroup\par}
-    \global\setbox\mktitle@bx=\vbox{\noindent\box\mktitle@bx\par
+    \global\setbox\mktitle@bx=\vbox{\noindent\unvbox\mktitle@bx\par
       \noindent\@Description@presentfalse
       \@teaserfigures\par\if@Description@present\else
          \global\@undescribed@imagestrue
@@ -2587,7 +2625,10 @@
       \fancyfoot[C]{\if@ACM@printfolios\footnotesize\thepage\fi}%
       \fancyhead[LO]{\ACM@linecountL\@headfootfont\shorttitle}%
       \fancyhead[RE]{\@headfootfont\@shortauthors\ACM@linecountR}%
-      \if@ACM@nonacm\else%
+      \if@ACM@nonacm
+        \fancyhead[LE]{\ACM@linecountL}%
+        \fancyhead[RO]{\ACM@linecountR}%
+      \else%
         \fancyhead[LE]{\ACM@linecountL\@headfootfont\footnotesize
           \acmConference@shortname,
           \acmConference@date, \acmConference@venue}%
@@ -2600,7 +2641,10 @@
     \fancyfoot[C]{\if@ACM@printfolios\footnotesize\thepage\fi}%
     \fancyhead[LO]{\ACM@linecountL\@headfootfont\shorttitle}%
     \fancyhead[RE]{\@headfootfont\@shortauthors\ACM@linecountR}%
-    \if@ACM@nonacm\else%
+    \if@ACM@nonacm
+      \fancyhead[LE]{\ACM@linecountL}%
+      \fancyhead[RO]{\ACM@linecountR}%
+    \else%
       \fancyhead[LE]{\ACM@linecountL\@headfootfont
         \acmConference@shortname,
         \acmConference@date, \acmConference@venue}%
@@ -2931,6 +2975,25 @@
   \popQED\endtrivlist\@endpefalse
 }
 \AtEndPreamble{%
+  \if@ACM@pbalance
+    \global\@ACM@balancefalse
+    \ifcase\ACM@format@nr
+    \relax % manuscript
+       \or % acmsmall
+       \or % acmlarge
+       \or % acmtog
+          \RequirePackage{pbalance}%
+       \or % sigconf
+          \RequirePackage{pbalance}%
+       \or % siggraph
+          \RequirePackage{pbalance}%
+       \or % sigplan
+          \RequirePackage{pbalance}%
+       \or % sigchi
+          \RequirePackage{pbalance}%
+       \or % sigchi-a
+    \fi
+  \fi
   \if@ACM@balance
     \ifcase\ACM@format@nr
     \relax % manuscript
@@ -2988,8 +3051,15 @@
   \def\@tempa{#1}%
   \ifx\@tempa\@empty\def\@tempa{arxiv}\fi
   \def\@tempb{arxiv}%
-  \ifx\@tempa\@tempb
-     arXiv:\href{https://arxiv.org/abs/#2}{#2}\else arXiv:#2%
+  \ifx\@tempa\@tempb\relax
+     arXiv:\href{https://arxiv.org/abs/#2}{#2}%
+  \else
+     \def\@tempb{arXiv}%
+     \ifx\@tempa\@tempb\relax
+       arXiv:\href{https://arxiv.org/abs/#2}{#2}%
+     \else
+       arXiv:#2%
+    \fi
   \fi}
 \let\@vspace@orig=\@vspace
 \let\@vspacer@orig=\@vspacer

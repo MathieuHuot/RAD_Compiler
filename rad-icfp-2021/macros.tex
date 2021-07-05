@@ -53,13 +53,16 @@ breakatwhitespace=true,
   aboveskip=1pt,
   belowskip=1pt,
   lineskip=-0.2pt,
-   numbersep=5pt,
-   numberstyle=\tiny\ttfamily,
-   basicstyle=\small\ttfamily,
-   keywordstyle=\bfseries\color{blue!70!black},%
-   columns=fullflexible,
+  numbersep=5pt,
+  numberstyle=\tiny\ttfamily,
+  basicstyle=\small\ttfamily,
+  keywordstyle=\bfseries\color{blue!70!black},%
+  columns=fullflexible,
   frame=single,
-  escapeinside={(*@}{@*)}
+  escapeinside={(*@}{@*)},
+  literate={->}{$\rightarrow$}{2}
+           {<}{$\langle$}{1}
+           {>}{$\rangle$}{1}
 }[keywords,comments,strings]%
 
 \lstset{language=llql}

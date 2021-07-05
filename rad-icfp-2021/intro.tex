@@ -77,22 +77,22 @@ Our contribution makes these claims precise. In more details, we introduce
     \item a transformation between the IR and the main language (\S\ref{sub:transformations to and from UNF})
     \item a simple reverse-mode transformation on the IR (\S\ref{sub:Simple reverse mode transformation})
     \item the direct reverse-mode transformation obtained from the source to the target language (\S\ref{sub:Macro for pure reverse mode transformation})
-    \item denotational semantics of our languages and transformations using multicategories and concategories (\S\ref{sec:correctness})
+    \item a denotational semantics of our languages and transformations using multicategories and concategories (\S\ref{sec:correctness})
     \item correctness of the transformations (\S\ref{sec:correctness})
     \item complexity guarantees (\S\ref{sec:complexity})
-    \item how efficiency is recovered via standard optimization techniques (\S\ref{sub:Optimizations})
+    \item how efficiency is ensured via standard optimization techniques (\S\ref{sub:Optimizations})
     \item several additions to the source language (\S\ref{sec:generalization}) \MH{should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.}
-    \item a detailed comparison with other work and some limitations to our work (\S\ref{sec:conclusion})
+    \item a detailed comparison with other work and some limitations of our work (\S\ref{sec:conclusion}) \YK{Is it really necessary to specify this point in the contributions? (as it is supposed to be part of every paper)}
 \end{itemize}
 
 \subsection{Examples}
 
-We introduce the general idea of how we do efficient reverse-mode in a functional setting on some examples.
+We introduce the general idea of efficient reverse-mode in a functional setting on some examples.
 We recall some basics of reverse-mode differentiation in Section~\ref{sec:background}.
 
 \begin{example}[First-order term]
-On simple first-order terms, the output code looks like SSA code \cite{cytron1989efficient}.
-Let us consider  the term !let w1 = x1 * x2 in let w2 = w1 * x1 in w2! in the context $\Gamma:=\{x1,x2,x3:\RR\}$.\\
+On simple first-order terms, the output code is reminiscent of SSA code~\cite{cytron1989efficient}.
+Let us consider the term !let w$_1$ = x$_1$ * x$_2$ in let w2 = w1 * x1 in w2! in the context $\Gamma:=\{x_1,x_2, x_3:\RR\}$.\\
 After our (inefficient) reverse-mode transformation, we obtain
 \begin{center}
     \begin{tabular}{l}
