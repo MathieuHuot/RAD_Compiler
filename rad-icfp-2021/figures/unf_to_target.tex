@@ -23,7 +23,7 @@
     && of !map2! and $Z$ the tangent part for the return array of !map2! \\
     $\invUNFSymbol$(!J!$^T$!reduce!$_{\Gamma;x,y.e1;e2}$) &=& !let A = scanl (fun (x,y) -> e1) e2 e3 in! \\
     && !let B = map2 (fun (x,y) ->! $\nabla_{\{x1\}}$!e1(x,y)) A e3 in!\\
-    && !let C = shift1 (map2 (fun (x,y) ->! $\nabla_{\{x2\}}$!e1(x,y)) A e3) in!\\
+    && !let C = map2 (fun (x,y) ->! $\nabla_{\{x2\}}$!e1(x,y)) A e3) in!\\
     && !let D = scanr (fun (x,y) -> x*y) 1 B in!\\
     && Y(x1,$\ldots$,xm, !map3 (fun (a,b,c) -> a+b*c*z) X' D C!)
     \end{tabular}

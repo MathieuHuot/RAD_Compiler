@@ -89,11 +89,11 @@ In Section~\ref{sec:unf} we decompose this transformation into three simpler ste
 
     \begin{tabular}{c l}
         &$\directD{\rho}{\Gamma}{Y}$(!prod(A)!) \\
-        =& !let x,Y$_{1}$= <0, fun (X,z) -> Y(X)> in! \\
+        =& !let y,Y$_{1}$= <0, fun (X,z) -> Y(X)> in! \\
         & !let B,Y$_{2}$= <A, fun (X,x,Z) -> Y(X+Z,x)> in!\\
-        & !let A$_{0}$= scanl * x B in!\\
-        & !let A$_{1}$= map2 (a,b.b) A$_{0}$ B in!\\
-        & !let A$_{2}$= shift1 (map2 (a,b.a) A$_{0}$ B) in!\\
+        & !let A$_{0}$= shift1R (scanl * y B) in!\\
+        & !let A$_{1}$= shift1L (map2 (a,b.b) A$_{0}$ B) in!\\
+        & !let A$_{2}$= map2 (a,b.a) A$_{0}$ B in!\\
         & !let A$_{3}$= scanr * 1 A$_{1}$ in!\\
         & !<prod(B), fun (X,z) -> Y$_{2}$(X,0,map2 (a,b. a*z*b) A$_{2}$ A$_{3}$)>! 
     \end{tabular}
@@ -177,7 +177,7 @@ As shown in appendix \ref{sub:gradintro}, the optimizations from Figure~\ref{fig
 are sufficient to show that the gradients of the terms of the introduction reduce to the following.
 
 \begin{tabular}{{r c l}}
-    $\nabla_A$!prod(A)! &=& !map2 * (scanr * 1 A) (shift1(scanl * 1 A))!\\
+    $\nabla_A$!prod(A)! &=& !map2 * (scanr * 1 (shift1L A)) (shift1R (scanl * 1 A))!\\
     $\nabla_A$!sum(A)! &=& !map (x -> 1) A!\\
     $\nabla_A$!dot(A,B)! &=& !B! 
 \end{tabular}

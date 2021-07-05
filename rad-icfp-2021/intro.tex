@@ -141,13 +141,15 @@ It is notably faster to execute than a fold left as it parallel friendly.
 The gradient of each of these construct w.r.t. !A! will be:
 \begin{center}
     \begin{tabular}{{r c l}}
-        $\nabla_A$!prod(A)! &:=& !map2 * (scanr * 1 A) (shift1(scanl * 1 A))!\\
+        $\nabla_A$!prod(A)! &:=& !map2 * (scanr * 1 (shift1L A)) (shift1R (scanl * 1 A))! \\
         $\nabla_A$!sum(A)! &:=& !map (x -> 1) A!\\
         $\nabla_A$!dot(A,B)! &:=& !B! 
     \end{tabular}
 \end{center}
-where !shift1 [v$_1$,$\ldots$,v$_n$] = [1,v$_1$,$\ldots$,v$_{n-1}$]! is a simple operator yet perhaps strange at first naturally showing up in our constructions.
-!scanl! and !scanr! are respectively scan left and scan right. These return all the intermediate result of a fold in an array.
+where !scanl! and !scanr! are respectively scan left and scan right. 
+These return all the intermediate result of a fold in an array.
+!shift1L [v$_1$,$\ldots$,v$_n$] \defeq [v$_2$,$\ldots$,v$_{n}$]! and 
+!shift1R [v$_1$,$\ldots$,v$_n$] \defeq [v$_1$,$\ldots$,v$_{n-1}$]! are shift operators.
 These gradients are some examples among numerous ones which are usually derived by hand, and are here obtained automatically as special cases of our work.
 \end{example}   
 
