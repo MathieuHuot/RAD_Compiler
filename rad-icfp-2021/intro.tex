@@ -48,7 +48,6 @@ to a representation that leads to more efficient implementations.
 This raises several issues that we deal with throughout the paper. First, there is a tradeoff to reach between a general expressive language and a domain specific one. The latter usually has more static information and a specific representation that lends itself to better optimizations.
 Then, many optimizations performed on AD implementations consist in hand-crafted derivatives for useful operations like matrix-matrix multiplication, dot-product, etc.
 They don't seem to arise from theoretical justifications, are error prone, and can hardly fit with more general optimizations.
-\MH{TODO: maybe the example and ref that ML systems spend 90percent of the time outside of numpy.}
 This makes these systems harder to prove correct. The problem is thus to ensure provable correctness and pureness, while not compromising on efficiency. In addition, we would like something easily provably efficient. 
 A real-world implementation based on our work would of course optimize further, potentially using hand-crafted operations as well, but it would be based on solid grounds.
 
@@ -96,8 +95,8 @@ Let us consider the term !let w$_1$ = x$_1$ * x$_2$ in let w$_2$ = w$_1$ * x$_1$
 After our (inefficient) reverse-mode transformation, we obtain
 \begin{center}
     \begin{tabular}{l}
-        !let w$_1$,w$_1'$! = !< x$_1$ * x$_2$, fun (y$_1$, $\ldots$, y$_4$) -> (y$_1$+x$_2$*y$_4$, y$_2$+x$_1$*y$_4$, y$_3$)> in!\\
-        !let w$_2$,w$_2'$! = !< w$_1$*x$_1$, fun (y$_1$, $\ldots$, y$_5$) -> w$_1'$!!(y$_1$+w$_1$*y$_5$, y$_2$, y$_3$, y$_4$+x$_1$*y$_5$)> in!\\
+        !let w$_1$,w$_1'$! = !< x$_1$ * x$_2$, fun (y$_1$,$\ldots$, y$_4$) -> (y$_1$+x$_2$*y$_4$, y$_2$+x$_1$*y$_4$, y$_3$)> in!\\
+        !let w$_2$,w$_2'$! = !< w$_1$*x$_1$, fun (y$_1$,$\ldots$, y$_5$) -> w$_1'$!!(y$_1$+w$_1$*y$_5$, y$_2$, y$_3$, y$_4$+x$_1$*y$_5$)> in!\\
         !w$_2'$(0,0,0,0,1)!
     \end{tabular}
 \end{center}
