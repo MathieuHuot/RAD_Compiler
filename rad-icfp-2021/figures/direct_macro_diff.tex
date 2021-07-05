@@ -6,52 +6,52 @@
 
     \begin{tabular}{r c l}
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !c!) &=& 
-            !<c, fun (x1,...,xn,z) ->! \\
-            && !Y(x1,...,xn) >!\\
+            !<c, fun (x$_{1}$,...,x$_n$,z) ->! \\
+            && !Y(x$_{1}$,...,x$_{n}$) >!\\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !x!) &=& 
-            !<x, fun (x1,...,xn,z) ->! \\
-            && !Y((x1,...,xn)!$\widehat{+}$![pos(x)]z) >!\\
-        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !let x:A = e1 in e2!) &=& 
-            !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
-            &&!let y,Y2 = !$\directD{\rho}{\Gamma,x:A}{Y1}$!(e2) in!\\ 
-            &&!<y, fun (x1,...,xn,z) -> Y2(x1,...,xn,!$0_{A}$!,z)>!\\
-        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !< e1, e2 >!) &=&
-            !let y1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
-            &&!let y2,Y2 = !$\directD{\rho}{\Gamma,x1}{Y1}$!(e2) in!\\
-            &&!< <y1,y2>, fun (x1,...,xn,z) -> !\\
-            &&!Y(x1,...,xn,!$\pi_1$!(z),!$\pi_2$!(z)) >!\\ 
+            !<x, fun (x$_{1}$,...,x$_n$,z) ->! \\
+            && !Y((x$_{1}$,...,x$_n$)!$\widehat{+}$![pos(x)]z) >!\\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !let x:A = e$_{1}$ in e$_{2}$!) &=& 
+            !let x,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{1}$) in! \\
+            &&!let y,Y$_{2}$ = !$\directD{\rho}{\Gamma,x:A}{Y_1}$!(e$_{2}$) in!\\ 
+            &&!<y, fun (x$_{1}$,...,x$_n$,z) -> Y$_{2}$(x$_{1}$,...,x$_n$,!$0_{A}$!,z)>!\\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !< e$_{1}$, e$_{2}$ >!) &=&
+            !let y$_{1}$,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{1}$) in! \\
+            &&!let y$_{2}$,Y$_{2}$ = !$\directD{\rho}{\Gamma,x_1}{Y_1}$!(e$_{2}$) in!\\
+            &&!< <y$_{1}$,y$_{2}$>, fun (x$_{1}$,...,x$_n$,z) -> !\\
+            &&!Y(x$_{1}$,...,x$_n$,!$\pi_1$!(z),!$\pi_2$!(z)) >!\\ 
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash \pi_1$(!e!:AxB)) &=&
-            !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
-            && !<!$\pi_1$!x, fun (x1,...,xn,z) -> Y(x1,...,xn,(z,!$0_B$!))>! \\
+            !let x,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
+            && !<!$\pi_1$!x, fun (x$_{1}$,...,x$_n$,z) -> Y(x$_{1}$,...,x$_n$,(z,!$0_B$!))>! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash \pi_2$(!e!:AxB)) &=&
-            !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
-            && !<!$\pi_2$!x, fun (x1,...,xn,z) -> Y(x1,...,xn,(!$0_A$,z!))>! \\
+            !let x,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
+            && !<!$\pi_2$!x, fun (x$_{1}$,...,x$_n$,z) -> Y(x$_{1}$,...,x$_n$,(!$0_A$,z!))>! \\
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !op1 e!) &=&  
-            !let x,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
-            && !<op1 x, fun (x1,...,xn,z) -> ! \\
-            && !Y(x1,...,xn,!$\partial$!op1(x)*z) >! \\
-        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !e1 op2 e2!) &=& 
-            !let x1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e1) in! \\
-            && !let x2,Y2 = !$\directD{\rho}{\Gamma,x1}{Y1}$!(e2) in! \\
-            && !<x1 op2 x2, fun (x1,...,xn,z) ->! \\
-            && !Y2(x1,...,xn,!$\partial_1$!op2(x1,x2)*z,!$\partial_2$!op2(x1,x2)*z>! \\
-        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map2 (x,y.e1) e2 e3!) &=&  
-            !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
-            && !let B,Y2 = !$\directD{\rho}{\Gamma,A}{Y1}$!(e3) in! \\
-            && !let G=!$\grad_{\Gamma}$!e1 in!\\
-            && !<map2 (x,y.e1) A B, fun (x1,...,xn,Z) -> !\\
-            && !Y2( (x1,...,xn)!$\widehat{+}$!(G*(reduce + 0 Z)),!\\
-            && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x]*b) A Z,!\\
-            && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e1)[a/x]*b) B Z )>!\\
-        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) &=&
-            !let y1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
-            && !let A,Y2 = !$\directD{\rho}{\Gamma,y1}{Y1}$!(e3) in! \\
-            && !let A0 = scanl (x,y.e1) y1 A in! \\
-            && !let A1 = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) A0 A! \\
-            && !let A2 = shift1 (map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) A0 A)! \\
-            && !let A3 = scanr * 1 A1! \\
-            && !<reduce (x,y.e1) y1 A, fun (x1,...,xn,z) ->! \\
-            && !Y2(x1,...,xn, map2 (x,y. x*y*z) A2 A3>! \\
+            !let x,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e) in! \\
+            && !<op1 x, fun (x$_{1}$,...,x$_n$,z) -> ! \\
+            && !Y(x$_{1}$,...,x$_n$,!$\partial$!op1(x)*z) >! \\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !e$_{1}$ op2 e$_{2}$!) &=& 
+            !let x$_{1}$,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{1}$) in! \\
+            && !let x$_{2}$,Y$_{2}$ = !$\directD{\rho}{\Gamma,x_1}{Y_1}$!(e$_{2}$) in! \\
+            && !<x$_{1}$ op2 x$_{2}$, fun (x$_{1}$,...,x$_n$,z) ->! \\
+            && !Y$_{2}$(x$_{1}$,...,x$_n$,!$\partial_1$!op2(x$_{1}$,x$_{2}$)*z,!$\partial_2$!op2(x$_{1}$,x$_{2}$)*z>! \\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map2 (x,y.e$_{1}$) e$_{2}$ e$_{3}$!) &=&  
+            !let A,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{2}$) in! \\
+            && !let B,Y$_{2}$ = !$\directD{\rho}{\Gamma,A}{Y_1}$!(e$_{3}$) in! \\
+            && !let G=!$\grad_{\Gamma}$!e$_{1}$ in!\\
+            && !<map2 (x,y.e$_{1}$) A B, fun (x$_{1}$,...,x$_n$,Z) -> !\\
+            && !Y$_{2}$( (x$_{1}$,...,x$_n$)!$\widehat{+}$!(G*(reduce + 0 Z)),!\\
+            && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x]*b) A Z,!\\
+            && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e$_{1}$)[a/x]*b) B Z )>!\\
+        $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e$_{1}$) e$_{2}$ e$_{3}$!) &=&
+            !let y$_{1}$,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{2}$) in! \\
+            && !let A,Y$_{2}$ = !$\directD{\rho}{\Gamma,y_1}{Y_1}$!(e$_{3}$) in! \\
+            && !let A$_{0}$ = scanl (x,y.e$_{1}$) y$_{1}$ A in! \\
+            && !let A$_{1}$ = map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ A! \\
+            && !let A$_{2}$ = shift1 (map2 (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ A)! \\
+            && !let A$_{3}$ = scanr * 1 A$_{1}$! \\
+            && !<reduce (x,y.e$_{1}$) y$_{1}$ A, fun (x$_{1}$,...,x$_n$,z) ->! \\
+            && !Y$_{2}$(x$_{1}$,...,x$_n$, map2 (x,y. x*y*z) A$_{2}$ A$_{3}$>! \\
             && TODO: reduce recomputed after scanl, wrong on the zero element \\
             && TODO: I don't need the index $\Gamma'$ of $D$ to be $\Gamma$ but to \underline{contain} $\Gamma$, for pos(x) to be defined
         \end{tabular}

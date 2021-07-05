@@ -3,9 +3,9 @@ We introduce more notation in the table below.\\
 
 \begin{tabular}{|l c l|}
     \hline
-    !let x1=e1,...,xn=en!  & \multirow{2}{*}{=} & !let x1=e1 in let x2=e2 in ...! \\
-    !in e! && !let xn = en in e!\\ \hline
-    $Id_\Gamma$ \quad\quad\quad ($\Gamma=x_:A_1,\ldots,x_n:A_n)$ & = & !fun! $(y_1:A_1,\ldots,y_n:A_n)$! -> !$(y_1,\ldots,y_n)$ \\ \hline
+    !let x$_{1}$=e$_{1}$,...,xn=en!  & \multirow{2}{*}{=} & !let x$_{1}$=e$_{1}$ in let x$_{2}$=e$_{2}$ in ...! \\
+    !in e! && !let x$_n$ = e$_n$ in e!\\ \hline
+    $Id_\Gamma$ \quad\quad\quad ($\Gamma \, = \, x_1:A_1,\ldots,x_n:A_n)$ & = & !fun! $(y_1:A_1,\ldots,y_n:A_n)$! -> !$(y_1,\ldots,y_n)$ \\ \hline
     $\grad_\Gamma e$ \quad\quad\hspace{0.6em}($\Gamma\vdash e:\RR$) & = & $\pi_2\directD{\Gamma}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,\underline{1})$ \\ \hline
     !pos(x)! \quad(!x!$\in\Gamma=x_:A_1,\ldots,x_n:A_n)$ & = & position $i$ of !x! in $\Gamma$ \\ \hline
     ![i]e! \quad\quad(!e! of ground type $G_i$) & \multirow{2}{*}{=} &  $(0_{G_1},\ldots,0_{G_{i-1}},e,0_{G_{i+1}},\ldots,0_{G_n})$ \\

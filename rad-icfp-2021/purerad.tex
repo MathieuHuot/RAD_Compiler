@@ -74,37 +74,37 @@ In Section~\ref{sec:unf} we decompose this transformation into three simpler ste
     The reverse-mode transformation of the terms from the introduction are given by
 
     \begin{tabular}{c l}
-        &$\directD{\rho}{\Gamma}{Y}$(!let w1 = x1 * x2 in let w2 = w1 * x1 in w2!) \\
-        =& !let w1,Y1=!\\
-        & \quad\quad !let y11,Y11= <x1, fun (y1,y2,y3,z) -> Y(y1+z,y2,y3)> in! \\
-        & \quad\quad !let y12,Y12= <x2, fun (y1,y2,y3,y4,z) -> Y11(y1,y2+z,y3,y4)> in! \\
-        & \quad\quad !<y11 * y12, fun (y1,y2,y3,z) -> Y12(y1,y2,y3,y12*z,y11*z) > in! \\
-        & !let w2,Y2=!\\
-        & \quad\quad !let y21,Y21= <w1, fun (y1,y2,y3,y4,z) -> Y(y1,y2,y3,y4+z)> in! \\
-        & \quad\quad !let y22,Y22= <x1, fun (y1,y2,y3,y4,y5,z) -> Y11(y1+z,y2,y3,y4,y5)> in! \\
-        & \quad\quad !<y21 * y22, fun (y1,y2,y3,y4,z) -> Y22(y1,y2,y3,y4,y22*z,y21*z) > in! \\
-        & !let y,Y3= <w, fun (y1,y2,y3,y4,z) -> Y2(y1,y2,y3,y4+z)> in! \\
-        & !<y, fun (y1,y2,y3,z) -> Y3(y1,y2,y3,0,z) >!
+        &$\directD{\rho}{\Gamma}{Y}$(!let w$_1$ = x$_1$ * x$_2$ in let w$_2$ = w$_1$ * x$_1$ in w$_2$!) \\
+        =& !let w$_1$,Y$_1$=!\\
+        & \quad\quad !let y$_1$1,Y$_1$1= <x$_1$, fun (y$_1$,y$_2$,y$_3$,z) -> Y(y$_1$+z,y$_2$,y$_3$)> in! \\
+        & \quad\quad !let y$_{12}$,Y$_{12}$= <x$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{11}$(y$_{1}$,y$_{2}$+z,y$_{3}$,y$_{4}$)> in! \\
+        & \quad\quad !<y$_{11}$ * y$_{12}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y$_{12}$(y$_{1}$,y$_{2}$,y$_{3}$,y$_{12}$*z,y$_{11}$*z) > in! \\
+        & !let w$_{2}$,Y$_{2}$=!\\
+        & \quad\quad !let y$_{21}$,Y$_{21}$= <w$_{1}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y(y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$+z)> in! \\
+        & \quad\quad !let y$_{22}$,Y$_{22}$= <x$_{1}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,y$_{5}$,z) -> Y$_{11}$(y$_{1}$+z,y$_{2}$,y$_{3}$,y$_{4}$,y$_{5}$)> in! \\
+        & \quad\quad !<y$_{21}$ * y$_{22}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{22}$(y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,y$_{22}$*z,y$_{21}$*z) > in! \\
+        & !let y,Y$_{3}$= <w, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{2}$(y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$+z)> in! \\
+        & !<y, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y$_{3}$(y$_{1}$,y$_{2}$,y$_{3}$,0,z) >!
     \end{tabular}
     \medskip
 
     \begin{tabular}{c l}
         &$\directD{\rho}{\Gamma}{Y}$(!prod(A)!) \\
-        =& !let x,Y1= <0, fun (X,z) -> Y(X)> in! \\
-        & !let B,Y2= <A, fun (X,x,Z) -> Y(X+Z,x)> in!\\
-        & !let A0= scanl * x B in!\\
-        & !let A1= map2 (a,b.b) A0 B in!\\
-        & !let A2= shift1 (map2 (a,b.a) A0 B) in!\\
-        & !let A3= scanr * 1 A1 in!\\
-        & !<prod(B), fun (X,z) -> Y2(X,0,map2 (a,b. a*z*b) A2 A3)>! 
+        =& !let x,Y$_{1}$= <0, fun (X,z) -> Y(X)> in! \\
+        & !let B,Y$_{2}$= <A, fun (X,x,Z) -> Y(X+Z,x)> in!\\
+        & !let A$_{0}$= scanl * x B in!\\
+        & !let A$_{1}$= map2 (a,b.b) A$_{0}$ B in!\\
+        & !let A$_{2}$= shift1 (map2 (a,b.a) A$_{0}$ B) in!\\
+        & !let A$_{3}$= scanr * 1 A$_{1}$ in!\\
+        & !<prod(B), fun (X,z) -> Y$_{2}$(X,0,map2 (a,b. a*z*b) A$_{2}$ A$_{3}$)>! 
     \end{tabular}
 \end{example}
 
-The idea is that $\rho$ represents the return type of the derivative part, which should be !A1x...,xAn! 
-if we want the whole gradient of a term !e! in context $\Gamma$=!x1:A1,...,xn:An!.
-The subscript $\Gamma$ represents the current context, 
+The idea is that $\rho$ represents the return type of the derivative part, which should be !A$_{1} \times \ldots \times$ A$_n$! 
+if we want the whole gradient of a term !e! in context !$\Gamma = \;$x$_{1}$:A$_{1}$,...,x$_n$:A$_n$!.
+The subscript $\Gamma$ denotes the current context, 
 which is locally augmented for instance when differentiating a !let! rule.
-For non-unary operations, we differentiate the arguents from left to right and add their derivatives to the current stack, 
+For non-unary operations, we differentiate the arguments from left to right and add their derivatives to the current stack, 
 which is modeled by the continuation $Y$. 
 Importantly for performance, each continuation variable $Y$ is only used once.
 
@@ -146,11 +146,11 @@ where the !ei! are !xi! except for at most $k$ (independant of $n$) terms.
 In fact we have $k=2$, except for the !map2! case which requires a more detailed analysis (see Section~\ref{sec:complexity}).
 
 Using the invariant above and the inlining and forward substitution given in Figure~\ref{fig:optim}, this allows us to rewrite
-!fun (x1,...,xn) -> (fun (y1,...,yn) -> (f1,...,fn))(e1,...,en)! 
+!fun (x$_{1}$,...,x$_n$) -> (fun (y$_{1}$,...,yn) -> (f$_{1}$,...,f$_n$))(e$_{1}$,...,e$_n$)! 
 $\transto$ 
-!fun (x1,...,xn) -> let y1,...,yn = e1,...,en in (f1,...,fn)!
+!fun (x$_{1}$,...,x$_n$) -> let y$_{1}$,...,y$_n$ = e$_1$,...,e$_n$ in (f$_{1}$,...,f$_n$)!
 $\transto$
-!fun (x1,...,xn) -> (f1[e1/y1],...,fn[en/yn])!
+!fun (x$_{1}$,...,x$_n$) -> (f$_{1}$[e$_{1}$/y$_{1}$],...,f$_n$[e$_n$/y$_n$])!
 
 TODO: finish explanation
 
@@ -158,7 +158,7 @@ TODO: finish explanation
     The gradient of the terms from the introduction reduces to
 
     \begin{tabular}{c l}
-        & $\grad_\Gamma$(!let w1 = x1 * x2 in let w2 = w1 * x1 in w2!) \\
+        & $\grad_\Gamma$(!let w$_{1}$ = x$_{1}$ * x$_{2}$ in let w$_{2}$ = w$_{1}$ * x$_{1}$ in w$_{2}$!) \\
         =& TODO \\
     \end{tabular}
     \medskip

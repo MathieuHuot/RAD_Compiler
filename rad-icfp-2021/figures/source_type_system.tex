@@ -11,18 +11,18 @@
     \end{tabular}
     \hspace{0.5cm}
     \begin{tabular}{c}
-    $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma \vdash$ !e2!: !T2! \\\hline  
-    $\Gamma \vdash$ !<e1,e2>!: !T1! $\times$ !T2!
+    $\Gamma \vdash$ !e$_1$!: !T$_1$! $\quad$ $\Gamma \vdash$ !e$_2$!: !T$_2$! \\\hline  
+    $\Gamma \vdash$ !<e$_1$,e$_2$>!: !T$_1$! $\times$ !T$_2$!
     \end{tabular}
     \hspace{0.5cm}
     \begin{tabular}{c}
-        $\Gamma \vdash$ !e!: !T1! $\times$ !T2! \\\hline  
-        $\Gamma \vdash$ $\pi_i$!e!: !Ti!
+        $\Gamma \vdash$ !e!: !T$_1$! $\times$ !T$_2$! \\\hline  
+        $\Gamma \vdash$ $\pi_i$!e!: !T$_i$!
     \end{tabular}($i\in\{1,2\}$)
 
     \begin{tabular}{c}
-    $\Gamma \vdash$ !e1!: !T1! $\quad$ $\Gamma$, !x!: !T1! $\vdash$ !e2!: !T2! \\\hline
-    !let x = e1 in e2!: !T2!
+    $\Gamma \vdash$ !e$_1$!: !T$_1$! $\quad$ $\Gamma$, !x!: !T$_1$! $\vdash$ !e$_2$!: !T$_2$! \\\hline
+    !let x = e$_1$ in e$_2$!: !T$_2$!
     \end{tabular}
     \hspace{0.5cm}
     \begin{tabular}{c}
@@ -31,24 +31,24 @@
     \end{tabular}
     \hspace{0.5cm}
     \begin{tabular}{c}
-        $\Gamma \vdash$ !e1!: $\reals$ $\quad$ $\Gamma \vdash$ !e2!: $\reals$ \\\hline  
-        $\Gamma \vdash$ !e1 op2 e2!: $\reals$
+        $\Gamma \vdash$ !e$_1$!: $\reals$ $\quad$ $\Gamma \vdash$ !e$_2$!: $\reals$ \\\hline  
+        $\Gamma \vdash$ !e$_1$ op2 e$_2$!: $\reals$
         \end{tabular}
  
     \begin{tabular}{c}
-        $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
-        $\quad$ $\Gamma$ $\vdash$ !e2!: $\Array{\reals}$
-        $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
+        $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e$_1$!: $\reals$ 
+        $\quad$ $\Gamma$ $\vdash$ !e$_2$!: $\Array{\reals}$
+        $\quad$ $\Gamma$ $\vdash$ !e$_3$!: $\Array{\reals}$
         \\\hline  
-        $\Gamma \vdash$ !map2 (x,y.e1) e2 e3!: $\Array{\reals}$
+        $\Gamma \vdash$ !map2 (x,y.e$_1$) e$_2$ e$_3$!: $\Array{\reals}$
     \end{tabular}
 
     \begin{tabular}{c}
-        !x!: $\reals$, !y!: $\reals$ $\vdash$ !e1!: $\reals$ 
-        $\quad$ $\Gamma$ $\vdash$ !e2!: $\reals$
-        $\quad$ $\Gamma$ $\vdash$ !e3!: $\Array{\reals}$
+        !x!: $\reals$, !y!: $\reals$ $\vdash$ !e$_1$!: $\reals$ 
+        $\quad$ $\Gamma$ $\vdash$ !e$_2$!: $\reals$
+        $\quad$ $\Gamma$ $\vdash$ !e$_3$!: $\Array{\reals}$
         \\\hline  
-        $\Gamma \vdash$ !reduce (x,y.e1) e2 e3!: $\reals$
+        $\Gamma \vdash$ !reduce (x,y.e$_1$) e$_2$ e$_3$!: $\reals$
     \end{tabular}
     \vspace{-0.2cm}
     \caption{Type system of the source language}
