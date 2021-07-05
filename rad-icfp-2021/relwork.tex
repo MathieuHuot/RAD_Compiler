@@ -1,22 +1,75 @@
-\section{Conclusion}
-\label{sec:conclusion}
+\section{Discussion and future work} % (fold)
+\label{sec:discussion_and_future_work}
 
-\subsection{Summary} % (fold)
-\label{sub:summary}
+\noindent \textbf{More dynamic language}
+JAX \cite{bradbury2020jax,frostig2018compiling} is a modern framework that provides state-of-the-art automatic differentiation. 
+One feature that makes it popular is that it uses JIT compilation, 
+which seems to be the best avenue to help best ML practitioners as it allows them 
+to quickly experiment but also benefit from the full power of static optimizations.
+We are interested in seeing how our work could sit in a JIT compiler. 
 
-We have introduced a transformation on programs to compute provably efficient (\ref{sec:complexity}) 
-gradients via reverse derivatives in a purely functional way (\ref{sub:Macro for pure reverse mode transformation})
-on a simple yet expressive language with functions on arrays (\ref{sub:sourcelang}), 
-combined with standard functional optimizations (\ref{fig:optim}).  
-We introduced a novel intermediate representation, unary form (\ref{sec:unf}) 
-to decompose our transformation into simpler transformations.
-We gave denotational semantics to our languages and our transformations (\ref{sec:correctness}) 
-and showed correctness of the reverse-mode transformation (\ref{sub:Correctness theorem}).
-We showed (\ref{sec:generalization}) how to lift some of the restrictions that
-we introduced on arrays and how to extend our approach to a richer language with more primitive operations and conditionals.
+\noindent \textbf{More optimizations.}
+As pointed in \ref{sub:Adding general arrays} it would be interesting to have a more principled representation 
+of tensors which could lead to more optimizations. 
+There is always a tension between dynamicity and the possibility for static optimizations 
+and we believe our language offers a good tradeoff, but it will be interesting to tailor it 
+further for specific applications.
 
-\subsection{Related Work} % (fold)
-\label{sub:related_work}
+\noindent \textbf{Cost function and memory accesses}
+Our cost model \ref{sub:costModel} is simple but has limits. 
+In particular, it does not capture well cost in term of
+parallel computing, and memory management (cache optimization is one of best way to optimize such linear algebra intensive computations).
+For instance, in the earlier days of automatic differentiation, 
+advanced checkpointing techniques were used to avoid storing all the intermediate values just to save memory 
+and try avoiding saturation of RAM. 
+These problems are harder to analyze and, eventually, it seems to come down to a lot of experimenting and benchmarking.
+
+\noindent \textbf{Parallelism and GPU}
+We tried to locally preserve parallelism. Having a pure transformation should help with found parallelism. 
+It would be interesting to implement on transformations and see how they perform on GPU.
+It is well-known that the addition of references provoked by the standard reverse-mode transformation
+restricts a lot of optimizations and it is not hard to find examples in C where the compiler does not detect simple optimizations 
+because of the references introduced by reverse-mode.
+
+% \noindent \textbf{implementation, BLaS, benchmark}
+
+\noindent \textbf{Higher-order functions}
+Matthijs'work, use of defunctionalization, question efficiency and usefulness, 
+interested in functions like root of function or minimal of a function. Implicit function theorem
+Some recent work \cite{vakar2020reverse,sherman2021} present reverse-mode in a higher-order language.
+\cite{vakar2020reverse} uses categorical semantics to show correctness of the reverse-mode transformation 
+and \cite{sherman2021} uses sophisticated higher-order primitives such as root finding, max, argmax or integral. 
+Their work focuses on computable reals which is hard to compare in terms of efficiency 
+with our more standard approach of AD.
+
+\noindent \textbf{More array primitives}
+filter, flatten, gather, scanl, ...
+can be derived by hand once and then it's ok
+
+\noindent \textbf{Recursion}
+
+\noindent \textbf{Higher derivatives}
+
+\noindent \textbf{Sparse data and matrix representation}
+
+\noindent \textbf{Further applications}
+Reverse-mode differentiation is notoriously difficult to grasp, implement, and optimize.
+We hope this work could help develop a new perspective on pure reverse-mode automatic differentiation.
+Other applications include the use of fancier datatypes e.g. dependent types, 
+in probabilistic programming, e.g. for HMC or Variational Inference. 
+It is also of interest to see how to extend this work with other techniques which 
+have had renewed interest such as implicit differentiation \cite{blondel2021efficient,lorraine2020optimizing}.
+
+% 	https://github.com/apple/swift/blob/master/docs/DifferentiableProgramming.md#approaches-to-automatic-differentiation
+
+\MH{understand related work sentence from Diff. Curry paper: The idea of using closures as back-propagators is receiving recent attention. 
+    For example Julia Zygote \cite{innes2019zygote} and Swift AD \cite{wei2018first} chose this design. 
+    Other recent work follows similar ideas [27, 26] but is using meta-programming as an implementation technique.}
+
+\MH{should talk a bit about the recent paper: reverse AD in Dex \cite{paszke2021getting}}
+
+\section{Related Work} % (fold)
+\label{sec:related_work}
 
 \noindent \textbf{Usage of iteration mechanics}
 A immense effort in machine learning for the past decade has been in finding
@@ -74,68 +127,17 @@ Relatively recent work in AD (2008-2020):
 
 Good recent surveys: \cite{van2018automatic,baydin2017automatic}
 
-\subsection{Discussion and future work} % (fold)
-\label{sub:discussion_and_future_work}
+\section{Conclusion}
+\label{sec:conclusion}
 
-\noindent \textbf{More dynamic language}
-JAX \cite{bradbury2020jax,frostig2018compiling} is a modern framework that provides state-of-the-art automatic differentiation. 
-One feature that makes it popular is that it uses JIT compilation, 
-which seems to be the best avenue to help best ML practitioners as it allows them 
-to quickly experiment but also benefit from the full power of static optimizations.
-We are interested in seeing how our work could sit in a JIT compiler. 
-
-\noindent \textbf{More optimizations.}
-As pointed in \ref{sub:Adding general arrays} it would be interesting to have a more principled representation 
-of tensors which could lead to more optimizations. 
-There is always a tension between dynamicity and the possibility for static optimizations 
-and we believe our language offers a good tradeoff, but it will be interesting to tailor it 
-further for specific applications.
-
-\noindent \textbf{Cost function and memory accesses}
-Our cost model \ref{sub:costModel} is simple but has limits. 
-In particular, it does not capture well cost in term of
-parallel computing, and memory management (cache optimization is one of best way to optimize such linear algebra intensive computations).
-For instance, in the earlier days of automatic differentiation, 
-advanced checkpointing techniques were used to avoid storing all the intermediate values just to save memory 
-and try avoiding saturation of RAM. 
-These problems are harder to analyze and, eventually, it seems to come down to a lot of experimenting and benchmarking.
-
-\noindent \textbf{Parallelism and GPU}
-We tried to locally preserve parallelism. Having a pure transformation should help with found parallelism. 
-It would be interesting to implement on transformations and see how they perform on GPU.
-It is well-known that the addition of references provoked by the standard reverse-mode transformation
-restricts a lot of optimizations and it is not hard to find examples in C where the compiler does not detect simple optimizations 
-because of the references introduced by reverse-mode.
-
-\noindent \textbf{implementation, BLaS, benchmark}
-
-\noindent \textbf{Higher-order functions}
-Matthijs'work, use of defunctionalization, question efficiency and usefulness, 
-interested in functions like root of function or minimal of a function. Implicit function theorem
-
-\noindent \textbf{More array primitives}
-filter, flatten, gather, scanl, ...
-can be derived by hand once and then it's ok
-
-\noindent \textbf{Recursion}
-
-\noindent \textbf{Higher derivatives}
-
-\noindent \textbf{Sparse data and matrix representation}
-
-\noindent \textbf{Further applications}
-Reverse-mode differentiation is notoriously difficult to grasp, implement, and optimize.
-We hope this work could help develop a new perspective on pure reverse-mode automatic differentiation.
-Other applications include the use of fancier datatypes e.g. dependent types, 
-in probabilistic programming, e.g. for HMC or Variational Inference. 
-It is also of interest to see how to extend this work with other techniques which 
-have had renewed interest such as implicit differentiation \cite{blondel2021efficient,lorraine2020optimizing}.
-
-% 	https://github.com/apple/swift/blob/master/docs/DifferentiableProgramming.md#approaches-to-automatic-differentiation
-
-\MH{understand related work sentence from Diff. Curry paper: The idea of using closures as back-propagators is receiving recent attention. 
-    For example Julia Zygote \cite{innes2019zygote} and Swift AD \cite{wei2018first} chose this design. 
-    Other recent work follows similar ideas [27, 26] but is using meta-programming as an implementation technique.}
-
-\MH{should talk a bit about the recent paper: reverse AD in Dex \cite{paszke2021getting}}
+We have introduced a transformation on programs to compute provably efficient (\ref{sec:complexity}) 
+gradients via reverse derivatives in a purely functional way (\ref{sub:Macro for pure reverse mode transformation})
+on a simple yet expressive language with functions on arrays (\ref{sub:sourcelang}), 
+combined with standard functional optimizations (\ref{fig:optim}).  
+We introduced a novel intermediate representation, unary form (\ref{sec:unf}) 
+to decompose our transformation into simpler transformations.
+We gave denotational semantics to our languages and our transformations (\ref{sec:correctness}) 
+and showed correctness of the reverse-mode transformation (\ref{sub:Correctness theorem}).
+We showed (\ref{sec:generalization}) how to lift some of the restrictions that
+we introduced on arrays and how to extend our approach to a richer language with more primitive operations and conditionals.
 \clearpage
