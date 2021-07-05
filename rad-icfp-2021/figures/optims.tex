@@ -19,7 +19,8 @@
         !map (x.x) A! & \transto & A \\ \hline
         !scanl * OnesLike(A)! & \transto & !OnesLike(A)! \\ \hline
         !scanr * OnesLike(A)! & \transto & !OnesLike(A)! \\ \hline
-        !shift1 OnesLike(A)! & \transto & !OnesLike(A)! \\ \hline
+        !shift1L OnesLike(n+1)! & \transto & !OnesLike(n)! \\ \hline
+        !shift1R OnesLike(n+1)! & \transto & !OnesLike(n)! \\ \hline
         !foldl,reduce * 1 OnesLike(A)! & \transto & 1 \\ \hline
         !foldl,reduce + 0 ZerosLike(A)! & \transto & 0 \\ 
         \hline \hline
