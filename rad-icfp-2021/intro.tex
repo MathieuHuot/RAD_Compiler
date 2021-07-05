@@ -4,8 +4,8 @@
 % % (Source-to-source) Automatic Differentiation (AD) is a technique for transforming code that implements 
 % % a function $f$ into code that computes $f$'s derivative, essentially by using the chain rule for derivatives. 
 % % Due to its efficiency and numerical stability, AD is the technique of choice whenever derivatives need to be computed 
-% % of functions that are implemented as programs, particularly in high dimentional settings. 
-% % Optimisations and Monte Carlo integration algorithms, such as Gradient Descent and Hamiltonian Monte-Carlo methods, 
+% % of functions that are implemented as programs, particularly in high dimensional settings. 
+% % Optimizations and Monte Carlo integration algorithms, such as Gradient Descent and Hamiltonian Monte-Carlo methods, 
 % % rely crucially on the calculation of derivatives. These algorithms are used in virtually everywhere in machine learning 
 % % and computational statistics, and the calculation of derivatives is usually the computational bottle-neck. 
 % % AD, roughly speaking, comes in two modes; forward-mode and reverse-mode. 
@@ -19,24 +19,24 @@
 
 \subsection{Motivation}
 
-In 2008, Pearlmutter and Siskind~\cite{pearlmutter2008reverse} introduced Automatic Differentiation (AD) in a functional setting, where they introduced reverse-mode. 
+In 2008, Pearlmutter and Siskind~\cite{pearlmutter2008reverse} introduced Automatic Differentiation (AD) in a functional setting, where they defined reverse-mode. 
 Reverse-mode computes in a single fast pass the whole gradient of a function $\RR^n\to\RR$.
-By comparison, the easier forward-mode transformation would need $n$ passes. 
+By comparison, the easier forward-mode transformation would require $n$ passes. 
 These functions $\RR^n\to\RR$ appear a lot in practice: for instance, as loss functions in machine learning.
 Reverse-mode is thus important, as it computes the whole gradient of such functions very quickly. 
-However, in order to be as efficient as the usual imperative version of reverse-mode, the transformation in~\cite{pearlmutter2008reverse} resorted to references.
+However, in order to reach the efficiency of the usual imperative version of reverse-mode, the transformation in~\cite{pearlmutter2008reverse} resorts to references.
 
-The lack of purity of reverse-mode is known to make it significantly harder to optimize and parallelize. 
+The lack of purity in reverse-mode is known to make it significantly harder to optimize and parallelize. 
 None of the current implementations of reverse-mode in a functional setting~\cite{lantern_icfp,pearlmutter2008reverse,baydin2016diffsharp} are pure, and often complicated heuristics with no guarantees are used, e.g.~\cite{xla}.
 
-This means that for every important non trivial operation, a hand-crafted reverse-derivative must be given, to optimize for efficiency.
+As a result, to optimize for efficiency, a hand-crafted reverse-derivative must be given, for every important non trivial operation.
 In other words, abstracting away from imperative code is still a hurdle that functional implementations need to overcome.
 
 An efficient purely functional reverse-mode transformation would be more easily explainable, optimizable, and reusable.
 
-TODO: rewrite for more theory people. some ideas: for canonical than Plotkin's thing because normal semantics, complexity proof compared to all other recent papers, 
+\MH{TODO: rewrite for more theory people. some ideas: for canonical than Plotkin's thing because normal semantics, complexity proof compared to all other recent papers, 
 all papers that have implementations, their interface in the paper is too high level and misses a lot of things (e.g. in \cite{vytiniotis2019differentiable,lantern_icfp,sherman2021}) compared to implementation, hinders progress. 
-For instance, in \cite{lantern_icfp} it's a lot of manually optimized and hand-derived primitives to achieve good performance. 
+For instance, in \cite{lantern_icfp} it's a lot of manually optimized and hand-derived primitives to achieve good performance.}
 
 \subsection{Problem}
 
@@ -45,21 +45,21 @@ Yet, as remarked by the authors, this is highly inefficient.
 The problem we tackle in this paper is how to go from a simple and general setting, where we can relatively easily prove correctness of reverse-mode, 
 to a representation that leads to more efficient implementations.
 
-This raises several issues that are dealt with throughout the paper. First, there is a tradeoff to reach between a general expressive language and a domain specific one. The latter usually has more static information and a specific representation that lends itself to better optimizations.
-Then, a lot of optimizations performed on AD implementations consist of a lot of hand-crafted derivatives for a lot of useful operations like matrix-matrix multiplication, dot-product, etc.
-They don't seem to come with more theoretical justification, are error prone, and can hardly fit more general optimizations.
+This raises several issues that we deal with throughout the paper. First, there is a tradeoff to reach between a general expressive language and a domain specific one. The latter usually has more static information and a specific representation that lends itself to better optimizations.
+Then, many optimizations performed on AD implementations consist in hand-crafted derivatives for useful operations like matrix-matrix multiplication, dot-product, etc.
+They don't seem to arise from theoretical justifications, are error prone, and can hardly fit with more general optimizations.
 \MH{TODO: maybe the example and ref that ML systems spend 90percent of the time outside of numpy.}
-This makes these systems harder to prove correct. The problem is thus to stay provably correct and pure, and yet efficient. What's more is we would like something easily provably efficient. 
-A real implementation on top of our work would of course optimize further, potentially using hand-crafted operations as well, but it would be based on more solid grounds.
+This makes these systems harder to prove correct. The problem is thus to ensure provable correctness and pureness, while not compromising on efficiency. In addition, we would like something easily provably efficient. 
+A real-world implementation based on our work would of course optimize further, potentially using hand-crafted operations as well, but it would be based on solid grounds.
 
-TODO: same as above, maybe rewrite for more theory audience.
+\MH{TODO: same as above, maybe rewrite for more theory audience.}
 
 \subsection{Summary of contributions}
 
-We propose a source-code transformation on simple purely functional language for a purely functional reverse-mode differentiation.
-Our transformation is decomposed in a sort of compilation scheme through a novel intermediate representation, unary form (UNF).
-To emphasize some key ideas and for presentation purposes, we present our work with a simple yet expressive language in Section~\ref{sec:simplediff}, 
-and show how to extend our work to a richer language in Section~\ref{sec:generalisation}. 
+We propose a source-code transformation on a simple purely functional language for purely functional reverse-mode differentiation.
+Our transformation is comprised of a compilation scheme through a novel intermediate representation (IR): unary form (UNF).
+To emphasize the key ideas and for expository purposes, we present our work with a simple yet expressive language in Section~\ref{sec:simplediff}, 
+and show how to extend our work to a richer language in Section~\ref{sec:generalization}.
 
 We summarize the key ideas of our work. Reverse-mode can be made efficient
 \begin{itemize}
@@ -69,19 +69,19 @@ We summarize the key ideas of our work. Reverse-mode can be made efficient
    \item via standard functional optimization techniques
 \end{itemize}
 
-Our contribution makes these claims precise. In detail we introduce
+Our contribution makes these claims precise. In more details, we introduce
 \begin{itemize}
     \item an expressive source language with array operations, yet restrictive enough for efficient differentiation (\S\ref{sub:sourcelang})
-    \item a method for extending our work and modular method for adding and prove correct new primitives as needed in practice (\S\ref{sec:generalisation})
-    \item a new intermediate representation (I.R), UNF, essentially turning every operation to a unary one which inputs and outputs a tuple (\S\ref{sec:unf})
-    \item a transformation to and from the I.R. from the main language (\S\ref{sub:transformations to and from UNF})
-    \item a simple reverse-mode transformation on the I.R. (\S\ref{sub:Simple reverse mode transformation})
+    \item a method for extending our work and modular approaches to add and prove correct new primitives as needed in practice (\S\ref{sec:generalization})
+    \item a new intermediate representation (IR), UNF, essentially turning every operation into a unary one which inputs and outputs a tuple (\S\ref{sec:unf})
+    \item a transformation between the IR and the main language (\S\ref{sub:transformations to and from UNF})
+    \item a simple reverse-mode transformation on the IR (\S\ref{sub:Simple reverse mode transformation})
     \item the direct reverse-mode transformation obtained from the source to the target language (\S\ref{sub:Macro for pure reverse mode transformation})
     \item denotational semantics of our languages and transformations using multicategories and concategories (\S\ref{sec:correctness})
     \item correctness of the transformations (\S\ref{sec:correctness})
     \item complexity guarantees (\S\ref{sec:complexity})
-    \item how efficiency is recovered via standard optimization techniques (\S\ref{sub:Optimisations})
-    \item several additions to the source language (\S\ref{sec:generalisation}) \MH{should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.}
+    \item how efficiency is recovered via standard optimization techniques (\S\ref{sub:Optimizations})
+    \item several additions to the source language (\S\ref{sec:generalization}) \MH{should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.}
     \item a detailed comparison with other work and some limitations to our work (\S\ref{sec:conclusion})
 \end{itemize}
 
@@ -163,6 +163,6 @@ Next, in Section~\ref{sec:simplediff} we introduce the source and target languag
 In Section~\ref{sec:unf} we introduce a new intermediate representation UNF, and a simple reverse-mode macro on this representation.
 We introduce transformations from the source language to UNF and from UNF to the target language.
 Next, in Section~\ref{sec:correctness} we give denotational semantics to our languages and show that our decomposition respects the diagram above and that our reverse mode transformation is correct.
-In Section~\ref{sec:complexity}, we show that our transformation verifies the cheap gradient principle and extra general optimisations.
-In Section~\ref{sec:generalisation} we show how to adapt our work for a richer source language. 
+In Section~\ref{sec:complexity}, we show that our transformation verifies the cheap gradient principle and extra general optimizations.
+In Section~\ref{sec:generalization} we show how to adapt our work for a richer source language. 
 Finally, related work, limitations to our approach and future work are presented in Section~\ref{sec:conclusion}.

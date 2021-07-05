@@ -7,12 +7,12 @@
 We have introduced a transformation on programs to compute provably efficient (\ref{sec:complexity}) 
 gradients via reverse derivatives in a purely functional way (\ref{sub:Macro for pure reverse mode transformation})
 on a simple yet expressive language with functions on arrays (\ref{sub:sourcelang}), 
-combined with standard functional optimisations (\ref{fig:optim}).  
+combined with standard functional optimizations (\ref{fig:optim}).  
 We introduced a novel intermediate representation, unary form (\ref{sec:unf}) 
 to decompose our transformation into simpler transformations.
 We gave denotational semantics to our languages and our transformations (\ref{sec:correctness}) 
 and showed correctness of the reverse-mode transformation (\ref{sub:Correctness theorem}).
-We showed (\ref{sec:generalisation}) how to lift some of the restrictions that
+We showed (\ref{sec:generalization}) how to lift some of the restrictions that
 we introduced on arrays and how to extend our approach to a richer language with more primitive operations and conditionals.
 
 \subsection{Related Work} % (fold)
@@ -80,14 +80,14 @@ Good recent surveys: \cite{van2018automatic,baydin2017automatic}
 \noindent \textbf{More dynamic language}
 JAX \cite{bradbury2020jax,frostig2018compiling} is a modern framework that provides state-of-the-art automatic differentiation. 
 One feature that makes it popular is that it uses JIT compilation, 
-which seems to be the best avenue to help best ML practionners as it allows them 
-to quickly experiment but also benefit from the full power of static optimisations.
+which seems to be the best avenue to help best ML practitioners as it allows them 
+to quickly experiment but also benefit from the full power of static optimizations.
 We are interested in seeing how our work could sit in a JIT compiler. 
 
-\noindent \textbf{More optimisations.}
+\noindent \textbf{More optimizations.}
 As pointed in \ref{sub:Adding general arrays} it would be interesting to have a more principled representation 
-of tensors which could lead to more optimisations. 
-There is always a tension between dynamicity and the possibility for static optimisations 
+of tensors which could lead to more optimizations. 
+There is always a tension between dynamicity and the possibility for static optimizations 
 and we believe our language offers a good tradeoff, but it will be interesting to tailor it 
 further for specific applications.
 
@@ -104,7 +104,7 @@ These problems are harder to analyze and, eventually, it seems to come down to a
 We tried to locally preserve parallelism. Having a pure transformation should help with found parallelism. 
 It would be interesting to implement on transformations and see how they perform on GPU.
 It is well-known that the addition of references provoked by the standard reverse-mode transformation
-restricts a lot of optimizations and it is not hard to find examples in C where the compiler does not detect simple optimisations 
+restricts a lot of optimizations and it is not hard to find examples in C where the compiler does not detect simple optimizations 
 because of the references introduced by reverse-mode.
 
 \noindent \textbf{implementation, BLaS, benchmark}
