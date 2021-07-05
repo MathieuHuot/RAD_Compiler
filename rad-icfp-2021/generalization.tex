@@ -154,10 +154,10 @@ Then, using this notation, there are only minimal changes to the reverse derivat
         $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) 
         &=&  !let y1,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
         && !let A,Y2 = !$\directD{\rho}{\Gamma,y1}{Y1}$!(e3) in! \\
-        && !let A0 = scanl (x,y.e1) y1 A in! \\
-        && !let A1 = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) A0 A! \\
-        && !let A2 = shift1 (map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) A0 A)! \\
-        && !let A3 = scanr * 1 A1! \\
+        && !let A0 = shift1R (scanl (x,y.e1) y1 A) in! \\
+        && !let A1 = shiftL (map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) A0 A) in! \\
+        && !let A2 = map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) A0 A in! \\
+        && !let A3 = scanr * 1 A1 in! \\
         && !<reduce (x,y.e1) y1 A, fun (x1,$\ldots$,xn,z) ->! \\
         && !Y((x1,$\ldots$,xn),0,map2 (a,b. a*b*z) A2 A3)!
 \end{tabular}

@@ -7,15 +7,6 @@ The evaluation contexts aregiven in Figure~\ref{fig:ev_contexts}.
 
 \input{figures/ev_contexts}
 
-Some operators are less conventional which we now explain.
-!shift1! takes an array of reals of size $n$ and adds a $1$ as first component and forgets about the last component of the array, returning an array of size !n!.
-!scanr! is similar to !scanl! except that the folding starts from the end of the array. 
-It is equivalent to first reversing the input array, performing !scanl!, and reversing the resulting array.
-
-\MH{need to explain that the !scanl!, !scanr! coming from !reduce! are also parallel ones}
-
-\MH{might need to extend with the operators from the generalized section}
-
 \input{figures/op_semantics_target}
 
  \subsection{Reverse derivative of array operations}
@@ -25,19 +16,11 @@ The proofs consist in showing that unrolling the computation before differentiat
 and then differentiating gives the same as differentiation and then unrolling. 
 
  \begin{proposition}
-     The reverse derivative of !map! is correct.
- \end{proposition}
-
-\begin{proof}
-    
-\end{proof}
-
- \begin{proposition}
     The reverse derivative of !map2! is correct.
 \end{proposition}
 
 \begin{proof}
-    
+    TODO
 \end{proof}
 
 \begin{lemma}
@@ -62,7 +45,7 @@ Similarly for the other case.
 \end{proposition}
 
 \begin{proof}
-    
+    TODO
 \end{proof}
 
 \subsection{gradient from the introduction}
@@ -76,11 +59,10 @@ Similarly to numpy, we use the notation OnesLike(A) to mean map (x -> 1) A
 and ZerosLike(A) to mean map (x -> 0) A. 
 Finding these constant arrays is key to a lot of optimizations that leverage the ring algebraic structure of the reals to arrays.
 
-\MH{be more explicit about optimizations. 0 should be ZerosLike. A bit outdated compared to current D transformation.
-Also, I am freely referring to the variables from the context or bound in the original term, should be clarified.}
+TODO: add ZerosLike ONesLike notation officially somewhere.
 
  \begin{lemma}
-     $\nabla_A$!prod(A)! = !map2 * (scanr x 1 A) (shift1(scanl * 1 A))!
+    !$\nabla_A$prod(A)= map2 * (scanr * 1 (shift1L A)) (shift1R (scanl * 1 A))!
  \end{lemma}
 
  \begin{proof}
@@ -89,22 +71,24 @@ The gradient of  derivative $\nabla_A$!prod(A)! is given by
 \begin{tabular}{c l r}
     & $\nabla_A$ !prod(A)! & \\
     =&  $\nabla_A$(!reduce * 1 A!) & \\
-    $\defeq$ & \Big($\lambda$ !A',z. let A1 = scanl * 1 A in! & \\
-    & !let A2 = map2 (x,y -> y) A1 A in! & \\ 
-    & !let A3 = shift1 (map2 (x,y -> x) A1 A) in! & \\
-    & !let A4 = scanr * 1 A2 in! &\\
-    & !map3 (a,b,c -> a+b*c*z) A' A4 A3! & \\
-    & \Big)(0,1)\\
-     $\stackrel{\beta-reduction}{=}$  & !let A1 = scanl * 1 A in! & \\
-    & !let A2 = map2 (x,y -> y) A1 A in! & !A2=A! \\
-    & !let A3 = shift1 (map2 (x,y -> x) A1 A) in! & !A3=shift1 A1!\\
-    & !let A4 = scanr * 1 A2 in! & \\
-    & !map3 (a,b,c -> a+b*c*1) 0 A4 A3! & !map2 * A4 A3! \\
-    = & !let A1 = scanl * 1 A in! & \\
-    & !let A3 = shift1 A1 in! &\\
-    & !let A4 = scanr * 1 A in! & forward substitution !A2!\\
-    & !map2 * A4 A3! & \\
-    $\stackrel{\eta-reduction}{=}$ & !map2 * (scanr x 1 A) (shift1(scanl * 1 A))! &
+    $\defeq$ & \Big(!fun z ->! & \\ 
+    & !let A$_0$ = shift1R (scanl * 1 A) in! & \\
+    & !let A$_1$ = shift1L (map2 (x,y -> y) A$_0$ A) in! & \\ 
+    & !let A$_2$ = map2 (x,y -> x) A$_0$ A in! & \\
+    & !let A$_3$ = scanr * 1 A$_1$ in! &\\
+    & !map2 (a,b -> a*b*z) A$_3$ A$_2$! & \\
+    & \Big)(1)\\
+     $\stackrel{\beta-reduction}{=}$  & !let A$_0$ = shift1R (scanl * 1 A) in! & \\
+    & !let A$_1$ = shift1L (map2 (x,y -> y) A$_0$ A) in! & !A$_1$=shift1L A! \\
+    & !let A$_2$ = map2 (x,y -> x) A$_0$ A in! & !A$_2$= A$_0$!\\
+    & !let A$_3$ = scanr * 1 A$_1$ in! & \\
+    & !map2 (a,b -> a*b*1) A$_3$ A$_2$! & !map2 * A$_3$ A$_2$! \\
+    = & !let A$_0$ = shift1R (scanl * 1 A) in! & \\
+    & !let A$_1$=shift1L A! &\\
+    & !let A$_3$ = scanr * 1 A$_1$! & \\
+    & !map2 * A$_3$ A$_0$! & forward substitution !A$_2$! \\
+    $\stackrel{\eta-reduction}{=}$ & !map2 * (scanr * 1 shift1L A)! &\\
+    & \quad\quad\quad\quad !(shift1R (scanl * 1 A))! &
 \end{tabular}
  \end{proof}
 
@@ -118,21 +102,25 @@ The gradient of !sum(A)! is given by
     \begin{tabular}{c l r}
     & $\nabla_A$ !sum(A)! & \\
     = & $\nabla_A$ !reduce + 0 A! & \\
-    $\defeq$ & \Big($\lambda$ !A',z. let A1 = scanl * 1 A in! \\
-    & !let A2 = map2 (x,y -> 1) A1 A in! & \\
-    & !let A3 = shift1 (map2 (x,y -> 1) A1 A) in! & \\
-    & !let A4 = scanr * 1 A2 in! & \\
-    & !map3 (a,b,c -> a+b*c*z) A' A4 A3!\Big)(0,1) & \\
-    $\stackrel{\beta-reduction}{=}$  & !let A1 = scanl * 1 A in! & \\
-    & !let A2 = map2 (x,y -> y) A1 A in! & !A2=OnesLike(A)! \\
-    & !let A3 = shift1 (map2 (x,y -> x) A1 A) in! & !A3=shift1 OnesLike(A)!\\
-    & !let A4 = scanr * 1 A2 in! & \\
-    & !map3 (a,b,c -> a+b*c*1) 0 A4 A3! & !map2 * A4 A3! \\
-    = & !let A1 = scanl * 1 A in! & \\
-    & !let A2= OnesLike(A) in! &  \\
-    & !let A3 = shift1 OnesLike(A) in! & !A3=OnesLike(A)! \\
-    & !let A4 = scanr * 1 A2 in! & !A4=OnesLike(A2)! \\
-    & !map2 * A4 A3! & \\
+    $\defeq$ & \Big(!fun z ->! & \\ 
+    & !let A$_0$ = shift1R (scanl + 0 A) in! & \\
+    & !let A$_1$ = shift1L (map2 (x,y -> 1) A$_0$ A) in! & \\ 
+    & !let A$_2$ = map2 (x,y -> 1) A$_0$ A in! & \\
+    & !let A$_3$ = scanr * 1 A$_1$ in! &\\
+    & !map2 (a,b -> a*b*z) A$_3$ A$_2$! & \\
+    & \Big)(1)\\
+    $\stackrel{\beta-reduction}{=}$  & !let A$_0$ = shift1R (scanl + 0 A) in! & \\
+    & !let A$_1$ = shift1L (map2 (x,y -> 1) A$_0$ A) in! & !A$_1$=OnesLike(shift1L(A))! \\
+    & !let A$_2$ = map2 (x,y -> 1) A$_0$ A in! & !A$_2$=OnesLike(A)!\\
+    & !let A$_3$ = scanr * 1 A$_1$ in! & \\
+    & !map2 (a,b -> a*b*1) A$_3$ A$_2$! & !map2 * A$_3$ A$_2$! \\
+    = & !let A$_0$ = shift1R (scanl + 0 A) in! & \\
+    & !let A$_1$ = OnesLike(shift1L(A))! & forward substitution \\
+    & !let A$_2$ = OnesLike(A)! & forward substitution \\
+    & !let A$_3$ = scanr * 1 A$_1$ in! & \\
+    & !map2 * A$_3$ A$_2$! & \\
+    = & !let A$_3$ = scanr * 1 OnesLike(shift1L(A)) in! & !A$_3$=OnesLike(A)!\\
+    & !map2 * A$_3$ OnesLike(A)! & forward substitution \\
     = & !map2 * OnesLike(A) OnesLike(A)! & \\
     = & !OnesLike(A)!
     \end{tabular}
@@ -146,13 +134,13 @@ The gradient of !sum(A)! is given by
 The reverse derivative of !map2 * A B! is given by 
 
 \begin{tabular}{c l}
-    & $\lambda$ !A',B',C'.! \\
-    & !let C1 =map2 (a,b -> b) A B in! \\
-    & !let C2 =map2 (a,b -> a) A B in! \\
-    & !(map3 (a,b,c -> a+b*c) A' C1 C', map3 (a,b,c -> a+b*c) A' C2 C')!
+    & !fun (Z) ->! \\
+    & !let C$_1$ = map2 (a,b -> b) A B in! \\
+    & !let C$_2$ = map2 (a,b -> a) A B in! \\
+    & !(map2 * C$_1$ Z, map2 * C$_2$ Z)!
 \end{tabular}
 
-Let's call this term Y.
+Let's call this term !Y!.
 For convenience, let us also rewrite !map2 * B (map (x -> 1) A)! 
 as !let C = map (x -> 1) A in map2 * B C!.
 
@@ -161,25 +149,24 @@ Then the gradient of !dot(A,B)! is given by
 \begin{tabular}{c l r}
     & $\nabla$ !dot(A,B)! & \\
     = & $\nabla$ !let C = map (x -> 1) A in map2 * B C! & \\
-    $\defeq$ & $\Big(\lambda$ A',B',C',z. & \\
-    & !let A1 = scanl * 1 A in!  \hspace{4cm}\rdelim\}{5}{3mm}[\parbox{40mm}{same reduction\\as previously}]\\
-    & !let A1 = scanl * 1 A in! & \\
-    & !let A2 = map2 (x,y -> 1) A1 A in! & \\
-    & !let A3 = shift1 (map2 (x,y -> 1) A1 A) in! &\\
-    & !let A4 = scanr * 1 A2 in! &\\
-    & !Y(A', B', map3 (a,b,c -> a+b*c*z) A' A4 A3)!\Big) &  \\
-    & \quad !(0,0,0,1)! & \\
-    = & !Y(0,0,OnesLike(C))! & \\
-    $\defeq$ & !let C1=map2 (a,b -> b) A B in! & !C1 = B! \\
-    & !let C2=map2 (a,b -> a) A B in! & !C2 = A! \\
-    & !(map3 (a,b,c -> a+b*c) 0 C1 OnesLike(C)!, & !map2 C1 OnesLike(C)! \\
-    & !map3 (a,b,c -> a+b*c) 0 C2 OnesLike(C))!  & !map2 C2 OnesLike(C)! \\
-    = & !let C1=B! & forward substitution \\
-    & !let C2=A! & forward substitution \\
-    & !map2 C1 OnesLike(C)! & !C1! \\
-    & !map2 C2 OnesLike(C)! & !C2! \\
+    $\defeq$ & \Big(!fun z ->! & \\ 
+    & !let A$_0$ = shift1R (scanl + 0 A) in!  \hspace{4cm}\rdelim\}{5}{3mm}[\parbox{40mm}{same reduction\\as previously}]\\
+    & !let A$_1$ = shift1L (map2 (x,y -> 1) A$_0$ A) in! & \\ 
+    & !let A$_2$ = map2 (x,y -> 1) A$_0$ A in! & \\
+    & !let A$_3$ = scanr * 1 A$_1$ in! &\\
+    & !Y(map2 (a,b -> a*b*z) A$_3$ A$_2$)! & \\
+    & \Big)(ZerosLike(A),1)\\
+    = & !Y(OnesLike(A))! & \\
+    = & !let C$_1$ = map2 (a,b -> b) A B in! & !C$_1$ = B! \\
+    & !let C$_2$ = map2 (a,b -> a) A B in! & !C$_2$ = A! \\
+    & !(map2 * C$_1$ OnesLike(A), map2 * C$_2$ OnesLike(A))!  &\\
+    = & !let C$_1$=B in! & forward substitution \\
+    & !let C$_2$=A in! & forward substitution \\
+    & !(map2 * C$_1$ OnesLike(A),! & !C$_1$! \\
+    & !map2 * C$_2$ OnesLike(A))! & !C$_2$! \\
+    = & !(map2 * B OnesLike(A), map2 * A OnesLike(A))! \\
     = & !(B, A)!
 \end{tabular}
 
-So if we are only interested in the gradient w.r.t. A, this indeed gives us B.
+If we are only interested in the gradient w.r.t. !A!, this indeed gives !B!.
 \end{proof}
