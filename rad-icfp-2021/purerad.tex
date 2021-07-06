@@ -38,20 +38,20 @@ The set of scalar operations should also be closed under partial differentiation
 In more detail, for every unary scalar operation !op1!, 
 we assumed given an operator $\partial_1$!op1! whose semantics should be the derivative of !op1!.
 For every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2! 
-representing respectively the first and second partial derivative of !op2!.
+respectively representing the first and second partial derivative of !op2!.
 
 Similarly, the target language contains more array primitives which are used to define the reverse derivatives of array operations. 
-Scan left !scanl! is similar to fold left but also stores all the intermediate results in a array, which it returns.
-In the same vein, scan right !scanr! perform a fold left by reading the array from right to left and also storing 
-the intermediate results in a array from right to left.
+Scan left !scanl! is similar to fold left but also stores all the intermediate results in an array, which it returns.
+In the same vein, scan right !scanr! performs a fold left by reading the array from right to left and stores 
+the intermediate results in an array from right to left.
 
-Finally, we add two new shift operator !shift1L!, !shift1R!. 
+Finally, we add two new shift operators !shift1L! and !shift1R!. 
 They take an array of size $n$, and respectively forget the first and the last element of the array.
 These somewhat ad-hoc operators naturally show up when differentiating fold-like operators.
 
 The types and terms are presented in Figure~\ref{fig:target_grammar}.
 Our lambda abstractions take $n$ arguments as we are not interested here with partial applications. 
-In fact, the lambda abstractions introduced by reverse-mode will be removed during partial evaluation 
+In fact, the lambda abstractions introduced by reverse-mode will be removed during partial evaluation, 
 and the notation with lambda abstractions having $n$ bound variables makes reading slightly easier.
 We note that we don't actually need the full power of higher-order because we only use lambda abstractions over variables of ground types
 and let expressions binding such lambda abstractions. We only need the target language to be second-order.
@@ -102,8 +102,8 @@ In Section~\ref{sec:unf} we decompose this transformation into three simpler ste
 The idea is that $\rho$ represents the return type of the derivative part, which should be !A$_{1} \times \ldots \times$ A$_n$! 
 if we want the whole gradient of a term !e! in context !$\Gamma = \;$x$_{1}$:A$_{1}$,$\ldots$,x$_n$:A$_n$!.
 The subscript $\Gamma$ denotes the current context, 
-which is locally augmented for instance when differentiating a !let! rule.
-For non-unary operations, we differentiate the arguments from left to right and add their derivatives to the current stack, 
+which is locally augmented, for instance when differentiating a !let! rule.
+For non-unary operations, we differentiate the arguments from the left to the right and add their derivatives to the current stack, 
 which is modeled by the continuation $Y$. 
 Importantly for performance, each continuation variable $Y$ is only used once.
 
@@ -133,7 +133,7 @@ All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(
 
 Following the insight from Section~\ref{subsec:insights}, 
 we don't want to keep all the lambda abstractions as this is costly. 
-Fortunately, the transformation is designed in such a way that we only have applications 
+Fortunately, the transformation is designed in such a way that we only have applications, 
 and we can use partial evaluation to do beta-reduction. 
 
 By inspection in Figure~\ref{fig:direct_diff_macro}, 
