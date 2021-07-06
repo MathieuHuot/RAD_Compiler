@@ -45,8 +45,8 @@ Scan left !scanl! is similar to fold left but also stores all the intermediate r
 In the same vein, scan right !scanr! perform a fold left by reading the array from right to left and also storing 
 the intermediate results in a array from right to left.
 
-Finally, we add two new shift operator !shift1L, shift1R!. 
-They take an array of size $n$, and shift respectively forget the first and the last element of the array.
+Finally, we add two new shift operator !shift1L!, !shift1R!. 
+They take an array of size $n$, and respectively forget the first and the last element of the array.
 These somewhat ad-hoc operators naturally show up when differentiating fold-like operators.
 
 The types and terms are presented in Figure~\ref{fig:target_grammar}.
@@ -54,7 +54,7 @@ Our lambda abstractions take $n$ arguments as we are not interested here with pa
 In fact, the lambda abstractions introduced by reverse-mode will be removed during partial evaluation 
 and the notation with lambda abstractions having $n$ bound variables makes reading slightly easier.
 We note that we don't actually need the full power of higher-order because we only use lambda abstractions over variables of ground types
-and let expressions binding such lambda abstractions. So we only require the target language to be second-order.
+and let expressions binding such lambda abstractions. We only need the target language to be second-order.
 The type system for the extended grammar of the target language is presented in Figure~\ref{fig:target_typesystem}. 
 
 \input{figures/target_grammar}
