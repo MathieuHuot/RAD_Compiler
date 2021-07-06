@@ -133,8 +133,8 @@ All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(
 
 Following the insight from Section~\ref{subsec:insights}, 
 we don't want to keep all the lambda abstractions as this is costly. 
-Fortunately, the transformation is designed in such a way that we only have applications, 
-and we can use partial evaluation to do beta-reduction. 
+The transformation is designed in such a way that all the lambda abstractions are given arguments,  
+and we can use partial evaluation to do beta-reduce all these lambda abstractions.
 
 By inspection in Figure~\ref{fig:direct_diff_macro}, 
 we see that there is a linear usage of  each continuation $Y$ 
@@ -143,22 +143,29 @@ More precisely, we have applications of the form !fun (x1,$\ldots$,xn) -> Y(e1,$
 where the !ei! are !xi! except for at most $k$ (independant of $n$) terms.
 In fact we have $k=2$, except for the !map2! case which requires a more detailed analysis (see Section~\ref{sec:complexity}).
 
-Using the invariant above and the inlining and forward substitution given in Figure~\ref{fig:optim}, this allows us to rewrite
+Using inlining as given in Figure~\ref{fig:optim}, this allows us to rewrite
 
 \begin{tabular}{l}
 !fun (x$_{1}$,$\ldots$,x$_n$) -> (fun (y$_{1}$,$\ldots$,y$_n$) -> (f$_{1}$,$\ldots$,f$_n$))(e$_{1}$,$\ldots$,e$_n$)! 
 $\transto$ \\
 !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!
-$\transto$ \\
-!fun (x$_{1}$,$\ldots$,x$_n$) -> (f$_{1}$[e$_{1}$/y$_{1}$],$\ldots$,f$_n$[e$_n$/y$_n$])!
 \end{tabular}
 
-TODO: finish explanation
+Using the invariant above, most of the !e!$_{i}$ are variables. 
+Without loss of generality, assume the onlt terms !e!$_{i}$ which are not variables are !e!$_{n-1}$ and !e!$_{n}$.
+we can use forward subsitution on the other !e!$_{i}$ and we obtain
+
+\begin{tabular}{l}
+    !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!  $\transto$ \\
+    !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{n-1}$,y$_n$ =e$_{n-1},$e$_1$ in (f$_{1}$[x$_{1}$/y$_{1}$],$\ldots$,f$_{n-2}[$x$_{n-2}$/y$_{n-2}]$,f$_{n-1}$,f$_{n}$)!
+\end{tabular}
+It means that it does not change the evaluation cost of most of the !f!$_{i}$ for $1\leq i \leq n-2$.
+The new evaluation cost is reduced to the sum of the cost of evaluating 
+the !f!$_{i}$ in addition to the cost of evaluating !e!$_{n-1}$ and !e!$_{n}$, O($n$) movement of variables.
 
 \begin{example}
     After forward-substitution and inlining the inner !Y!$_{i}$, the gradient of the terms from the introduction reduces to
 
-    TODO: bit wrong, should introduce more let binding
     \begin{tabular}{c l}
         & $\grad_\Gamma$(!let w$_{1}$ = x$_{1}$ * x$_{2}$ in let w$_{2}$ = w$_{1}$ * x$_{1}$ in w$_{2}$!) \\
         =& !let w$_1$,Y$_1$= <x$_1$ * x$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y(y$_{1}$+x$_2$*z,y$_{2}$+x$_1$*z,y$_{3}$) > in! \\
@@ -171,10 +178,9 @@ After another simplification step, we obtain
 
 \begin{tabular}{c l}
     & $\grad_\Gamma$(!let w$_{1}$ = x$_{1}$ * x$_{2}$ in let w$_{2}$ = w$_{1}$ * x$_{1}$ in w$_{2}$!) \\
-    =& !let w$_1$= x$_1$ * x$_{2}$ in! \\
-        & !let w$_{2}$= w$_{1}$ * x$_{1}$ in! \\
-        & !<w$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> !\\
-        & \quad\quad\quad!Y(y$_{1}$+w$_1$*(y$_4$+z)+x$_2$*(y$_4$+x$_1$*(y$_4$+z)),y$_{2}$+x$_1$*(y$_4$+x$_1$*(y$_4$+z)),y$_{3}$) >!
+    =& !let w$_1$= x$_1$ * x$_{2}$ in let w$_{2}$= w$_{1}$ * x$_{1}$ in! \\
+        & !<w$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> let y'$_{1}$=y$_{1}$+w$_1$*z in !\\
+        & \quad\quad\quad!let z'=y$_4$+x$_1$*z in Y(y'+x$_2$*z',y$_{2}$+x$_1$*z',y$_{3}$) >!
 \end{tabular}
 
 Similarly, for the gradient of !prod(A)! we obtain
