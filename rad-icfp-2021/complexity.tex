@@ -5,24 +5,25 @@
 \label{sub:costModel}
 
 We follow a simple model similar to the one in \cite{griewank2008evaluating}.
-We assume the cost is divided into 4 elementary measures, being the number of MOVES, ADDS, MULTS, and NLOPS.
+We assume the cost is divided into $4$ elementary measures, being the number of MOVES, ADDS, MULTS, and NLOPS.
 MOVES assumes a flat memory and represents moving a fixed size information  (e.g. 64 bits). 
 ADDS represents the number of additions, 
 MULTS the number of multiplications, 
-and NLOPS the number of elementary non linear operations like !cos!, !exp!.
+and NLOPS the number of elementary non-linear operations like !cos! or !exp!.
 
 The gives a complexity function $\cost$ valued in $\RR^4$. 
 For instance, we have 
 
-\begin{itemize}
-    \item $\cost(*)=(3,0,1,0)$
-    \item $\cost(+)=(3,1,0,0)$
-    \item $\cost(c)=(1,0,0,0)$
-    \item $\cost($!sin!$)=(2,0,0,1)$
-\end{itemize}
+\begin{tabular}{ll}
+    $\cost(*)=(3,0,1,0)$ & $\cost(+)=(3,1,0,0)$\\
+    $\cost(c)=(1,0,0,0)$ & $\cost($!sin!$)=(2,0,0,1)$
+\end{tabular}
 
-TODO: extend cost array
-TODO: extend cost compositional way
+For simplicity, we will not address any parallelism in our cost model. 
+So the cost of !map (x.e)! on an array of size $n$ will be $n*\cost$(!e!).
+The cost function extends compositionally to the whole language in the obvious way.
+For instance we have !$\cost$(let x=e$_1$ in e$_2$)!= !$\cost$(e$_1$)+$\cost$(e$_2$)!.
+TODO: for let binding and same in map, do I need to add some MOVES?
 
 \subsection{Cheap gradient principle}
 
@@ -38,16 +39,18 @@ However, this is not quite the case with $\directD{\rho}{\Gamma}{Y}$
 before the optimization (inlining and forward substitution) step from Section~\ref{sub:Partial evaluation and optimization}.
 
 \begin{proposition}
-    TODO: cost $\directD{\rho}{\Gamma}{Y}$. 
+    $\cost(\directD{\rho}{\Gamma}{Y}($!e!$))\leq$ $K\cost$(!e!) + O((0,0,0,n*|!e!|)) 
 \end{proposition}
 
-As we can see, the only problem is that too many variables are being moved, 
+\begin{proof}
+    TODO: routinely by induction and inspection. be specific with K? 
+    One problem still is for map and reduce because they call twice the gradient of !e$_1$!.
+\end{proof}
+
+As we can see, the only problem is that too many variables are being moved, and this is
 due to the continuation carrying and copying $n$ variables at each step.
-This is exactly the overhead that our inlining and forward substitution removes.
-
-\begin{proposition}
-    TODO: complexity gain using our optim.
-\end{proposition}
+This overhead is precisely what that our inlining and forward substitution removes, 
+as was examplified in Section~\ref{sub:Partial evaluation and optimization}.
 
 Combining the two previous points, we conclude that our reverse mode transformation satisfies the cheap gradient principle.
 
