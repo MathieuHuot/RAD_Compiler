@@ -1,6 +1,13 @@
 \section{Discussion and future work} % (fold)
 \label{sec:discussion_and_future_work}
 
+\noindent \textbf{Design space}
+First, there is a tradeoff to reach between a general expressive language and a domain specific one. The latter usually has more static information and a specific representation that lends itself to better optimizations.
+Then, many optimizations performed on AD implementations consist in hand-crafted derivatives for useful operations like matrix-matrix multiplication, dot-product, etc.
+They don't seem to arise from theoretical justifications, are error prone, and can hardly fit with more general optimizations.
+This makes these systems harder to prove correct. The problem is thus to ensure provable correctness and pureness, while not compromising on efficiency. In addition, we would like something easily provably efficient. 
+A real-world implementation based on our work would of course optimize further, potentially using hand-crafted operations as well, but it would be based on solid grounds.
+
 \noindent \textbf{More dynamic language}
 JAX \cite{bradbury2020jax,frostig2018compiling} is a modern framework that provides state-of-the-art automatic differentiation. 
 One feature that makes it popular is that it uses JIT compilation, 

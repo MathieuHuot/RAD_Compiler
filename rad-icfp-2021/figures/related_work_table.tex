@@ -1,0 +1,86 @@
+
+% \begin{table}
+% \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+% \hline
+%  & \rot{Reverse Mode}  & \rot{Complexity Proofs} & \rot{Pure} & \rot{Correctness Proofs} & \rot{Tensor Support}  & \rot{Recursion} & \rot{Conditional} \\
+% \hline
+% This Paper &
+% \supfull & \supfull & \supfull  & \supfull  & \supfull  & \suphalf & \supfull \\ \hline
+% Lantern~\cite{lantern_icfp} & 
+% \supfull & \suphalf & \supnone  & \supnone & \supfull & ? & \supfull \\ \hline
+% \dfsmooth{}~\cite{shaikhha2019efficient} & 
+% \supnone & \supnone & \supfull  & \supnone & \supfull  & \suphalf  & \supnone \\ \hline
+% \cite{huot2020correctness} &
+% \supfull & \supnone & \supfull   & \supfull & \supnone & \suphalf & \supfull \\ \hline
+% \cite{brunel2019backpropagation} &
+% \supfull & \suphalf ? & \supfull & \supfull & \supnone & \supnone & ? \\ \hline
+% \cite{abadi2019simple} &
+% \supfull & ? & \supfull & \supfull & \supnone & \supfull & \supfull \\ \hline
+% \cite{barthe2020versatility} &
+% \supnone & \supnone & \supfull & \supfull & \supnone & \supnone & \supfull \\ \hline
+% \cite{pearlmutter2008reverse} &
+% \supfull & \suphalf & \supnone & \supnone & ? & ? & ? \\ \hline
+% \cite{Elliott:2018:SEA:3243631.3236765} &
+% \supfull & \suphalf & \supfull & \supnone & ? & \supnone & ? \\ \hline
+% \end{tabular}
+% \caption{Comparison of different functional differentiable programming frameworks.}
+% \end{table}
+
+\begin{table}
+ \label{fig:comparison-table}
+ \begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+ \hline
+  & \rot{Reverse Mode}  & \rot{Complexity} & \rot{Pure Derivatives} & \rot{Correctness Proofs} & \rot{Tensor Support}  & \rot{Recursion} & \rot{Conditional} \\
+  % & Reverse  & Complexity & Pure & Correct & HO Fun. & Tensors & Rec. & Cond. \\
+ \hline
+ \system{} (This Paper) &
+ \supfull & \supfull & \supfull & \supfull  & \supfull  & \supfull & \supfull \\ 
+ \hline
+ Lantern~\cite{lantern_icfp} & 
+ \supfull & \suphalf & \supnone & \supnone & \supfull & \supfull & \supfull \\ 
+ \hline
+ \dfsmooth{}~\cite{shaikhha2019efficient} 
+ & 
+ \supnone & \supnone & \supfull & \supnone & \supfull  & \supnone  & \supnone \\ 
+ \hline
+ \cite{huot2020correctness} &
+ \supfull & \supnone & \supfull & \supfull & \supnone & \suphalf & \supfull \\ 
+ \hline
+ \cite{brunel2019backpropagation} &
+ \supfull & \suphalf ? & \supfull & \supfull & \supnone & \supnone & \supnone \\ 
+ \hline
+ \cite{abadi2019simple} &
+ \supfull & \supfull? & \supfull & \supfull & \supnone? & \supfull & \supfull \\ 
+ \hline
+ \cite{barthe2020versatility} &
+ \supnone & \supnone & \supfull & \supfull  & \supnone & \supnone & \supfull \\ 
+ \hline
+ \cite{pearlmutter2008reverse} &
+ \supfull & \supnone  & \supnone & \supnone & \supnone? & \supfull & \supfull \\ 
+ \hline
+ \cite{Elliott:2018:SEA:3243631.3236765} &
+ \supfull & \suphalf & \supfull & \supnone & \supnone? & \supnone & \supnone? \\ 
+ \hline
+ \cite{sherman2021} & 
+ \supnone & \supnone & \supfull & \supfull? & \supnone? & \supnone & \supnone \\ 
+ \hline
+ \cite{vytiniotis2019differentiable} &
+ \supfull & \suphalf & \supfull & \supnone & \supnone? & \supnone & \supnone? \\ 
+ \hline
+ \cite{mak2020differential} & 
+ \supfull & \suphalf ? & \supfull & \supfull & \supnone & \supnone & \supnone \\ 
+ \hline
+ \cite{vakar2020reverse} & 
+ \supfull & \suphalf ? & \supfull & \supfull & \supnone & \supnone & \supnone \\ 
+ \hline
+ \cite{Manzyuk2012} & 
+ \supnone & \supnone & \supfull & \supfull? & \supnone & \supnone & \supnone \\ 
+ \hline 
+ \cite{gallagher-sdg} & 
+ \supnone & \supnone & \supfull & \supfull ? & \supnone & \supfull & \supfull  \\ 
+ \hline
+ \end{tabular}
+ \caption{Comparison of different functional differentiable programming frameworks.
+ $\supfull$ means the property is verified, and $\supnone$ means its absent from the work.}
+ \label{tbl:relwork}
+ \end{table}
