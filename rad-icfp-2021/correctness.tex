@@ -197,41 +197,59 @@ from Section~\ref{sub:Simple reverse mode transformation}.
 \subsection{Correctness theorem} % (fold)
 \label{sub:Correctness theorem}
 
-First, we start from the correctness of $D$, which is easy to establish, 
-and then propagate this information to Source and Target.
+First, we start from the correctness of $\Dsynrevsymbol_{\rho}$:Source UNF $\to$ Target UNF, which is easy to establish, 
+and then propagate this information to Source and Target via the $\UNFSymbol, \UNFSymbol^{-1}$ transformations.
 
-\begin{proposition}[Correctness $D$]
-    TODO
+\begin{proposition}[Correctness $\Dsynrevsymbol_{\rho}$]
+    For every term !$\reals^{\times n} \vdash$ e: $\reals^{\times n+1}$! in Source UNF,\\ 
+    $\pi_2 \seml \Dsynrevsymbol_{\rho}$!e!$\semr(x_1,\ldots x_n,Id_{\RR^n})$=$J^T_{(x_1,\ldots x_n)}\seml$!e!$\semr$.
 \end{proposition}
+
+This is routinely proved by induction as the language is first-order. 
+This uses the fact that for every primitive constant $A$, $\sem{J^TA}=J^T\sem{A}$.
 
 Recall that the intuition from Source UNF is that it consists of terms of Source that also return their context.
 From there, the intuition for the Jacobian of a primitive in Target UNF is that it should be the Jacobian of
-the corresponding term in Target. 
+the corresponding term in Target. This is easily checked for scalar operations.  
 
-TODO: I don't want to talk too much about the cotangent bundle functor, but to phrase correctness properties clearly I might have to.
-
-\begin{proposition}[The transpose Jacobian of map2 and reduce are correct.]
-    TODO
+\begin{proposition}
+    \begin{center}
+\begin{tabular}{r c l}
+    !$\seml\UNFSymbol^{-1}(J^T$map2$_{x,y.e})\semr$! &=& !$J^T\seml\UNFSymbol^{-1}($map2$_{x,y.e})\semr$!\\
+    !$\seml\UNFSymbol^{-1}(J^T$reduce$_{x,y.e_1;e_2})\semr$! &=& !$J^T\seml\UNFSymbol^{-1}($reduce$_{x,y.e_1;e_2})\semr$!
+\end{tabular}
+\end{center}
 \end{proposition}
 
-From this, we can now deduce that the composite transformation doing UNF then $D$ and then $UNF^-1$ is correct
+This is proved in Appendix \ref{sub:Reverse derivative of array operations}.
+
+From this, we now deduce that the composite transformation $\UNFSymbol$, $\Dsynrevsymbol_{\rho}$, $\UNFSymbol^{-1}$ is correct
 in the sense that it produces a term that computes the gradient of the original term.
 
-\begin{theorem}[UNF;D;$UNF^-1$ correct]
-    TODO
-\end{theorem}
-
-By inspection of what that composition actually gives on terms of Source, 
-we show that the previous composition of transformation indeed gives the transformation 
-$\directD{\rho}{\Gamma}{Y}$ from Section~\ref{sub:Macro for pure reverse mode transformation}. 
-
-\begin{proposition}[UNF;D;$UNF^-1$=D]
-    TODO
+\begin{proposition}
+    If !x$_1:\reals$,$\ldots$,x$_n:\reals$ $\vdash$ e: $\reals$! then \\
+    $\seml \pi_2 \UNFSymbol^{-1}(\Dsynrevsymbol_{\rho}(\UNFSymbol($!e!$)))\semr(x_1,\ldots x_n,Id_{\RR^n})$=$J^T_{(x_1,\ldots x_n)}$!<!$Id_{\RR^n}$,$\seml$!e!$\semr$!>!
 \end{proposition}
 
-Without any more work, the previous claims have shown that 
-$\directD{\rho}{\Gamma}{Y}$ is correct.
-
-\begin{theorem}[D is correct]
+\begin{proof}
     TODO
+\end{proof}
+
+By inspecting what that composition of transformations does on terms of Source, 
+we show that this indeed gives computes the same as the transformation 
+$\directD{\rho}{\Gamma}{Y}$ from Section~\ref{sub:Macro for pure reverse mode transformation}. 
+
+\begin{proposition}
+    $\seml\UNFSymbol^{-1}(\Dsynrevsymbol_{\rho}(\UNFSymbol($!e!$)))\semr$ = $\seml\directD{\rho}{\Gamma}{Y}($!e!$)\semr$ 
+\end{proposition}
+
+\begin{proof}
+    TODO
+\end{proof}
+
+Combining the the previous propositions, we have shown that $\directD{\rho}{\Gamma}{Y}$ is correct.
+
+\begin{theorem}
+    For every $\Gamma \vdash$ !e:!$\reals$, we have 
+    $\sem{\grad_\Gamma e}= \grad_\Gamma\sem{e}$.
 \end{theorem}
