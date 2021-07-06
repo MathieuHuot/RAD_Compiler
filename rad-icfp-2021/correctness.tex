@@ -44,7 +44,7 @@ in the multicategory of Cartesian spaces and smooth maps between them.
 \begin{definition}[$\CartSp$]
 Let $\CartSp$ be the Cartesian category whose objects are Euclidean spaces
 and whose morphisms are smooth functions between Euclidean spaces.
-\MH{it's not a multicategory yet}
+TODO:it's not a multicategory yet
 
 We can interpret Source in $\CartSp$ as follows.
     \begin{tabular}{r c l}
@@ -60,7 +60,7 @@ are interpreted by composing with the corresponding functions, which are smooth.
 Variables are interpreted as $\sem{x_i}(\rho)\defeq \rho_i$. 
 The remaining constructions are interpreted as follows.
 \begin{tabular}{r c l}
-    $\seml$!map2 (x,y.e1) e2 e3!$\semr$ &=& \\
+    $\seml$!map2 (x,y.e1) e2 e3!$\semr$ &=& TODO\\
     $\seml$!reduce (x,y.e1) e2 e3!$\semr$ &=& TODO
 \end{tabular}
 \end{definition}
@@ -91,7 +91,7 @@ but also explain the UNF and $UNF^{-1}$ transformations.
 Let $\ConcatS$ the syntactic Cartesian concategory whose types are those of Source and 
 with primitives given by $op1: \reals \to \reals$, $op2: \reals,\reals \to \reals$ $map2_{x,y.e}$
 and $reduce_{x,y.e1;e2}$.
-\MH{actually I just need projection and a representing object for pairs, it might be weaker than Cartesian? edit: I think I need Cartesian.}
+TODO: actually I just need projection and a representing object for pairs, it might be weaker than Cartesian? edit: I think I need Cartesian.
 \end{definition}
 
 One may notice that the syntax of $\ConcatS$ is somewhere in between the syntax of Source and of Source UNF.
@@ -126,13 +126,13 @@ $J^Top1: \reals \to \reals$,
 $J^Top2: \reals \to \reals, \reals$, 
 $J^Tmap2_{x,y.e}: \Array{\reals}{n} \to \Array{\reals}{n}, \Array{\reals}{n}$, 
 $J^Treduce_{x,y.e1;e2}: \Array{\reals}{n} \to \Array{\reals}{n}$, 
-\MH{not too sure, should I say what a Cartesian concat is? do I need $J^Tproj$?}
+TODO: not too sure, should I say what a Cartesian concat is? do I need $J^Tproj$?
 \end{definition}
 
 We can interpret Target UNF in $\ConcatT$ as follows. 
 The part common with Source UNF is interpreted in the same way as for Source UNF.
 
-\MH{I think need to explain here the (co)monoid structure induced by $D$}
+TODO: I think need to explain here the (co)monoid structure induced by $D$
 
 \begin{tabular}{l c l}
     $\seml$!J!$^T$!var!$_{T;i} \semr$ &=& TODO \\
@@ -144,8 +144,8 @@ The part common with Source UNF is interpreted in the same way as for Source UNF
     $\seml$!<e1, e2>!$\semr$  &=& !<!$\seml$!e1!$\semr$, $\seml$!e2!$\semr$!>! \\
     $\seml$!e1!$\icomp$!e2!$\semr$ &=&  \\
  \end{tabular}
-\MH{Do I need any kind of proposition saying that this makes sense?
-Might need to define on types as well to be clearer: It's an identity on types functor...}
+TODO: Do I need any kind of proposition saying that this makes sense?
+Might need to define on types as well to be clearer: It's an identity on types functor...
 
 \subsection{Semantics for UNF transformations} % (fold)
 \label{sub:Semantics for UNF transformations}
@@ -208,7 +208,7 @@ Recall that the intuition from Source UNF is that it consists of terms of Source
 From there, the intuition for the Jacobian of a primitive in Target UNF is that it should be the Jacobian of
 the corresponding term in Target. 
 
-\MH{I don't want to talk too much about the cotangent bundle functor, but to phrase correctness properties clearly I might have to.}
+TODO: I don't want to talk too much about the cotangent bundle functor, but to phrase correctness properties clearly I might have to.
 
 \begin{proposition}[The transpose Jacobian of map2 and reduce are correct.]
     TODO

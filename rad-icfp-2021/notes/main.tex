@@ -93,7 +93,7 @@ This is for most cases above except notably for let binding in which case it is:
 The weakening and permutation are slightly changed in the obvious way for let binding to make the thing typecheck. 
 
 
- \MH{I probably need to add permutations $\sigma$ in the language of UNF then.}
+ TODO: I probably need to add permutations $\sigma$ in the language of UNF then.
 
 
 \section{Semantics attempts}
@@ -136,7 +136,7 @@ With the semantics above, everything is duplicated too much. For instance, the s
 
 In practice, representing terms with string diagrams, I want to put a box around $e1$ and $\Delta$ and call this $\UNF{e1}$, whereas the categorical semantics forces me to draw a box around each component separately. 
 
-\MH{another possible way to look at it is that UNF does some sort of localization, turning every operator to a reversible one, which is simply done by making it also return its context. I wonder if it could simply be seen as the localization of $!$. Assuming $1\times A=A$, we have $\Delta;id\times !=id$, so as $!$ would become invertible, so would be $\Delta$. This is sort of what I need in practice for reverse mode: not seeing any $\Delta$, only unary maps, and an iso can always be seen as such in this context, i.e. by making $\Delta$ an iso, it becomes essentially invisible to reverse mode. One obvious problem is that I don't know if I want all types to be isomorphic to 1.}
+TODO: another possible way to look at it is that UNF does some sort of localization, turning every operator to a reversible one, which is simply done by making it also return its context. I wonder if it could simply be seen as the localization of $!$. Assuming $1\times A=A$, we have $\Delta;id\times !=id$, so as $!$ would become invertible, so would be $\Delta$. This is sort of what I need in practice for reverse mode: not seeing any $\Delta$, only unary maps, and an iso can always be seen as such in this context, i.e. by making $\Delta$ an iso, it becomes essentially invisible to reverse mode. One obvious problem is that I don't know if I want all types to be isomorphic to 1.
 
 
 \end{document}

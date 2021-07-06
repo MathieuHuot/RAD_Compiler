@@ -34,9 +34,9 @@ In other words, abstracting away from imperative code is still a hurdle that fun
 
 An efficient purely functional reverse-mode transformation would be more easily explainable, optimizable, and reusable.
 
-\MH{TODO: rewrite for more theory people. some ideas: for canonical than Plotkin's thing because normal semantics, complexity proof compared to all other recent papers, 
+TODO: rewrite for more theory people. some ideas: for canonical than Plotkin's thing because normal semantics, complexity proof compared to all other recent papers, 
 all papers that have implementations, their interface in the paper is too high level and misses a lot of things (e.g. in \cite{vytiniotis2019differentiable,lantern_icfp,sherman2021}) compared to implementation, hinders progress. 
-For instance, in \cite{lantern_icfp} it's a lot of manually optimized and hand-derived primitives to achieve good performance.}
+For instance, in \cite{lantern_icfp} it's a lot of manually optimized and hand-derived primitives to achieve good performance.
 
 \subsection{Problem}
 
@@ -51,7 +51,7 @@ They don't seem to arise from theoretical justifications, are error prone, and c
 This makes these systems harder to prove correct. The problem is thus to ensure provable correctness and pureness, while not compromising on efficiency. In addition, we would like something easily provably efficient. 
 A real-world implementation based on our work would of course optimize further, potentially using hand-crafted operations as well, but it would be based on solid grounds.
 
-\MH{TODO: same as above, maybe rewrite for more theory audience.}
+TODO: same as above, maybe rewrite for more theory audience.
 
 \subsection{Summary of contributions}
 
@@ -80,7 +80,7 @@ Our contribution makes these claims precise. In more details, we introduce
     \item correctness of the transformations (\S\ref{sec:correctness})
     \item complexity guarantees (\S\ref{sec:complexity})
     \item how efficiency is ensured via standard optimization techniques (\S\ref{sub:Optimizations})
-    \item several additions to the source language (\S\ref{sec:generalization}) \MH{should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.}
+    \item several additions to the source language (\S\ref{sec:generalization}) TODO:should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.
 \end{itemize}
 
 \subsection{Examples}
