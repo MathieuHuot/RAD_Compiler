@@ -48,11 +48,11 @@ TODO:it's not a multicategory yet
 
 We can interpret Source in $\CartSp$ as follows.
     \begin{tabular}{r c l}
-    $\seml \reals \semr$ &\defeq& $\RR$ \\
-    $\seml$!T1xT2!$\semr$ &\defeq& $\seml$!T1!$\semr \times\seml$!T2!$\semr$ \\
-    $\seml \Array{\reals}{n}\semr$ &\defeq& $\Prod_{1\leq i \leq n} \RR$ 
+    $\seml \reals \semr$ & $\defeq$& $\RR$ \\
+    $\seml$!T1xT2!$\semr$ & $\defeq$& $\seml$!T1!$\semr \times\seml$!T2!$\semr$ \\
+    $\seml \Array{\reals}{n}\semr$ & $\defeq$ & $\prod_{1\leq i \leq n} \RR$ 
     \end{tabular}
-A context $\Gamma=\{x_1:A_1,\ldots,x_n:A_n\}$ is interpreted as the product $\Prod_{1\leq i \leq n}\sem{A_i}$.
+A context $\Gamma=\{x_1:A_1,\ldots,x_n:A_n\}$ is interpreted as the product $\prod_{1\leq i \leq n}\sem{A_i}$.
 Well typed terms $\Gamma\vdash$!e: !$A$ are interpreted as functions $\sem{\Gamma}\to\sem{A}$. This is
 routinely defined by induction on the structure of typing derivations. Constants
 !c! $\reals$ are interpreted as constant functions; and the primitives operations !op1,op2!

@@ -1,101 +1,94 @@
 \section{UNF}
 \label{sec:unf}
 
+Following the intuition highlighted in Section~\ref{subsec:insights}, 
+we present a new language which we call unary form (UNF). 
+There is a Source UNF for the Source language and a Target UNF for the Target language.
+Just as Target is an extension of Source, Target UNF is an extension of Source UNF.
+
+One takeaway from this paper is that efficient pure reverse-mode is complicated because of the several things it does.
+It goes through the term and keeps a store for the gradients to be updated. 
+It keeps track of the new bound variables found while going through the term.
+The updates to the gradient are done via pre-composition and not post-composition.
+Due to the linearity requirement in the usage of the continuation variable, 
+it needs to process like a call-by-value evaluation and evaluate the arguments of operators in a certain order before 
+dealing with the operator itself.
+
+By introducing UNF, we are trying to decouple some of the problems.
+UNF introduces the call-by-value evaluation of the arguments before evaluating the arguments and a good management of the environment.
+Differentiation on UNF deals with the purely functional store and gradients update via pre-composition.
+Finally, going back from UNF to Target uses the stored information in UNF to make sure the Jacobians are computed efficiently. 
+
 \subsection{Source UNF} % (fold)
 \label{sub:Source UNF}
 
-Following the intuition highlighted in Section~\ref{subsec:insights}, we present a new language which we call unary form (UNF). 
-It simply consists of a composition of unary operators. That said, we want to compile our source language to this intermediate representation, 
-and we need to remember some information about the initial term. 
-
-The grammar of our source UNF is given in Figure~\ref{fig:unf_source_grammar}. 
+Intuitively, a term consists of a composition of unary operators. 
+To compile our source language to this intermediate representation, 
+we need to remember some information about the context of the initial term. 
+The grammar of Source UNF is given in Figure~\ref{fig:unf_source_grammar}. 
 
 \input{figures/source_unf}
 
 There are a few notable things in this syntax. 
-Every term is indexed by a well-defined context $\Gamma$ from the source language.
-In addition, a variable has a integer index $1\leq i\leq n$ where $n$ is the size of the context $\Gamma$.
-Every constant, unary, or binary operator is summarized as an $n$-ary operator !op$_n$!.
+Every primitive is indexed by a list of types from the source language, 
+which corresponds to a context being carried. 
+Every constant, unary, or binary operator from Source has a corresponding $n$-ary operator !op$_{T,n}$! in UNF.
 Sequential composition is denoted by !;! and !e$_{1}$;e$_{2}$! means that !e$_{1}$! should be performed, and then !e$_{2}$!.
-Every array operator !map!, !map2! and !foldl! has an extra index which represents a well-formed term in the source language.
-
-The types are the same as in the source language. 
-A context $\Gamma=\{$!x$_{1}$: T$_{1}$,$\ldots$,x$_n$:T$_n$!$\}$ can always be seen as a type !T$_{1}$$\times\ldots\times$ T$_n$!.
-UNF is very syntactic and does not really use variables. 
-In fact it consists only of constants and composition. 
-For this reason, we denote contexts as types in the indices of the terms, and $\times$ is used for context extension.
-But we do emphasize that we mean contexts and the actual variables are remembered and
-this will be key when compiling to the target language after differentiation. 
+The array operators !map2! and !reduce! have extra indices that represent well-formed terms in Source.
+The language has a second kind of sequential composition, which we call passing sequential compsition $\pcomp$.
+In !e$_{1}$ $\pcomp$ e$_{2}$! the idea is first that !e$_{1}$! is computed, followed by !e$_{2}$!. 
+However, !e$_{1}$! outputs an argument which is not used by !e$_{2}$! and is just passed by !e$_{2}$! 
+along and returned with the output of !e$_{2}$!.
+The language also contains a projection !proj! which forgets some of the elements, 
+and a pairing operator !pair! which takes the last pair of elements and returns the pairing of these elements.
 
 The typing rules are detailed in Figure~\ref{fig:source_unf_typesystem}.
-By $\reals^{\times n}$ we mean the product $\reals\times\ldotstimes\reals$ of $n$ factors $\reals$.
-
-TODO: need to explain that return values produce some kind of ANF and introduce new vars!
+$\reals^{\times n}$ is a notation for $\reals,\ldots,\reals$ with $n$ factors $\reals$.
 
 \input{figures/source_unf_typesystem}
 
 \begin{example}
-    TODO: simple term in the language, explain intuition.
+    !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$! 
+    represents !x$_1$:$\reals$, x$_2$:$\reals$, x$_3$:$\reals$ $\vdash$ let (x$_1$,x$_2$,x$_3$,x$_4$)=(x$_1$,x$_2$,x$_3$,cos(x$_3$)) in (x$_1$,x$_2$,<x$_3$,x$_4$>)!.
+    $\comp$ can more generally be understood as a let binding of a tuple, and primitives only act on the last parts of the tuple, always returning the context.
 \end{example}
-
-% subsubsectionSource UNF (end)
 
 \subsection{Target UNF} % (fold)
 \label{sub:Target UNF}
 
-Now our program in UNF is in an equivalent form to straight-line programs. 
-Before presenting our differentiation macro, we present the target language for this macro. 
-We call this intermediate representation target UNF.
-The main idea is similar to source UNF where we only have constants and sequential composition.
-That said, the key difference is that now every constant represents a pair of an operation and what is meant to represent its Jacobian.
-Following the insights from Section~\ref{sec:background}, the composition of pairs reverses the order on the second component. T
-his represents the fact that reverse-mode reverts the computation flow, 
-and that pre-composition (using a continuation) is the simplest way to do this in a purely functional setting.
-On pairs, !;! still represents sequential composition for the first component, and reversed composition is represented by $\circ$ on the second component.
-The grammar and types are given in Figure~\ref{fig:unf_target_grammar}. 
-For every constant $C$ from the source UNF, we have a new constant $\J^TC$ representing its transpose Jacobian.
-One thing to note is that one can only form pairs in this language. 
-Similarly to the source UNF, sequential composition is the only operation which is not a constant of the language.
+The Target UNF is an extension of Source UNF. 
+Its types are lists of types of Target. 
+Higher-order types are needed for the continuation introduced by reverse-mode. 
+In addition, it contains several new primitives which represent the transpose Jacobian of the primitives of Source UNF.
+Lastly, Target UNF has an internal composition $\icomp$. 
+!e$_{1}$ $\icomp$ e$_{2}$! represents precomposition of a curried function !e$_{1}$! by a term !e$_{2}$!
+It is used by the reverse-mode transformation to pre-compose the continuation term by a transpose Jacobian.
+The grammar of Target UNF is given in Figure~\ref{fig:unf_source_grammar} and its type system in Figure~\ref{fig:target_unf_typesystem}.
 
 \input{figures/target_unf}
 
-Technically, all our terms in target UNF should have an extra index $\rho$ which is a type from Source.
-This will be the return type of the continuation for the Jacobian accumulation. 
-In other words, if we want the full gradient of a term $\Gamma\vdash$!e:$\reals$!, $\rho$ should be chosen to be $\Gamma$.
-For every type !T!, let !$\Dtype($!T!$):= \,$T$\times$(T->$\rho$)!. 
-The type system is given in Figure~\ref{fig:target_unf_typesystem}. 
-
 \input{figures/target_unf_typesystem}
-
 
 \subsection{Simple reverse mode transformation} % (fold)
 \label{sub:Simple reverse mode transformation}
 
-We are now able to present a simple transformation for purely functional reverse-mode on UNF.
-This transformation is somehow straightforward as some of the work was put into the design of UNF.
-Our main takeaway for this paper is that reverse-mode is complicated because there is a lot happening at the same time. 
-But by decoupling the problems, it becomes much easier. UNF is somehow dealing with the inherent type-dependency of reverse-mode.
-Then the macro $\Dsynrevsymbol$ adds Jacobians. It allows to compute gradients in a compositional way.
-Finally, we'll see in the next section how to compile back to a more standard language and optimize our transformation to get efficiency.
-
-The differentiation macro is given in Figure~\ref{fig:diff_macro}.
-One might be surprised that the macro does not seem to do much, and it is partly correct.
-We tried to decompose reverse-mode into more elementary small steps, and each step is slightly non trivial and dealing with one aspect of reverse-mode.
-The perhaps slightly more involved transformation is the one coming next,  going from target UNF to our target language.
+We are now able to present a simpler transformation for purely functional reverse-mode from Source UNF to Target UNF.
+The differentiation transformation is given in Figure~\ref{fig:diff_macro}.
+To a list of types, the transformation adds a higher-order type. 
+It is to be understood as the continuation for the pure storage of the gradient.
+On primitive constants of Source UNF, it returns a pair. 
+The first part is the initial term (pre-composed by a projection because it is not using the continuation variable).
+The second part returns the continuation term pre-composed by the transpose Jacobian of the primitive.
 
 \input{figures/macro_diff}
-
-Even though the target UNF is designed to achieve this purpose, we have the Following
-
-\begin{proposition}
-    If $\Gamma \vdash$!e!: !T! in source UNF, then
-    $\Dtype(Gamma)\vdash \Dsynrevsymbol$(!e!):  $\Dtype$(!T!) in target UNF.
-\end{proposition}
 
 \subsection{transformations to and from UNF} % (fold)
 \label{sub:transformations to and from UNF}
 
-We give a translation from our source language to source UNF in Figure~\ref{fig:source_to_unf}.
+We give a translation from our Source to Source UNF in Figure~\ref{fig:source_to_unf}.
+
+TODO:redo
+
 UNF acts as a sort of stack. 
 The input represents the current stage of the stack, and we return the new value added to the stack.
 All results are kept, so the stack keeps growing. One might be surprised that the transformation for pairs and let is similar.
@@ -104,21 +97,11 @@ In other words, when evaluating !let x= e1 in e2! in call by value, we first eva
 Similarly in !<e1, e2>!, we evaluate !e1! and then !e2!. 
 Our ultimate goal is to return a gradient, not the original term, so what really matters is the order of evaluation, and what is evaluated.
 
-$\widehat{;}$ is similar to $;$, with a sort of context propagation effect. 
-It is a bit reminiscent of monadic composition versus the usual composition.
-Technically though, the transformation $\UNFSymbol$ is not quite compositional.
-TODO: explain in detail how to define it. 
-
-\begin{proposition}
-    Let $\Gamma\vdash$!e!: !T! be a term in the source language.\\
-    Then $\Gamma \vdash \UNFSymbol$(!e!): $\Gamma\times\Delta\times$!T! in source UNF for a certain type $\Delta$. 
-\end{proposition}
-
-$\Delta$ corresponds to the list of all the intermediate results from !e!. 
-A different way to say it would be that $\Delta$ is the context made of the bound variables of !e! when !e! is in ANF.
+TODO: need to explain that return values produce some kind of ANF and introduce new vars.
 
 \input{figures/source_to_unf}
 
 The transformation from the target UNF to the target language is presented in Figure~\ref{fig:unf_to_target}.
 
 \input{figures/unf_to_target}
+
