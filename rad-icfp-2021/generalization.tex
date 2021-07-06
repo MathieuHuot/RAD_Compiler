@@ -34,28 +34,39 @@ Second, we will need a more general !scanl! which allows !(x,y.e)! as a function
 In other words, we need the general scan left computing the intermediate values of a fold left.
 This should be a different primitive but we will still call it !scanl! in this section.
 
-Finally, the former point implies we need a few more array manipulations. 
-We write !c::[v1,$\ldots$,vn]! to be the array ![c,v1,$\ldots$,vn]!. 
-Given an array ![v1,$\ldots$,vn]! of size $n>0$, we write !let x,A=[v1,$\ldots$,vn]! to mean 
-that !x=v1! and !A=[v2,$\ldots$,vn]!. The reverse derivative of fold left is then
+Finally, the former point implies we need a few more array manipulations.
+These can be elegantly dealt with by changing the semantics of !scanl! and !scanr!. 
+Let's assume that they now return a pair of an array of size $n$ 
+of the intermediate computations and the final result.
+The reverse derivative of fold left is then
 
-TODO: reduce recomputed after scanl can be fixed here, explain let v,B notation somewhere
 \begin{center}
 \begin{tabular}{r c l}
-    $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !foldl (x,y.e1) e2 e3!) &=&
-            !let v,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
-            && !let A,Y2 = !$\directD{\rho}{\Gamma,v}{Y1}$!(e3) in! \\
-            && !let A0 = (scanl (x,y.e1) v A)[1..n] in! \\
-            && !let A1 = map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x,b/y]) A0 A! \\
-            && !let A2 = map2 (a,b.(!$\grad_{\{y\}}$!)e1[a/x,b/y]) A0 A! \\
-            && !let A3 = scanr * 1 A1! \\
-            && !<reduce (x,y.e1) v A, fun (x1,$\ldots$,xn,z) ->! \\
-            && !let y1,B = map2 (x,y. x*y*z) (1::A2) A3 in! \\
-            && !Y2(x1,$\ldots$,xn,y1,B)>! \\
+    $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !foldl (x,y.e$_1$) e$_2$ e$_3$!) &=&
+            !let v,Y$_1$ = $\directD{\rho}{\Gamma}{Y}$(e$_2$) in! \\
+            && !let A,Y$_2$ = $\directD{\rho}{\Gamma,v}{Y_1}$(e$_3$) in! \\
+            && !let A$_0$,r$_1$ = (scanl (x,y.e$_1$) v A) in! \\
+            && !let A$_1$ = map2 (a,b.(!$\grad_{\{x\}}$!e$_1$)[a/x,b/y]) A$_0$ A! \\
+            && !let A$_2$ = map2 (a,b.(!$\grad_{\{y\}}$!)e$_1$[a/x,b/y]) A$_0$ A! \\
+            && !let r$_2$, A$_3$ = scanr * 1 A$_1$! \\
+            && !<r$_1$, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
+            && !let y$_1$,B = r$_2$*z ,map2 (x,y. x*y*z) A$_2$ A$_3$ in! \\
+            && !Y$_2$(x$_1$,$\ldots$,x$_n$,y$_1$,B)>! \\
 \end{tabular}
 \end{center}
 
-TODO: other examples/recipe
+Another useful example is !map!, which is very similar to !map2!.
+
+\begin{center}
+    \begin{tabular}{r c l}
+        $\directD{\rho}{\Gamma}{Y}$(!map (x.e$_{1}$) e$_{2}$!) &=&  
+            !let A,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{2}$) in! \\
+            && !let G=!$\grad_{\Gamma}$!e$_{1}$ in!\\
+            && !<map (x.e$_{1}$) A, fun (x$_{1}$,$\ldots$,x$_n$,Z) -> !\\
+            && !Y$_{1}$( (x$_{1}$,$\ldots$,x$_n$)!$\widehat{+}$!(G*(reduce + 0 Z)),!\\
+            && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x]*b) A Z )>!\\
+    \end{tabular}
+\end{center}
 
 \subsection{Adding more scalar operators} % (fold)
 \label{sub:Adding more scalar operators}
