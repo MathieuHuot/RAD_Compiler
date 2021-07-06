@@ -1,21 +1,22 @@
 \begin{figure*}[t]
     \begin{tabular}{r c l}
-    $\invUNFSymbol$(!var!$_{\Gamma;i}$) &=& $x_i$: !Ti! \\
-    && if $x_i$: !Ti! is the $i$-th element of the context $\Gamma$ \\
-    $\invUNFSymbol$(!op!$_{\Gamma;n}$) &=& !op!$_n(y_k,\ldots,y_{k+n})$ \\
-    && where $(y_k\ldots y_{k+n})$ are the last $n$ variables of $\Gamma$ \\ 
-    $\invUNFSymbol$(!e1!$\comp$!e2!) &=& !let x,Y = !$\invUNFSymbol$(!e1!) !in! $\invUNFSymbol$(!e2!) \\ 
-    && TODO: \\ 
-    $\invUNFSymbol$(!map2!$_{\Gamma;x,y.e}$) &=& !map2 (x,y.e) X1 X2! \\ 
-    $\invUNFSymbol$(!reduce!$_{\Gamma;x,y.e1;e2}$) &=& !reduce (x,y.e) z X! \\ 
-    $\invUNFSymbol$(!< e1, e2>!) &=& <$\invUNFSymbol$(!e1!), $\invUNFSymbol$(!e2!)> \\
-    $\invUNFSymbol$(!e1!$\pcomp$!e2!) &=& TODO \\
-    $\invUNFSymbol$(!e1!$\icomp$!e2!) &=& \\
-    $\invUNFSymbol$(!proj!) &=& \\
-    $\invUNFSymbol$(!pair!) &=& \\
+    $\invUNFSymbol$(!var!$_{\Gamma;i}$) &=& !x$_i$: Ti! \\
+    && where !x$_i$! is the $i$-th element in the context $\Gamma$ \\
+    $\invUNFSymbol$(!op!$_{\Gamma;n}$) &=& !op$_n$(x$_k$,$\ldots$,x$_{k+n}$)! \\
+    && where !(x$_k$,$\ldots$,x$_{k+n}$)! are the last $n$ variables of $\Gamma$ \\ 
+    $\invUNFSymbol$(!e$_1$ $\comp$ e$_2$!) &=& !let x=$\invUNFSymbol$(e$_1$) in $\invUNFSymbol$(e$_2$)! where !$\Gamma$,x:A $\vdash$ e$_2$:$\Gamma$,A,B! \\ 
+    $\invUNFSymbol$(!map2!$_{\Gamma;x,y.e}$) &=& !map2 (x,y.e) X$_1$ X$_2$! where !$\Gamma$,X$_1$,X$_2$ $\vdash$ map2$_{\Gamma;x,y.e}$! \\
+    $\invUNFSymbol$(!reduce!$_{\Gamma;x,y.e_1;e_2}$) &=& !reduce (x,y.e$_1$) $e_2$ X! where !$\Gamma$,X $\vdash$ reduce$_{\Gamma;x,y.e_1;e_2}$! \\ 
+    $\invUNFSymbol$(!< e$_1$, e$_2$>!) &=& !<$\invUNFSymbol$(e$_1$), $\invUNFSymbol$(e$_2$)>! \\
+    $\invUNFSymbol$(!e$_1$!$\pcomp$!e$_2$!) &=& !let x=$\invUNFSymbol$(e$_1$) in $\invUNFSymbol$(e$_2$)! TODO: not sure \\
+    $\invUNFSymbol$(!e1!$\icomp$!e2!) &=& TODO: \\
+    $\invUNFSymbol$(!proj!) &=& TODO \\
+    $\invUNFSymbol$(!pair!) &=& TODO \\
     $\invUNFSymbol$(!J!$^T$!var!$_{\Gamma;i}$) &=& !(x1,$\ldots$,x(i-i),xi+z,x(i+1),$\ldots$,xm)! \\
     $\invUNFSymbol$(!J!$^T$!op!$_{\Gamma;n}$) &=& $(x_1',\ldots,'x_{m-n},x_{m-n+1}+\partial_1op_n*z,\ldots,xm+\partial_nop_n*z)$ \\
     && where $\partial_iop_n$ is the $i$-th partial derivative of $op_n$ \\
+    $\invUNFSymbol$(!J!$^T$!proj!) &=& TODO \\
+    $\invUNFSymbol$(!J!$^T$!pair!) &=& TODO \\
     $\invUNFSymbol$(!J!$^T$!map2!$_{\Gamma;x,y.e}$) &=&  Y((x1,$\ldots$,xm)+$\nabla_{\Gamma}e *$(!reduce! + 0 Z),\\
     && !map2 (fun (a,b) -> a+!$\nabla_{\{x1\}}e *$!b) X1' Z'!, \\
     && !map2 (fun (a,b) -> a+!$\nabla_{\{x2\}}e *$!b) X2' Z'!) \\

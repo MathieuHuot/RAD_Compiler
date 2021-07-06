@@ -156,8 +156,9 @@ $\transto$ \\
 TODO: finish explanation
 
 \begin{example}
-    After forward substitution and inlining the inner !Y!$_{i}$, the gradient of the terms from the introduction reduces to
+    After forward-substitution and inlining the inner !Y!$_{i}$, the gradient of the terms from the introduction reduces to
 
+    TODO: bit wrong, should introduce more let binding
     \begin{tabular}{c l}
         & $\grad_\Gamma$(!let w$_{1}$ = x$_{1}$ * x$_{2}$ in let w$_{2}$ = w$_{1}$ * x$_{1}$ in w$_{2}$!) \\
         =& !let w$_1$,Y$_1$= <x$_1$ * x$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y(y$_{1}$+x$_2$*z,y$_{2}$+x$_1$*z,y$_{3}$) > in! \\
