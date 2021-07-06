@@ -35,28 +35,34 @@ More precisely, there should be a constant $K$ such that for each program !$\Gam
 
 As $\directD{\rho}{\Gamma}{Y}$ is defined by induction on programs, it suffices to show locally 
 that $\directD{\rho}{\Gamma}{Y}$ verifies the cheap gradient principle. 
-However, this is not quite the case with $\directD{\rho}{\Gamma}{Y}$ 
-before the optimization (inlining and forward substitution) step from Section~\ref{sub:Partial evaluation and optimization}.
 
-\begin{proposition}
-    $\cost(\directD{\rho}{\Gamma}{Y}($!e!$))\leq$ $K\cost$(!e!) + O((0,0,0,n*|!e!|)) 
-\end{proposition}
+There is a first restriction that prevents our transformation from satisfying the cheap gradient principle.
+If we try to show that the cheap gradient principle holds by induction on the term, it fails on the !map2!.
+When differentiating !map2!, there are two series of calls to (sub)gradients of !e$_1$!. 
+The induction hypothesis is then too weak to conclude. 
+The problem comes from the fact that !e$_1$! could itself use !map2!. 
+So the constant $K$ can be independant of $n$ and of 
+the size of the term if we allow it to be dependent on the level of nestings of !map2!.
+A similar phenomenon happens with !reduce!.
 
-\begin{proof}
-    TODO: routinely by induction and inspection. be specific with K? 
-    One problem still is for map and reduce because they call twice the gradient of !e$_1$!.
-\end{proof}
-
-As we can see, the only problem is that too many variables are being moved, and this is
-due to the continuation carrying and copying $n$ variables at each step.
+Another problem is that the continuation part of $\directD{\rho}{\Gamma}{Y}$ adds $O(n)$ MOVES at each step.
 This overhead is precisely what that our inlining and forward substitution removes, 
-as was examplified in Section~\ref{sub:Partial evaluation and optimization}.
+as was exemplified in Section~\ref{sub:Partial evaluation and optimization}.
 
-Combining the two previous points, we conclude that our reverse mode transformation satisfies the cheap gradient principle.
+Combining the two previous points, we conclude that our reverse mode transformation satisfies a version of the cheap gradient principle.
 
 \begin{theorem}
-    TODO: The reverse mode transformation satisfies the cheap gradient principle.
+    Given a term !$\Gamma \vdash$ e: $\reals$! in Source with at most $p$ nested !map2! or !reduce!. 
+    Denote by $G$ the term $\grad_\Gamma$!e! after inlining and forward substitution.
+    Then !$\cost$(G) $\leq$ $4*2^{p}*\cost$(e)!.
 \end{theorem}
+
+\begin{proof}[notes]
+    The proof is by routine induction on !e!. 
+    First, one computes the cost of $\directD{\rho}{\Gamma}{Y}$(!e!).
+    It has $N$ too many MOVES which are removed by inlining and forward substitution using the invariant that at each step, 
+    at most 2 !x!$_i$ in the continuation are not variables.
+\end{proof}
 
 \subsection{Optimizations} % (fold)
 \label{sub:Optimizations}
