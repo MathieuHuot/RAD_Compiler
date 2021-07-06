@@ -85,23 +85,28 @@ The second part returns the continuation term pre-composed by the transpose Jaco
 \subsection{transformations to and from UNF} % (fold)
 \label{sub:transformations to and from UNF}
 
-We give a translation from our Source to Source UNF in Figure~\ref{fig:source_to_unf}.
+We first give a translation from our Source to Source UNF in Figure~\ref{fig:source_to_unf}, which we call $\UNFSymbol$.
+As discussed above, $\UNFSymbol$ sends a constant or an operator to a primitive in Source UNF. 
+This term in Source UNF carries the context of the original term in Source.
+$\UNFSymbol$ sequentializes a term, mimicking a left-to-right call-by-value evaluation.
+Because of this, we we're trying to return a pair, this needs to be witnessed, and this is the role of !pair!.
+!e!$_{1} \pcomp$ !e!$_{2}$  is used to pass the result !e!$_{1}$ which is at the last position in the tuple through !e!$_{2}$.
+It required when the coming operator represents a non-unary primitive such as $+$ or !pair!.
+We want to preserve the invariant that $\UNFSymbol$(!e!) represents the term !e! which is also returning its context. 
+Because !x! is not free in $\Gamma \vdash$ !let x=e$_1$in e$_2$!, we need to hide !x! after $\UNFSymbol$(!e$_2$!).
+This explain the projection !proj! in $\UNFSymbol$ of a !let!. 
+More generally, in !e!$_{1} \comp$ !e!$_{2}$ the return value of !e!$_{1}$ acts as a new variable for !e!$_{2}$, 
+is not in the context of !e!$_{1}$, but will be returned by !e!$_{2}$.
+This means we need to hide all these intermediate values to preserve the invariant,
+and this explains the projection !proj! in the $\UNFSymbol$ of other terms. 
 
-TODO:redo
-
-UNF acts as a sort of stack. 
-The input represents the current stage of the stack, and we return the new value added to the stack.
-All results are kept, so the stack keeps growing. One might be surprised that the transformation for pairs and let is similar.
-The order of UNF really follows what the trace of doing a sequential call-by-value evaluation would look like if the return value does not matter.
-In other words, when evaluating !let x= e1 in e2! in call by value, we first evaluate !e1! and then !e2!. 
-Similarly in !<e1, e2>!, we evaluate !e1! and then !e2!. 
-Our ultimate goal is to return a gradient, not the original term, so what really matters is the order of evaluation, and what is evaluated.
-
-TODO: need to explain that return values produce some kind of ANF and introduce new vars.
+TODO: we could merge everything of the form op;proj into just op by changing the type of op.
 
 \input{figures/source_to_unf}
 
-The transformation from the target UNF to the target language is presented in Figure~\ref{fig:unf_to_target}.
+Next, the transformation from Target UNF to Target is presented in Figure~\ref{fig:unf_to_target}. 
+We call this transformation $\UNFSymbol^{-1}$, but it is not a strict inverse of $\UNFSymbol$.
+Doing $\UNFSymbol$ followed by $\UNFSymbol^{-1}$ performs some kind of ANF. 
+TODO: finish 
 
 \input{figures/unf_to_target}
-

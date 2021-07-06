@@ -8,25 +8,24 @@
     $\invUNFSymbol$(!map2!$_{\Gamma;x,y.e}$) &=& !map2 (x,y.e) X$_1$ X$_2$! where !$\Gamma$,X$_1$,X$_2$ $\vdash$ map2$_{\Gamma;x,y.e}$! \\
     $\invUNFSymbol$(!reduce!$_{\Gamma;x,y.e_1;e_2}$) &=& !reduce (x,y.e$_1$) $e_2$ X! where !$\Gamma$,X $\vdash$ reduce$_{\Gamma;x,y.e_1;e_2}$! \\ 
     $\invUNFSymbol$(!< e$_1$, e$_2$>!) &=& !<$\invUNFSymbol$(e$_1$), $\invUNFSymbol$(e$_2$)>! \\
-    $\invUNFSymbol$(!e$_1$!$\pcomp$!e$_2$!) &=& !let x=$\invUNFSymbol$(e$_1$) in $\invUNFSymbol$(e$_2$)! TODO: not sure \\
-    $\invUNFSymbol$(!e1!$\icomp$!e2!) &=& TODO: \\
-    $\invUNFSymbol$(!proj!) &=& TODO \\
-    $\invUNFSymbol$(!pair!) &=& TODO \\
-    $\invUNFSymbol$(!J!$^T$!var!$_{\Gamma;i}$) &=& !(x1,$\ldots$,x(i-i),xi+z,x(i+1),$\ldots$,xm)! \\
-    $\invUNFSymbol$(!J!$^T$!op!$_{\Gamma;n}$) &=& $(x_1',\ldots,'x_{m-n},x_{m-n+1}+\partial_1op_n*z,\ldots,xm+\partial_nop_n*z)$ \\
-    && where $\partial_iop_n$ is the $i$-th partial derivative of $op_n$ \\
-    $\invUNFSymbol$(!J!$^T$!proj!) &=& TODO \\
-    $\invUNFSymbol$(!J!$^T$!pair!) &=& TODO \\
-    $\invUNFSymbol$(!J!$^T$!map2!$_{\Gamma;x,y.e}$) &=&  Y((x1,$\ldots$,xm)+$\nabla_{\Gamma}e *$(!reduce! + 0 Z),\\
-    && !map2 (fun (a,b) -> a+!$\nabla_{\{x1\}}e *$!b) X1' Z'!, \\
-    && !map2 (fun (a,b) -> a+!$\nabla_{\{x2\}}e *$!b) X2' Z'!) \\
-    && where $X1'$, $X2'$ are the tangent arrays for the two arrays arguments \\
-    && of !map2! and $Z$ the tangent part for the return array of !map2! \\
-    $\invUNFSymbol$(!J!$^T$!reduce!$_{\Gamma;x,y.e1;e2}$) &=& !let A = scanl (fun (x,y) -> e1) e2 e3 in! \\
-    && !let B = map2 (fun (x,y) ->! $\nabla_{\{x1\}}$!e1(x,y)) A e3 in!\\
-    && !let C = map2 (fun (x,y) ->! $\nabla_{\{x2\}}$!e1(x,y)) A e3) in!\\
-    && !let D = scanr (fun (x,y) -> x*y) 1 B in!\\
-    && Y(x1,$\ldots$,xm, !map3 (fun (a,b,c) -> a+b*c*z) X' D C!)
+    $\invUNFSymbol$(!e$_1$!$\pcomp$!e$_2$!) &=& !let x=$\invUNFSymbol$(e$_1$) in $\invUNFSymbol$(e$_2$)! \\
+    $\invUNFSymbol$(!proj!$_{T_1;T_2;T_3}$) &=& !(y$_{1}$,$\ldots$,y$_{k}$)! where the !y!$_{i}$ are the variables of $T_3$ \\
+    $\invUNFSymbol$(!pair!$_{T;A\times B}$) &=& !<x,y>! where !x!,!y! are the last two variables of !T! \\
+    $\invUNFSymbol$(!e1!$\icomp$!e2!) &=& !fun (y$_1$,$\ldots$,y$_n$) -> $\invUNFSymbol$(e$_1$)($\invUNFSymbol$(e$_1$))! \\
+    $\invUNFSymbol$(!J!$^T$!var!$_{\Gamma;i}$) &=& !(x$_1$,$\ldots$,x$_{i-i}$,x$_i$+z,x$_{i+1}$,$\ldots$,x$_{n-1}$)! \\
+    $\invUNFSymbol$(!J!$^T$!op!$_{\Gamma;n}$) &=& !(x$_1$,$\ldots$,x$_{m-n}$,x$_{m-n+1}$+$\partial_1$op$_n$*z,$\ldots$,x$_m$+$\partial_n$op$_n$*z)! \\
+    && where !$\partial_i$op$_n$! is the $i$-th partial derivative of !op$_n$! \\
+    $\invUNFSymbol$(!J!$^T$!proj!$_{T_1;T_2;T_3}$) &=& !(x$_1$,$\ldots$,x$_k$,0,$\ldots$,0,y$_1$,$\ldots$,y$_p$)! \\
+    $\invUNFSymbol$(!J!$^T$!pair!$_{T;A\times B}$) &=& !(x$_1$,$\ldots$,x$_{n-1}$,$\pi_1$x$_n$,$\pi_2$x$_n$)! \\
+    $\invUNFSymbol$(!J!$^T$!map2!$_{\Gamma;x,y.e}$) &=& !let G=!$\grad_{\Gamma}$!e$_{1}$ in!\\
+    && !((x$_{1}$,$\ldots$,x$_n$)!$\widehat{+}$!(G*(reduce + 0 Z)),!\\
+    && ! map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x]*b) A Z,!\\
+    && ! map2 (a,b.(!$\grad_{\{y\}}$!e$_{1}$)[a/x]*b) B Z )!\\
+    $\invUNFSymbol$(!J!$^T$!reduce!$_{\Gamma;x,y.e1;e2}$) &=& !let A$_{0}$ = shift1R (scanl (x,y.e$_{1}$) y$_{1}$ A) in! \\
+    && !let A$_{1}$ = shift1L (map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ A) in! \\
+    && !let A$_{2}$ = map2 (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ A in! \\
+    && !let A$_{3}$ = scanr * 1 A$_{1}$ in! \\
+    && !(x$_{1}$,$\ldots$,x$_n$, map2 (x,y. x*y*z) A$_{2}$ A$_{3}$)! \\
     \end{tabular}
     \caption{UNF transformation from Target UNF to Target}
     \label{fig:unf_to_target}
