@@ -1,12 +1,15 @@
 \section{Complexity analysis}
 \label{sec:complexity}
 
+In this section, we introduce a simple cost model on our language and show 
+that our reverse-mode transformation satisfies a version of the cheap gradient principle (Theorem \ref{thm:complexity}).
+
 \subsection{Cost model}
 \label{sub:costModel}
 
 We follow a simple model similar to the one in \cite{griewank2008evaluating}.
 We assume the cost is divided into $4$ elementary measures, being the number of MOVES, ADDS, MULTS, and NLOPS.
-MOVES assumes a flat memory and represents moving a fixed size information  (e.g. 64 bits). 
+MOVES assumes a flat memory and represents moving fixed-size information (e.g. 64 bits). 
 ADDS represents the number of additions, 
 MULTS the number of multiplications, 
 and NLOPS the number of elementary non-linear operations like !cos! or !exp!.
@@ -27,13 +30,36 @@ TODO: for let binding and same in map, do I need to add some MOVES?
 
 \subsection{Cheap gradient principle}
 
+We define the nesting of array operations $\NestA$ of a term !e! of Source by induction as follows.
+
+\begin{tabular}{r c l}
+    $\NestA$(!c!) &=& 0 \\
+    $\NestA$(!x!) &=& 0 \\
+    $\NestA$(!let x:A = e$_1$ in e$_2$:B!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!)  \\ 
+    $\NestA$(!< e$_1$, e$_2$ >:AxB!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!) \\ 
+    $\NestA$($\pi_i$(!e!)) &=& $\NestA$(!e!)\\
+    $\NestA$(!e$_1$ op2 e$_2$!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!)\\
+    $\NestA$(!op1 e!) &=& $\NestA$(!e!) \\
+    $\NestA$(!map2 (x,y.e$_1$) e$_2$ e$_3$!) &=& max 1+$\NestA$(!e$_1$!),$\NestA$(!e$_2$!),$\NestA$(!e$_3$!) \\
+    $\NestA$($\Gamma\vdash $ !reduce (x,y.e$_1$) e$_2$ e$_3$!) &=& max 1+$\NestA$(!e$_1$!),$\NestA$(!e$_2$!),$\NestA$(!e$_3$!) \\
+\end{tabular}
+
+\begin{theorem}
+    \label{thm:complexity}
+    Given a term !$\Gamma \vdash$ e: $\reals$! such that $\NestA$(!e!)$\leq$ $p$.
+    Denote by $G$ the term $\grad_\Gamma$!e! after inlining and forward substitution.
+    TODO: be more precise with "inlining and forward substitution".
+    Then !$\cost$(G) $\leq$ $4*2^{p}*\cost$(e)!.
+\end{theorem}
+
 The cheap gradient principle (see e.g. \cite{griewank2008evaluating}) for reverse-mode
 asserts that evaluating the gradient of a function $e:\RR^n\to\RR$ 
 should be the same order of cost as evaluating $e$. 
 More precisely, there should be a constant $K$ such that for each program !$\Gamma \vdash$ e: $\reals$! in the context $\Gamma=\{x_1:\reals,\ldots,x_n:\reals\}$,
  !$\cost$($\grad$e) $\leq$ $K$*$\cost$(e)!.
 
-As $\directD{\rho}{\Gamma}{Y}$ is defined by induction on programs, it suffices to show locally 
+\begin{proof}[Notes]
+    As $\directD{\rho}{\Gamma}{Y}$ is defined by induction on programs, it suffices to show locally 
 that $\directD{\rho}{\Gamma}{Y}$ verifies the cheap gradient principle. 
 
 There is a first restriction that prevents our transformation from satisfying the cheap gradient principle.
@@ -47,31 +73,22 @@ A similar phenomenon happens with !reduce!.
 
 Another problem is that the continuation part of $\directD{\rho}{\Gamma}{Y}$ adds $O(n)$ MOVES at each step.
 This overhead is precisely what that our inlining and forward substitution removes, 
-as was exemplified in Section~\ref{sub:Partial evaluation and optimization}.
+as was exemplified in Section~\ref{sub:Partial evaluation and optimization}. 
 
-Combining the two previous points, we conclude that our reverse mode transformation satisfies a version of the cheap gradient principle.
-
-\begin{theorem}
-    Given a term !$\Gamma \vdash$ e: $\reals$! in Source with at most $p$ nested !map2! or !reduce!. 
-    Denote by $G$ the term $\grad_\Gamma$!e! after inlining and forward substitution.
-    Then !$\cost$(G) $\leq$ $4*2^{p}*\cost$(e)!.
-\end{theorem}
-
-\begin{proof}[notes]
-    The proof is by routine induction on !e!. 
-    First, one computes the cost of $\directD{\rho}{\Gamma}{Y}$(!e!).
-    It has $N$ too many MOVES which are removed by inlining and forward substitution using the invariant that at each step, 
-    at most 2 !x!$_i$ in the continuation are not variables.
+After that, the proof is by routine induction on !e!. 
+First, one computes the cost of $\directD{\rho}{\Gamma}{Y}$(!e!).
+It has $N$ too many MOVES which are removed by inlining and forward substitution using the invariant that at each step, 
+at most 2 !x!$_i$ in the continuation are not variables.
 \end{proof}
 
 \subsection{Optimizations} % (fold)
 \label{sub:Optimizations}
 
 In Figure~\ref{fig:optim} we present a of optimizations. 
-As our language is purely functional and effect free, 
-we can use these optimizations aggressively. 
+These optimizations are all obviously valid according to the semantic model. 
+As our language is purely functional, we can use these extra optimizations aggressively. 
 A lot of simplifications come from the ring structure of the reals, lifted to tuples and arrays.
-After these optimizations, the output program is essentially a sequence of let bindings 
+After these optimizations, the output program is essentially a sequence of let-binding
 and resembles SSA-code.
 
 \input{figures/optims}
