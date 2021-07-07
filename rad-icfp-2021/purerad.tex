@@ -13,17 +13,19 @@ See Section~\ref{sec:generalization}.
 \input{figures/source_grammar}
 
 The typing rules are given in Figure~\ref{fig:source_typesystem}. 
-For scalar operations, we assume given a set of operations, including $+$ and $*$. 
+For scalar operations, we assume a given set of operations, including $+$ and $*$. 
 !op1! and !op2! denote respectively a unary and a binary operation on reals. 
 These operations represent smooth total functions, 
 but again this can be easily generalized (\S\ref{sec:generalization}).  
 Typical examples include !cos, exp, +, *!. 
 We use infix notation for binary operators.
 
-!reduce! is a fold left operator for which the function is assumed to be associative, 
+The !reduce! operator is a fold-left operator for which the function is assumed to be associative, 
 and the provided initial value should be a unit of the binary operation.
-It is a well-known parallel friendly construct. For the sake of simplicity in the presentation, the bound function in !reduce! 
-is restricted to having no free variables. For the same reason, we currently restrict to arrays of reals.
+It is a well-known parallel friendly construct. 
+For the sake of simplicity in the presentation, the bound function in !reduce! 
+is restricted to having no free variables. Furthermore, as our main focus is on AD and not array processing,
+we currently restrict to arrays of reals.
 We show how to lift these restrictions in Section~\ref{sec:generalization}.
 
 \input{figures/source_type_system}
@@ -34,7 +36,7 @@ The target language of our source-code transformation is an extension to the sou
 It is a higher-order language, as our purely functional reverse-mode introduces a continuation.
 The set of scalar operations should also be closed under partial differentiation. 
 In more detail, for every unary scalar operation !op1!, 
-we assumed given an operator $\partial_1$!op1! whose semantics should be the derivative of !op1!.
+we assumed a given operator $\partial_1$!op1! whose semantics should be the derivative of !op1!.
 For every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2! 
 respectively representing the first and second partial derivative of !op2!.
 
@@ -66,6 +68,34 @@ In Figure~\ref{fig:direct_diff_macro} we present our direct transformation from 
 We explain in the next Section (\ref{sub:Partial evaluation and optimization}) how to optimize it further and compute the gradient.
 Admittedly, this transformation may be hard to read, and it is not straightforward to show its correctness directly. 
 In Section~\ref{sec:unf} we decompose this transformation into three simpler steps via a novel intermediate representation (UNF).
+
+\input{figures/notation}
+
+\begin{notation}
+We now introduce several notations which are useful when defining the transformation for reverse-mode in Figure~\ref{tbl:notation:one}.
+Ground types are defined inductively by 
+$$G::= \RR \mid G\times \ldots \times G \mid A[G]$$
+
+$(\RR,+,\underline{0})$ forms a monoid and this monoid structure extends canonically 
+to a monoid structure $(G,\widehat{+},0_G)$ for every ground type $G$. 
+It is defined inductively on $G$ as follows
+
+\begin{tabular}{l c l}
+    $0_\RR$  & $\defeq$ & $\underline{0}$ \\
+    $0_{G_1\times \ldots \times G_n}$ & $\defeq$ &  $< O_{G_1},\ldots, 0_{G_n} >$ \\
+    $0_{\Array{\reals}{n}}$& $\defeq$ & !ZerosLike(n)! \\
+    $a\widehat{+}_\RR b$ & $\defeq$ & $ a+b$ \\
+    $(a_1,\ldots,a_n)\widehat{+}_{G_1\times\ldots\times G_n}(b_1,\ldots,b_n)$ & $\defeq$ & $(a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n)$ \\
+    $A\widehat{+}_{A[\RR]}B $ & $\defeq$ & !map2! + $A$ $B$ 
+\end{tabular}
+
+A ground context is a context only containing variables of ground type.
+The previous monoid structure again extends canonically on ground contexts $\Gamma$ by defining
+$0_{x1:G1,\ldots,x_n:G_n}\defeq 0_{G_1},\ldots,0_{G_n}$ and 
+$a_1,\ldots,a_n\widehat{+}_{x1:G_1,\ldots, x_n:G_n}b_1,\ldots,b_n\defeq a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n$.
+
+\end{notation}
+
 
 \begin{example}
     The reverse-mode transformation of the terms from the introduction are given by
@@ -104,10 +134,6 @@ which is locally augmented, for instance when differentiating a !let! rule.
 For non-unary operations, we differentiate the arguments from the left to the right and add their derivatives to the current stack, 
 which is modeled by the continuation $Y$. 
 Importantly for performance, each continuation variable $Y$ is only used once.
-
-We now introduce several notations which are useful when defining the transformation for reverse-mode.
-
-\input{figures/notation_D}
 
 We have the following typing lemma for $\directD{\rho}{\Gamma}{Y}$.
 \begin{lemma}[Typing $\directD{\rho}{\Gamma}{Y}$]
