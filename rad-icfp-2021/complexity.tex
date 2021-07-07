@@ -64,6 +64,8 @@ Combining the two previous points, we conclude that our reverse mode transformat
     at most 2 !x!$_i$ in the continuation are not variables.
 \end{proof}
 
+\input{figures/optims}
+
 \subsection{Optimizations} % (fold)
 \label{sub:Optimizations}
 
@@ -73,5 +75,3 @@ we can use these optimizations aggressively.
 A lot of simplifications come from the ring structure of the reals, lifted to tuples and arrays.
 After these optimizations, the output program is essentially a sequence of let bindings 
 and resembles SSA-code.
-
-\input{figures/optims}

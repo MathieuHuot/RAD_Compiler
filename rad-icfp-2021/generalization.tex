@@ -1,30 +1,41 @@
 \section{Beyond the Source language}
 \label{sec:generalization}
+In this section, we generalize our language by relaxing the imposed restrictions.
+First, we allow free variables for the function argument of !reduce! in Section~\ref{sub:lift_reduce}. 
+Then we show how to support more array operations (Section~\ref{sub:lift_more_arr_op}), conditionals (Section~\ref{sub:lift_conditional}), and non-smooth scalar operators (Section~\ref{sub:lift_non_smooth}).
+Finally, we extend the language to support general arrays instead of supporting only $\Array{\reals}{n}$ in Section~\ref{sub:lift_gen_arr}.
 
 \subsection{Lifting the restriction on reduce}
-\label{sub:Lifting the restriction on reduce}
+\label{sub:lift_reduce}
 
 Assume we allow $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e!: $\reals$ to be the function argument in
 !reduce (x,y.e) v A!. We need to add a term depending on $\grad_{\{xi\}}e$ to !yi! in the continuation.
-Writing the derivative becomes quite cumbersome, the notation is more compact using arrays of tuples. 
-Similarly to he monoid $\widehat{+},0_\Gamma$ defined in Section~\ref{sub:Macro for pure reverse mode transformation},
-we use $\widehat{\times},1_\Gamma$ for obvious extension of the monoid $(\reals,\times,1)$.
+As writing the derivative becomes quite cumbersome, we use a more compact notation using arrays of tuples. 
+Similarly to the monoid $\widehat{+},0_\Gamma$ defined in Section~\ref{sub:Macro for pure reverse mode transformation},
+we use $\widehat{\times},1_\Gamma$ for obvious extension of the monoid $(\reals,\times,1)$. The modified reverse-mode transformation is shown in Figure~\ref{fig:lift_reduce}.
 
 We can now compute the reverse-mode transformation as follows.
-\begin{center}
-\begin{tabular}{r c l}
+
+\begin{figure}
+
+\begin{small}
+\begin{tabular}{|r c l|}
+\hline
 $\directD{\rho}{\Gamma}{Y}$(!reduce (x,y.e1) e$_2$ e$_3$!) 
-&=& $\ldots$ as before up until !A_$3$! \\
-&& !let B$_0$ = map2 (a,b ->(!$\grad_\Gamma$!e)[a/x,b/y] A$_0$ A) in!\\
-&& !in let B$_1$ = scanr $1_\Gamma$ $\widehat{\times}$ B$_0$ in! \\
-&& !let B$_2$ = reduce $\widehat{+}$ $0_\Gamma$ B$_1$ in! \\
+&=& $\ldots$ same as Figure~\ref{fig:direct_diff_macro} up until !A_$3$! \\
+&& !let B$_0$=map2 (a,b ->(!$\grad_\Gamma$!e)[a/x,b/y] A$_0$ A) in!\\
+&& !let B$_1$=scanr $1_\Gamma$ $\widehat{\times}$ B$_0$ in! \\
+&& !let B$_2$=reduce $\widehat{+}$ $0_\Gamma$ B$_1$ in! \\
 && !<reduce (x,y.e1) y$_1$ A, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
-&& !Y((x$_1$,$\ldots$,x$_n$)$\widehat{+}$B$_2$,0,map2 (a,b. a*b*z) A$_2$ A$_3$)!
+&& !Y((x$_1$,$\ldots$,x$_n$)$\widehat{+}$B$_2$,0,map2 (a,b. a*b*z) A$_2$ A$_3$)! \\ \hline
 \end{tabular}
-\end{center}
+\end{small}
+\caption{The reverse-mode AD transformation of \codekw{reduce} without restrictions on its function argument.}
+\label{fig:lift_reduce}
+\end{figure}
 
 \subsection{More array operators}
-\label{sub:Adding more array operators}
+\label{sub:lift_more_arr_op}
 
 There are two main differences with fold left !foldl! compared to !reduce!. 
 First, in !foldl (x,y.e) v A! the starting accumulation element !v! is not a unit for !(x,y.e)!,
@@ -37,10 +48,13 @@ Finally, the former point implies we need a few more array manipulations.
 These can be elegantly dealt with by changing the semantics of !scanl! and !scanr!. 
 Let's assume that they now return a pair of an array of size $n$ 
 of the intermediate computations and the final result.
-The reverse derivative of fold left is then
+The reverse derivative of !foldl! is then as shown in Figure~\ref{fig:foldl_map_trans}.
+In this figure, we have shown the translation of the !map! operator as well, which is very similar to !map2!.
 
+\begin{figure}
 \begin{center}
-\begin{tabular}{r c l}
+\begin{tabular}{|r c l|}
+\hline
     $\directD{\rho}{\Gamma}{Y}$(!foldl (x,y.e$_1$) e$_2$ e$_3$!) &=&
             !let v,Y$_1$ = $\directD{\rho}{\Gamma}{Y}$(e$_2$) in! \\
             && !let A,Y$_2$ = $\directD{\rho}{\Gamma,v}{Y_1}$(e$_3$) in! \\
@@ -51,38 +65,22 @@ The reverse derivative of fold left is then
             && !<r$_1$, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
             && !let y$_1$,B = r$_2$*z ,map2 (x,y. x*y*z) A$_2$ A$_3$ in! \\
             && !Y$_2$(x$_1$,$\ldots$,x$_n$,y$_1$,B)>! \\
-\end{tabular}
-\end{center}
-
-Another useful example is !map!, which is very similar to !map2!.
-
-\begin{center}
-    \begin{tabular}{r c l}
-        $\directD{\rho}{\Gamma}{Y}$(!map (x.e$_{1}$) e$_{2}$!) &=&  
+    $\directD{\rho}{\Gamma}{Y}$(!map (x.e$_{1}$) e$_{2}$!) &=&  
             !let A,Y$_{1}$ = $\directD{\rho}{\Gamma}{Y}$(e$_{2}$) in! \\
             && !let G=$\grad_{\Gamma}$ e$_{1}$ in!\\
             && !<map (x.e$_{1}$) A, fun (x$_{1}$,$\ldots$,x$_n$,Z) -> !\\
             && !Y$_{1}$( (x$_{1}$,$\ldots$,x$_n$)$\widehat{+}$(G*(reduce + 0 Z)),!\\
-            && \quad\quad !map2 (a,b.($\grad_{\{x\}}$e$_{1}$)[a/x]*b) A Z )>!\\
-    \end{tabular}
+            && \quad\quad !map2 (a,b.($\grad_{\{x\}}$e$_{1}$)[a/x]*b) A Z )>!\\\hline
+\end{tabular}
 \end{center}
-
-\subsection{Non-smooth scalar operators} % (fold)
-\label{sub:Adding more scalar operators}
-
-We assumed the unary and binary operators were denoted by smooth functions $\RR^n\to\RR$. 
-There is no additional difficulty in considering operators which are partial functions 
-like division or operators which are not smooth at a point like square root.
-
-These functions are then given intentional derivatives which provide valid derivatives 
-on the domain of definition and differentiability of the operator. 
-These functions are well known to be the bete noire of AD \cite{griewank2008evaluating} 
-and we do not provide novel solutions to these.  
-Several recent work have shown how to give semantics to such operators in the context of AD \cite{vakar2020denotational,mazza2021automatic,sherman2021,lee2020correctness}.
+\caption{The reverse-mode AD transformation of \codekw{foldl} and \codekw{map} operators.}
+\label{fig:foldl_map_trans}
+\end{figure}
 
 \subsection{Conditionals} % (fold)
-\label{sub:Adding conditionals}
+\label{sub:lift_conditional}
 
+\smartpara{Non-Solution 1}
 Adding conditionals to the source language can be done easily, for instance via defining
 
 \begin{tabular}{r c l}
@@ -91,6 +89,7 @@ $\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) &=& !if e$_1$ then
 
 The problem is that this could break the complexity of reverse mode because of the non-linear usage of $Y$, and makes everything harder to optimize.
 
+\smartpara{Non-Solution 2}
 A slightly better option would be to define 
 
 \begin{tabular}{r c l}
@@ -103,7 +102,9 @@ A slightly better option would be to define
 
 It is slightly better because both derivatives of !e2! and !e3! are put together, and this might unlock some optimizations, 
 but there is still a non-linear usage of the continuation variable !Y!.
-One solution, if we know we want to compute the whole gradient of the expression, is to define instead
+
+\smartpara{Solution}
+If we know we want to compute the whole gradient of the expression, we can define the translation as follows:
 
 \begin{tabular}{r c l}
     $\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) 
@@ -119,8 +120,22 @@ Non smooth functions such as the Rectified Linear Unit (ReLU) in machine learnin
 requires a non smooth primitive such as $>0: \reals\to\BB$. In several AD systems such as TensorFlow, 
 the condition is evaluated before differentiation is applied, and so conditionals are never directly differentiated.
 
+
+\subsection{Non-smooth scalar operators} % (fold)
+\label{sub:lift_non_smooth}
+
+We assumed the unary and binary operators were denoted by smooth functions $\RR^n\to\RR$. 
+There is no additional difficulty in considering operators which are partial functions 
+like division or operators which are not smooth at a point like square root.
+
+These functions are then given intentional derivatives which provide valid derivatives 
+on the domain of definition and differentiability of the operator. 
+These functions are well known to be the bete noire of AD \cite{griewank2008evaluating} 
+and we do not provide novel solutions to these.  
+Several recent work have shown how to give semantics to such operators in the context of AD \cite{vakar2020denotational,mazza2021automatic,sherman2021,lee2020correctness}.
+
 \subsection{General arrays} % (fold)
-\label{sub:Adding general arrays}
+\label{sub:lift_gen_arr}
 
 We now show how to generalize our reverse-mode transformation to be defined on arrays over any ground type $G$.
 That is, we need to adapt the reverse derivatives of !map2! and !reduce! when they have more general function arguments.
@@ -145,10 +160,12 @@ If !e1: A!, then $\grad_{\{x\}}$!e1: $A\otimes A$! and we need a new primitive $
 If we represent $A\otimes A$ as a matrix, then $\widehat{*}$ is matrix-vector multiplication.
 Similarly, for !A$_{3}$! in !reduce! we need a new primitive $\widetilde{*}:(A\otimes A)\times(A\otimes A) \to (A\otimes A)$.
 $\widetilde{*}$ corresponds to matrix-matrix multiplication.
-Then, using this notation, there are only minimal changes to the reverse derivatives of !map2! and !reduce!.
+Then, using this notation, there are only minimal changes to the reverse derivatives of !map2! and !reduce!, as can be seen in Figure~\ref{fig:lift_gen_arr}.
 
+\begin{figure}
 \begin{center}
-\begin{tabular}{r c l}
+\begin{tabular}{|r c l|}
+\hline
     $\directD{\rho}{\Gamma}{Y}$(!map2 (x,y.e$_1$: G) e$_2$ e$_3$!) &=&  
     !let A,Y$_1$ = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
     && !let B,Y$_2$ = !$\directD{\rho}{\Gamma,A}{Y1}$!(e$_3$) in! \\
@@ -157,11 +174,6 @@ Then, using this notation, there are only minimal changes to the reverse derivat
     && !Y$_2$( (x$_1$,$\ldots$,x$_n$)!$\widehat{+}$!(C!$\widehat{*}$!(reduce + 0 Z)),!\\
     && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e$_1$)[a/x]!$\widehat{*}$!b) A Z,!\\
     && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e$_1$)[a/x]!$\widehat{*}$!b) B Z )>!\\
-    \end{tabular}
-    \end{center}
-
-\begin{center}
-\begin{tabular}{r c l}
     $\directD{\rho}{\Gamma}{Y}$(!reduce (x,y.e$_{1}$) e$_{2}$ e$_{3}$!) &=&
     !let y$_{1}$,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{2}$) in! \\
     && !let A,Y$_{2}$ = !$\directD{\rho}{\Gamma,y_1}{Y_1}$!(e$_{3}$) in! \\
@@ -172,9 +184,12 @@ Then, using this notation, there are only minimal changes to the reverse derivat
     && !      (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ A in! \\
     && !let A$_{3}$ = scanr $\widetilde{*}$ 1 A$_{1}$ in! \\
     && !<reduce (x,y.e$_{1}$) y$_{1}$ A, fun (x$_{1}$,$\ldots$,x$_n$,z) ->! \\
-    && !Y$_{2}$(x$_{1}$,$\ldots$,x$_n$, map2 (x,y. x$\widehat{*}$(y$\widehat{*}$z)) A$_{2}$ A$_{3}$>! \\
+    && !Y$_{2}$(x$_{1}$,$\ldots$,x$_n$, map2 (x,y. x$\widehat{*}$(y$\widehat{*}$z)) A$_{2}$ A$_{3}$>! \\ \hline
 \end{tabular}
 \end{center}
+\caption{The reverse-mode AD transformation of \codekw{map2} and \codekw{reduce} for general arrays.}
+\label{fig:lift_gen_arr}
+\end{figure}
 
 Evidently, one can combine all the generalizations from the previous subsections.
 Even though this transformation has the correct complexity, it is open for future research to find
