@@ -30,7 +30,7 @@ TODO: for let binding and same in map, do I need to add some MOVES?
 
 \subsection{Cheap gradient principle}
 
-We define the nesting of array operations $\NestA$ of a term !e! of Source by induction as follows.
+We define the nesting of array operations $\NestA$ of a term !e! of Source by induction on !e! as follows.
 
 \begin{tabular}{r c l}
     $\NestA$(!c!) &=& 0 \\
@@ -77,7 +77,7 @@ as was exemplified in Section~\ref{sub:Partial evaluation and optimization}.
 
 After that, the proof is by routine induction on !e!. 
 First, one computes the cost of $\directD{\rho}{\Gamma}{Y}$(!e!).
-It has $N$ too many MOVES which are removed by inlining and forward substitution using the invariant that at each step, 
+It has $n$ too many MOVES which are removed by inlining and forward substitution using the invariant that at each step, 
 at most 2 !x!$_i$ in the continuation are not variables.
 \end{proof}
 
