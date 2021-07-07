@@ -1,31 +1,28 @@
 \begin{figure*}[t]
     \begin{tabular}{r c l}
     $\invUNFSymbol$(!var!$_{\Gamma;i}$) &=& !x$_i$: Ti! \\
-    && where !x$_i$! is the $i$-th element in the context $\Gamma$ \\
-    $\invUNFSymbol$(!op!$_{\Gamma;n}$) &=& !op$_n$(x$_k$,$\ldots$,x$_{k+n}$)! \\
-    && where !(x$_k$,$\ldots$,x$_{k+n}$)! are the last $n$ variables of $\Gamma$ \\ 
-    $\invUNFSymbol$(!e$_1$ $\comp$ e$_2$!) &=& !let x=$\invUNFSymbol$(e$_1$) in $\invUNFSymbol$(e$_2$)! where !$\Gamma$,x:A $\vdash$ e$_2$:$\Gamma$,A,B! \\ 
-    $\invUNFSymbol$(!map2!$_{\Gamma;x,y.e}$) &=& !map2 (x,y.e) X$_1$ X$_2$! where !$\Gamma$,X$_1$,X$_2$ $\vdash$ map2$_{\Gamma;x,y.e}$! \\
-    $\invUNFSymbol$(!reduce!$_{\Gamma;x,y.e_1;e_2}$) &=& !reduce (x,y.e$_1$) $e_2$ X! where !$\Gamma$,X $\vdash$ reduce$_{\Gamma;x,y.e_1;e_2}$! \\ 
+    $\invUNFSymbol$(!op!$_{\Gamma;m}$) &=& !op$_n$(x$_n$,$\ldots$,x$_{n+m}$)! \\
+    $\invUNFSymbol$(!e$_1$ $\comp$ e$_2$!) &=& !let x$_{n+1}$=$\invUNFSymbol$(e$_1$) in $\invUNFSymbol$(e$_2$)! \\
+    $\invUNFSymbol$(!map2!$_{\Gamma;x,y.e}$) &=& !map2 (x,y.e) x$_{n+1}$ x$_{n+2}$! \\
+    $\invUNFSymbol$(!reduce!$_{\Gamma;x,y.e_1;e_2}$) &=& !reduce (x,y.e$_1$) $e_2$ x$_{n+1}$! \\
     $\invUNFSymbol$(!< e$_1$, e$_2$>!) &=& !<$\invUNFSymbol$(e$_1$), $\invUNFSymbol$(e$_2$)>! \\
-    $\invUNFSymbol$(!e$_1$!$\pcomp$!e$_2$!) &=& !let x=$\invUNFSymbol$(e$_1$) in $\invUNFSymbol$(e$_2$)! \\
-    $\invUNFSymbol$(!proj!$_{T_1;T_2;T_3}$) &=& !(y$_{1}$,$\ldots$,y$_{k}$)! where the !y!$_{i}$ are the variables of $T_3$ \\
-    $\invUNFSymbol$(!pair!$_{T;A\times B}$) &=& !<x,y>! where !x!,!y! are the last two variables of !T! \\
-    $\invUNFSymbol$(!e1!$\icomp$!e2!) &=& !fun (y$_1$,$\ldots$,y$_n$) -> $\invUNFSymbol$(e$_1$)($\invUNFSymbol$(e$_1$))! \\
-    $\invUNFSymbol$(!J!$^T$!var!$_{\Gamma;i}$) &=& !(x$_1$,$\ldots$,x$_{i-i}$,x$_i$+z,x$_{i+1}$,$\ldots$,x$_{n-1}$)! \\
-    $\invUNFSymbol$(!J!$^T$!op!$_{\Gamma;n}$) &=& !(x$_1$,$\ldots$,x$_{m-n}$,x$_{m-n+1}$+$\partial_1$op$_n$*z,$\ldots$,x$_m$+$\partial_n$op$_n$*z)! \\
-    && where !$\partial_i$op$_n$! is the $i$-th partial derivative of !op$_n$! \\
-    $\invUNFSymbol$(!J!$^T$!proj!$_{T_1;T_2;T_3}$) &=& !(x$_1$,$\ldots$,x$_k$,0,$\ldots$,0,y$_1$,$\ldots$,y$_p$)! \\
+    $\invUNFSymbol$(!proj!$_{T_1;T_2;T_3}$) &=& !(x$_{k}$,$\ldots$,y$_{p}$)! where the !x!$_{i}$ are the variables of $T_3$ \\
+    $\invUNFSymbol$(!pair!$_{T;A\times B}$) &=& !<x$_{n+1}$, x$_{n+2}$>! \\
+    $\invUNFSymbol$(!e1!$\icomp$!e2!) &=& !fun (y$_1$,$\ldots$,y$_n$) -> $\invUNFSymbol$(e$_1$)($\invUNFSymbol$(e$_1$)[y$_i$/x$_i$])! \\
+    $\invUNFSymbol$(!J!$^T$!var!$_{\Gamma;i}$) &=& !(x$_1$,$\ldots$,x$_{i-i}$,x$_i$+x$_{n+1}$,x$_{i+1}$,$\ldots$,x$_{n}$)! \\
+    $\invUNFSymbol$(!J!$^T$!op!$_{\Gamma;m}$) &=& !(x$_1$,$\ldots$,x$_{n}$,x$_{n+1}$+$\partial_1$op$_n$*x$_{n+m+1}$,$\ldots$,x$_{n+m}$+$\partial_m$op$_n$*x$_{n+m+1}$)! \\
+    $\invUNFSymbol$(!J!$^T$!proj!$_{T_1;T_2;T_3}$) &=& !(x$_1$,$\ldots$,x$_k$,0,$\ldots$,0,x$_{k+p}$,$\ldots$,x$_n$)! \\
     $\invUNFSymbol$(!J!$^T$!pair!$_{T;A\times B}$) &=& !(x$_1$,$\ldots$,x$_{n-1}$,$\pi_1$x$_n$,$\pi_2$x$_n$)! \\
-    $\invUNFSymbol$(!J!$^T$!map2!$_{\Gamma;x,y.e}$) &=& !let G=!$\grad_{\Gamma}$!e$_{1}$ in!\\
-    && !((x$_{1}$,$\ldots$,x$_n$)!$\widehat{+}$!(G*(reduce + 0 Z)),!\\
-    && ! map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x]*b) A Z,!\\
-    && ! map2 (a,b.(!$\grad_{\{y\}}$!e$_{1}$)[a/x]*b) B Z )!\\
-    $\invUNFSymbol$(!J!$^T$!reduce!$_{\Gamma;x,y.e1;e2}$) &=& !let A$_{0}$ = shift1R (scanl (x,y.e$_{1}$) y$_{1}$ A) in! \\
-    && !let A$_{1}$ = shift1L (map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ A) in! \\
-    && !let A$_{2}$ = map2 (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ A in! \\
+    $\invUNFSymbol$(!J!$^T$!map2!$_{\Gamma;x,y.e}$) &=& 
+    !let G=!$\grad_{\Gamma}$!e$_{1}$ in!\\
+    && !((x$_{1}$,$\ldots$,x$_n$)!$\widehat{+}$!(G*(reduce + 0 x$_{n+3}$)),!\\
+    && ! map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x]*b) x$_{n+1}$ x$_{n+3}$,!\\
+    && ! map2 (a,b.(!$\grad_{\{y\}}$!e$_{1}$)[a/x]*b) x$_{n+2}$ x$_{n+3}$ )!\\
+    $\invUNFSymbol$(!J!$^T$!reduce!$_{\Gamma;x,y.e1;e2}$) &=& !let A$_{0}$ = shift1R (scanl (x,y.e$_{1}$) y$_{1}$ x$_{n+1}$) in! \\
+    && !let A$_{1}$ = shift1L (map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ x$_{n+1}$) in! \\
+    && !let A$_{2}$ = map2 (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ x$_{n+1}$ in! \\
     && !let A$_{3}$ = scanr * 1 A$_{1}$ in! \\
-    && !(x$_{1}$,$\ldots$,x$_n$, map2 (x,y. x*y*z) A$_{2}$ A$_{3}$)! \\
+    && !(x$_{1}$,$\ldots$,x$_n$, map2 (x,y. x*y*x$_{n+2}$) A$_{2}$ A$_{3}$)! \\
     \end{tabular}
     \caption{UNF transformation from Target UNF to Target}
     \label{fig:unf_to_target}
