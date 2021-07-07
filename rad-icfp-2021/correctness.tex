@@ -13,16 +13,13 @@ where $\sem{-}$ is an appropriate denotational semantics of smooth functions.
 \subsection{Denotational semantics} % (fold)
 \label{sub:Denotational semantics source and Target}
 
-It is standard to give a denotational semantics of a first-order language in a Cartesian category.
-An alternative approach consists of giving semantics in a multicategory.
 A multicategory generalizes a category by allowing multimorphisms, that is, morphisms from a list of objects to an object.
-Most categorical structures from category theory can be phrases similarly in multicategories.
+Most categorical structures from category theory can be phrased similarly in multicategories.
+It is standard to give a denotational semantics of a first-order language in a Cartesian category, and alternatively in a multicategory.
 
-In terms of semantics, a term $x_1:A_1,\ldots,x_n:A_n\vdash e:A$ is interpreted as a morphism $\sem{e}:[\sem{A_1},\ldots,\sem{A_n}]\to \sem{A}$ in a multicategory.
-Substitution is still interpreted as composition. 
-
-One can consider a syntactic model for a language, which consists in a free multicategory.
-Our source and target languages induce syntactic multicategories as follows.
+A term $x_1:A_1,\ldots,x_n:A_n\vdash e:A$ is interpreted as a morphism $\sem{e}:[\sem{A_1},\ldots,\sem{A_n}]\to \sem{A}$ in a multicategory.
+Substitution is interpreted as composition. We first consider a syntactic model for a language, which consists of a 
+free multicategy on some base types and primitives. Our source and target languages induce syntactic multicategories as follows.
 
 \begin{definition}[Syntactic multicategory for Source]
     Let $\SynSource$ be the multicategory whose objects are types of Source, and where a morphism 
@@ -32,46 +29,92 @@ Our source and target languages induce syntactic multicategories as follows.
 
 We similarly define $\SynTarget$, the syntactic multicategory for Target.
 
-As is standard, $\SynSource$ satisfies the following universal property: 
-for every Cartesian multicategory $\catC$ with arrays map and reduce,
-and every object $F(\reals)\in\catC$ and morphisms $F(\underline{c})\in\catC(1;F(\reals))$, 
-$F(op1)\in\catC(F(\reals);F(\reals))$, $F(op2)\in\catC(F(\reals),F(\reals);F(\reals))$, there is a unique
-multifunctor $F:\SynSource\to\catC$ respecting the interpretation and preserving all the structure.
+$\SynSource$ satisfies the following universal property: 
+for every Cartesian multicategory $\catC$,
+and every object $F(\reals)\in\catC$, morphisms $F(\underline{c})\in\catC(1;F(\reals))$, 
+$F(op1)\in\catC(F(\reals);F(\reals))$, $F(op2)\in\catC(F(\reals),F(\reals);F(\reals))$, 
+there is a unique multifunctor $F:\SynSource\to\catC$ respecting the interpretation and preserving all the categorical structure. 
 
-We can, for instance, use this to give a simple semantics of Source 
+This allows us to give a simple semantics of Source 
 in the multicategory of Cartesian spaces and smooth maps between them. 
 
 \begin{definition}[$\CartSp$]
-Let $\CartSp$ be the Cartesian category whose objects are Euclidean spaces
-and whose morphisms are smooth functions between Euclidean spaces.
-TODO:it's not a multicategory yet
+Let $\CartSp$ be the Cartesian multicategory whose objects are Euclidean spaces
+and whose morphisms $[A_1,\ldots,A_n]\to B$ are smooth functions $A_1\times\ldots A_n \to B$.
 
-We can interpret Source in $\CartSp$ as follows.
+We interpret Source in $\CartSp$ as follows. A context $\Gamma=\{x_1:A_1,\ldots,x_n:A_n\}$ is interpreted as the product $\prod_{1\leq i \leq n}\sem{A_i}$.
+Well typed terms $\Gamma\vdash$!e: !$A$ are interpreted as functions $\sem{\Gamma}\to\sem{A}$.
+
     \begin{tabular}{r c l}
     $\seml \reals \semr$ & $\defeq$& $\RR$ \\
     $\seml$!T1xT2!$\semr$ & $\defeq$& $\seml$!T1!$\semr \times\seml$!T2!$\semr$ \\
     $\seml \Array{\reals}{n}\semr$ & $\defeq$ & $\prod_{1\leq i \leq n} \RR$ 
     \end{tabular}
-A context $\Gamma=\{x_1:A_1,\ldots,x_n:A_n\}$ is interpreted as the product $\prod_{1\leq i \leq n}\sem{A_i}$.
-Well typed terms $\Gamma\vdash$!e: !$A$ are interpreted as functions $\sem{\Gamma}\to\sem{A}$. This is
-routinely defined by induction on the structure of typing derivations. Constants
-!c! $\reals$ are interpreted as constant functions; and the primitives operations !op1,op2!
-are interpreted by composing with the corresponding functions, which are smooth. 
-Variables are interpreted as $\sem{x_i}(\rho)\defeq \rho_i$. 
-The remaining constructions are interpreted as follows.
-\begin{tabular}{r c l}
-    $\seml$!map2 (x,y.e1) e2 e3!$\semr$ &=& TODO\\
-    $\seml$!reduce (x,y.e1) e2 e3!$\semr$ &=& TODO
-\end{tabular}
+    \begin{tabular}{r c l}
+        !$\seml$op1$\semr$! & $\defeq$ & op1: $\reals\to\reals$ \\
+        !$\seml$op2$\semr$! & $\defeq$ & op2: $\reals\times \reals\to\reals$ \\
+        !$\seml$c$\semr$! & $\defeq$ & $c\in\RR$ \\
+        !$\seml$map2 (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$ ! & $\defeq$ & \\
+        !$\seml$reduce (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$! & $\defeq$ &
+    \end{tabular}
+
+Variables are interpreted as projections, let binding uses composition in the multicategory. 
+Pairs are interpreted using the Cartesian structure of the multicategory.
 \end{definition}
 
-TODO: what about semantics Target?
+We can similarly interpret Target in a multicategory of smooth-like spaces and functions. 
+However, Target is higher-order but $\CartSp$ is not Cartesian Closed. 
+Instead, we can for instance interpret Target in the category of Diffeological spaces, 
+as in \cite{huot2020correctness}. 
+Diffeological spaces (\cite{iglesias2013diffeology}) are a conservative extension of $\CartSp$. 
+The key idea will be that a higher order function is called smooth if it sends smooth functions to smooth functions, meaning that we can never use it
+to build first order functions that are not smooth.
+
+\begin{definition}
+	A \emph{diffeological space} $(X,\plots{X})$ consists of a set $X$ together with, for each $n$ and each open subset $U$ of $\RR^n$,  a set $\plots{X}^U\subseteq [U\to X]$ of functions, called \emph{plots}, such that
+	\begin{itemize}
+	 	\item all constant functions are plots;
+	 	\item if $f:V\to U$ is a smooth function and $p\in\plots{X}^U$, then $f;p\in\plots{X}^V$;
+     \item if $\seq[i\in I]{p_i\in\plots{X}^{U_i}}$ is a compatible family of plots $(x\in U_i\cap U_j\Rightarrow p_i(x)=p_j(x))$
+     and $\seq[i\in I]{U_i}$ covers $U$,
+     then the gluing $p:U\to X:x\in U_i\mapsto p_i(x)$ is a plot.
+	 \end{itemize} 
+\end{definition}
+We call a function $f:X\to Y$ between diffeological spaces \emph{smooth} if, for all plots
+$p\in\plots{X}^U$, we have that $p;f\in \plots{Y}^U$. We write $\Diff(X,Y)$ for the set of smooth maps from $X$ to $Y$. 
+Smooth functions compose, and so we have a category $\Diff$ of diffeological spaces and smooth functions.
+
+A diffeological space is thus a set equipped with structure.
+Many constructions of sets carry over straightforwardly to diffeological spaces.
+
+\begin{example}[Cartesian diffeologies]\label{ex:cartesian-diffeologies}
+Each open subset $U$ of $\RR^n$ can be given the structure of a diffeological space by taking all the
+smooth functions $V\to U$ as $\plots{U}^V$.
+It is easily seen that smooth functions from $V\to U$ in the traditional sense coincide with
+smooth functions in the sense of diffeological spaces.
+Thus diffeological spaces have a profound relationship with ordinary calculus.
+\end{example}
+
+\begin{example}[Product diffeologies]
+Given a family $\seq[i\in I]{X_i}$ of diffeological spaces,
+we can equip the product $\prod_{i\in I}X_i$ of sets with the
+\emph{product diffeology} in which $U$-plots are precisely the functions
+of the form $\seq[i\in I]{p_i}$ for $p_i\in\plots{X_i}^U$.  
+\end{example}
+
+\begin{example}[Functional diffeology]
+We can equip the set $\Diff(X,Y)$ of smooth functions between diffeological spaces with the \emph{functional diffeology}
+in which $U$-plots consist of functions $f:U\to \Diff(X,Y)$ such that 
+$(u,x)\mapsto f(u)(x)$ is an element of $\Diff(U\times X, Y)$.
+\end{example}
+
+We can thus interpret function types !$\seml$A -> B$\semr$! = $\Diff$($\seml$!A!$\semr$,$\seml$!B!$\semr$).
 
 \subsection{Semantics for UNF languages with concategories} % (fold)
 \label{sub:Semantics for UNF using concategories}
 
 One main reason for introducing UNF is to have a better handle over
-the computation flow of the term, similar to what ANF or CPS provide. 
+the computation flow of the term, similarly to what the ANF or CPS transformations do.
 A convenient categorical setting for this is to use string diagrams.
 To better fit the standard denotational semantics of languages, 
 we can instead use concategories. 
@@ -79,19 +122,18 @@ we can instead use concategories.
 Concategories are a generalization of categories and multicategories in that 
 they allow morphisms both from and to a list of objects. 
 Similarly to categories and multicategories, 
-most categorical abstractions used for the semantics of languages are easily adapted to them.
+most categorical construtions used for the semantics of functional languages 
+have equivalent in concategories.
 
-In particular, one can form a syntactic concategory, 
+In particular, one can form a syntactic concategory on some base types and primitives, 
 which satisfies a similar universal property as syntactic multicategories.
-Two such examples are of particular interest for us, 
-because they will allow us to interpret Source and Target UNF, 
-but also explain the UNF and $UNF^{-1}$ transformations.
+Two partiular examples are of interest for us, as they will allow us to interpret Source and Target UNF
+but they will also help us explain the UNF and $UNF^{-1}$ transformations.
 
 \begin{definition}[$\ConcatS$]
-Let $\ConcatS$ the syntactic Cartesian concategory whose types are those of Source and 
-with primitives given by $op1: \reals \to \reals$, $op2: \reals,\reals \to \reals$ $map2_{x,y.e}$
-and $reduce_{x,y.e1;e2}$.
-TODO: actually I just need projection and a representing object for pairs, it might be weaker than Cartesian? edit: I think I need Cartesian.
+Let $\ConcatS$ be the syntactic Cartesian concategory whose types are those of Source and 
+with primitives given by $op1: \reals \to \reals$, $op2: \reals,\reals \to \reals$, 
+TODO: $map2_{x,y.e}$and $reduce_{x,y.e1;e2}$.
 \end{definition}
 
 One may notice that the syntax of $\ConcatS$ is somewhere in between the syntax of Source and of Source UNF.
@@ -117,7 +159,7 @@ Similarly, we introduce a second concategory for the Target part of our transfor
 
 \begin{definition}[$\ConcatT$]
 Let $\ConcatT$ be the syntactic Cartesian concategory whose types are those of Target and 
-with primitives given by 
+whose primitives are given by 
 $op1: \reals \to \reals$, 
 $op2: \reals,\reals \to \reals$, 
 $map2_{x,y.e}: \Array{\reals}{n},\Array{\reals}{n}\to \Array{\reals}{n}$, 
@@ -125,12 +167,11 @@ $reduce_{x,y.e1;e2}: \Array{\reals}{n} \to \Array{\reals}{n}$,
 $J^Top1: \reals \to \reals$, 
 $J^Top2: \reals \to \reals, \reals$, 
 $J^Tmap2_{x,y.e}: \Array{\reals}{n} \to \Array{\reals}{n}, \Array{\reals}{n}$, 
-$J^Treduce_{x,y.e1;e2}: \Array{\reals}{n} \to \Array{\reals}{n}$, 
-TODO: not too sure, should I say what a Cartesian concat is? do I need $J^Tproj$?
+$J^Treduce_{x,y.e1;e2}: \Array{\reals}{n} \to \Array{\reals}{n}$ 
 \end{definition}
 
 We can interpret Target UNF in $\ConcatT$ as follows. 
-The part common with Source UNF is interpreted in the same way as for Source UNF.
+The part common with Source UNF is interpreted in the same way as for the case of Source UNF.
 
 TODO: I think need to explain here the (co)monoid structure induced by $D$
 
@@ -193,16 +234,26 @@ from Section~\ref{sub:Simple reverse mode transformation}.
     TODO
 \end{proposition}
 
+In summary, we have the following picture
+
+\[
+\begin{tikzcd}
+    SourceUNF \ar[r,"\sem{-}"] & Concat1 \ar[r,"\Dsynrevsymbol_{\rho}"] & Concat2 \ar[r,"\UNFSymbol^{-1}"] & C_{Target} \\
+    Source \ar[r,"\UNFSymbol"] & C_{Source} \ar[u, hook] & TargetUNF \ar[u,"\sem{-}"] & Target \ar[u, hook] 
+\end{tikzcd}
+\]
 
 \subsection{Correctness theorem} % (fold)
 \label{sub:Correctness theorem}
 
 First, we start from the correctness of $\Dsynrevsymbol_{\rho}$:Source UNF $\to$ Target UNF, which is easy to establish, 
-and then propagate this information to Source and Target via the $\UNFSymbol, \UNFSymbol^{-1}$ transformations.
+and then propagate this information to Source and Target via the $\UNFSymbol$ and $\UNFSymbol^{-1}$ transformations.
 
 \begin{proposition}[Correctness $\Dsynrevsymbol_{\rho}$]
-    For every term !$\reals^{\times n} \vdash$ e: $\reals^{\times n+1}$! in Source UNF,\\ 
-    $\pi_2 \seml \Dsynrevsymbol_{\rho}$!e!$\semr(x_1,\ldots x_n,Id_{\RR^n})$=$J^T_{(x_1,\ldots x_n)}\seml$!e!$\semr$.
+    For every term !$\reals^{\times n} \vdash$ e: $\reals^{\times n+1}$! in Source UNF,
+    \begin{center}
+        $\pi_2 \seml \Dsynrevsymbol_{\rho}$!e!$\semr(x_1,\ldots x_n,Id_{\RR^n})$=$J^T_{(x_1,\ldots x_n)}\seml$!e!$\semr$
+    \end{center} 
 \end{proposition}
 
 This is routinely proved by induction as the language is first-order. 
