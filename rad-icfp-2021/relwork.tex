@@ -50,17 +50,21 @@ Their work focuses on computable reals which is hard to compare in terms of effi
 with our more standard approach of AD.
 
 \noindent \textbf{More array primitives}
-filter, flatten, gather, scanl, ...
-can be derived by hand once and then it's ok
+We focused on giving reverse derivatives for a small set of array primitives. 
+Other common primitives include filter, flatten, gather. 
+These functions can easily be added to our Source language once we provide a reverse derivative for them.
+This is reminiscent of hand-crafted derivatives present in large AD frameworks (usually hundreds), 
+and these can already be added in added in our language. 
+One only needs to make sure that the provided transpose Jacobian is correct.
 
 \noindent \textbf{Recursion}
-TODO
+It would be an interesting extension to our work to see if one can define efficient pure reverse derivatives on general recursion.
 
 \noindent \textbf{Higher derivatives}
-TODO
-
-\noindent \textbf{Sparse data and matrix representation}
-TODO
+There are recent approaches to computing higher derivatives using jets \cite{betancourt2018geometric} which generalise forward and reverse mode.
+A more standard approach is to iterate forward or reverse-mode. 
+Forward mode is standard and can easily be defined on our Target language. 
+As our optimization procedure removes lambdas, to iterate reverse-mode we would only need to compute reverse derivatives for the new primitives of Target, that is !scanl, scanr, shift1L, shift1R!.
 
 \noindent \textbf{Further applications}
 Reverse-mode differentiation is notoriously difficult to grasp, implement, and optimize.
@@ -82,10 +86,10 @@ TODO: should talk a bit about the recent paper: reverse AD in Dex \cite{paszke20
 \label{sec:related_work}
 
 \noindent \textbf{Usage of iteration mechanics}
-A immense effort in machine learning for the past decade has been in finding
+An immense effort in machine learning for the past decade has been in finding
 good architectures, to limit computational costs, 
 avoid vanishing and exploding gradients, 
-and have better building blocks of large complicated systems than traditional layers of a neural network.
+and have better building blocks for large complicated systems than traditional layers of a neural network.
 Different approaches 
 (Dynamic neural networks \cite{jin2017manipulability,wu2016deep}, 
 Recursive NN \cite{socher2011parsing,biancofiore2017recursive}, 
