@@ -48,13 +48,13 @@ Well typed terms $\Gamma\vdash$!e: !$A$ are interpreted as functions $\sem{\Gamm
     \begin{tabular}{r c l}
     $\seml \reals \semr$ & $\defeq$& $\RR$ \\
     $\seml$!T1xT2!$\semr$ & $\defeq$& $\seml$!T1!$\semr \times\seml$!T2!$\semr$ \\
-    $\seml \Array{\reals}{n}\semr$ & $\defeq$ & $\prod_{1\leq i \leq n} \RR$ 
+    $\seml \Array{\reals}{n}\semr$ & $\defeq$ & $\prod_{1\leq i \leq n} \RR$ \\
+    !$\seml$op1$\semr$! & $\defeq$ & op1: $\reals\to\reals$ 
     \end{tabular}
-    \begin{tabular}{r c l}
-        !$\seml$op1$\semr$! & $\defeq$ & op1: $\reals\to\reals$ \\
+    \begin{tabular}{r c l} 
         !$\seml$op2$\semr$! & $\defeq$ & op2: $\reals\times \reals\to\reals$ \\
         !$\seml$c$\semr$! & $\defeq$ & $c\in\RR$ \\
-        !$\seml$map2 (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$ ! & $\defeq$ & \\
+        !$\seml$map2 (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$ ! & $\defeq$ & TODO \\
         !$\seml$reduce (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$! & $\defeq$ &
     \end{tabular}
 
@@ -196,7 +196,8 @@ this gives us a way to compare terms in Source with terms in Source UNF.
 This comparison precisely gives the UNF transformation.
 
 \begin{definition}[Mutlicat from concat]
-    TODO
+    We define $\CSource$ to be the multicategory with the same objects as Source and 
+    $\CSource([A_1,\ldots,A_n],B)=\ConcatS([A_1,\ldots,A_n],[A_1,\ldots,A_n,B])$.
 \end{definition}
 
 \begin{proposition}[construction above gives UNF]
@@ -243,7 +244,7 @@ In summary, we have the following picture
 \[
 \begin{tikzcd}
     SourceUNF \ar[r,"\sem{-}"] & Concat1 \ar[r,"\Dsynrevsymbol_{\rho}"] & Concat2 \ar[r,"\UNFSymbol^{-1}"] & C_{Target} \\
-    Source \ar[r,"\UNFSymbol"] & C_{Source} \ar[u, hook] & TargetUNF \ar[u,"\sem{-}"] & Target \ar[u, hook] 
+    Source \ar[r,"\UNFSymbol"] & \CSource \ar[u, hook] & TargetUNF \ar[u,"\sem{-}"] & Target \ar[u, hook] 
 \end{tikzcd}
 \]
 

@@ -13,13 +13,13 @@ we use $\widehat{\times},1_\Gamma$ for obvious extension of the monoid $(\reals,
 We can now compute the reverse-mode transformation as follows.
 \begin{center}
 \begin{tabular}{r c l}
-$\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!) 
-&=& $\ldots$ as before up until !A3! \\
-&& !let B0 = map2 (a,b ->(!$\grad_\Gamma$!e)[a/x,b/y] A0 A) in!\\
-&& !let B1 = scanr !$1_\Gamma$ $\widehat{\times}$ !B0 in! \\
-&& !let B2 = reduce !$\widehat{+}$ $0_\Gamma$! B1 in! \\
-&& !<reduce (x,y.e1) y1 A, fun (x1,$\ldots$,xn,z) ->! \\
-&& !Y((x$_1$,$\ldots$,x$_n$)!$\widehat{+}$!B2,0,map2 (a,b. a*b*z) A2 A3)!
+$\directD{\rho}{\Gamma}{Y}$(!reduce (x,y.e1) e$_2$ e$_3$!) 
+&=& $\ldots$ as before up until !A_$3$! \\
+&& !let B$_0$ = map2 (a,b ->(!$\grad_\Gamma$!e)[a/x,b/y] A$_0$ A) in!\\
+&& !in let B$_1$ = scanr $1_\Gamma$ $\widehat{\times}$ B$_0$ in! \\
+&& !let B$_2$ = reduce $\widehat{+}$ $0_\Gamma$ B$_1$ in! \\
+&& !<reduce (x,y.e1) y$_1$ A, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
+&& !Y((x$_1$,$\ldots$,x$_n$)$\widehat{+}$B$_2$,0,map2 (a,b. a*b*z) A$_2$ A$_3$)!
 \end{tabular}
 \end{center}
 
@@ -41,7 +41,7 @@ The reverse derivative of fold left is then
 
 \begin{center}
 \begin{tabular}{r c l}
-    $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !foldl (x,y.e$_1$) e$_2$ e$_3$!) &=&
+    $\directD{\rho}{\Gamma}{Y}$(!foldl (x,y.e$_1$) e$_2$ e$_3$!) &=&
             !let v,Y$_1$ = $\directD{\rho}{\Gamma}{Y}$(e$_2$) in! \\
             && !let A,Y$_2$ = $\directD{\rho}{\Gamma,v}{Y_1}$(e$_3$) in! \\
             && !let A$_0$,r$_1$ = (scanl (x,y.e$_1$) v A) in! \\
@@ -86,7 +86,7 @@ Several recent work have shown how to give semantics to such operators in the co
 Adding conditionals to the source language can be done easily, for instance via defining
 
 \begin{tabular}{r c l}
-$\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) &=& !if e1 then !$\directD{\rho}{\Gamma}{Y}$!(e2) else !$\directD{\rho}{\Gamma}{Y}$!(e3)! 
+$\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) &=& !if e$_1$ then $\directD{\rho}{\Gamma}{Y}$(e$_2$) else $\directD{\rho}{\Gamma}{Y}$(e$_3$)! 
 \end{tabular}
 
 The problem is that this could break the complexity of reverse mode because of the non-linear usage of $Y$, and makes everything harder to optimize.
@@ -94,11 +94,11 @@ The problem is that this could break the complexity of reverse mode because of t
 A slightly better option would be to define 
 
 \begin{tabular}{r c l}
-    $\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) 
-    &=& !let b=e1 in!   \\
-    && !<if b then e2 else e3, fun (x1,$\ldots$,xn,z) ->! \\
-    && !Y(b*!$\directD{\rho}{\Gamma}{Y}$!(e2)(x1,$\ldots$,xn,z)+!\\
-    && \quad!(1-b)*!$\directD{\rho}{\Gamma}{Y}$!(e3)(x1,$\ldots$,xn,z))>!
+    $\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) 
+    &=& !let b=e$_1$ in!   \\
+    && !<if b then e$_2$ else e$_3$, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
+    && !Y(b*!$\directD{\rho}{\Gamma}{Y}$!(e$_2$)(x$_1$,$\ldots$,x$_n$,z)+!\\
+    && \quad!(1-b)*!$\directD{\rho}{\Gamma}{Y}$!(e$_3$)(x$_1$,$\ldots$,x$_n$,z))>!
 \end{tabular}
 
 It is slightly better because both derivatives of !e2! and !e3! are put together, and this might unlock some optimizations, 
@@ -106,10 +106,10 @@ but there is still a non-linear usage of the continuation variable !Y!.
 One solution, if we know we want to compute the whole gradient of the expression, is to define instead
 
 \begin{tabular}{r c l}
-    $\directD{\rho}{\Gamma}{Y}(\Gamma \vdash$ !if e1 then e2 else e3!) 
-    &=& !let b=e1 in!   \\
-    && !<if b then e2 else e3, fun (x1,$\ldots$,xn,z) ->! \\
-    && !Y((x1,$\ldots$,xn)!$\widehat{+}$($\grad_\Gamma$!(e2)*b!$\widehat{+}\grad_\Gamma$!(e3)*(1-b))*z)>!\\
+    $\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) 
+    &=& !let b=e$_1$ in!   \\
+    && !<if b then e$_2$ else e$_3$, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
+    && !Y((x$_1$,$\ldots$,x$_n$)!$\widehat{+}$($\grad_\Gamma$!(e$_2$)*b!$\widehat{+}\grad_\Gamma$!(e$_3$)*(1-b))*z)>!\\
 \end{tabular}
 
 This time, there is a linear usage of the continuation variable !Y! (and of the variables !x1,$\ldots$xn! too).
@@ -149,14 +149,14 @@ Then, using this notation, there are only minimal changes to the reverse derivat
 
 \begin{center}
 \begin{tabular}{r c l}
-    $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !map2 (x,y.e1: G) e2 e3!) &=&  
-    !let A,Y1 = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
-    && !let B,Y2 = !$\directD{\rho}{\Gamma,A}{Y1}$!(e3) in! \\
-    && !let C=!$\grad_{\Gamma}$!e1 in!\\
-    && !<map2 (x,y.e1) A B, fun (x1,$\ldots$,xn,Z) -> !\\
-    && !Y2( (x1,$\ldots$,xn)!$\widehat{+}$!(C!$\widehat{*}$!(reduce + 0 Z)),!\\
-    && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e1)[a/x]!$\widehat{*}$!b) A Z,!\\
-    && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e1)[a/x]!$\widehat{*}$!b) B Z )>!\\
+    $\directD{\rho}{\Gamma}{Y}$(!map2 (x,y.e$_1$: G) e$_2$ e$_3$!) &=&  
+    !let A,Y$_1$ = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
+    && !let B,Y$_2$ = !$\directD{\rho}{\Gamma,A}{Y1}$!(e$_3$) in! \\
+    && !let C=!$\grad_{\Gamma}$!e$_1$ in!\\
+    && !<map2 (x,y.e$_1$) A B, fun (x$_1$,$\ldots$,x$_n$,Z) -> !\\
+    && !Y$_2$( (x$_1$,$\ldots$,x$_n$)!$\widehat{+}$!(C!$\widehat{*}$!(reduce + 0 Z)),!\\
+    && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e$_1$)[a/x]!$\widehat{*}$!b) A Z,!\\
+    && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e$_1$)[a/x]!$\widehat{*}$!b) B Z )>!\\
     \end{tabular}
     \end{center}
 
@@ -166,8 +166,10 @@ Then, using this notation, there are only minimal changes to the reverse derivat
     !let y$_{1}$,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{2}$) in! \\
     && !let A,Y$_{2}$ = !$\directD{\rho}{\Gamma,y_1}{Y_1}$!(e$_{3}$) in! \\
     && !let A$_{0}$ = shift1R (scanl (x,y.e$_{1}$) y$_{1}$ A) in! \\
-    && !let A$_{1}$ = shift1L (map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ A) in! \\
-    && !let A$_{2}$ = map2 (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ A in! \\
+    && !let A$_{1}$ = shift1L (map2! \\ 
+    && !      (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ A) in! \\
+    && !let A$_{2}$ = map2! \\
+    && !      (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ A in! \\
     && !let A$_{3}$ = scanr $\widetilde{*}$ 1 A$_{1}$ in! \\
     && !<reduce (x,y.e$_{1}$) y$_{1}$ A, fun (x$_{1}$,$\ldots$,x$_n$,z) ->! \\
     && !Y$_{2}$(x$_{1}$,$\ldots$,x$_n$, map2 (x,y. x$\widehat{*}$(y$\widehat{*}$z)) A$_{2}$ A$_{3}$>! \\

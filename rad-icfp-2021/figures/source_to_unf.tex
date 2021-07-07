@@ -1,14 +1,18 @@
 \begin{figure*}[t]
-    \begin{tabular}{r c l}
+    \begin{tabular}{|r c l|}
+        \hline
     $\UNFSymbol$($\Gamma\vdash $ !c!) &=& !c!$_{\Gamma,0}$ constant seen as a 0-ary operator\\
     $\UNFSymbol$($\Gamma\vdash $ !x!) &=& !var!$_{\Gamma,i}$ where !x! is the $i$-th variable in $\Gamma$ \\
     $\UNFSymbol$($\Gamma\vdash $ !let x:A = e$_1$ in e$_2$:B!) &=& $\UNFSymbol$(!e$_1$!) $\comp$ $\UNFSymbol$(!e$_2$!) $\comp$ !proj!$_{\Gamma;A;B}$  \\ 
     $\UNFSymbol$($\Gamma\vdash $ !< e$_1$, e$_2$ >:AxB!) &=& $\UNFSymbol$(!e$_1$!) $\comp$ $\widetilde{\UNFSymbol(e_2)}$ $\comp$ !pair!$_{\Gamma;A\times B}$ \\ 
-    $\UNFSymbol$($\Gamma\vdash \pi_i$(!e!)) &=& $\UNFSymbol$(!e!)$\comp $ $\pi_i$ $\comp$ !proj!$_{\Gamma;A_1\times A_2;A_i}$ $\pi_i$ seen as a unary operator\\
+    $\UNFSymbol$($\Gamma\vdash \pi_i$(!e!)) &=& $\UNFSymbol$(!e!)$\comp $ $\pi_i$ $\comp$ !proj!$_{\Gamma;A_1\times A_2;A_i}$ \\
+    && $\pi_i$ seen as a unary operator\\
     $\UNFSymbol$($\Gamma\vdash $ !e$_1$ op2 e$_2$!) &=& $\UNFSymbol$(!e$_1$!) $\comp$ $\widetilde{\UNFSymbol(e_2)}$ $\comp$ !op!$_{\Gamma;2}$ $\comp$ !proj!$_{\Gamma;\reals,\reals;\reals}$ \\
     $\UNFSymbol$($\Gamma\vdash $ !op1 e!) &=& $\UNFSymbol$(!e!) $\comp$ !op!$_{\Gamma;1}$ $\comp$ !proj!$_{\Gamma;\reals;\reals}$ \\
-    $\UNFSymbol$($\Gamma\vdash $ !map2 (x,y.e$_1$) e$_2$ e$_3$!) &=& $\UNFSymbol$(!e$_2$!) $\comp$ $\widetilde{\UNFSymbol(e_3)}$ $\comp$ !map2!$_{\Gamma; x,y.e_1}$ $\comp$ !proj!$_{\Gamma;\Array{\reals}{n},\Array{\reals}{n};\Array{\reals}{n}}$ \\ 
-    $\UNFSymbol$($\Gamma\vdash $ !reduce (x,y.e$_1$) e$_2$ e$_3$!) &=& $\UNFSymbol$(!e$_3$!)$\comp$ !reduce!$_{\Gamma; x,y.e_1; e_2}$ $\comp$ !proj!$_{\Gamma;\Array{\reals}{n};\Array{\reals}{n}}$ \\ 
+    $\UNFSymbol$($\Gamma\vdash $ !map2 (x,y.e$_1$) e$_2$ e$_3$!) &=& $\UNFSymbol$(!e$_2$!) $\comp$ $\widetilde{\UNFSymbol(e_3)}$ $\comp$ !map2!$_{\Gamma; x,y.e_1}$ $\comp$ \\
+    && !proj!$_{\Gamma;\Array{\reals}{n},\Array{\reals}{n};\Array{\reals}{n}}$ \\ 
+    $\UNFSymbol$($\Gamma\vdash $ !reduce (x,y.e$_1$) e$_2$ e$_3$!) &=& $\UNFSymbol$(!e$_3$!)$\comp$ !reduce!$_{\Gamma; x,y.e_1; e_2}$ $\comp$ !proj!$_{\Gamma;\Array{\reals}{n};\Array{\reals}{n}}$ \\
+    \hline 
     \end{tabular}
     \caption{UNF transformation from Source to Source UNF}
     \label{fig:source_to_unf}

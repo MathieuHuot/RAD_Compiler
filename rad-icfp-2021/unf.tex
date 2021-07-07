@@ -44,9 +44,10 @@ $\reals^{\times n}$ is a notation for $\reals,\ldots,\reals$ with $n$ factors $\
 \input{figures/source_unf_typesystem}
 
 \begin{example}
-    !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$! 
-    represents !x$_1$:$\reals$, x$_2$:$\reals$, x$_3$:$\reals$ $\vdash$ let (x$_1$,x$_2$,x$_3$,x$_4$)=(x$_1$,x$_2$,x$_3$,cos(x$_3$)) in (x$_1$,x$_2$,<x$_3$,x$_4$>)!.
-    $\comp$ can more generally be understood as a let binding of a tuple, and primitives only act on the last parts of the tuple, always returning the context.
+    The term in Source UNF !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$! 
+    intuitively represents a term \\
+    !x$_1$:$\reals$, x$_2$:$\reals$, x$_3$:$\reals$ $\vdash$ let (x$_1$,x$_2$,x$_3$,x$_4$)=(x$_1$,x$_2$,x$_3$,cos(x$_3$)) in (x$_1$,x$_2$,<x$_3$,x$_4$>)!.
+    The operator $\comp$ can more generally be understood as a let binding of a tuple, and primitives only act on the last parts of the tuple, always also returning their whole context.
 \end{example}
 
 \subsection{Target UNF} % (fold)
@@ -112,8 +113,10 @@ This means we need to hide all these intermediate values to preserve the invaria
 and this explains the projection !proj! in the $\UNFSymbol$ of other terms. 
 
 \begin{lemma}[Well typedness $\UNFSymbol$]
-    If !$\Gamma$=x$_1$:A$_{1}$,$\ldots$,x$_n$:A$_{n}$ $\vdash$ e:B! then
-   !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ $\UNFSymbol$(e): A$_{1}$,$\ldots$,A$_{n}$,B!.
+    Let !$\Gamma$=x$_1$:A$_{1}$,$\ldots$,x$_n$:A$_{n}$ $\vdash$ e:B! be a term in Source. Then
+    \begin{center}
+        !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ $\UNFSymbol$(e): A$_{1}$,$\ldots$,A$_{n}$,B!.
+    \end{center}
 \end{lemma}
 
 % TODO: we could merge everything of the form op;proj into just op by changing the type of op.
@@ -127,9 +130,10 @@ $\UNFSymbol^{-1}$ does not preserve a typing property as nicely as $\UNFSymbol$,
 because it treats primitives with and without a $J$ differently.
 
 Target UNF does not have variables. 
-A context type !T=[A$_1$,$\ldots$,A$_n$]! is transformed to a context !$\Gamma$=x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$!.
+A context type !T=[A$_1$,$\ldots$,A$_n$]! is transformed to a context \\
+!$\Gamma$=x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$!.
 We use this convention when definiting $\UNFSymbol^{-1}$. 
-For operators like !op$_{\Gamma;m}$!, we extend the notation above by saying that the canonical variables are 
+For operators like !op$_{\Gamma;m}$!, we extend the notation above by saying that the variables from the context are \\
 !x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$,x$_{n+1}$:$\reals$,$\ldots$,x$_{n+m}$:$\reals$!.
 
 \input{figures/unf_to_target}

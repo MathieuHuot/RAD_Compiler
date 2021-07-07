@@ -180,11 +180,13 @@ we can use forward substitution on the other !e!$_{i}$ and we obtain
 
 \begin{tabular}{l}
     !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!  $\transto$ \\
-    !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{n-1}$,y$_n$ =e$_{n-1},$e$_1$ in (f$_{1}$[x$_{1}$/y$_{1}$],$\ldots$,f$_{n-2}[$x$_{n-2}$/y$_{n-2}]$,f$_{n-1}$,f$_{n}$)!
+    !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{n-1}$,y$_n$ = e$_{n-1},$e$_1$ in!\\
+    \hspace{3cm}!(f$_{1}$[x$_{1}$/y$_{1}$],$\ldots$,f$_{n-2}[$x$_{n-2}$/y$_{n-2}]$,f$_{n-1}$,f$_{n}$)!
 \end{tabular}
+
 It means that it does not change the evaluation cost of most of the !f!$_{i}$ for $1\leq i \leq n-2$.
 The new evaluation cost is reduced to the sum of the cost of evaluating 
-the !f!$_{i}$ in addition to the cost of evaluating !e!$_{n-1}$ and !e!$_{n}$, O($n$) movement of variables.
+the !f!$_{i}$ in addition to the cost of evaluating !e!$_{n-1}$ and !e!$_{n}$, gaining O($n$) movement of variables.
 
 \begin{example}
     After forward-substitution and inlining the inner !Y!$_{i}$, the gradient of the terms from the introduction reduces to

@@ -1,5 +1,6 @@
 \begin{figure*}[t]
-    \begin{tabular}{r c l}
+    \begin{tabular}{|r c l|}
+    \hline
     $\invUNFSymbol$(!var!$_{\Gamma;i}$) &=& !x$_i$: Ti! \\
     $\invUNFSymbol$(!op!$_{\Gamma;m}$) &=& !op$_n$(x$_n$,$\ldots$,x$_{n+m}$)! \\
     $\invUNFSymbol$(!e$_1$ $\comp$ e$_2$!) &=& !let x$_{n+1}$=$\invUNFSymbol$(e$_1$) in $\invUNFSymbol$(e$_2$)! \\
@@ -19,10 +20,12 @@
     && ! map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x]*b) x$_{n+1}$ x$_{n+3}$,!\\
     && ! map2 (a,b.(!$\grad_{\{y\}}$!e$_{1}$)[a/x]*b) x$_{n+2}$ x$_{n+3}$ )!\\
     $\invUNFSymbol$(!J!$^T$!reduce!$_{\Gamma;x,y.e1;e2}$) &=& !let A$_{0}$ = shift1R (scanl (x,y.e$_{1}$) y$_{1}$ x$_{n+1}$) in! \\
-    && !let A$_{1}$ = shift1L (map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ x$_{n+1}$) in! \\
+    && !let A$_{1}$ = shift1L (map2 !\\
+    && !     (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ x$_{n+1}$) in! \\
     && !let A$_{2}$ = map2 (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ x$_{n+1}$ in! \\
     && !let A$_{3}$ = scanr * 1 A$_{1}$ in! \\
     && !(x$_{1}$,$\ldots$,x$_n$, map2 (x,y. x*y*x$_{n+2}$) A$_{2}$ A$_{3}$)! \\
+    \hline
     \end{tabular}
     \caption{UNF transformation from Target UNF to Target}
     \label{fig:unf_to_target}
