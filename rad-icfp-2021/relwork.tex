@@ -109,10 +109,10 @@ Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotati
 often leaving efficiency on the side, especially for reverse-mode differentiation. 
 We see our work as a complement and a first bridge between these works 
 and more practical considerations of efficiency and implementations, 
-which often require a lot more care than is acknowledegd in more theoretical works.
+which often require a lot more care than is acknowledged in more theoretical works.
 
 An exception is \cite{abadi-plotkin2020} which gives a reverse-mode transformation that is proved correct and with the right complexity.
-This work is purely first-order, does not have arrays and uses a non standard semantics. 
+This work is purely first-order, does not have arrays and uses a non-standard semantics. 
 Our work is more canonical in the sense that it can more directly be implemented in a standard call-by-value language.
 They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
 Instead, they follow the principle of unrolling for recursive calls and evaluating the conditional before differentiating, 

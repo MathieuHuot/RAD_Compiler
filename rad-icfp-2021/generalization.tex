@@ -115,7 +115,7 @@ One solution, if we know we want to compute the whole gradient of the expression
 This time, there is a linear usage of the continuation variable !Y! (and of the variables !x1,$\ldots$xn! too).
 
 We note that adding conditionals does not break differentiability as long as there are no non-trivial primitives $\reals\to\BB$.
-Non smooth functions such as the Rectified Linear Unit (ReLU) in machine learning which can be defined as $reLU(x)\defeq max(0,x)$ 
+Non smooth functions such as the Rectified Linear Unit (ReLU) in machine learning which can be defined as $ReLU(x)\defeq max(0,x)$ 
 requires a non smooth primitive such as $>0: \reals\to\BB$. In several AD systems such as TensorFlow, 
 the condition is evaluated before differentiation is applied, and so conditionals are never directly differentiated.
 
