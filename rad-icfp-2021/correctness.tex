@@ -2,7 +2,7 @@
 \label{sec:correctness}
 
 This section provides a categorical analysis of our language and transformations.
-The end result is the correctness of the reverse mode transformation from Section~\ref{sub:Macro for pure reverse mode transformation}:
+The main result at the end of section is the correctness of the reverse mode transformation from Section~\ref{sub:Macro for pure reverse mode transformation}:
 
  \begin{theorem}
      For every $\Gamma \vdash$ !e:!$\reals$, we have 
@@ -10,7 +10,7 @@ The end result is the correctness of the reverse mode transformation from Sectio
  \end{theorem}
 where $\sem{-}$ is an appropriate denotational semantics of smooth functions.
 
-\subsection{Denotational semantics source and Target} % (fold)
+\subsection{Denotational semantics} % (fold)
 \label{sub:Denotational semantics source and Target}
 
 It is standard to give a denotational semantics of a first-order language in a Cartesian category.
@@ -67,7 +67,7 @@ The remaining constructions are interpreted as follows.
 
 TODO: what about semantics Target?
 
-\subsection{Semantics for UNF using concategories} % (fold)
+\subsection{Semantics for UNF languages with concategories} % (fold)
 \label{sub:Semantics for UNF using concategories}
 
 One main reason for introducing UNF is to have a better handle over
@@ -147,7 +147,7 @@ TODO: I think need to explain here the (co)monoid structure induced by $D$
 TODO: Do I need any kind of proposition saying that this makes sense?
 Might need to define on types as well to be clearer: It's an identity on types functor...
 
-\subsection{Semantics for UNF transformations} % (fold)
+\subsection{Semantics of $\UNFSymbol$ transformations} % (fold)
 \label{sub:Semantics for UNF transformations}
 
 We interpret Source in a new multicategory, 
