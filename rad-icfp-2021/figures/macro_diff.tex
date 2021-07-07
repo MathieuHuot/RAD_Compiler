@@ -1,10 +1,8 @@
 \begin{figure*}[t]
+\begin{tabular}{|c|}
+\hline
     \begin{tabular}{r c l}
-        $\Dsynrevsymbol_{\rho}$(!A1,$\ldots$,An!) &=& !A1,$\ldots$,An,(A1x$\ldots$xAn)->!$\rho$
-    \end{tabular}
-
-    \medskip
-    \begin{tabular}{r c l}
+    $\Dsynrevsymbol_{\rho}$(!A1,$\ldots$,An!) &=& !A1,$\ldots$,An,(A1x$\ldots$xAn)->!$\rho$\\ \\
     $\Dsynrevsymbol_{\rho}$(!var!$_{T;i}$) &=& $F$(!var$_{T;i}$, J$^T$var$_{T;i}$!) \\
     $\Dsynrevsymbol_{\rho}$(!op!$_{\Gamma;n}$) &=& $F$(!op$_{T;n}$,J$^T$op$_{T;,n}$!) \\ 
     $\Dsynrevsymbol_{\rho}$(!pair!$_{T;A\times B}$) &=& $F$(!pair$_{T;A\times B}$, J$^T$pair$_{T;A\times B}$!) \\
@@ -13,7 +11,8 @@
     $\Dsynrevsymbol_{\rho}$(!map2!$_{T;x,y.e}$) &=& $F$(!map2$_{T;x,y.e}$, J$^T$map2$_{T;x,y.e}$!) \\
     $\Dsynrevsymbol_{\rho}$(!reduce!$_{T;x,y.e1;e2}$) &=& $F$(!reduce$_{T;x,y.e1;e2}$, J$^T$reduce$_{T;x,y.e1;e2}$!) \\
     \end{tabular}\\
-    where !$F$(A,B)$\defeq$ <proj$_{T;\underline{T}->\rho;[]} \comp$ A, proj$_{[];T;\underline{T}->\rho} \icomp$ (proj$_{T;\underline{T}->\rho;[]}$ $\comp$ B)>!
+    where !$F$(A,B)$\defeq$ <proj$_{T;\underline{T}->\rho;[]} \comp$ A, proj$_{[];T;\underline{T}->\rho} \icomp$ (proj$_{T;\underline{T}->\rho;[]}$ $\comp$ B)>!\\\hline
+    \end{tabular}
     \caption{Reverse-mode differentiation from Source UNF to Target UNF}
     \label{fig:diff_macro}    
 \end{figure*}
