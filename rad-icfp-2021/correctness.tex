@@ -173,20 +173,18 @@ $J^Treduce_{x,y.e1;e2}: \Array{\reals}{n} \to \Array{\reals}{n}$
 We can interpret Target UNF in $\ConcatT$ as follows. 
 The part common with Source UNF is interpreted in the same way as for the case of Source UNF.
 
-TODO: I think need to explain here the (co)monoid structure induced by $D$
+TODO: I think need to explain here the (co)monoid structure induced by $\Dsynrevsymbol_{\rho}$ 
 
 \begin{tabular}{l c l}
     $\seml$!J!$^T$!var!$_{T;i} \semr$ &=& TODO \\
-    $\seml$!J!$^T$!op!$_{T;n} \semr$ &=&  \\
-    $\seml$!J!$^T$!pair!$_{T;A\times B} \semr$ &=& \\
-    $\seml$!J!$^T$!proj!$_{T1;T2;T3} \semr$ &=& \\
-    $\seml$!J!$^T$!map2!$_{T;x,y.e}\semr$  &=& \\
-    $\seml$!J!$^T$!reduce!$_{T;x,y.e;e}\semr$  &=& \\
-    $\seml$!<e1, e2>!$\semr$  &=& !<!$\seml$!e1!$\semr$, $\seml$!e2!$\semr$!>! \\
-    $\seml$!e1!$\icomp$!e2!$\semr$ &=&  \\
+    $\seml$!J!$^T$!op!$_{T;n} \semr$ &=& $id_T\concatcomp J^Top_n$ \\
+    $\seml$!J!$^T$!pair!$_{T;A\times B} \semr$ &=& $id_T\concatcomp$!<$\pi_1,\pi_2$>! \\
+    $\seml$!J!$^T$!proj!$_{T1;T2;T3} \semr$ &=& $id_{T_1}\concatcomp\widehat{0}_{T_2}\concatcomp id_{T_3}$ \\
+    $\seml$!J!$^T$!map2!$_{T;x,y.e}\semr$  &=& $id_T\concatcomp map2_{T;x,y.e}$ \\
+    $\seml$!J!$^T$!reduce!$_{T;x,y.e_1;e_2}\semr$  &=& $id_T\concatcomp reduce_{T;x,y.e_1;e_2}$ \\
+    $\seml$!<e$_1$, e$_2$>!$\semr$  &=& !<!$\seml$!e1!$\semr$, $\seml$!e2!$\semr$!>! \\
+    $\seml$!e$_1$!$\icomp$!e$_2$!$\semr$ &=& $\Lambda$($id_\Gamma\concatcomp\seml$!e2!$\semr$; $\Lambda^{-1}$($\seml$!e1!$\semr$)) \\
  \end{tabular}
-TODO: Do I need any kind of proposition saying that this makes sense?
-Might need to define on types as well to be clearer: It's an identity on types functor...
 
 \subsection{Semantics of $\UNFSymbol$ transformations} % (fold)
 \label{sub:Semantics for UNF transformations}
@@ -198,8 +196,7 @@ this gives us a way to compare terms in Source with terms in Source UNF.
 This comparison precisely gives the UNF transformation.
 
 \begin{definition}[Mutlicat from concat]
-    A multicategory $\catC$ naturally defines a concategory with the same objects as $\catC$ and
-    with morphisms $A\to [B_1,\ldots,B_n]$ being $n$ morphisms $A\to Bi$ of $\catC$. 
+    TODO
 \end{definition}
 
 \begin{proposition}[construction above gives UNF]
@@ -212,7 +209,8 @@ This allows us to compare the terms of Target UNF and the terms of Target.
 $UNF^-1$ arises in this way.
 
 \begin{definition}[Concat from multicat]
-    TODO
+    A multicategory $\catC$ naturally defines a concategory with the same objects as $\catC$ and
+    with morphisms $A\to [B_1,\ldots,B_n]$ being $n$ morphisms $A\to Bi$ of $\catC$. 
 \end{definition}
 
 \begin{proposition}[Initiality of concat2 gives $UNF^-1$]
@@ -220,9 +218,9 @@ $UNF^-1$ arises in this way.
 \end{proposition}
 
 What remains to explain now is the reverse mode transformation between Source UNF and Target UNF.
-We construct a functor $D:\ConcatS\to\ConcatT$. 
+We construct a functor $\Dsynrevsymbol_{\rho}:\ConcatS\to\ConcatT$. 
 This functor will easily be shown to compute reverse-mode derivatives.
-Because terms of Source UNF in $\ConcatS$, we observe the effect of $D$ on them
+Because terms of Source UNF in $\ConcatS$, we observe the effect of $\Dsynrevsymbol_{\rho}$ on them
 and show that it matches the syntactic $\Dsynrevsymbol_{\rho}$ 
 from Section~\ref{sub:Simple reverse mode transformation}.
 
@@ -230,8 +228,14 @@ from Section~\ref{sub:Simple reverse mode transformation}.
     TODO
 \end{definition}
 
+The design of $\Dsynrevsymbol_{\rho}$ on UNF is inspired by the semantic one between concategories, 
+and it's routine to check that they match. 
+
 \begin{proposition}[semantic of syntactic D matches D lax functor]
-    TODO
+    Given a well typed term !T$_1$ $\vdash$ e: T$_2$! in Source UNF, we have
+    \begin{center}
+        $\seml\Dsynrevsymbol_{\rho}$!e!$\semr$ = $\Dsynrevsymbol_{\rho}\seml$!e!$\semr$
+    \end{center}
 \end{proposition}
 
 In summary, we have the following picture
@@ -261,9 +265,10 @@ This uses the fact that for every primitive constant $A$, $\sem{J^TA}=J^T\sem{A}
 
 Recall that the intuition from Source UNF is that it consists of terms of Source that also return their context.
 From there, the intuition for the Jacobian of a primitive in Target UNF is that it should be the Jacobian of
-the corresponding term in Target. This is easily checked for scalar operations.  
+the corresponding term in Target. This is easily checked for scalar operations. For the more difficult cases, we have 
 
 \begin{proposition}
+$\UNFSymbol^{-1}$ preserves the semantics of Jacobians of !map2! and !reduce!.
     \begin{center}
 \begin{tabular}{r c l}
     !$\seml\UNFSymbol^{-1}(J^T$map2$_{x,y.e})\semr$! &=& !$J^T\seml\UNFSymbol^{-1}($map2$_{x,y.e})\semr$!\\
@@ -282,21 +287,15 @@ in the sense that it produces a term that computes the gradient of the original 
     $\seml \pi_2 \UNFSymbol^{-1}(\Dsynrevsymbol_{\rho}(\UNFSymbol($!e!$)))\semr(x_1,\ldots x_n,Id_{\RR^n})$=$J^T_{(x_1,\ldots x_n)}$!<!$Id_{\RR^n}$,$\seml$!e!$\semr$!>!
 \end{proposition}
 
-\begin{proof}
-    TODO
-\end{proof}
-
-By inspecting what that composition of transformations does on terms of Source, 
+By inspecting what that composition of transformations does on the terms of Source, 
 we show that this indeed gives computes the same as the transformation 
 $\directD{\rho}{\Gamma}{Y}$ from Section~\ref{sub:Macro for pure reverse mode transformation}. 
+This should not come as a surprise because the design of $\directD{\rho}{\Gamma}{Y}$ was in fact guided via 
+this decomposition and intermediate representation.
 
 \begin{proposition}
     $\seml\UNFSymbol^{-1}(\Dsynrevsymbol_{\rho}(\UNFSymbol($!e!$)))\semr$ = $\seml\directD{\rho}{\Gamma}{Y}($!e!$)\semr$ 
 \end{proposition}
-
-\begin{proof}
-    TODO
-\end{proof}
 
 Combining the the previous propositions, we have shown that $\directD{\rho}{\Gamma}{Y}$ is correct.
 
