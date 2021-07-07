@@ -37,12 +37,12 @@
             \\ \hline
             !T! $\vdash$ !<e1, e2>: T1,T2!
         \end{tabular}
-
+        \hspace{0.5cm}
         \begin{tabular}{c}
-            !T1! $\vdash$ e1: [A -> B]  \quad !T2! $\vdash$ e2: !T3! 
+            !T1! $\vdash$ e1: [\underline{T3} -> B]  \quad !T2! $\vdash$ e2: !T3! 
             \\ \hline
-            !T1! $\vdash$ !e1! $\icomp$ !e2:[C -> B]!
-        \end{tabular}(A=\underline{T3}, C=\underline{T2})
+            !T1! $\vdash$ !e1! $\icomp$ !e2!:[\underline{T2}! -> B!]
+        \end{tabular}
 
     \vspace{-0.2cm}
     \caption{Type system of the Target UNF}
