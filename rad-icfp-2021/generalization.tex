@@ -24,7 +24,7 @@ $\directD{\rho}{\Gamma}{Y}$($\Gamma\vdash $ !reduce (x,y.e1) e2 e3!)
 \end{tabular}
 \end{center}
 
-\subsection{Adding more array operators}
+\subsection{More array operators}
 \label{sub:Adding more array operators}
 
 There are two main differences with fold left !foldl! compared to !reduce!. 
@@ -68,7 +68,7 @@ Another useful example is !map!, which is very similar to !map2!.
     \end{tabular}
 \end{center}
 
-\subsection{Adding more scalar operators} % (fold)
+\subsection{Non-smooth scalar operators} % (fold)
 \label{sub:Adding more scalar operators}
 
 We assumed the unary and binary operators were denoted by smooth functions $\RR^n\to\RR$. 
@@ -81,7 +81,7 @@ These functions are well known to be the bete noire of AD \cite{griewank2008eval
 and we do not provide novel solutions to these.  
 Several recent work have shown how to give semantics to such operators in the context of AD \cite{vakar2020denotational,mazza2021automatic,sherman2021,lee2020correctness}.
 
-\subsection{Adding conditionals} % (fold)
+\subsection{Conditionals} % (fold)
 \label{sub:Adding conditionals}
 
 Adding conditionals to the source language can be done easily, for instance via defining
@@ -120,7 +120,7 @@ Non smooth functions such as the Rectified Linear Unit (ReLU) in machine learnin
 requires a non smooth primitive such as $>0: \reals\to\BB$. In several AD systems such as TensorFlow, 
 the condition is evaluated before differentiation is applied, and so conditionals are never directly differentiated.
 
-\subsection{Adding general arrays} % (fold)
+\subsection{General arrays} % (fold)
 \label{sub:Adding general arrays}
 
 We now show how to generalize our reverse-mode transformation to be defined on arrays over any ground type $G$.
