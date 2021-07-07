@@ -85,6 +85,21 @@ TODO: should talk a bit about the recent paper: reverse AD in Dex \cite{paszke20
 \section{Related Work} % (fold)
 \label{sec:related_work}
 
+\noindent \textbf{Correctness of AD in functional languages.}
+Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotational,brunel2019backpropagation,barthe2020versatility,mazza2021automatic,ee2020correctness} have focused on correctness of AD in a purely functional setting, 
+often leaving efficiency on the side, especially for reverse-mode differentiation. 
+We see our work as a complement and a first bridge between these works 
+and more practical considerations of efficiency and implementations, 
+which often require a lot more care than is acknowledged in more theoretical works.
+
+An exception is \cite{abadi-plotkin2020} which gives a reverse-mode transformation that is proved correct and with the right complexity.
+This work is purely first-order, does not have arrays and uses a non-standard semantics. 
+Our work is more canonical in the sense that it can more directly be implemented in a standard call-by-value language.
+They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
+Instead, they follow the principle of unrolling for recursive calls and evaluating the conditional before differentiating, 
+which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
+This is a well-known limit in TensorFlow \cite{abadi2016tensorflow} which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
+
 \noindent \textbf{Usage of iteration mechanics}
 An immense effort in machine learning for the past decade has been in finding
 good architectures, to limit computational costs, 
@@ -103,21 +118,6 @@ We have emphasized here on differentiating fold left on arrays for efficiency,
 but one should be able to adapt this on any algebraic data type. 
 It will be interesting to see if and how we recover efficient backpropagation on the proposed architectures 
 which is usually derived by hand and one main goal of these papers.
-
-\noindent \textbf{Correctness of AD in functional languages.}
-Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotational,brunel2019backpropagation,barthe2020versatility,mazza2021automatic,ee2020correctness} have focused on correctness of AD in a purely functional setting, 
-often leaving efficiency on the side, especially for reverse-mode differentiation. 
-We see our work as a complement and a first bridge between these works 
-and more practical considerations of efficiency and implementations, 
-which often require a lot more care than is acknowledged in more theoretical works.
-
-An exception is \cite{abadi-plotkin2020} which gives a reverse-mode transformation that is proved correct and with the right complexity.
-This work is purely first-order, does not have arrays and uses a non-standard semantics. 
-Our work is more canonical in the sense that it can more directly be implemented in a standard call-by-value language.
-They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
-Instead, they follow the principle of unrolling for recursive calls and evaluating the conditional before differentiating, 
-which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
-This is a well-known limit in TensorFlow \cite{abadi2016tensorflow} which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
 
 \noindent \textbf{Array Languages and AD}
 
