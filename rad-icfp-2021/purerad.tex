@@ -65,16 +65,22 @@ The type system for the extended grammar of the target language is presented in 
 \label{sub:Macro for pure reverse mode transformation}
 
 In Figure~\ref{fig:direct_diff_macro} we present our direct transformation from the source language to the target language for pure reverse mode differentiation.
-We explain in the next Section (\ref{sub:Partial evaluation and optimization}) how to optimize it further and compute the gradient.
-Admittedly, this transformation may be hard to read, and it is not straightforward to show its correctness directly. 
-In Section~\ref{sec:unf} we decompose this transformation into three simpler steps via a novel intermediate representation (UNF).
+Given a term $\Gamma\vdash e : \reals$, we can compute its gradient $\grad_\Gamma e$ from a particular instance of 
+$\directD{\rho}{\Gamma}{Y}(e)$. First, $\rho, Y$ specifies if we want to compute the whole gradient regarding the variables from $\Gamma$ or a subset of it.
+For a subset $\rho\subset \Gamma$, one chooses $Y$ to be the projection function sending a variable 
+$x_i:G$ of $\Gamma$ to $x_i$ if it belongs to $\rho$ and to $0_G$ otherwise.
+In particular, we take $Y=Id_\Gamma$ to compute the whole gradient.
+Next, the gradient will be given by the second part of the pair $\directD{\rho}{\Gamma}{Y}(e)$, 
+and we need to initialize the tangent variables. All of them are set to $0$ except the one corresponding to the output value of !e!, 
+which we initialize at $1$ to run the backpropagation. 
+All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,1)$.
 
 \input{figures/notation}
 
 \begin{notation}
 We now introduce several notations which are useful when defining the transformation for reverse-mode in Figure~\ref{tbl:notation:one}.
 Ground types are defined inductively by 
-$$G::= \RR \mid G\times \ldots \times G \mid A[G]$$
+$$G::= \RR \mid G\times \ldots \times G \mid \Array{\RR}{n}$$
 
 $(\RR,+,\underline{0})$ forms a monoid and this monoid structure extends canonically 
 to a monoid structure $(G,\widehat{+},0_G)$ for every ground type $G$. 
@@ -83,10 +89,10 @@ It is defined inductively on $G$ as follows
 \begin{tabular}{l c l}
     $0_\RR$  & $\defeq$ & $\underline{0}$ \\
     $0_{G_1\times \ldots \times G_n}$ & $\defeq$ &  $< O_{G_1},\ldots, 0_{G_n} >$ \\
-    $0_{\Array{\reals}{n}}$& $\defeq$ & !ZerosLike(n)! \\
+    $0_{\Array{\RR}{n}}$& $\defeq$ & !ZerosLike(n)! \\
     $a\widehat{+}_\RR b$ & $\defeq$ & $ a+b$ \\
     $(a_1,\ldots,a_n)\widehat{+}_{G_1\times\ldots\times G_n}(b_1,\ldots,b_n)$ & $\defeq$ & $(a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n)$ \\
-    $A\widehat{+}_{A[\RR]}B $ & $\defeq$ & !map2! + $A$ $B$ 
+    $A\widehat{+}_{\Array{\RR}{n}}B $ & $\defeq$ & !map2! + $A$ $B$ 
 \end{tabular}
 
 A ground context is a context only containing variables of ground type.
@@ -137,26 +143,19 @@ Importantly for performance, each continuation variable $Y$ is only used once.
 
 We have the following typing lemma for $\directD{\rho}{\Gamma}{Y}$.
 \begin{lemma}[Typing $\directD{\rho}{\Gamma}{Y}$]
-    If $\Gamma \vdash$ !e: A!, then $\Gamma$!,Y: !$\Gamma\to \rho \vdash \directD{\rho}{\Gamma}{Y}$!(e): !$\directD{\rho}{\Gamma}{Y}$!(A)!.
+    If $\Gamma \vdash$ !e: A!, then $\Gamma$!,Y:!$\Gamma\to \rho \vdash \directD{\rho}{\Gamma}{Y}$!(e): !$\directD{\rho}{\Gamma}{Y}$!(A)!.
 \end{lemma}
+\begin{proof}
+By induction on derivation of $\Gamma\vdash$!e:A!.
+\end{proof}
 
 \input{figures/direct_macro_diff}
 
 \subsection{Partial evaluation and optimization} % (fold)
 \label{sub:Partial evaluation and optimization}
 
-Given a term $\Gamma\vdash e : \reals$, we can compute its gradient $\grad_\Gamma e$ from a particular instance of 
-$\directD{\rho}{\Gamma}{Y}(e)$. First, $\rho, Y$ specifies if we want to compute the whole gradient regarding the variables from $\Gamma$ or a subset of it.
-For a subset $\rho\subset \Gamma$, one chooses $Y$ to be the projection function sending a variable 
-$x_i:G$ of $\Gamma$ to $x_i$ if it belongs to $\rho$ and to $0_G$ otherwise.
-In particular, we take $Y=Id_\Gamma$ to compute the whole gradient.
-Next, the gradient will be given by the second part of the pair $\directD{\rho}{\Gamma}{Y}(e)$, 
-and we need to initialize the tangent variables. All of them are set to $0$ except the one corresponding to the output value of !e!, 
-which we initialize at $1$ to run the backpropagation. 
-All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,1)$.
-
 Following the insight from Section~\ref{subsec:insights}, 
-we don't want to keep all the lambda abstractions as this is costly. 
+we do not want to keep all the lambda abstractions as this is costly. 
 The transformation is designed in such a way that all the lambda abstractions are given arguments,  
 and we can use partial evaluation to do beta-reduce all these lambda abstractions.
 
@@ -164,10 +163,10 @@ By inspection in Figure~\ref{fig:direct_diff_macro},
 we see that there is a linear usage of  each continuation $Y$ 
 and that it is always applied to almost the identity. 
 More precisely, we have applications of the form !fun (x1,$\ldots$,xn) -> Y(e1,$\ldots$,en)! 
-where the !ei! are !xi! except for at most $k$ (independant of $n$) terms.
+where the !ei! are !xi! except for at most $k$ (independent of $n$) terms.
 In fact we have $k=2$, except for the !map2! case which requires a more detailed analysis (see Section~\ref{sec:complexity}).
 
-Using inlining as given in Figure~\ref{fig:optim}, this allows us to rewrite
+Using inlining as given in Figure~\ref{fig:optim} allows us to rewrite
 
 \begin{tabular}{l}
 !fun (x$_{1}$,$\ldots$,x$_n$) -> (fun (y$_{1}$,$\ldots$,y$_n$) -> (f$_{1}$,$\ldots$,f$_n$))(e$_{1}$,$\ldots$,e$_n$)! 
@@ -176,8 +175,8 @@ $\transto$ \\
 \end{tabular}
 
 Using the invariant above, most of the !e!$_{i}$ are variables. 
-Without loss of generality, assume the onlt terms !e!$_{i}$ which are not variables are !e!$_{n-1}$ and !e!$_{n}$.
-we can use forward subsitution on the other !e!$_{i}$ and we obtain
+Without loss of generality, assume the only terms !e!$_{i}$ which are not variables are !e!$_{n-1}$ and !e!$_{n}$.
+we can use forward substitution on the other !e!$_{i}$ and we obtain
 
 \begin{tabular}{l}
     !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!  $\transto$ \\
@@ -233,3 +232,6 @@ are sufficient to show that the gradients of the terms of the introduction reduc
     $\nabla_A$!dot(A,B)! &=& !B! 
 \end{tabular}
 \end{example}
+
+Admittedly, the transformation presented in this section may be hard to read, and it is not straightforward to show its correctness directly. 
+Next, we decompose this transformation into three simpler steps via a novel intermediate representation (UNF).
