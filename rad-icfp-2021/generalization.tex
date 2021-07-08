@@ -77,6 +77,15 @@ In this figure, we have shown the translation of the !map! operator as well, whi
 \label{fig:foldl_map_trans}
 \end{figure}
 
+\smartpara{Recipe for adding array operators} To add more array operators to our language, 
+one doesn't need to go through UNF and most of the backend of our work can be used as a black box.
+The non-smooth variables of the operator (typically booleans or integers) should be considered as external the language, similarly to the way we treat the index $n$ of arrays.
+If the operator has type $A\to B$, then one should provide its transpose Jacobian, a term $B\to A$. 
+Such operators can often be unrolled to first-order programs. To check correctness of the given Jacobian, it suffices to 
+check that the semantics of the transpose Jacobian matches the Jacobian of the unrolled program. 
+To ensure the complexity guarantee of the whole transformation, one needs to check that there a linear usage of the continuation variable $Y$ and that the cost of the 
+proposed Jacobian is at most $k$ times the complexity of the operator. 
+
 \subsection{Conditionals} % (fold)
 \label{sub:lift_conditional}
 
