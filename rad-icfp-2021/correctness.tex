@@ -1,14 +1,33 @@
 \section{Correctness}
 \label{sec:correctness}
 
-This section provides a categorical analysis of our language and transformations.
-The main result at the end of section is the correctness of the reverse mode transformation from Section~\ref{sub:Macro for pure reverse mode transformation}:
+We now explain that the correctness of the three steps of the $\directD{\rho}{\Gamma}{Y}$ transformation from Section~\ref{sub:Macro for pure reverse mode transformation} can be understood in terms of translating between different standard categorical languages, 
+and verified by working in a well-known category for differentiability: diffeological spaces. 
+
+In general, categories with products (and more generally monoidal categories) can be equivalently presented in the following three ways. 
+Although the three styles of presentation are categorically equivalent, the choice of presentation affects the internal language syntax.
+\begin{itemize}
+    \item categories, where each arrow has one source and one target. These are most familiar but don’t directly match with a programming syntax (except the categorical abstract machine). 
+    \item multicategories, where each arrow has a list of source objects !A$_1,\ldots,$A$_n$! and one target !B!, thought of as a map !A$_1$ $\times\ldots\times$A$_n\to$B!. 
+    These are very close to the syntax usually used in typed programming languages \cite{ambek1968deductive,staton2013universal}, 
+    thinking of an arrow as a typed term !x$_1$:A$_1,\ldots,$x$_n$:A$_n$ $\vdash$ B!.
+    \item concategories, aka coloured props \cite{bonchi2015full,fong2019backprop}, where each arrow has a list of source objects !A$_1\ldots$A$_n$! and a list of target objects !B$_1\ldots$B$_m$!, thought of as a map !A$_1\times\ldots\times$A$_m \to$ B$_1\times\ldots\times$B$_m$!. These match the syntax of the UNF language.
+\end{itemize}
+
+Informally, notice that it makes sense to talk about the opposite of a category or a concategory, but not the opposite of a multicategory. 
+For roughly this reason, concategories are a more natural place to consider reverse derivatives than multicategories, 
+even though they are syntactically less familiar. 
+The $\directD{\rho}{\Gamma}{Y}$ translation passes from the multicategory for the source syntax to the concategory for UNF, where reverse-mode differentiation is easier, and then back to the multicategory for the target syntax. 
+In this way the translations between Source/Target and Source UNF/Target UNF are merely changing perspective from multicategories to concategories.
+We work with a specific multicategory and concategory built from diffeological spaces and smooth maps, so that we can verify the construction of reverse derivatives. 
+Since diffeological spaces support products, they can be presented as a category, a multicategory and a concategory. 
+In abstract mathematics the difference between these presentations is almost trivial. 
+But in terms of programming syntax, the difference between presentations has a big effect, as can be seen from the difference between the complex translation in Section~\ref{sec:simplediff} and the simple translations in Section~\ref{sec:unf}, which are much more readily verified.
 
  \begin{theorem}
      For every $\Gamma \vdash$ !e:!$\reals$, we have 
-     $\sem{\grad_\Gamma e}= \grad_\Gamma\sem{e}$.
+     $\sem{\grad_\Gamma e}= \grad_\Gamma\sem{e}$ in the category of diffeological spaces.
  \end{theorem}
-where $\sem{-}$ is an appropriate denotational semantics of smooth functions.
 
 \subsection{Denotational semantics} % (fold)
 \label{sub:Denotational semantics source and Target}
