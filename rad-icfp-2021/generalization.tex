@@ -3,7 +3,7 @@
 In this section, we generalize our language by relaxing the imposed restrictions.
 First, we allow free variables for the function argument of !reduce! in Section~\ref{sub:lift_reduce}. 
 Then we show how to support more array operations (Section~\ref{sub:lift_more_arr_op}), conditionals (Section~\ref{sub:lift_conditional}), and non-smooth scalar operators (Section~\ref{sub:lift_non_smooth}).
-Finally, we extend the language to support general arrays instead of supporting only $\Array{\reals}{n}$ in Section~\ref{sub:lift_gen_arr}.
+Afterwards, we extend the language to support general arrays instead of supporting only $\Array{\reals}{n}$ in Section~\ref{sub:lift_gen_arr}. Finally, we provide a recipe for adding more constructs to the language in Section~\ref{sub:lift_recipe}.
 
 \subsection{Lifting the restriction on reduce}
 \label{sub:lift_reduce}
@@ -76,15 +76,6 @@ In this figure, we have shown the translation of the !map! operator as well, whi
 \caption{The reverse-mode AD transformation of \codekw{foldl} and \codekw{map} operators.}
 \label{fig:foldl_map_trans}
 \end{figure}
-
-\smartpara{Recipe for adding array operators} To add more array operators to our language, 
-one doesn't need to go through UNF and most of the backend of our work can be used as a black box.
-The non-smooth variables of the operator (typically booleans or integers) should be considered as external the language, similarly to the way we treat the index $n$ of arrays.
-If the operator has type $A\to B$, then one should provide its transpose Jacobian, a term $B\to A$. 
-Such operators can often be unrolled to first-order programs. To check correctness of the given Jacobian, it suffices to 
-check that the semantics of the transpose Jacobian matches the Jacobian of the unrolled program. 
-To ensure the complexity guarantee of the whole transformation, one needs to check that there a linear usage of the continuation variable $Y$ and that the cost of the 
-proposed Jacobian is at most $k$ times the complexity of the operator. 
 
 \subsection{Conditionals} % (fold)
 \label{sub:lift_conditional}
@@ -203,3 +194,21 @@ even better representations to allow for more optimizations.
 In particular, representations looking like Einsum \cite{van2011numpy} could be of interest 
 and has been recently studied in the context of AD \cite{laue2018computing,laue2020simple}.
 More generally, there is growing interest in tensor calculus \cite{liao2019differentiable,bernstein2020differentiating}.
+
+\subsection{Recipe for Adding More Constructs}
+\label{sub:lift_recipe}
+To add more constructs to our language, 
+there is no need to go through UNF; most of the backend of our work can be used as a black box.
+The non-smooth variables of the operator (typically booleans or integers) should be considered as external to the language, similarly to the way we treat the index $n$ of arrays.
+
+\smartpara{Reverse AD}
+If the operator has type $A\to B$, then one should provide its transpose Jacobian, a term $B\to A$. 
+Such operators can often be unrolled to first-order programs. 
+
+\smartpara{Correctness}
+To check correctness of the given Jacobian, it suffices to 
+check that the semantics of the transpose Jacobian matches the Jacobian of the unrolled program. 
+
+\smartpara{Complexity}
+To ensure the complexity guarantee of the whole transformation, one needs to check that there a linear usage of the continuation variable $Y$ and that the cost of the 
+proposed Jacobian is at most $k$ times the complexity of the operator. 
