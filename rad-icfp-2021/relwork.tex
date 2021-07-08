@@ -8,35 +8,35 @@ They don't seem to arise from theoretical justifications, are error prone, and c
 This makes these systems harder to prove correct. The problem is thus to ensure provable correctness and pureness, while not compromising on efficiency. In addition, we would like something easily provably efficient. 
 A real-world implementation based on our work would of course optimize further, potentially using hand-crafted operations as well, but it would be based on solid grounds.
 
-\noindent \textbf{More dynamic language}
-JAX \cite{bradbury2020jax,frostig2018compiling} is a modern framework that provides state-of-the-art automatic differentiation. 
-One feature that makes it popular is that it uses JIT compilation, 
-which seems to be the best avenue to help best ML practitioners as it allows them 
-to quickly experiment but also benefit from the full power of static optimizations.
-We are interested in seeing how our work could sit in a JIT compiler. 
+% \noindent \textbf{More dynamic language}
+% JAX \cite{bradbury2020jax,frostig2018compiling} is a modern framework that provides state-of-the-art automatic differentiation. 
+% One feature that makes it popular is that it uses JIT compilation, 
+% which seems to be the best avenue to help best ML practitioners as it allows them 
+% to quickly experiment but also benefit from the full power of static optimizations.
+% We are interested in seeing how our work could sit in a JIT compiler. 
 
-\noindent \textbf{More optimizations.}
-As pointed in \ref{sub:Adding general arrays} it would be interesting to have a more principled representation 
-of tensors which could lead to more optimizations. 
-There is always a tension between dynamicity and the possibility for static optimizations 
-and we believe our language offers a good tradeoff, but it will be interesting to tailor it 
-further for specific applications.
+% \noindent \textbf{More optimizations.}
+% As pointed in \ref{sub:Adding general arrays} it would be interesting to have a more principled representation 
+% of tensors which could lead to more optimizations. 
+% There is always a tension between dynamicity and the possibility for static optimizations 
+% and we believe our language offers a good tradeoff, but it will be interesting to tailor it 
+% further for specific applications.
 
-\noindent \textbf{Cost function and memory accesses}
-Our cost model \ref{sub:costModel} is simple but has limits. 
-In particular, it does not capture well cost in term of
-parallel computing, and memory management (cache optimization is one of best way to optimize such linear algebra intensive computations).
-For instance, in the earlier days of automatic differentiation, 
-advanced checkpointing techniques were used to avoid storing all the intermediate values just to save memory 
-and try avoiding saturation of RAM. 
-These problems are harder to analyze and, eventually, it seems to come down to a lot of experimenting and benchmarking.
+% \noindent \textbf{Cost function and memory accesses}
+% Our cost model \ref{sub:costModel} is simple but has limits. 
+% In particular, it does not capture well cost in term of
+% parallel computing, and memory management (cache optimization is one of best way to optimize such linear algebra intensive computations).
+% For instance, in the earlier days of automatic differentiation, 
+% advanced checkpointing techniques were used to avoid storing all the intermediate values just to save memory 
+% and try avoiding saturation of RAM. 
+% These problems are harder to analyze and, eventually, it seems to come down to a lot of experimenting and benchmarking.
 
-\noindent \textbf{Parallelism and GPU}
-We tried to locally preserve parallelism. Having a pure transformation should help with found parallelism. 
-It would be interesting to implement on transformations and see how they perform on GPU.
-It is well-known that the addition of references provoked by the standard reverse-mode transformation
-restricts a lot of optimizations and it is not hard to find examples in C where the compiler does not detect simple optimizations 
-because of the references introduced by reverse-mode.
+% \noindent \textbf{Parallelism and GPU}
+% We tried to locally preserve parallelism. Having a pure transformation should help with found parallelism. 
+% It would be interesting to implement on transformations and see how they perform on GPU.
+% It is well-known that the addition of references provoked by the standard reverse-mode transformation
+% restricts a lot of optimizations and it is not hard to find examples in C where the compiler does not detect simple optimizations 
+% because of the references introduced by reverse-mode.
 
 % \noindent \textbf{implementation, BLaS, benchmark}
 
@@ -57,22 +57,22 @@ This is reminiscent of hand-crafted derivatives present in large AD frameworks (
 and these can already be added in added in our language. 
 One only needs to make sure that the provided transpose Jacobian is correct.
 
-\noindent \textbf{Recursion}
-It would be an interesting extension to our work to see if one can define efficient pure reverse derivatives on general recursion.
+% \noindent \textbf{Recursion}
+% It would be an interesting extension to our work to see if one can define efficient pure reverse derivatives on general recursion.
 
-\noindent \textbf{Higher derivatives}
-There are recent approaches to computing higher derivatives using jets \cite{betancourt2018geometric} which generalise forward and reverse mode.
-A more standard approach is to iterate forward or reverse-mode. 
-Forward mode is standard and can easily be defined on our Target language. 
-As our optimization procedure removes lambdas, to iterate reverse-mode we would only need to compute reverse derivatives for the new primitives of Target, that is !scanl, scanr, shift1L, shift1R!.
+% \noindent \textbf{Higher derivatives}
+% There are recent approaches to computing higher derivatives using jets \cite{betancourt2018geometric} which generalise forward and reverse mode.
+% A more standard approach is to iterate forward or reverse-mode. 
+% Forward mode is standard and can easily be defined on our Target language. 
+% As our optimization procedure removes lambdas, to iterate reverse-mode we would only need to compute reverse derivatives for the new primitives of Target, that is !scanl, scanr, shift1L, shift1R!.
 
-\noindent \textbf{Further applications}
-Reverse-mode differentiation is notoriously difficult to grasp, implement, and optimize.
-We hope this work could help develop a new perspective on pure reverse-mode automatic differentiation.
-Other applications include the use of fancier datatypes e.g. dependent types, 
-in probabilistic programming, e.g. for HMC or Variational Inference. 
-It is also of interest to see how to extend this work with other techniques which 
-have had renewed interest such as implicit differentiation \cite{blondel2021efficient,lorraine2020optimizing}.
+% \noindent \textbf{Further applications}
+% Reverse-mode differentiation is notoriously difficult to grasp, implement, and optimize.
+% We hope this work could help develop a new perspective on pure reverse-mode automatic differentiation.
+% Other applications include the use of fancier datatypes e.g. dependent types, 
+% in probabilistic programming, e.g. for HMC or Variational Inference. 
+% It is also of interest to see how to extend this work with other techniques which 
+% have had renewed interest such as implicit differentiation \cite{blondel2021efficient,lorraine2020optimizing}.
 
 % 	https://github.com/apple/swift/blob/master/docs/DifferentiableProgramming.md#approaches-to-automatic-differentiation
 
