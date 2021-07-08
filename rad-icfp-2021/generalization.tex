@@ -34,49 +34,6 @@ $\directD{\rho}{\Gamma}{Y}$(!reduce (x,y.e1) e$_2$ e$_3$!)
 \label{fig:lift_reduce}
 \end{figure}
 
-\subsection{More array operators}
-\label{sub:lift_more_arr_op}
-
-There are two main differences with fold left !foldl! compared to !reduce!. 
-First, in !foldl (x,y.e) v A! the starting accumulation element !v! is not a unit for !(x,y.e)!,
-so it will have non-trivial derivatives in general and we need to account for that.
-Second, we will need a more general !scanl! which allows !(x,y.e)! as a function argument. 
-In other words, we need the general scan left computing the intermediate values of a fold left.
-This should be a different primitive but we will still call it !scanl! in this section.
-
-Finally, the former point implies we need a few more array manipulations.
-These can be elegantly dealt with by changing the semantics of !scanl! and !scanr!. 
-Let's assume that they now return a pair of an array of size $n$ 
-of the intermediate computations and the final result.
-The reverse derivative of !foldl! is then as shown in Figure~\ref{fig:foldl_map_trans}.
-In this figure, we have shown the translation of the !map! operator as well, which is very similar to !map2!.
-
-\begin{figure}
-\begin{center}
-\begin{tabular}{|r c l|}
-\hline
-    $\directD{\rho}{\Gamma}{Y}$(!foldl (x,y.e$_1$) e$_2$ e$_3$!) &=&
-            !let v,Y$_1$ = $\directD{\rho}{\Gamma}{Y}$(e$_2$) in! \\
-            && !let A,Y$_2$ = $\directD{\rho}{\Gamma,v}{Y_1}$(e$_3$) in! \\
-            && !let A$_0$,r$_1$ = (scanl (x,y.e$_1$) v A) in! \\
-            && !let A$_1$ = map2 (a,b.(!$\grad_{\{x\}}$!e$_1$)[a/x,b/y]) A$_0$ A! \\
-            && !let A$_2$ = map2 (a,b.(!$\grad_{\{y\}}$!)e$_1$[a/x,b/y]) A$_0$ A! \\
-            && !let r$_2$, A$_3$ = scanr * 1 A$_1$! \\
-            && !<r$_1$, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
-            && !let y$_1$,B = r$_2$*z ,map2 (x,y. x*y*z) A$_2$ A$_3$ in! \\
-            && !Y$_2$(x$_1$,$\ldots$,x$_n$,y$_1$,B)>! \\
-    $\directD{\rho}{\Gamma}{Y}$(!map (x.e$_{1}$) e$_{2}$!) &=&  
-            !let A,Y$_{1}$ = $\directD{\rho}{\Gamma}{Y}$(e$_{2}$) in! \\
-            && !let G=$\grad_{\Gamma}$ e$_{1}$ in!\\
-            && !<map (x.e$_{1}$) A, fun (x$_{1}$,$\ldots$,x$_n$,Z) -> !\\
-            && !Y$_{1}$( (x$_{1}$,$\ldots$,x$_n$)$\widehat{+}$(G*(reduce + 0 Z)),!\\
-            && \quad\quad !map2 (a,b.($\grad_{\{x\}}$e$_{1}$)[a/x]*b) A Z )>!\\\hline
-\end{tabular}
-\end{center}
-\caption{The reverse-mode AD transformation of \codekw{foldl} and \codekw{map} operators.}
-\label{fig:foldl_map_trans}
-\end{figure}
-
 \subsection{Conditionals} % (fold)
 \label{sub:lift_conditional}
 
@@ -117,19 +74,6 @@ This time, there is a linear usage of the continuation variable !Y!. We note tha
 Non smooth functions such as the Rectified Linear Unit (ReLU) in machine learning which can be defined as $ReLU(x)\defeq max(0,x)$ 
 requires a non smooth primitive such as $>0: \reals\to\BB$. In several AD systems such as TensorFlow, 
 the condition is evaluated before differentiation is applied, and so conditionals are never directly differentiated.
-
-\subsection{Non-smooth scalar operators} % (fold)
-\label{sub:lift_non_smooth}
-
-We assumed the unary and binary operators were denoted by smooth functions $\RR^n\to\RR$. 
-There is no additional difficulty in considering operators which are partial functions 
-like division or operators which are not smooth at a point like square root.
-
-These functions are then given intentional derivatives which provide valid derivatives 
-on the domain of definition and differentiability of the operator. 
-These functions are well known to be the bete noire of AD \cite{griewank2008evaluating} 
-and we do not provide novel solutions to these.  
-Several recent work have shown how to give semantics to such operators in the context of AD \cite{vakar2020denotational,mazza2021automatic,sherman2021,lee2020correctness}.
 
 \subsection{General arrays} % (fold)
 \label{sub:lift_gen_arr}
