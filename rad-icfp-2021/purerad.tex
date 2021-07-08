@@ -26,7 +26,7 @@ It is a well-known parallel friendly construct.
 For the sake of simplicity in the presentation, the bound function in !reduce! 
 is restricted to having no free variables. Furthermore, as our main focus is on AD and not array processing,
 we currently restrict to arrays of reals.
-We show how to lift these restrictions in Section~\ref{sec:generalization}.
+We show how to lift these restrictions and how to differentiate some other array operators in Section~\ref{sec:generalization}.
 
 \input{figures/source_type_system}
 
@@ -36,8 +36,8 @@ The target language of our source-code transformation is an extension to the sou
 It is a higher-order language, as our purely functional reverse-mode introduces a continuation.
 The set of scalar operations should also be closed under partial differentiation. 
 In more detail, for every unary scalar operation !op1!, 
-we assumed a given operator $\partial_1$!op1! whose semantics should be the derivative of !op1!.
-For every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2! 
+we assumed a given operator $\partial$!op1! whose semantics should be the derivative of !op1!, e.g. $\partial$!cos!=!sin!.
+Similarly, for every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2!, 
 respectively representing the first and second partial derivative of !op2!.
 
 Similarly, the target language contains more array primitives which are used to define the reverse derivatives of array operations. 
@@ -102,7 +102,6 @@ $a_1,\ldots,a_n\widehat{+}_{x1:G_1,\ldots, x_n:G_n}b_1,\ldots,b_n\defeq a_1\wide
 
 \end{notation}
 
-
 \begin{example}
     The reverse-mode transformation of the terms from the introduction are given by
 
@@ -154,37 +153,32 @@ By induction on derivation of $\Gamma\vdash$!e:A!.
 \subsection{Partial evaluation and optimization} % (fold)
 \label{sub:Partial evaluation and optimization}
 
-Following the insight from Section~\ref{subsec:insights}, 
-we do not want to keep all the lambda abstractions as this is costly. 
+As can be seen from the examples, $\directD{\rho}{\Gamma}{Y}$ introduces a lot of functions of several arguments.
+Following the insight from Section~\ref{subsec:insights}, we do not want to keep all these costly lambda abstractions.
 The transformation is designed in such a way that all the lambda abstractions are given arguments,  
-and we can use partial evaluation to do beta-reduce all these lambda abstractions.
+and we can use partial evaluation to beta-reduce all these lambda abstractions.
 
 By inspection in Figure~\ref{fig:direct_diff_macro}, 
 we see that there is a linear usage of  each continuation $Y$ 
 and that it is always applied to almost the identity. 
 More precisely, we have applications of the form !fun (x1,$\ldots$,xn) -> Y(e1,$\ldots$,en)! 
 where the !ei! are !xi! except for at most $k$ (independent of $n$) terms.
-In fact we have $k=2$, except for the !map2! case which requires a more detailed analysis (see Section~\ref{sec:complexity}).
-
-Using inlining as given in Figure~\ref{fig:optim} allows us to rewrite
+In fact we have $k=2$, except for the !map2! and !reduce! cases which require a more detailed analysis (see Section~\ref{sec:complexity}).
+We can first use inlining as given in Figure~\ref{fig:optim}.
+Using the invariant above, most of the !e!$_{i}$ below are variables. 
+Without loss of generality, assume the only terms !e!$_{i}$ which are not variables are !e!$_{n-1}$ and !e!$_{n}$.
+We can then use forward substitution on the other !e!$_{i}$.
+In brief:
 
 \begin{tabular}{l}
 !fun (x$_{1}$,$\ldots$,x$_n$) -> (fun (y$_{1}$,$\ldots$,y$_n$) -> (f$_{1}$,$\ldots$,f$_n$))(e$_{1}$,$\ldots$,e$_n$)! 
 $\transto$ \\
-!fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!
+!fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)! $\transto$ \\
+!fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{n-1}$,y$_n$ = e$_{n-1},$e$_1$ in!\\
+\hspace{3cm}!(f$_{1}$[x$_{1}$/y$_{1}$],$\ldots$,f$_{n-2}[$x$_{n-2}$/y$_{n-2}]$,f$_{n-1}$,f$_{n}$)!
 \end{tabular}
 
-Using the invariant above, most of the !e!$_{i}$ are variables. 
-Without loss of generality, assume the only terms !e!$_{i}$ which are not variables are !e!$_{n-1}$ and !e!$_{n}$.
-we can use forward substitution on the other !e!$_{i}$ and we obtain
-
-\begin{tabular}{l}
-    !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!  $\transto$ \\
-    !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{n-1}$,y$_n$ = e$_{n-1},$e$_1$ in!\\
-    \hspace{3cm}!(f$_{1}$[x$_{1}$/y$_{1}$],$\ldots$,f$_{n-2}[$x$_{n-2}$/y$_{n-2}]$,f$_{n-1}$,f$_{n}$)!
-\end{tabular}
-
-It means that it does not change the evaluation cost of most of the !f!$_{i}$ for $1\leq i \leq n-2$.
+This rewriting does not change the evaluation cost of the !f!$_{i}$ for $1\leq i \leq n-2$.
 The new evaluation cost is reduced to the sum of the cost of evaluating 
 the !f!$_{i}$ in addition to the cost of evaluating !e!$_{n-1}$ and !e!$_{n}$, gaining O($n$) movement of variables.
 
