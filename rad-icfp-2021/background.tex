@@ -109,8 +109,7 @@ $f_1\dots f_n:\RR\to\RR$,
 An intuition for $h$ is often given in terms of dual numbers.
 The transformed function operates on pairs of numbers, $(x,x')$, and it is common
 to think of such a pair as $x+x'\epsilon$ for an `infinitesimal' $\epsilon$.
-But while this is a helpful intuition, the formalization of infinitesimals can be intricate, 
-and the development in this paper is focussed on the elementary formulation in~\eqref{eqn:dualnumber}. 
+But while this is a helpful intuition, the formalization of infinitesimals can be intricate.
 
 The reader may also notice that $h$ encodes all the partial derivatives of
 $g$. For example, 
@@ -139,7 +138,8 @@ Our approach focuses on source code transformation which is better fitted for co
 \subsection{Reverse-mode differentiation}
 
 The problem with the previous approach shows up when one wants to compute the full gradient of a function $\RR^n\to\RR$, for a large $n$. 
-Forward-mode only computes one directional derivative, for instance one partial derivative. This implies $n$ passes must be performed through the forward derivative to compute the whole gradient.
+Forward-mode only computes one directional derivative, for instance one partial derivative. 
+This implies $n$ passes must be performed through the forward derivative to compute the whole gradient.
 By using the symmetry in the chain rule, there is a way to compute the whole gradient faster, and this method is reverse-mode differentiation.
 Suppose given a function $f=f_n\circ\ldots\circ f_1 :\RR^n\to\RR$. 
 The simplest way to see this mathematically, is first to say that forward mode essentially computes $(Jf)v=Jf_n(Jf_{n-1}(\ldots(Jf_1v))\ldots)$ for a direction $v\in\RR^n$. 
@@ -147,22 +147,18 @@ Reverse-mode, on the other hand, computes $(Jf)^Tv =J^Tf_1(J^Tf_{2}(\ldots(J^Tf_
 In particular, taking $v=1$ computes the gradient of $f$.
 
 Because the computation flow of the function is reversed, the actual implementation of reverse-mode is way more tricky. 
-(TODO: paragraph below from Matthijs' paper, need to rewrite.)
-Reverse-mode AD is only well-understood as a source-code transformation 
-(also called define-then-run style AD) on limited programming languages. 
+Reverse-mode AD is only well-understood as a source-code transformation on limited programming languages. 
 Typically, its implementations on more expressive languages that have features such as higher-order functions and conditionals
-make use of define-by-run approaches. 
-These approaches first build a computation graph during runtime, effectively evaluating the program until a straight-line
+make use of define-by-run approaches. These approaches first build a computation graph during runtime, effectively evaluating the program until a straight-line
 first-order program is left, and then they evaluate this new program \cite{carpenter2015stan,paszke2017automatic}. 
 Such approaches have the severe downside that the differentiated code cannot benefit from existing optimizing compiler architectures. 
-As such, these AD libraries need to be implemented using carefully, manually optimized code, that for example does not contain any common subexpressions. 
-This implementation process is precarious and labour intensive. 
-Further, some whole-program optimizations that a compiler would detect go entirely unused in such systems.
+As such, the implementation process is precarious and labour intensive as these AD libraries need to be implemented using carefully, manually optimized code.
+In addition, some whole-program optimizations that a compiler would detect go entirely unused in such systems.
 
 \subsection{Purely functional inefficient reverse-mode}
 
 Following \cite{pearlmutter2008reverse}, there is a simple way to define an inefficient yet purely functional reverse-mode transformation for first-order programs.
-We review a slight modification of the transformation we presented, which is also better explained on an example. 
+We review a slight modification of the transformation they presented, which is also better explained through an example. 
 
 Let the term we want to differentiate be $x1:\RR,\ldots,xn:\RR\vdash exp(cos(xi))$.
 Following the chain rule, we need the jacobian matrices of $cos$ at $xi$ and of $exp$ at $cos(xi)$. 
@@ -188,27 +184,28 @@ $<f_{i+1}\circ f_i, \lambda Y. Y\circ J^Tf_i \circ J^Tf_{i+1}>$, and thus by ind
 By applying the identity continuation $\RR^n\to\RR^n$ on the second component then the result to $(0,\ldots,0,1)$, 
 we have obtained a purely functional to compute $\nabla f$. 
 
-This method is quite inefficient still. First, we have to carry a continuation and $\beta$-reduce a lot of higher-order functions.
+This method is still quite inefficient. First, we have to carry a continuation and $\beta$-reduce a lot of higher-order functions.
 Second, each $J^Tf_{i+1}$ is a potentially huge matrix if $n$ or $m$ is big.
 
-The imperative version of reverse mode for a binary operator $op(x,y)$ is something like $x'+= \partial_1op(x,y);y'+= \partial_2op(x,y)$. 
-It is for these cases that mutation is usually key. 
+On the other hand, the imperative version of reverse mode for a binary operator $op(x,y)$ adds $x'+= \partial_1op(x,y);y'+= \partial_2op(x,y)$, 
+where $\partial_iop$ are the partial derivatives of $op$. 
+Mutation is usually key for these cases.
 If we see our term as a directed graph, reverse mode needs to backpropagate from the end of the graph to the starting nodes via every path.
 It's hard to keep track of all these information in parallel in a functional way.
 One of the key simple ideas that we used was to transform every operator into a unary one. 
-This essentially trivialises the computation flow to a line. 
-Even if the starting program was a straight line program, 
-having non-unary operators was a source of inefficiency which justified mutation in the first place.
+This essentially trivializes the computation flow to a line. 
+Even if the starting program was a straight-line program, 
+having non-unary operators was a source of inefficiency and justified the use of mutation in the first place.
 By returning every variable every time, the problem of using a variable several times does not need to be dealt with via mutation. 
-This simple idea of transforming a program into essentially a straight line is what our new intermediate representation unary-form does. 
+This simple idea of transforming a program into essentially a straight line is what our new intermediate representation UNF allows.
 
-\subsection{Insights for efficient reverse-mode}\
+\subsection{Insights for efficient reverse-mode}
 \label{subsec:insights}
 
 If we look at $J^Tf_{i+1}$, we notice that this function is almost the identity, except at the last row. 
 Even on the last row, if the original term was a unary or binary operator like $cos, exp, +, *$, 
 the row is zero except for at most two indices (one for unary operators).
-This means we can use a more compact representation $J^T\sem{op(xi,xj)}:=\lambda (y1,\ldots,y(n+i)).(y1,\ldots,y(n+i))+[i]\partial_1op(xi,xj)+[j]\partial_2op(xi,xj)$, 
+This means we can use a more compact representation $J^T\sem{op(x_i,x_j)}:=\lambda (y_1,\ldots,y_{n+i}).(y_1,\ldots,y_{n+i})+[i]\partial_1op(x_i,x_j)+[j]\partial_2op(x_i,x_j)$, 
 where $[k]$ means that the element is added at the $k$-th index of the tuple.
 
 We know in advance that such jacobian functions are going to be applied one to another and we can use partial evaluation to $\beta$-reduce all of these $\lambda$s.
