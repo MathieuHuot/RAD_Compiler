@@ -133,8 +133,8 @@ Furthermore, we show how to extend our work to a richer language in Section~\ref
 \item One of the key insights behind efficient reverse-mode AD is to only consider unary operators. 
 Inspired by this insight and following IRs such as SSA and ANF, we introduce a novel IR, UNF (Section~\ref{sec:unf})).
 We introduce an alternative and easier to follow compilation pipeline for efficient reverse-mode AD (bottom of Figure~\ref{fig:outline}).
-\item We proof the correctness of our transformations (top/bottom parts of Figure~\ref{fig:outline}) by defining the denotational semantics of our languages using multicategories and concategories (Section~\ref{sec:correctness}).
 \item We prove the complexity guarantees for the reverse ADed programs. Furthermore, we show a list of optimizations that can further improve the constant factors (Section~\ref{sec:complexity}).
+\item We proof the correctness of our transformations (top/bottom parts of Figure~\ref{fig:outline}) by defining the denotational semantics of our languages using multicategories and concategories (Section~\ref{sec:correctness}).
 \end{itemize}
 
 Next, we recall rudiments of automatic differentiation, forward and reverse-mode differentiation.

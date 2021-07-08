@@ -32,7 +32,7 @@ The grammar of Source UNF is given in Figure~\ref{fig:unf_source_grammar}.
 
 There are a few notable things in this syntax. 
 Every primitive is indexed by a list of types from the source language, 
-which corresponds to a context being carried. 
+which corresponds to a context being carried. We will often elide the brackets ![!,!]!.
 Every constant, unary, or binary operator from Source has a corresponding $n$-ary operator !op$_{T,n}$! in UNF.
 Sequential composition is denoted by !;! and !e$_{1}$;e$_{2}$! means that !e$_{1}$! should be performed, and then !e$_{2}$!.
 The array operators !map2! and !reduce! have extra indices that represent well-formed terms in Source.
@@ -85,13 +85,11 @@ There is a sharp contrast between the simplicity of $\Dsynrevsymbol_{\rho}$ comp
 \begin{example}
     Continuing with our previous example !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$!, we have
 
-    \begin{tabular}{r c l}
-        !$\Dsynrevsymbol_{\rho}$(cos$_{\reals,\reals}\comp$ pair$_{\reals,\reals; \reals\times\reals}$)!
-        &=& !<TODO: > $\comp$! \\
-        &&  !<> !
+    \begin{tabular}{l}
+        !$\reals$,$\reals$,$\reals$,$\reals\times\reals\times\reals$->$\rho \vdash \Dsynrevsymbol_{\rho}$(cos$_{\reals,\reals}\comp$ pair$_{\reals,\reals; \reals\times\reals}$): $\reals$,$\reals$,$\reals \times \reals$,$(\reals\times\reals\times(\reals\times\reals))$->$\rho$! \\
+        = !<proj$_{\reals^3;\reals^3->\rho;[]} \comp$ cos$_{\reals,\reals}$, proj$_{[];\reals^3;\reals^3->\rho} \icomp$ (proj$_{\reals^3;\reals^3->\rho;[]}$ $\comp$ J$^T$cos$_{\reals,\reals}$)> $\comp$! \\
+        !<proj$_{\reals^4;\reals^4->\rho;[]} \comp$ pair$_{\reals,\reals; \reals\times\reals}$, proj$_{[];\reals^4;\reals^4->\rho} \icomp$ (proj$_{\reals^4;\reals^4->\rho;[]}$ $\comp$ J$^T$pair$_{\reals,\reals; \reals\times\reals}$)>!
     \end{tabular}
-
-    It intuitively represents the term TODO:
 \end{example}
 
 \begin{lemma}[Well typedness $\Dsynrevsymbol_{\rho}$]
@@ -154,10 +152,6 @@ Next, the transformation from Target UNF to Target is presented in Figure~\ref{f
 We call this transformation $\UNFSymbol^{-1}$, but it is not a strict inverse of $\UNFSymbol$.
 Doing $\UNFSymbol$ followed by $\UNFSymbol^{-1}$ performs some version of the ANF transformation \cite{sabry1993reasoning}.
 
-\begin{example}
-    TODO
-\end{example}
-
 Target UNF does not have variables. 
 A context type !T=[A$_1$,$\ldots$,A$_n$]! is transformed to a context \\
 !$\Gamma$=x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$!.
@@ -166,7 +160,12 @@ For operators like !op$_{\Gamma;m}$!, we extend the notation above by saying tha
 !x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$,x$_{n+1}$:$\reals$,$\ldots$,x$_{n+m}$:$\reals$!.
 
 \begin{example}
-    TODO
+    Continuing again with our previous example !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$!, we have
+
+    \begin{tabular}{l}
+        !x$_1$,x$_2$,x$_3$:$\reals$,x$_4$:$\reals^3$->$\rho$ $\vdash$ $\UNFSymbol^{-1}$($\Dsynrevsymbol_{\rho}$(cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$): $(\reals\times\reals) \times (\reals\times\reals\times(\reals\times\reals))$->$\rho$! \\
+        = !TODO!
+    \end{tabular}
 \end{example}
 
 $\UNFSymbol^{-1}$ does not have as a simple typing property as $\UNFSymbol$, 
