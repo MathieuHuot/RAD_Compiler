@@ -30,7 +30,7 @@ TODO: for let binding and same in map, do I need to add some MOVES?
 
 \subsection{Cheap gradient principle}
 
-We define the nesting of array operations $\NestA$ of a term !e! of Source by induction on !e! as follows.
+We define the Nesting of Array Operations $\NestA$ of a term !e! of Source by induction on !e! as follows.
 
 \begin{tabular}{r c l}
     $\NestA$(!c!) &=& 0 \\
@@ -41,7 +41,7 @@ We define the nesting of array operations $\NestA$ of a term !e! of Source by in
     $\NestA$(!e$_1$ op2 e$_2$!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!)\\
     $\NestA$(!op1 e!) &=& $\NestA$(!e!) \\
     $\NestA$(!map2 (x,y.e$_1$) e$_2$ e$_3$!) &=& max 1+$\NestA$(!e$_1$!),$\NestA$(!e$_2$!),$\NestA$(!e$_3$!) \\
-    $\NestA$($\Gamma\vdash $ !reduce (x,y.e$_1$) e$_2$ e$_3$!) &=& max 1+$\NestA$(!e$_1$!),$\NestA$(!e$_2$!),$\NestA$(!e$_3$!) \\
+    $\NestA$(!reduce (x,y.e$_1$) e$_2$ e$_3$!) &=& max 1+$\NestA$(!e$_1$!),$\NestA$(!e$_2$!),$\NestA$(!e$_3$!) \\
 \end{tabular}
 
 \begin{theorem}
