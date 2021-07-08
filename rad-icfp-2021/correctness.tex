@@ -187,11 +187,20 @@ This comparison precisely gives the UNF transformation.
     In other words each term $f_i$ forgets about its output $\underline{B}_i$, and then we use the composition in the concategory.
 \end{definition}
 
-We can interpret Source in $\CSource$ as follows.
-TODO
+We can interpret Source in $\CSource$ as follows. The functor is an identity on types. 
+On morphisms, we interpret them as morphisms in the concategory as follows.
+The terminal map is interpreted as the identity. The operators !op1,op2! by themselves.
+Crucially, the semantics of a !let! becomes composition in the concategory. 
+The semantics of a variable is the pairing of the identity with a projection.
+The operation !map2 (x,y.e)! is interpreted as the pairing of the identity and itself, and !reduce (x,y.e$_1$) $e_2$! as itself.
+
+Interpretating Source in $\CSource$ allows us to see terms of Source as morphisms in the concategory $\ConcatS$.
+This allows us to compare to semantics of terms of Source and of Source UNF.
+The following proposition can be shown by induction on the structure of the terms.
 
 \begin{proposition}[construction above gives UNF]
-    TODO
+    Let !$\Gamma \vdash$ e:A! be a term in Source. 
+    Seen as morphisms in $\CSource$, we have !$\seml$e$\semr$=$\seml\UNFSymbol$(e)$\semr$!.
 \end{proposition}
 
 In a similar vein, we form a concategory from the syntactic multicategory for Target.
@@ -205,12 +214,13 @@ $UNF^-1$ arises in this way.
 \end{definition}
 
 This allows to form a concategory $\CTarget$ from the syntactic multicategory for Target.
-We can interpret $\ConcatT$ in $\CTarget$ as follows.
-TODO
+We can interpret $\ConcatT$ in $\CTarget$. 
+The functor is identity on objects, sends operations !op1,op2! to themselves. 
+It sends Jacobian operations to terms of Target as given by $\UNFSymbol^{-1}$ in Figure~\ref{fig:unf_to_target}
 
 This interpretation is in essence $\UNFSymbol^{-1}$. 
 The difference is that to preserve typing, the semantic $\UNFSymbol^{-1}$
-sends a non Jacobian primitive to a tuple, as in the example \ref{}. 
+sends a non Jacobian primitive to a tuple, as in the Example \ref{exm:unf}. 
 This is highly inefficient and the the syntactic $\UNFSymbol^{-1}$ 
 additionally projects to the last element, where the non trivial information of the term is.
 
@@ -224,6 +234,7 @@ from Section~\ref{sub:Simple reverse mode transformation}.
 \begin{definition}[$\Dsynrevsymbol_{\rho}$ as a lax functor]
     We define $\Dsynrevsymbol_{\rho}:\ConcatS\to\ConcatT$ as follows.
     $\Dsynrevsymbol_{\rho}$(![A$_1$,$\ldots$,A$_n$])=[A$_1$,$\ldots$,A$_n$,A$_1\times\ldots\times$A$_n\to \rho$]!.
+    TODO
 \end{definition}
 
 The design of $\Dsynrevsymbol_{\rho}$ on UNF is inspired by the semantic one between concategories, 
