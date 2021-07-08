@@ -76,7 +76,19 @@ To a list of types, the transformation adds a higher-order type.
 It is to be understood as the continuation for the pure storage of the gradient.
 On primitive constants of Source UNF, it returns a pair. 
 The first part is the initial term (pre-composed by a projection because it is not using the continuation variable).
-The second part returns the continuation term pre-composed by the transpose Jacobian of the primitive.
+The second part returns the continuation term pre-composed by the transpose Jacobian of the primitive. 
+There is a sharp contrast between the simplicity of $\Dsynrevsymbol_{\rho}$ compared to $\directD{\rho}{\Gamma}{Y}$ from Figure~\ref{fig:direct_diff_macro}.
+
+\begin{lemma}[Well typedness $\Dsynrevsymbol_{\rho}$]
+    Let !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$! be a term in Source UNF. \\
+    Then 
+    % \begin{center}
+        !A$_{1}$,$\ldots$,A$_{n}$,A$_{1}\times\ldots\times$ A$_{n}$->$\rho$ $\vdash$ $\Dsynrevsymbol_{\rho}$(e): B$_{1}$,$\ldots$,B$_{m}$,B$_{1}\times\ldots\times$ B$_{m}$->$\rho$!
+    % \end{center}
+\end{lemma}
+\begin{proof}
+    By induction on derivation of !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$!.
+\end{proof}
 
 \input{figures/macro_diff}
 
@@ -118,6 +130,9 @@ and this explains the projection !proj! in the $\UNFSymbol$ of other terms.
         !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ $\UNFSymbol$(e): A$_{1}$,$\ldots$,A$_{n}$,B!.
     \end{center}
 \end{lemma}
+\begin{proof}
+    By induction on derivation of $\Gamma\vdash$!e:B!.
+\end{proof}
 
 % TODO: we could merge everything of the form op;proj into just op by changing the type of op.
 
@@ -125,9 +140,19 @@ and this explains the projection !proj! in the $\UNFSymbol$ of other terms.
 
 Next, the transformation from Target UNF to Target is presented in Figure~\ref{fig:unf_to_target}. 
 We call this transformation $\UNFSymbol^{-1}$, but it is not a strict inverse of $\UNFSymbol$.
-Doing $\UNFSymbol$ followed by $\UNFSymbol^{-1}$ performs some version of ANF transformation. 
-$\UNFSymbol^{-1}$ does not preserve a typing property as nicely as $\UNFSymbol$, 
-because it treats primitives with and without a $J$ differently.
+Doing $\UNFSymbol$ followed by $\UNFSymbol^{-1}$ performs some version of the ANF transformation \cite{sabry1993reasoning}. 
+$\UNFSymbol^{-1}$ does not have as a simple typing property as $\UNFSymbol$, 
+because it treats primitives with and without a $J$ differently and should be performed after $\Dsynrevsymbol_{\rho}$.
+
+\begin{lemma}[Well typedness $\UNFSymbol^{-1}$]
+    Let !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$! be a term in Source UNF. Then
+    \begin{center}
+        !x$_1$:A$_{1}$,$\ldots$,x$_n$:A$_{n}$,x$_{n+1}$:A$_{1}\times\ldots\times$ A$_{n}$->$\rho$ $\vdash$ $\UNFSymbol^{-1}$($\Dsynrevsymbol_{\rho}$(e)): B$_m$ $\times$ (B$_{1}\times\ldots\times$ B$_{m}$->$\rho$) !.
+    \end{center}
+\end{lemma}
+\begin{proof}
+    By induction on derivation of !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$!.
+\end{proof}
 
 Target UNF does not have variables. 
 A context type !T=[A$_1$,$\ldots$,A$_n$]! is transformed to a context \\
