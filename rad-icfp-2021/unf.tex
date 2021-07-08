@@ -49,7 +49,7 @@ When !T$_1$! and !T$_2$! are lists of types and !A! a type, the operator !,! den
 \begin{example}
     The term in Source UNF !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$! 
     intuitively represents a term \\
-    !x$_1$:$\reals$, x$_2$:$\reals$, x$_3$:$\reals$ $\vdash$ let (x$_1$,x$_2$,x$_3$,x$_4$)=(x$_1$,x$_2$,x$_3$,cos(x$_3$)) in (x$_1$,x$_2$,<x$_3$,x$_4$>)!.
+    !x$_1$:$\reals$,x$_2$:$\reals$,x$_3$:$\reals$ $\vdash$ let (x$_1$,x$_2$,x$_3$,x$_4$)=(x$_1$,x$_2$,x$_3$,cos(x$_3$)) in (x$_1$,x$_2$,<x$_3$,x$_4$>)!.\\
     The operator $\comp$ can more generally be understood as a let binding of a tuple, and primitives only act on the last parts of the tuple, always also returning their whole context.
 \end{example}
 
@@ -82,12 +82,19 @@ The first part is the initial term (pre-composed by a projection because it is n
 The second part returns the continuation term pre-composed by the transpose Jacobian of the primitive. 
 There is a sharp contrast between the simplicity of $\Dsynrevsymbol_{\rho}$ compared to $\directD{\rho}{\Gamma}{Y}$ from Figure~\ref{fig:direct_diff_macro}.
 
+\begin{example}
+    Continuing with our previous example !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$!, we have
+
+    \begin{tabular}{r c l}
+        !$\Dsynrevsymbol_{\rho}$(cos$_{\reals,\reals}\comp$ pair$_{\reals,\reals; \reals\times\reals}$)!
+        &=& !<> $\comp$! \\
+        &&  !<> !
+    \end{tabular}
+\end{example}
+
 \begin{lemma}[Well typedness $\Dsynrevsymbol_{\rho}$]
     Let !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$! be a term in Source UNF. \\
-    Then 
-    % \begin{center}
-        !A$_{1}$,$\ldots$,A$_{n}$,A$_{1}\times\ldots\times$ A$_{n}$->$\rho$ $\vdash$ $\Dsynrevsymbol_{\rho}$(e): B$_{1}$,$\ldots$,B$_{m}$,B$_{1}\times\ldots\times$ B$_{m}$->$\rho$!
-    % \end{center}
+    Then  !A$_{1}$,$\ldots$,A$_{n}$,A$_{1}\times\ldots\times$ A$_{n}$->$\rho$ $\vdash$ $\Dsynrevsymbol_{\rho}$(e): B$_{1}$,$\ldots$,B$_{m}$,B$_{1}\times\ldots\times$ B$_{m}$->$\rho$!.
 \end{lemma}
 \begin{proof}
     By induction on derivation of !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$!.
@@ -102,7 +109,7 @@ We first give a translation from our Source to Source UNF in Figure~\ref{fig:sou
 As discussed above, $\UNFSymbol$ sends a constant or an operator to a primitive in Source UNF. 
 This term in Source UNF carries the context of the original term in Source.
 $\UNFSymbol$ sequentializes a term, mimicking a left-to-right call-by-value evaluation.
-Because of this, we we're trying to return a pair, this needs to be witnessed, and this is the role of !pair!.
+Because of this, when we are trying to return a pair, this needs to be witnessed, and this is the role of !pair!.
 When we need to pass the result of type !A! of !e$_{1}$! through !e$_{2}$! which does not take it as an input, we can transform !e$_{2}$! to accept and pass it.
 It's the equivalent in UNF of a weakening.
 This weakening is required when we transform a non-unary operator such as $+$ or !pair!, as we transform the arguments in order and we need to keep all of their results.
@@ -143,7 +150,23 @@ and this explains the projection !proj! in the $\UNFSymbol$ of other terms.
 
 Next, the transformation from Target UNF to Target is presented in Figure~\ref{fig:unf_to_target}. 
 We call this transformation $\UNFSymbol^{-1}$, but it is not a strict inverse of $\UNFSymbol$.
-Doing $\UNFSymbol$ followed by $\UNFSymbol^{-1}$ performs some version of the ANF transformation \cite{sabry1993reasoning}. 
+Doing $\UNFSymbol$ followed by $\UNFSymbol^{-1}$ performs some version of the ANF transformation \cite{sabry1993reasoning}.
+
+\begin{example}
+    TODO
+\end{example}
+
+Target UNF does not have variables. 
+A context type !T=[A$_1$,$\ldots$,A$_n$]! is transformed to a context \\
+!$\Gamma$=x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$!.
+We use this convention when definiting $\UNFSymbol^{-1}$. 
+For operators like !op$_{\Gamma;m}$!, we extend the notation above by saying that the variables from the context are \\
+!x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$,x$_{n+1}$:$\reals$,$\ldots$,x$_{n+m}$:$\reals$!.
+
+\begin{example}
+    TODO
+\end{example}
+
 $\UNFSymbol^{-1}$ does not have as a simple typing property as $\UNFSymbol$, 
 because it treats primitives with and without a $J$ differently and should be performed after $\Dsynrevsymbol_{\rho}$.
 
@@ -156,12 +179,5 @@ because it treats primitives with and without a $J$ differently and should be pe
 \begin{proof}
     By induction on derivation of !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$!.
 \end{proof}
-
-Target UNF does not have variables. 
-A context type !T=[A$_1$,$\ldots$,A$_n$]! is transformed to a context \\
-!$\Gamma$=x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$!.
-We use this convention when definiting $\UNFSymbol^{-1}$. 
-For operators like !op$_{\Gamma;m}$!, we extend the notation above by saying that the variables from the context are \\
-!x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$,x$_{n+1}$:$\reals$,$\ldots$,x$_{n+m}$:$\reals$!.
 
 \input{figures/unf_to_target}

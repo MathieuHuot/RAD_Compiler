@@ -137,26 +137,26 @@ Several recent work have shown how to give semantics to such operators in the co
 \subsection{General arrays} % (fold)
 \label{sub:lift_gen_arr}
 
-We now show how to generalize our reverse-mode transformation to be defined on arrays over any ground type $G$.
+We now show how to generalize our reverse-mode transformation to be defined on arrays over any ground type !G!.
 That is, we need to adapt the reverse derivatives of !map2! and !reduce! when they have more general function arguments.
 
-A ground type $G$ is interpreted as an Euclidean space $A$. 
+A ground type !G! is interpreted as an Euclidean space $A$. 
 It is in particular a real vector space.
-Similarly, a ground context $\Gamma=x1:G1,\ldots,xn:Gn$ is interpreted as $\bigoplus_{1\leq i\leq n}Ai$, where $Ai\defeq\sem{Gi}$.
-The denotation of the gradient of a term $\Gamma \vdash$!e: !$G$ at a point is then a matrix, more precisely an element of $(\bigoplus_{1\leq i\leq n}Ai)\otimes A$
-where $\otimes$ is the tensor product of real vector spaces. This space is isomorphic to $\bigoplus_{1\leq i\leq n}Ai\otimes A$.
+Similarly, a ground context !$\Gamma$=x$_1$:G$_1$,$\ldots$,x$_n$:G$_n$! is interpreted as $\bigoplus_{1\leq i\leq n}A_i$, where $A_i\defeq\seml$(!G$_i$!)$\semr$.
+The denotation of the gradient of a term !$\Gamma \vdash$ e: G! at a point is then a matrix, more precisely an element of $(\bigoplus_{1\leq i\leq n}A_i)\otimes A$
+where $\otimes$ is the tensor product of real vector spaces. This space is isomorphic to $\bigoplus_{1\leq i\leq n}A_i\otimes A$.
 
 We can define $\otimes$ on the types of our language inductively by
 
 \begin{tabular}{r c l}
     $\reals \otimes A$ & $\defeq$ & $A$ \\
-    $(A1 \times \ldots \times An)\otimes A$ & $\defeq$ & $(A1\otimes A) \times \ldots \times (An \otimes A)$ \\
-    $\Array{A1}{n} \otimes A$ & $\defeq$ & $\Array{A1\otimes A}{n}$
+    $(A_1 \times \ldots \times A_n)\otimes A$ & $\defeq$ & $(A_1\otimes A) \times \ldots \times (A_n \otimes A)$ \\
+    $\Array{A_1}{n} \otimes A$ & $\defeq$ & $\Array{A_1\otimes A}{n}$
 \end{tabular}
 
-With this definition, we recover that the gradient of $\Gamma \vdash$!e: !$\reals$ is a tuple of type $A1\times\ldots\times An$ as expected.
+With this definition, we recover that the gradient of $\Gamma \vdash$!e: !$\reals$ is a tuple of type $A_1\times\ldots\times A_n$ as expected.
 For !map2!, we need a generalization of $*:\reals\to\reals$. 
-If !e1: A!, then $\grad_{\{x\}}$!e1: $A\otimes A$! and we need a new primitive $\widehat{*}:(A\otimes A) \times A \to A$.
+If !e$_1$: A!, then $\grad_{\{x\}}$!e$_1$: $A\otimes A$! and we need a new primitive $\widehat{*}:(A\otimes A) \times A \to A$.
 If we represent $A\otimes A$ as a matrix, then $\widehat{*}$ is matrix-vector multiplication.
 Similarly, for !A$_{3}$! in !reduce! we need a new primitive $\widetilde{*}:(A\otimes A)\times(A\otimes A) \to (A\otimes A)$.
 $\widetilde{*}$ corresponds to matrix-matrix multiplication.
