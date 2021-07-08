@@ -14,16 +14,19 @@ The evaluation contexts aregiven in Figure~\ref{fig:ev_contexts}.
  \label{sub:Reverse derivative of array operations}
 
 We now prove that the reverse mode transformation is correct on array operations. 
-The proofs consist in showing that unrolling the computation before differentiation 
-and then differentiating gives the same as differentiation and then unrolling. 
+% The proofs consist in showing that unrolling the computation before differentiation 
+% and then differentiating gives the same as differentiation and then unrolling. 
 
  \begin{proposition}
     The reverse derivative of !map2! is correct.
 \end{proposition}
 
-\begin{proof}
-    TODO
-\end{proof}
+% \begin{proof}
+% Let's call !t! the term !map2 (x,.y) A B!. 
+% By chosing !Z! to a hot vector at i, call it !Z$_i$!, we're back to showing the result for the term $\Gamma \vdash$!e[a$_i$/x,b$_i$/y]: $\reals$!.
+% In $\directD{\rho}{\Gamma}{Y}$(!t!)(!Z$_i$!), the term !G*(reduce + 0 Z)! reduces to !G!. 
+% This means 
+% \end{proof}
 
 \begin{lemma}
     if !op2! is an associative binary operation with unit $\Gamma \vdash$ !v:! $\reals$, then 

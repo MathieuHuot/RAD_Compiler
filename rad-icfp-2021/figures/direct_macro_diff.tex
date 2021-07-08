@@ -40,11 +40,12 @@
         $\directD{\rho}{\Gamma}{Y}$(!map2 (x,y.e$_{1}$) e$_{2}$ e$_{3}$!) &=&  
             !let A,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{2}$) in! \\
             && !let B,Y$_{2}$ = !$\directD{\rho}{\Gamma,A}{Y_1}$!(e$_{3}$) in! \\
-            && !let G=!$\grad_{\Gamma}$!e$_{1}$ in!\\
             && !<map2 (x,y.e$_{1}$) A B, fun (x$_{1}$,$\ldots$,x$_n$,Z) -> !\\
-            && !Y$_{2}$( (x$_{1}$,$\ldots$,x$_n$)!$\widehat{+}$!(G*(reduce + 0 Z)),!\\
-            && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x]*b) A Z,!\\
-            && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e$_{1}$)[a/x]*b) B Z )>!\\
+            && !let G = (map2 * Z!\\
+            && !  (map2 (a,b.(!$\grad_\Gamma$!e$_{1}$)[a/x.b/y]) A B) Z) in! \\
+            && !Y$_{2}$( (x$_{1}$,$\ldots$,x$_n$) $\widehat{+}$(reduce $\widehat{+}$ $\widehat{0}$ G),!\\
+            && !map2 * (map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A B) Z,!\\
+            && !map2 * (map2 (a,b.(!$\grad_{\{y\}}$!e$_{1}$)[a/x,b/y]) A B) Z)>!\\
         $\directD{\rho}{\Gamma}{Y}$(!reduce (x,y.e$_{1}$) e$_{2}$ e$_{3}$!) &=&
             !let y$_{1}$,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{2}$) in! \\
             && !let A,Y$_{2}$ = !$\directD{\rho}{\Gamma,y_1}{Y_1}$!(e$_{3}$) in! \\
