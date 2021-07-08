@@ -14,8 +14,48 @@
     & $\mid$ & !map2!$_{T;x,y.e}$ & \grammarcomment{Map2}\\
     & $\mid$ & !reduce!$_{T;x,y.e;e}$ & \grammarcomment{Reduce}\\
     \hline
+    \end{tabular}\\ \vspace{0.2cm}
+    \begin{tabular}{|c|}
+    \hline
+    \begin{tabular}{c} 
+    \\\hline
+    !T! $\vdash$ !var!$_{T;i}$: !T,A$_i$!
+    \end{tabular}~(!T=A$_{1}$,$\ldots$,A$_n$!)
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        \\\hline
+        !T,!$\reals^{\times(n)}$ $\vdash$ !op!$_{T;n}$ : !T,!$\reals^{\times(n+1)}$
+    \end{tabular}~(!T=A$_{1}$,$\ldots$,A$_n$!)
+\\
+    \begin{tabular}{c}
+    !T! $\vdash$ !e$_{1}$!: !T,A! $\quad$ !T,A! $\vdash$ !e$_{2}$!: !T,A,B! \\\hline
+    !T! $\vdash$ !e$_{1}$!$\comp$!e$_{2}$!: !T,A,B!
+    \end{tabular}~(!T=A$_{1}$,$\ldots$,A$_n$!)
+\\
+    \begin{tabular}{c}
+        \\\hline
+        !T,A,B! $\vdash$ !pair!$_{T;A\times B}$ : !T,A!$\times$!B!
+    \end{tabular}~(!T=A$_{1}$,$\ldots$,A$_n$!)
+\\
+    \begin{tabular}{c}
+        \\\hline
+        !T$_{1}$,T$_{2}$,T$_{3}$! $\vdash$ !proj!$_{T_1;T_2;T_3}$ : !T$_{1}$,T$_{3}$!
     \end{tabular}
-    \vspace{-0.2cm}
-    \caption{Grammar of the source UNF}
+\\
+    \begin{tabular}{c}
+        !x$_{1}$:A$_{1}$,$\ldots$,x$_n$:A$_n$,x:$\reals$,y:$\reals$! $\vdash$ !e:$\reals$!\quad in Source Language
+        \\\hline  
+        !T,$\Array{\reals}{n},\Array{\reals}{n}$! $\vdash$ !map2$_{T; x,y.e}$: T,$\Array{\reals}{n}$,$\Array{\reals}{n}$,$\Array{\reals}{n}$!
+    \end{tabular}~(!T=A$_{1}$,$\ldots$,A$_n$!)
+\\
+    \begin{tabular}{c}
+        !x:$\reals$,y:$\reals$! $\vdash$ !e: $\reals$! \quad !x$_{1}$:A$_{1}$,$\ldots$,x$_n$:A$_n$! $\vdash$ !e$_{2}$!:$\reals$ \quad in Source Language
+        \\\hline  
+        !T,$\Array{\reals}{n}$! $\vdash$ !reduce$_{T; x,y.e_1; e_2}$: T,$\Array{\reals}{n}$,$\reals$!
+    \end{tabular}~(!T=A$_{1}$,$\ldots$,A$_n$!) \\ \hline
+\end{tabular}
+    \vspace{-0.4cm}
+    \caption{Grammar and type system of the source UNF.}
     \label{fig:unf_source_grammar}
+    \vspace{-0.4cm}
     \end{figure*}

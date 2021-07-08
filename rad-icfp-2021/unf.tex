@@ -44,8 +44,6 @@ The typing rules are detailed in Figure~\ref{fig:source_unf_typesystem}.
 $\reals^{\times n}$ is a notation for $\reals,\ldots,\reals$ with $n$ factors $\reals$. 
 When !T$_1$! and !T$_2$! are lists of types and !A! a type, the operator !,! denotes snoc in !T$_1$,A! and denotes append in !T$_1$,T$_2$!.
 
-\input{figures/source_unf_typesystem}
-
 \begin{example}
     The term in Source UNF !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$! 
     intuitively represents a term \\
@@ -67,8 +65,6 @@ It is used by the reverse-mode transformation to pre-compose the continuation te
 The grammar of Target UNF is given in Figure~\ref{fig:unf_target_grammar} and its type system in Figure~\ref{fig:target_unf_typesystem}.
 
 \input{figures/target_unf}
-
-\input{figures/target_unf_typesystem}
 
 \subsection{Simple reverse mode transformation} % (fold)
 \label{sub:Simple reverse mode transformation}

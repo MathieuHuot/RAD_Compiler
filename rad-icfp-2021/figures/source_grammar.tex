@@ -8,16 +8,68 @@
 & $\mid$ & !T! $\times$ !T! & \grammarcomment{Product Type}\\
 & $\mid$ & $\Array{\reals}{n}$ & \grammarcomment{Real Array Type of size $n$}\\
 \hline
-!e! & \mbox{::=} & !x! & \grammarcomment{Variable}\\
-& $\mid$ & !c! & \grammarcomment{Real constant}\\
+!e! & \mbox{::=} & !x! $\mid$ !c! & \grammarcomment{Variable \& Real constant}\\
 & $\mid$ & !let x = e in e! & \grammarcomment{Variable Binding}\\
 & $\mid$ & !< e, e >! $\mid$ $\pi_1$(!e) $\mid$ $\pi_2$(!e) & \grammarcomment{Pair Constructor/Destructor}\\
 & $\mid$ & !e op2 e! $\mid$ !op1 e! & \grammarcomment{Binary/Unary operations}\\
-& $\mid$ & !map2 (x,y.e) e e! & \grammarcomment{Array map2}\\
-& $\mid$ & !reduce (x,y.e) e e! & \grammarcomment{Array reduce}\\
+& $\mid$ & !map2 (x,y.e) e e! $\mid$ !reduce (x,y.e) e e! & \grammarcomment{Array map2 \& reduce }\\
 \hline
+\end{tabular} \\ \vspace{0.2cm}
+\begin{tabular}{|c|}
+    \hline
+    \begin{tabular}{c} 
+    \\\hline
+    $\Gamma \vdash$ !x!: !T!
+    \end{tabular}~(!x!: !T!$\in\Gamma$)
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+    $\Gamma \vdash$ !e$_1$!: !T$_1$! $\quad$ $\Gamma \vdash$ !e$_2$!: !T$_2$! \\\hline  
+    $\Gamma \vdash$ !<e$_1$,e$_2$>!: !T$_1$! $\times$ !T$_2$!
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        $\Gamma \vdash$ !e!: !T$_1$! $\times$ !T$_2$! \\\hline  
+        $\Gamma \vdash$ $\pi_i$!e!: !T$_i$!
+    \end{tabular}~($i\in\{1,2\}$)
+\\
+    \begin{tabular}{c}
+    $\Gamma \vdash$ !e$_1$!: !T$_1$! $\quad$ $\Gamma$, !x!: !T$_1$! $\vdash$ !e$_2$!: !T$_2$! \\\hline
+    !let x = e$_1$ in e$_2$!: !T$_2$!
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        $\Gamma \vdash$ !e!: $\reals$ \\\hline  
+        $\Gamma \vdash$ !op1 e! : $\reals$
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        $\Gamma \vdash$ !e$_1$!: $\reals$ $\quad$ $\Gamma \vdash$ !e$_2$!: $\reals$ \\\hline  
+        $\Gamma \vdash$ !e$_1$ op2 e$_2$! : $\reals$
+        \end{tabular}
+\\
+    \begin{tabular}{c}
+        $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e$_1$!: $\reals$ 
+        $\quad$ $\Gamma$ $\vdash$ !e$_2$!: $\Array{\reals}{n}$
+        $\quad$ $\Gamma$ $\vdash$ !e$_3$!: $\Array{\reals}{n}$
+        \\\hline  
+        $\Gamma \vdash$ !map2 (x,y.e$_1$) e$_2$ e$_3$!: $\Array{\reals}{n}$
+    \end{tabular}
+\\
+    \begin{tabular}{c} 
+        \\\hline
+        $\Gamma \vdash$ !c!: $\reals$
+    \end{tabular}
+    \hspace{0.5cm}
+    \begin{tabular}{c}
+        !x!: $\reals$, !y!: $\reals$ $\vdash$ !e$_1$!: $\reals$ 
+        $\quad$ $\Gamma$ $\vdash$ !e$_2$!: $\reals$
+        $\quad$ $\Gamma$ $\vdash$ !e$_3$!: $\Array{\reals}{n}$
+        \\\hline  
+        $\Gamma \vdash$ !reduce (x,y.e$_1$) e$_2$ e$_3$!: $\reals$
+    \end{tabular} \\ \hline
 \end{tabular}
-\vspace{-0.2cm}
-\caption{Grammar of the source language.}
+\vspace{-0.4cm}
+\caption{Grammar and type system of the source language.}
+\vspace{-0.4cm}
 \label{fig:source_grammar}
 \end{figure*}
