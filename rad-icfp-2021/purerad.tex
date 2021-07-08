@@ -73,8 +73,10 @@ All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(
 
 \begin{notation}
 We now introduce several notations which are useful when defining the transformation for reverse-mode in Figure~\ref{tbl:notation:one}.
-Ground types are defined inductively by 
-$$G::= \RR \mid G\times \ldots \times G \mid \Array{\RR}{n}$$
+Ground types are defined inductively by
+\begin{center}
+    $G::= \RR \mid G\times \ldots \times G \mid \Array{\RR}{n}$
+\end{center} 
 
 $(\RR,+,\underline{0})$ forms a monoid and this monoid structure extends canonically 
 to a monoid structure $(G,\widehat{+},0_G)$ for every ground type $G$. 
@@ -83,9 +85,12 @@ It is defined inductively on $G$ as follows
 \begin{tabular}{l c l}
     $0_\RR$  & $\defeq$ & $\underline{0}$ \\
     $0_{G_1\times \ldots \times G_n}$ & $\defeq$ &  $< O_{G_1},\ldots, 0_{G_n} >$ \\
-    $0_{\Array{\RR}{n}}$& $\defeq$ & !ZerosLike(n)! \\
+    $0_{\Array{\RR}{n}}$& $\defeq$ & !ZerosLike(n)!
+\end{tabular}
+\begin{tabular}{l c l}
     $a\widehat{+}_\RR b$ & $\defeq$ & $ a+b$ \\
-    $(a_1,\ldots,a_n)\widehat{+}_{G_1\times\ldots\times G_n}(b_1,\ldots,b_n)$ & $\defeq$ & $(a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n)$ \\
+    $(a_1,\ldots,a_n)\widehat{+}_{G_1\times\ldots\times G_n}$ & $\defeq$ & $(a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n)$ \\
+    $(b_1,\ldots,b_n)$ && \\
     $A\widehat{+}_{\Array{\RR}{n}}B $ & $\defeq$ & !map2! + $A$ $B$ 
 \end{tabular}
 

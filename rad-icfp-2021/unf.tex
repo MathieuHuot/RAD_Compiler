@@ -115,12 +115,14 @@ We assume given a type !A! that needs to be passed, and drop the index !A!.
 
 \begin{tabular}{r c l}
     $\widetilde{var_{T;i}}$  &=& $var_{T,A;i}$ \\
-    $\widetilde{op_{T;n}}$  &=& $op_{T,A;n}$ \\§
+    $\widetilde{op_{T;n}}$  &=& $op_{T,A;n}$ \\
     $\widetilde{pair_{T;B\times C}}$  &=& $pair_{T,A;B\times C}$ \\
-    $\widetilde{proj_{T_1;T_2;T_3}}$  &=& $proj_{T_1;T_2;T_3,A}$ \\
+    $\widetilde{proj_{T_1;T_2;T_3}}$  &=& $proj_{T_1;T_2;T_3,A}$ 
+\end{tabular}
+\begin{tabular}{r c l}
     $\widetilde{e_1 \comp e_2}$  &=& $\widetilde{e_1}\comp\widetilde{e_2}$ \\
     $\widetilde{map2_{T;x,y.e}}$  &=& $map2_{T,A;x,y.e}$ \\
-    $\widetilde{reduce_{T;x,y.e_1;e_2}}$ &=& $reduce_{T,A;x,y.e_1;e_2}$ \\
+    $\widetilde{reduce_{T;x,y.e_1;e_2}}$ &=& $reduce_{T,A;x,y.e_1;e_2}$
 \end{tabular}
 
 We want to preserve the invariant that $\UNFSymbol$(!e!) represents the term !e! which is also returning its context. 
