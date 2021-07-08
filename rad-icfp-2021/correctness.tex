@@ -19,7 +19,7 @@ It is standard to give a denotational semantics of a first-order language in a C
 
 A term $x_1:A_1,\ldots,x_n:A_n\vdash e:A$ is interpreted as a morphism $\sem{e}:[\sem{A_1},\ldots,\sem{A_n}]\to \sem{A}$ in a multicategory.
 Substitution is interpreted as composition. We first consider a syntactic model for a language, which consists of a 
-free multicategy on some base types and primitives. Our source and target languages induce syntactic multicategories as follows.
+free multicategory on some base types and primitives. Our source and target languages induce syntactic multicategories as follows.
 
 \begin{definition}[Syntactic multicategory for Source]
     Let $\SynSource$ be the multicategory whose objects are types of Source, and where a morphism 
@@ -54,20 +54,23 @@ Well typed terms $\Gamma\vdash$!e: !$A$ are interpreted as functions $\sem{\Gamm
     \begin{tabular}{r c l} 
         !$\seml$op2$\semr$! & $\defeq$ & op2: $\reals\times \reals\to\reals$ \\
         !$\seml$c$\semr$! & $\defeq$ & $c\in\RR$ \\
-        !$\seml$map2 (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$ ! & $\defeq$ & TODO \\
-        !$\seml$reduce (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$! & $\defeq$ &
+        !$\seml$map2 (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$ ! & $\defeq$ & !<$\Delta_n,$,$\seml$ e$_2\semr$,$\seml$ e$_2\semr$>;swap;$(\seml$ e$_1\semr)^{\times n}$! \\
+        !$\seml$reduce (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$! & $\defeq$ <> &
     \end{tabular}
+where $\Delta_n$ is the $n$-copy map !<id,$\ldots$,id>!.
+The semantics for !reduce (x,y.e$_1$) e$_2$ e$_3$! is given by first !<$\Delta_n,$,$\seml$ e$_2\semr$,$\seml$ e$_2\semr$>!, following a swap isomorphism  $\Gamma^n \times \RR \times \RR^n \to \reals \times (\reals \times \Gamma)^n$. 
+Finally, we apply $\seml$ e$_1\semr \times id$ $n$ times, where the identity is of the obvious type at each stage.
 
-Variables are interpreted as projections, let binding uses composition in the multicategory. 
+Variables are interpreted as projections $\pi_i$, let binding as composition in the multicategory. 
 Pairs are interpreted using the Cartesian structure of the multicategory.
 \end{definition}
 
 We can similarly interpret Target in a multicategory of smooth-like spaces and functions. 
-However, Target is higher-order but $\CartSp$ is not Cartesian Closed. 
-Instead, we can for instance interpret Target in the category of Diffeological spaces, 
+However, Target is higher-order and $\CartSp$ is not Cartesian Closed. 
+Instead, we can interpret Target in the category of Diffeological spaces, 
 as in \cite{huot2020correctness}. 
 Diffeological spaces (\cite{iglesias2013diffeology}) are a conservative extension of $\CartSp$. 
-The key idea will be that a higher order function is called smooth if it sends smooth functions to smooth functions, meaning that we can never use it
+The key idea will be that a higher-order function is called smooth if it sends smooth functions to smooth functions, meaning that we can never use it
 to build first order functions that are not smooth.
 
 \begin{definition}
@@ -86,28 +89,14 @@ Smooth functions compose, and so we have a category $\Diff$ of diffeological spa
 
 A diffeological space is thus a set equipped with structure.
 Many constructions of sets carry over straightforwardly to diffeological spaces.
-
-\begin{example}[Cartesian diffeologies]\label{ex:cartesian-diffeologies}
-Each open subset $U$ of $\RR^n$ can be given the structure of a diffeological space by taking all the
-smooth functions $V\to U$ as $\plots{U}^V$.
-It is easily seen that smooth functions from $V\to U$ in the traditional sense coincide with
-smooth functions in the sense of diffeological spaces.
-Thus diffeological spaces have a profound relationship with ordinary calculus.
-\end{example}
-
-\begin{example}[Product diffeologies]
-Given a family $\seq[i\in I]{X_i}$ of diffeological spaces,
+For instance, given a family $\seq[i\in I]{X_i}$ of diffeological spaces,
 we can equip the product $\prod_{i\in I}X_i$ of sets with the
 \emph{product diffeology} in which $U$-plots are precisely the functions
 of the form $\seq[i\in I]{p_i}$ for $p_i\in\plots{X_i}^U$.  
-\end{example}
-
-\begin{example}[Functional diffeology]
-We can equip the set $\Diff(X,Y)$ of smooth functions between diffeological spaces with the \emph{functional diffeology}
+Cartesian spaces $\RR^n$ can be given the structure of a diffeological space by taking all the
+smooth functions $U\to \RR^n$ as $\plots{\RR^n}^V$. We can equip the set $\Diff(X,Y)$ of smooth functions between diffeological spaces with the \emph{functional diffeology}
 in which $U$-plots consist of functions $f:U\to \Diff(X,Y)$ such that 
 $(u,x)\mapsto f(u)(x)$ is an element of $\Diff(U\times X, Y)$.
-\end{example}
-
 We can thus interpret function types !$\seml$A -> B$\semr$! = $\Diff$($\seml$!A!$\semr$,$\seml$!B!$\semr$).
 
 \subsection{Semantics for UNF languages with concategories} % (fold)
@@ -127,28 +116,25 @@ have equivalent in concategories.
 
 In particular, one can form a syntactic concategory on some base types and primitives, 
 which satisfies a similar universal property as syntactic multicategories.
-Two partiular examples are of interest for us, as they will allow us to interpret Source and Target UNF
+Two particular examples are of interest for us, as they will allow us to interpret Source and Target UNF
 but they will also help us explain the UNF and $UNF^{-1}$ transformations.
 
 \begin{definition}[$\ConcatS$]
 Let $\ConcatS$ be the syntactic Cartesian concategory whose types are those of Source and 
 with primitives given by $op1: \reals \to \reals$, $op2: \reals,\reals \to \reals$, 
-TODO: $map2_{x,y.e}$and $reduce_{x,y.e1;e2}$.
+$map2_{x,y.e}: \Array{\reals}{n},\Array{\reals}{n}\to \Array{\reals}{n}$ and $reduce_{x,y.e1;e2}:\Array{\reals}{n}\to \reals$.
 \end{definition}
 
 One may notice that the syntax of $\ConcatS$ is somewhere in between the syntax of Source and of Source UNF.
-
-\begin{notation}[Morphisms in a Cartesian concategory]
-    TODO: projection, unique map, $\concatcomp$, swap, pair, id, ...
-\end{notation}
-
+Given two morphisms !e$_1$:T$_1$->T$_2$! and !e$_2$:T$_3$->T$_4$!, we denote by !e$_1 \concatcomp$ e$_2$:T$_1$,T$_3$->T$_2$,T$_4$!.
+We denote by $u_T$ the unique morphism from !T! to the terminal object $[]$.
 We can interpret Source UNF in $\ConcatS$ as follows.
 
 \begin{tabular}{l c l}
    $\seml$!var!$_{T;i} \semr$ &=& $<id_\Gamma,\pi_i>$ \\
    $\seml$!op!$_{T;n} \semr$ &=& $id_\Gamma\concatcomp op_n$\\
    $\seml$!pair!$_{T;A\times B} \semr$ &=& $pair_{T;A\times B}$ \\
-   $\seml$!proj!$_{T1;T2;T3} \semr$ &=& $id_{T1}\concatcomp 1_{T2}\concatcomp id_{T3}$\\
+   $\seml$!proj!$_{T1;T2;T3} \semr$ &=& $id_{T1}\concatcomp u_{T2}\concatcomp id_{T3}$\\
    $\seml$!e1!$\comp$!e2!$\semr$  &=& $\seml$!e1!$\semr \comp \seml$!e2!$\semr$ \\
    $\seml$!e1!$\pcomp$!e2!$\semr$ &=& $\seml$!e1!$\semr \comp (\seml$!e2!$\semr\concatcomp id )\comp swap$ \\
    $\seml$!map2!$_{T;x,y.e}\semr$  &=& $id_\Gamma\concatcomp map2_{x,y.e}$ \\
@@ -173,8 +159,6 @@ $J^Treduce_{x,y.e1;e2}: \Array{\reals}{n} \to \Array{\reals}{n}$
 We can interpret Target UNF in $\ConcatT$ as follows. 
 The part common with Source UNF is interpreted in the same way as for the case of Source UNF.
 
-TODO: I think need to explain here the (co)monoid structure induced by $\Dsynrevsymbol_{\rho}$ 
-
 \begin{tabular}{l c l}
     $\seml$!J!$^T$!var!$_{T;i} \semr$ &=& TODO \\
     $\seml$!J!$^T$!op!$_{T;n} \semr$ &=& $id_T\concatcomp J^Top_n$ \\
@@ -197,12 +181,26 @@ This comparison precisely gives the UNF transformation.
 
 \begin{definition}[Mutlicat from concat]
     We define $\CSource$ to be the multicategory with the same objects as Source and 
-    $\CSource([A_1,\ldots,A_n],B)=\ConcatS([A_1,\ldots,A_n],[A_1,\ldots,A_n,B])$.
-    TODO
+    $\CSource([A_1,\ldots,A_n],B)=\{f\in\ConcatS([A_1,\ldots,A_n],[A_1,\ldots,A_n,B], \forall i.f;\pi_{A_i}=id_{A_i})$.
+    The composition of $f_i:\underline{A}_i\to B_i$ with $g:\underline{B}\to C$ is given 
+    $f_1\concatcomp\ldots f_n;(u_{\underline{B}_1}\concatcomp A_1 \concatcomp \ldots \concatcomp u_{\underline{B}_n}\concatcomp A_n);g$.
+    In other words each term $f_i$ forgets about its output $\underline{B}_i$, and then we use the composition in the concategory.
 \end{definition}
 
+We can interpret Source in $\CSource$ as follows. The functor is an identity on types. 
+On morphisms, we interpret them as morphisms in the concategory as follows.
+The terminal map is interpreted as the identity. The operators !op1,op2! by themselves.
+Crucially, the semantics of a !let! becomes composition in the concategory. 
+The semantics of a variable is the pairing of the identity with a projection.
+The operation !map2 (x,y.e)! is interpreted as the pairing of the identity and itself, and !reduce (x,y.e$_1$) $e_2$! as itself.
+
+Interpretating Source in $\CSource$ allows us to see terms of Source as morphisms in the concategory $\ConcatS$.
+This allows us to compare to semantics of terms of Source and of Source UNF.
+The following proposition can be shown by induction on the structure of the terms.
+
 \begin{proposition}[construction above gives UNF]
-    TODO
+    Let !$\Gamma \vdash$ e:A! be a term in Source. 
+    Seen as morphisms in $\CSource$, we have !$\seml$e$\semr$=$\seml\UNFSymbol$(e)$\semr$!.
 \end{proposition}
 
 In a similar vein, we form a concategory from the syntactic multicategory for Target.
@@ -212,12 +210,19 @@ $UNF^-1$ arises in this way.
 
 \begin{definition}[Concat from multicat]
     A multicategory $\catC$ naturally defines a concategory with the same objects as $\catC$ and
-    with morphisms $A\to [B_1,\ldots,B_n]$ being $n$ morphisms $A\to Bi$ of $\catC$. 
+    with morphisms $\underline{A}\to [B_1,\ldots,B_n]$ being $n$ morphisms $\underline{A}\to B_i$ of $\catC$. 
 \end{definition}
 
-\begin{proposition}[Initiality of concat2 gives $UNF^-1$]
-    TODO
-\end{proposition}
+This allows to form a concategory $\CTarget$ from the syntactic multicategory for Target.
+We can interpret $\ConcatT$ in $\CTarget$. 
+The functor is identity on objects, sends operations !op1,op2! to themselves. 
+It sends Jacobian operations to terms of Target as given by $\UNFSymbol^{-1}$ in Figure~\ref{fig:unf_to_target}
+
+This interpretation is in essence $\UNFSymbol^{-1}$. 
+The difference is that to preserve typing, the semantic $\UNFSymbol^{-1}$
+sends a non Jacobian primitive to a tuple, as in the Example \ref{exm:unf}. 
+This is highly inefficient and the the syntactic $\UNFSymbol^{-1}$ 
+additionally projects to the last element, where the non trivial information of the term is.
 
 What remains to explain now is the reverse mode transformation between Source UNF and Target UNF.
 We construct a functor $\Dsynrevsymbol_{\rho}:\ConcatS\to\ConcatT$. 
@@ -226,7 +231,9 @@ Because terms of Source UNF in $\ConcatS$, we observe the effect of $\Dsynrevsym
 and show that it matches the syntactic $\Dsynrevsymbol_{\rho}$ 
 from Section~\ref{sub:Simple reverse mode transformation}.
 
-\begin{definition}[D as a lax functor]
+\begin{definition}[$\Dsynrevsymbol_{\rho}$ as a lax functor]
+    We define $\Dsynrevsymbol_{\rho}:\ConcatS\to\ConcatT$ as follows.
+    $\Dsynrevsymbol_{\rho}$(![A$_1$,$\ldots$,A$_n$])=[A$_1$,$\ldots$,A$_n$,A$_1\times\ldots\times$A$_n\to \rho$]!.
     TODO
 \end{definition}
 
@@ -299,7 +306,7 @@ this decomposition and intermediate representation.
     $\seml\UNFSymbol^{-1}(\Dsynrevsymbol_{\rho}(\UNFSymbol($!e!$)))\semr$ = $\seml\directD{\rho}{\Gamma}{Y}($!e!$)\semr$ 
 \end{proposition}
 
-Combining the the previous propositions, we have shown that $\directD{\rho}{\Gamma}{Y}$ is correct.
+Combining the previous propositions, we have shown that $\directD{\rho}{\Gamma}{Y}$ is correct.
 
 \begin{theorem}
     For every $\Gamma \vdash$ !e:!$\reals$, we have 
