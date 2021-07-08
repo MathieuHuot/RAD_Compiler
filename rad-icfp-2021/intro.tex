@@ -30,10 +30,6 @@ In other words, abstracting away from imperative code is still a hurdle that fun
 
 % An efficient purely functional reverse-mode transformation would be more easily explainable, optimizable, and reusable.
 
-% TODO: rewrite for more theory people. some ideas: for canonical than Plotkin's thing because normal semantics, complexity proof compared to all other recent papers, 
-% all papers that have implementations, their interface in the paper is too high level and misses a lot of things (e.g. in \cite{vytiniotis2019differentiable,lantern_icfp,sherman2021}) compared to implementation, hinders progress. 
-% For instance, in \cite{lantern_icfp} it's a lot of manually optimized and hand-derived primitives to achieve good performance.
-
 % \subsection{Problem}
 
 % Following \cite{pearlmutter2008reverse}, it is relatively easy to define a purely functional reverse-mode on a first-order language using continuations. 
@@ -167,7 +163,7 @@ Next, we recall rudiments of automatic differentiation, forward and reverse-mode
 %     \item correctness of the transformations (\S\ref{sec:correctness})
 %     \item complexity guarantees (\S\ref{sec:complexity})
 %     \item how efficiency is ensured via standard optimization techniques (\S\ref{sub:Optimizations})
-%     \item several additions to the source language (\S\ref{sec:generalization}) TODO:should emphasize that it should be easier for us to add primitives compared to several recent work. give recipe.
+%     \item several additions to the source language (\S\ref{sec:generalization})
 % \end{itemize}
 
 % \subsection{Outline of the paper}
