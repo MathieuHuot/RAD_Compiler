@@ -1,10 +1,11 @@
-\section{UNF}
+\section{Unary Normal Form}
 \label{sec:unf}
 
 Following the intuition highlighted in Section~\ref{subsec:insights}, 
-we present a new language which we call unary form (UNF). 
+we present a new language which we call Unary Normal Form (UNF). 
 There is a Source UNF for the Source language and a Target UNF for the Target language.
 Just as Target is an extension of Source, Target UNF is an extension of Source UNF.
+They serve as intermediate representation our the reverse-mode compilation pipeline (see Figure~\ref{fig:outline}).
 
 One takeaway from this paper is that efficient pure reverse-mode is complicated because of the several things it does.
 It goes through the term and keeps a store for the gradients to be updated. 
@@ -14,7 +15,7 @@ Due to the linearity requirement in the usage of the continuation variable,
 it needs to process like a call-by-value evaluation and evaluate the arguments of operators in a certain order before 
 dealing with the operator itself.
 
-By introducing UNF, we are trying to decouple some of the problems.
+By introducing UNF, we are decoupling some of the problems.
 UNF introduces the call-by-value evaluation of the arguments before evaluating the arguments and a good management of the environment.
 Differentiation on UNF deals with the purely functional store and gradients update via pre-composition.
 Finally, going back from UNF to Target uses the stored information in UNF to make sure the Jacobians are computed efficiently. 
@@ -38,8 +39,10 @@ The array operators !map2! and !reduce! have extra indices that represent well-f
 The language also contains a projection !proj! which forgets some of the elements, 
 and a pairing operator !pair! which takes the last pair of elements and returns the pairing of these elements.
 
+A judgment in Source UNF is a triple !(T$_1$,e,T$_2$)! where !T$_1$! and !T$_2$! are lists of types of Source, and !e! is an expression of the Source UNF.
 The typing rules are detailed in Figure~\ref{fig:source_unf_typesystem}.
-$\reals^{\times n}$ is a notation for $\reals,\ldots,\reals$ with $n$ factors $\reals$.
+$\reals^{\times n}$ is a notation for $\reals,\ldots,\reals$ with $n$ factors $\reals$. 
+When !T$_1$! and !T$_2$! are lists of types and !A! a type, the operator !,! denotes snoc in !T$_1$,A! and denotes append in !T$_1$,T$_2$!.
 
 \input{figures/source_unf_typesystem}
 
