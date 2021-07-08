@@ -41,6 +41,7 @@ A real-world implementation based on our work would of course optimize further, 
 % \noindent \textbf{implementation, BLaS, benchmark}
 
 \noindent \textbf{Higher-order functions}
+TODO
 Matthijs'work, use of defunctionalization, question efficiency and usefulness, 
 interested in functions like root of function or minimal of a function. Implicit function theorem
 Some recent work \cite{vakar2020reverse,sherman2021} present reverse-mode in a higher-order language.
@@ -146,14 +147,14 @@ Good recent surveys: \cite{van2018automatic,baydin2017automatic}
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have introduced a transformation on programs to compute provably efficient (\ref{sec:complexity}) 
-gradients via reverse derivatives in a purely functional way (\ref{sub:Macro for pure reverse mode transformation})
-on a simple yet expressive language with functions on arrays (\ref{sub:sourcelang}), 
-combined with standard functional optimizations (\ref{fig:optim}).  
-We introduced a novel intermediate representation, unary form (\ref{sec:unf}) 
+We have introduced a transformation on programs to compute provably efficient (\S\ref{sec:complexity}) 
+gradients via reverse derivatives in a purely functional way (\S\ref{sub:Macro for pure reverse mode transformation})
+on a simple yet expressive language with functions on arrays (\S\ref{sub:sourcelang}), 
+combined with standard functional optimizations (\S\ref{fig:optim}).  
+We introduced a novel intermediate representation, Unary Normal Form (\S\ref{sec:unf}) 
 to decompose our transformation into simpler transformations.
-We gave denotational semantics to our languages and our transformations (\ref{sec:correctness}) 
-and showed correctness of the reverse-mode transformation (\ref{sub:Correctness theorem}).
-We showed (\ref{sec:generalization}) how to lift some of the restrictions that
-we introduced on arrays and how to extend our approach to a richer language with more primitive operations and conditionals.
+We gave denotational semantics to our languages and our transformations (\S\ref{sec:correctness}), 
+and showed correctness of the reverse-mode translation (\S\ref{sub:Correctness theorem}).
+We showed (\S\ref{sec:generalization}) how to lift the restrictions that
+we introduced on arrays and how to extend our approach with other constructs such as conditionals.
 \clearpage
