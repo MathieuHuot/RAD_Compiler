@@ -106,36 +106,45 @@ $f_1\dots f_n:\RR\to\RR$,
   ((f_1,\dots, f_n);g,\nabla ((f_1, \dots, f_n);g))\text.
 \end{equation}
 
+The idea of automatic differentiation (AD) is to systematically
+transform a differentiable function $g:\RR^n\to \RR$ to a function $h:\RR^{2n}\to \RR^2$ which captures~$g$ and all its partial derivatives.
 An intuition for $h$ is often given in terms of dual numbers.
 The transformed function operates on pairs of numbers, $(x,x')$, and it is common
 to think of such a pair as $x+x'\epsilon$ for an `infinitesimal' $\epsilon$.
-But while this is a helpful intuition, the formalization of infinitesimals can be intricate.
 
-The reader may also notice that $h$ encodes all the partial derivatives of
-$g$. For example, 
-if $g \colon \RR^2\to \RR$, then with $f_1(x)\defeq x$ and $f_2(x)\defeq x_2$, by applying \eqref{eqn:dualnumber} to $x_1$ we obtain
-$h(x_1,1,x_2,0)=(g(x_1,x_2), \frac {\partial g(x,x_2)}{\partial x}(x_1))$
-and similarly 
-$h(x_1,0,x_2,1)=(g(x_1,x_2), \frac {\partial g(x_1,x)}{\partial x}(x_2))$.
-And conversely, if $g$ is differentiable in each argument, then
-a unique $h$ satisfying \eqref{eqn:dualnumber} can be found by taking linear
-combinations of partial derivatives:
-
-\begin{center}
-    \begin{tabular}{r c l}
-        $h(x_1,x_1',x_2,x_2')$ &= & $(g(x_1,x_2),x_1' \cdot\frac {\partial g(x,x_2)}{\partial x}(x_1)+x_2'\cdot \frac {\partial g(x_1,x)}{\partial x}(x_2))$
-    \end{tabular}
-\end{center}
-
-In summary, the idea of differentiation with dual numbers is 
-to transform a differentiable function
-$g:\RR^n\to \RR$ to a function $h:\RR^{2n}\to \RR^2$ which captures~$g$ and all its partial derivatives. We packaged this up in~\eqref{eqn:dualnumber} as a sort-of invariant which is useful for building derivatives of compound functions $\RR\to\RR$ in a compositional way.
-The idea of automatic differentiation is to perform this transformation at the source code level. 
-
-The main two ways in which it is performed in practice is by operator overloading or by source code transformation (see e.g. \cite{griewank2008evaluating} Chapter 6). 
+The main two ways in which AD is performed in practice is by operator overloading or by source code transformation (see e.g. \cite{griewank2008evaluating} Chapter 6). 
 Our approach focuses on source code transformation which is better fitted for compilation and optimizations.
 
-\subsection{Reverse-mode differentiation}
+% An intuition for $h$ is often given in terms of dual numbers.
+% The transformed function operates on pairs of numbers, $(x,x')$, and it is common
+% to think of such a pair as $x+x'\epsilon$ for an `infinitesimal' $\epsilon$.
+% But while this is a helpful intuition, the formalization of infinitesimals can be intricate.
+
+% The reader may also notice that $h$ encodes all the partial derivatives of
+% $g$. For example, 
+% if $g \colon \RR^2\to \RR$, then with $f_1(x)\defeq x$ and $f_2(x)\defeq x_2$, by applying \eqref{eqn:dualnumber} to $x_1$ we obtain
+% $h(x_1,1,x_2,0)=(g(x_1,x_2), \frac {\partial g(x,x_2)}{\partial x}(x_1))$
+% and similarly 
+% $h(x_1,0,x_2,1)=(g(x_1,x_2), \frac {\partial g(x_1,x)}{\partial x}(x_2))$.
+% And conversely, if $g$ is differentiable in each argument, then
+% a unique $h$ satisfying \eqref{eqn:dualnumber} can be found by taking linear
+% combinations of partial derivatives:
+
+% \begin{center}
+%     \begin{tabular}{r c l}
+%         $h(x_1,x_1',x_2,x_2')$ &= & $(g(x_1,x_2),x_1' \cdot\frac {\partial g(x,x_2)}{\partial x}(x_1)+x_2'\cdot \frac {\partial g(x_1,x)}{\partial x}(x_2))$
+%     \end{tabular}
+% \end{center}
+
+% In summary, the idea of differentiation with dual numbers is 
+% to transform a differentiable function
+% $g:\RR^n\to \RR$ to a function $h:\RR^{2n}\to \RR^2$ which captures~$g$ and all its partial derivatives. We packaged this up in~\eqref{eqn:dualnumber} as a sort-of invariant which is useful for building derivatives of compound functions $\RR\to\RR$ in a compositional way.
+% The idea of automatic differentiation is to perform this transformation at the source code level. 
+
+% The main two ways in which it is performed in practice is by operator overloading or by source code transformation (see e.g. \cite{griewank2008evaluating} Chapter 6). 
+% Our approach focuses on source code transformation which is better fitted for compilation and optimizations.
+
+\subsection{Reverse-mode AD}
 
 The problem with the previous approach shows up when one wants to compute the full gradient of a function $\RR^n\to\RR$, for a large $n$. 
 Forward-mode only computes one directional derivative, for instance one partial derivative. 
@@ -155,7 +164,7 @@ Such approaches have the severe downside that the differentiated code cannot ben
 As such, the implementation process is precarious and labour intensive as these AD libraries need to be implemented using carefully, manually optimized code.
 In addition, some whole-program optimizations that a compiler would detect go entirely unused in such systems.
 
-\subsection{Purely functional inefficient reverse-mode}
+\subsection{Inefficiency of purely functional reverse-mode AD}
 
 Following \cite{pearlmutter2008reverse}, there is a simple way to define an inefficient yet purely functional reverse-mode transformation for first-order programs.
 We review a slight modification of the transformation they presented, which is also better explained through an example. 
@@ -177,21 +186,33 @@ Following the mathematical presentation of reverse-mode above, the gradient of t
     \end{tabular}
 \end{center}
 
-To actually reverse the order of computation needed for this transpose of jacobians, we use a sort of simple continuation.
+To actually reverse the order of computation needed for this transpose of jacobians, we use a sort of simple continuation;
 $f_i$ is turned into $\Dsynrevsymbol{f_i}:=<f_i, \lambda Y. Y\circ J^Tf_i>$ where $Y:\RR^{n+i-1}\to \RR^n$. 
-We recover compositionality by noting that $<f_{i+1}(f_i), (\lambda Y. Y\circ J^Tf_{i+1}>)(\lambda Y. Y\circ J^Tf_i)>$ reduces to
+We recover compositionality by noting that $<f_{i+1}(f_i), (\lambda Y. Y\circ J^Tf_{i+1})(\lambda Y. Y\circ J^Tf_i)>$ reduces to
 $<f_{i+1}\circ f_i, \lambda Y. Y\circ J^Tf_i \circ J^Tf_{i+1}>$, and thus by induction we can obtain $<f, \lambda Y. YJ^Tf>$.
 By applying the identity continuation $\RR^n\to\RR^n$ on the second component then the result to $(0,\ldots,0,1)$, 
 we have obtained a purely functional to compute $\nabla f$. 
 
-This method is still quite inefficient. First, we have to carry a continuation and $\beta$-reduce a lot of higher-order functions.
-Second, each $J^Tf_{i+1}$ is a potentially huge matrix if $n$ or $m$ is big.
+This purely functional implementation has the following issues in terms of efficiency: 
 
-On the other hand, the imperative version of reverse mode for a binary operator $op(x,y)$ adds $x'+= \partial_1op(x,y);y'+= \partial_2op(x,y)$, 
-where $\partial_iop$ are the partial derivatives of $op$. 
-Mutation is usually key for these cases.
-If we see our term as a directed graph, reverse mode needs to backpropagate from the end of the graph to the starting nodes via every path.
-It's hard to keep track of all these information in parallel in a functional way.
+\smartpara{Issue 1}
+If we see the term as a directed graph, reverse mode needs to backpropagate from the end of the graph to the starting nodes via every path.
+However, it is hard to keep track of all these information in parallel in a functional way.
+Mutation is usually key for these cases; 
+the imperative version of reverse mode for a binary operator $op(x,y)$ adds $x'+= \partial_1op(x,y);y'+= \partial_2op(x,y)$, 
+where $\partial_iop$ are the partial derivatives of $op$.
+
+\smartpara{Issue 2} 
+Each $J^Tf_{i+1}$ is a potentially huge matrix if $n$ or $m$ is big.
+
+\smartpara{Issue 3}
+We have to carry a continuation and $\beta$-reduce a lot of higher-order functions.
+
+\subsection{Insights for efficient purely functional reverse-mode AD}
+\label{subsec:insights}
+Overall we use the following three insights to solve the inefficiency associated with the purely functional implementations of reverse-mode AD.
+
+\smartpara{Insight 1}
 One of the key simple ideas that we used was to transform every operator into a unary one. 
 This essentially trivializes the computation flow to a line. 
 Even if the starting program was a straight-line program, 
@@ -199,16 +220,15 @@ having non-unary operators was a source of inefficiency and justified the use of
 By returning every variable every time, the problem of using a variable several times does not need to be dealt with via mutation. 
 This simple idea of transforming a program into essentially a straight line is what our new intermediate representation UNF allows.
 
-\subsection{Insights for efficient reverse-mode}
-\label{subsec:insights}
-
+\smartpara{Insight 2} 
 If we look at $J^Tf_{i+1}$, we notice that this function is almost the identity, except at the last row. 
 Even on the last row, if the original term was a unary or binary operator like $cos, exp, +, *$, 
 the row is zero except for at most two indices (one for unary operators).
 This means we can use a more compact representation $J^T\sem{op(x_i,x_j)}:=\lambda (y_1,\ldots,y_{n+i}).(y_1,\ldots,y_{n+i})+[i]\partial_1op(x_i,x_j)+[j]\partial_2op(x_i,x_j)$, 
 where $[k]$ means that the element is added at the $k$-th index of the tuple.
 
-We know in advance that such jacobian functions are going to be applied one to another and we can use partial evaluation to $\beta$-reduce all of these $\lambda$s.
+\smartpara{Insight 3}
+We know in advance that the jacobian functions are going to be applied one to another and we can use partial evaluation to $\beta$-reduce all of these $\lambda$s.
 Because each function is almost the identity, we obtain a lot of substitutions of the form $[x/y]$ where both $x$ and $y$ are variables. 
 This allows us to drastically reduce the size of $J^Tf$. In fact, for simple programs, this is basically enough to get an efficient purely functional reverse derivative transformation.
 We develop this idea further for a richer language.
