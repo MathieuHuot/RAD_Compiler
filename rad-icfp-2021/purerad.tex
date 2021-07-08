@@ -6,13 +6,12 @@
 
 We consider a standard call-by-value language. 
 It consists of a first-order functional language with arrays and a few typical second-order array operations. 
-The types !T1,T2! and terms !e1,e2! are given in Figure~\ref{fig:source_grammar}.
+The types !T1,T2!, terms !e1,e2!, and typing rules are given in Figure~\ref{fig:source_grammar}.
 We have included a minimal set of array operations for the sake of illustration,  it is not hard to add more.
 See Section~\ref{sec:generalization}.
 
 \input{figures/source_grammar}
 
-The typing rules are given in Figure~\ref{fig:source_typesystem}. 
 For scalar operations, we assume a given set of operations, including $+$ and $*$. 
 !op1! and !op2! denote respectively a unary and a binary operation on reals. 
 These operations represent smooth total functions, 
@@ -47,13 +46,12 @@ Finally, we add two new shift operators !shift1L! and !shift1R!.
 They take an array of size $n$, and respectively forget the first and the last element of the array.
 These somewhat ad-hoc operators naturally show up when differentiating fold-like operators.
 
-The types and terms are presented in Figure~\ref{fig:target_grammar}.
+The grammar for types and terms along with the type system of the target language are presented in Figure~\ref{fig:target_grammar}.
 Our lambda abstractions take $n$ arguments as we are not interested here with partial applications. 
 In fact, the lambda abstractions introduced by reverse-mode will be removed during partial evaluation, 
 and the notation with lambda abstractions having $n$ bound variables makes reading slightly easier.
 We note that we don't actually need the full power of higher-order because we only use lambda abstractions over variables of ground types
 and let expressions binding such lambda abstractions. We only need the target language to be second-order.
-The type system for the extended grammar of the target language is presented in Figure~\ref{fig:target_typesystem}. 
 
 \input{figures/target_grammar}
 

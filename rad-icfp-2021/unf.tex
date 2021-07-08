@@ -40,7 +40,7 @@ The language also contains a projection !proj! which forgets some of the element
 and a pairing operator !pair! which takes the last pair of elements and returns the pairing of these elements.
 
 A judgment in Source UNF is a triple !(T$_1$,e,T$_2$)! where !T$_1$! and !T$_2$! are lists of types of Source, and !e! is an expression of the Source UNF.
-The typing rules are detailed in Figure~\ref{fig:source_unf_typesystem}.
+The typing rules are detailed in Figure~\ref{fig:unf_source_grammar}.
 $\reals^{\times n}$ is a notation for $\reals,\ldots,\reals$ with $n$ factors $\reals$. 
 When !T$_1$! and !T$_2$! are lists of types and !A! a type, the operator !,! denotes snoc in !T$_1$,A! and denotes append in !T$_1$,T$_2$!.
 
@@ -63,7 +63,7 @@ Given a type !T$\defeq$ [A$_1$,$\ldots$,A$_n$]!, we write \underline{T} for the 
 Target UNF has an internal composition $\icomp$. 
 !e$_{1}$ $\icomp$ e$_{2}$! represents precomposition of a curried function !e$_{1}$! by a term !e$_{2}$!.
 It is used by the reverse-mode transformation to pre-compose the continuation term by a transpose Jacobian.
-The grammar of Target UNF is given in Figure~\ref{fig:unf_target_grammar} and its type system in Figure~\ref{fig:target_unf_typesystem}.
+The grammar and type system of target UNF is given in Figure~\ref{fig:unf_target_grammar}.
 
 \input{figures/target_unf}
 
