@@ -6,8 +6,7 @@
         && !let x$_n$=e$_n$ in e! \\ \hline
         !let x$_1$=e$_1$ in e$_2$! \quad(!x$_1$!$\not\in$!FV(e$_2$))! & \transto & !e$_2$!  \\ \hline
         !let x$_1$=x$_2$ in e! & \transto & !e[x$_2$/x$_1$]! \\ \hline
-        !let x$_1$= c in e!  & \transto & !e[c/x$_1$]! \\ 
-        (!c= 0,1,ZerosLike! or !OnesLike!) && \\ \hline
+        !let x$_1$= c in e!  \quad(!c= 0,1!) & \transto & !e[c/x$_1$]! \\
         \hline \hline
         \textit{Algebraic simplifications}  & & \\ \hline
         !0*e! & \transto & 0 \\ \hline
