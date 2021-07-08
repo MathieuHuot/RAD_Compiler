@@ -48,10 +48,10 @@
 % \subsection{Reverse-mode AD}
 
 % AD comes in two main flavors: forward mode and reverse mode. 
-% Forward mode computes a directional derivative of the Jacobian while reverse-mode computes a directional derivative of the transpose Jaobian. 
+% Forward mode computes a directional derivative of the Jacobian while reverse-mode computes a directional derivative of the transpose Jacobian. 
 % This has a significant impact in practice as this means reverse mode can compute the whole gradient of a function $f:\RR^n\to \RR$ in one pass, whereas forward mode needs $n$ passes. 
 % Assuming that both have about the same complexity, this can have a huge impact in practice. 
-% Such functions are expremely commonly seen as loss functions in the context of machine learning for instance.
+% Such functions are extremely commonly seen as loss functions in the context of machine learning for instance.
 
 % Reverse-mode computes the derivatives backward, using the symmetry of the chain rule.
 % This means the compute flow is reverted after the first pass to compute the value of the function and its intermediate values. 
@@ -151,8 +151,8 @@ Forward-mode only computes one directional derivative, for instance one partial 
 This implies $n$ passes must be performed through the forward derivative to compute the whole gradient.
 By using the symmetry in the chain rule, there is a way to compute the whole gradient faster, and this method is reverse-mode differentiation.
 Suppose given a function $f=f_n\circ\ldots\circ f_1 :\RR^n\to\RR$. 
-The simplest way to see this mathematically, is first to say that forward mode essentially computes $(Jf)v=Jf_n(Jf_{n-1}(\ldots(Jf_1v))\ldots)$ for a direction $v\in\RR^n$. 
-Reverse-mode, on the other hand, computes $(Jf)^Tv =J^Tf_1(J^Tf_{2}(\ldots(J^Tf_nv))\ldots)$ for a vector $v\in\RR$.
+The simplest way to see this mathematically, is first to say that forward mode essentially computes $(\J f)v=\J f_n(\J f_{n-1}(\ldots(\J f_1v))\ldots)$ for a direction $v\in\RR^n$. 
+Reverse-mode, on the other hand, computes $(\J f)^Tv = \J^Tf_1(\J^T f_{2}(\ldots(\J^T f_nv))\ldots)$ for a vector $v\in\RR$.
 In particular, taking $v=1$ computes the gradient of $f$.
 
 Because the computation flow of the function is reversed, the actual implementation of reverse-mode is way more tricky. 
@@ -169,20 +169,20 @@ In addition, some whole-program optimizations that a compiler would detect go en
 Following \cite{pearlmutter2008reverse}, there is a simple way to define an inefficient yet purely functional reverse-mode transformation for first-order programs.
 We review a slight modification of the transformation they presented, which is also better explained through an example. 
 
-Let the term we want to differentiate be $x1:\RR,\ldots,xn:\RR\vdash exp(cos(xi))$.
-Following the chain rule, we need the jacobian matrices of $cos$ at $xi$ and of $exp$ at $cos(xi)$. 
-Instead of considering these as operations from $\RR\to\RR$, we consider them as functions from the whole context. So $cos$ and $exp$ are seen as functions $\RR^n\to\RR$.
+Let the term we want to differentiate be $x_1:\RR,\ldots,x_n:\RR\vdash \exp(\cos(x_i))$.
+Following the chain rule, we need the jacobian matrices of $\cos$ at $x_i$ and of $\exp$ at $\cos(x_i)$. 
+Instead of considering these as operations from $\RR\to\RR$, we consider them as functions from the whole context. So $\cos$ and $\exp$ are seen as functions $\RR^n\to\RR$.
 However, by simply doing this we lose compositionality. 
-So $cos$ will also return its context and is now seen as a function $\sem{cos}:\RR^n\to\RR^{n+1}$.
-Similarly for $exp$, but also taking the return value of $\sem{cos}$ as an extra argument, the one it will actually use and not simply return. 
-We thus obtain $\sem{exp}:\RR^{n+1}\to\RR^{n+2}$. Now their jacobians matrices $J\sem{cos} \in Mat_{n,n+1}$, $J\sem{exp} \in Mat_{n+1,n+2}$ also compose nicely.
+So $\cos$ will also return its context and is now seen as a function $\sem{\cos}:\RR^n\to\RR^{n+1}$.
+Similarly for $\exp$, but also taking the return value of $\sem{\cos}$ as an extra argument, the one it will actually use and not simply return. 
+We thus obtain $\sem{\exp}:\RR^{n+1}\to\RR^{n+2}$. Now their jacobians matrices $\J\sem{\cos} \in Mat_{n,n+1}$, $\J\sem{\exp} \in Mat_{n+1,n+2}$ also compose nicely.
 The same can be done for binary (or more) operators and let bindings (assuming no nested lets). 
 This transforms a first-order program to a function $f:\RR^n\to\RR^{n+m}$ of the form $f_m\circ\ldots\circ f_1$. 
 If the original program was of type $\RR$, then the return value of the original program is the last component of $f$.
 Following the mathematical presentation of reverse-mode above, the gradient of the the original program is then obtained as 
 \begin{center}
     \begin{tabular}{r c l}
-        $\nabla f$ &=& $J^Tf(0,\ldots,0,1)=J^Tf_1(J^Tf_{2}(\ldots(J^Tf_m(0,\ldots,0,1))\ldots)$
+        $\nabla f$ &=& $\J^Tf(0,\ldots,0,1)= \J^Tf_1(J^Tf_{2}(\ldots(\J^Tf_m(0,\ldots,0,1))\ldots)$
     \end{tabular}
 \end{center}
 
@@ -230,5 +230,5 @@ where $[k]$ means that the element is added at the $k$-th index of the tuple.
 \smartpara{Insight 3}
 We know in advance that the jacobian functions are going to be applied one to another and we can use partial evaluation to $\beta$-reduce all of these $\lambda$s.
 Because each function is almost the identity, we obtain a lot of substitutions of the form $[x/y]$ where both $x$ and $y$ are variables. 
-This allows us to drastically reduce the size of $J^Tf$. In fact, for simple programs, this is basically enough to get an efficient purely functional reverse derivative transformation.
+This allows us to drastically reduce the size of $\J^Tf$. In fact, for simple programs, this is basically enough to get an efficient purely functional reverse derivative transformation.
 We develop this idea further for a richer language.
