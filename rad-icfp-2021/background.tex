@@ -48,10 +48,10 @@
 % \subsection{Reverse-mode AD}
 
 % AD comes in two main flavors: forward mode and reverse mode. 
-% Forward mode computes a directional derivative of the Jacobian while reverse-mode computes a directional derivative of the transpose Jaobian. 
+% Forward mode computes a directional derivative of the Jacobian while reverse-mode computes a directional derivative of the transpose Jacobian. 
 % This has a significant impact in practice as this means reverse mode can compute the whole gradient of a function $f:\RR^n\to \RR$ in one pass, whereas forward mode needs $n$ passes. 
 % Assuming that both have about the same complexity, this can have a huge impact in practice. 
-% Such functions are expremely commonly seen as loss functions in the context of machine learning for instance.
+% Such functions are extremely commonly seen as loss functions in the context of machine learning for instance.
 
 % Reverse-mode computes the derivatives backward, using the symmetry of the chain rule.
 % This means the compute flow is reverted after the first pass to compute the value of the function and its intermediate values. 
