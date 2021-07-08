@@ -125,17 +125,26 @@ It is given in Figure~\ref{fig:costmodel}.
 
 We define the Nesting of Array Operations $\NestA$ of a term !e! of Source by induction on !e! as follows.
 
+\begin{center}
 \begin{tabular}{r c l}
     $\NestA$(!c!) &=& 0 \\
     $\NestA$(!x!) &=& 0 \\
+\end{tabular}
+    \begin{tabular}{r c l}
+    $\NestA$($\pi_i$(!e!)) &=& $\NestA$(!e!)\\
+    $\NestA$(!op1 e!) &=& $\NestA$(!e!) \\
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{r c l}
     $\NestA$(!let x:A = e$_1$ in e$_2$:B!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!)  \\ 
     $\NestA$(!< e$_1$, e$_2$ >:AxB!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!) \\ 
-    $\NestA$($\pi_i$(!e!)) &=& $\NestA$(!e!)\\
     $\NestA$(!e$_1$ op2 e$_2$!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!)\\
-    $\NestA$(!op1 e!) &=& $\NestA$(!e!) \\
     $\NestA$(!map2 (x,y.e$_1$) e$_2$ e$_3$!) &=& max 1+$\NestA$(!e$_1$!),$\NestA$(!e$_2$!),$\NestA$(!e$_3$!) \\
     $\NestA$(!reduce (x,y.e$_1$) e$_2$ e$_3$!) &=& max 1+$\NestA$(!e$_1$!),$\NestA$(!e$_2$!),$\NestA$(!e$_3$!) \\
 \end{tabular}
+\end{center}
 
 We can now phrase our main complexity theorem.
 

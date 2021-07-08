@@ -68,14 +68,17 @@ Well typed terms $\Gamma\vdash$!e: !$A$ are interpreted as functions $\sem{\Gamm
     $\seml \reals \semr$ & $\defeq$& $\RR$ \\
     $\seml$!T1xT2!$\semr$ & $\defeq$& $\seml$!T1!$\semr \times\seml$!T2!$\semr$ \\
     $\seml \Array{\reals}{n}\semr$ & $\defeq$ & $\prod_{1\leq i \leq n} \RR$ \\
-    !$\seml$op1$\semr$! & $\defeq$ & op1: $\reals\to\reals$ 
     \end{tabular}
     \begin{tabular}{r c l} 
+        !$\seml$op1$\semr$! & $\defeq$ & op1: $\reals\to\reals$ \\
         !$\seml$op2$\semr$! & $\defeq$ & op2: $\reals\times \reals\to\reals$ \\
         !$\seml$c$\semr$! & $\defeq$ & $c\in\RR$ \\
-        !$\seml$map2 (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$ ! & $\defeq$ & !<$\Delta_n,$,$\seml$ e$_2\semr$,$\seml$ e$_2\semr$>;swap;$(\seml$ e$_1\semr)^{\times n}$! \\
-        !$\seml$reduce (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$! & $\defeq$ <> &
     \end{tabular}
+
+    \begin{tabular}{r c l} 
+    !$\seml$map2 (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$ ! & $\defeq$ & !<$\Delta_n,$,$\seml$ e$_2\semr$,$\seml$ e$_2\semr$>;swap;$(\seml$ e$_1\semr)^{\times n}$!
+    \end{tabular}
+    
 where $\Delta_n$ is the $n$-copy map !<id,$\ldots$,id>!.
 The semantics for !reduce (x,y.e$_1$) e$_2$ e$_3$! is given by first !<$\Delta_n,$,$\seml$ e$_2\semr$,$\seml$ e$_2\semr$>!, following a swap isomorphism  $\Gamma^n \times \RR \times \RR^n \to \reals \times (\reals \times \Gamma)^n$. 
 Finally, we apply $\seml$ e$_1\semr \times id$ $n$ times, where the identity is of the obvious type at each stage.
@@ -153,11 +156,13 @@ We can interpret Source UNF in $\ConcatS$ as follows.
    $\seml$!var!$_{T;i} \semr$ &=& $<id_\Gamma,\pi_i>$ \\
    $\seml$!op!$_{T;n} \semr$ &=& $id_\Gamma\concatcomp op_n$\\
    $\seml$!pair!$_{T;A\times B} \semr$ &=& $pair_{T;A\times B}$ \\
-   $\seml$!proj!$_{T1;T2;T3} \semr$ &=& $id_{T1}\concatcomp u_{T2}\concatcomp id_{T3}$\\
+   $\seml$!proj!$_{T1;T2;T3} \semr$ &=& $id_{T1}\concatcomp u_{T2}\concatcomp id_{T3}$
+    \end{tabular}
+   \begin{tabular}{l c l}
    $\seml$!e1!$\comp$!e2!$\semr$  &=& $\seml$!e1!$\semr \comp \seml$!e2!$\semr$ \\
    $\seml$!e1!$\pcomp$!e2!$\semr$ &=& $\seml$!e1!$\semr \comp (\seml$!e2!$\semr\concatcomp id )\comp swap$ \\
    $\seml$!map2!$_{T;x,y.e}\semr$  &=& $id_\Gamma\concatcomp map2_{x,y.e}$ \\
-   $\seml$!reduce!$_{T;x,y.e;e}\semr$ &=& $id_\Gamma\concatcomp reduce_{x,y.e1;e2}$ \\
+   $\seml$!reduce!$_{T;x,y.e;e}\semr$ &=& $id_\Gamma\concatcomp reduce_{x,y.e1;e2}$
 \end{tabular}
 
 Similarly, we introduce a second concategory for the Target part of our transformations.
@@ -180,13 +185,15 @@ The part common with Source UNF is interpreted in the same way as for the case o
 
 \begin{tabular}{l c l}
     $\seml$!J!$^T$!var!$_{T;i} \semr$ &=& TODO \\
-    $\seml$!J!$^T$!op!$_{T;n} \semr$ &=& $id_T\concatcomp J^Top_n$ \\
-    $\seml$!J!$^T$!pair!$_{T;A\times B} \semr$ &=& $id_T\concatcomp$!<$\pi_1,\pi_2$>! \\
-    $\seml$!J!$^T$!proj!$_{T1;T2;T3} \semr$ &=& $id_{T_1}\concatcomp\widehat{0}_{T_2}\concatcomp id_{T_3}$ \\
     $\seml$!J!$^T$!map2!$_{T;x,y.e}\semr$  &=& $id_T\concatcomp map2_{T;x,y.e}$ \\
-    $\seml$!J!$^T$!reduce!$_{T;x,y.e_1;e_2}\semr$  &=& $id_T\concatcomp reduce_{T;x,y.e_1;e_2}$ \\
-    $\seml$!<e$_1$, e$_2$>!$\semr$  &=& !<!$\seml$!e1!$\semr$, $\seml$!e2!$\semr$!>! \\
     $\seml$!e$_1$!$\icomp$!e$_2$!$\semr$ &=& $\Lambda$($id_\Gamma\concatcomp\seml$!e2!$\semr$; $\Lambda^{-1}$($\seml$!e1!$\semr$)) \\
+    $\seml$!J!$^T$!reduce!$_{T;x,y.e_1;e_2}\semr$  &=& $id_T\concatcomp reduce_{T;x,y.e_1;e_2}$ \\
+    $\seml$!J!$^T$!proj!$_{T1;T2;T3} \semr$ &=& $id_{T_1}\concatcomp\widehat{0}_{T_2}\concatcomp id_{T_3}$ 
+    \end{tabular}
+    \begin{tabular}{l c l}
+    $\seml$!J!$^T$!op!$_{T;n} \semr$ &=& $id_T\concatcomp J^Top_n$ \\
+    $\seml$!<e$_1$, e$_2$>!$\semr$  &=& !<!$\seml$!e1!$\semr$, $\seml$!e2!$\semr$!>! \\
+    $\seml$!J!$^T$!pair!$_{T;A\times B} \semr$ &=& $id_T\concatcomp$!<$\pi_1,\pi_2$>! \\
  \end{tabular}
 
 \subsection{Semantics of $\UNFSymbol$ transformations} % (fold)
