@@ -1,10 +1,11 @@
-\section{UNF}
+\section{Unary Normal Form}
 \label{sec:unf}
 
 Following the intuition highlighted in Section~\ref{subsec:insights}, 
-we present a new language which we call unary form (UNF). 
+we present a new language which we call Unary Normal Form (UNF). 
 There is a Source UNF for the Source language and a Target UNF for the Target language.
 Just as Target is an extension of Source, Target UNF is an extension of Source UNF.
+They serve as intermediate representation our the reverse-mode compilation pipeline (see Figure~\ref{fig:outline}).
 
 One takeaway from this paper is that efficient pure reverse-mode is complicated because of the several things it does.
 It goes through the term and keeps a store for the gradients to be updated. 
@@ -14,7 +15,7 @@ Due to the linearity requirement in the usage of the continuation variable,
 it needs to process like a call-by-value evaluation and evaluate the arguments of operators in a certain order before 
 dealing with the operator itself.
 
-By introducing UNF, we are trying to decouple some of the problems.
+By introducing UNF, we are decoupling some of the problems.
 UNF introduces the call-by-value evaluation of the arguments before evaluating the arguments and a good management of the environment.
 Differentiation on UNF deals with the purely functional store and gradients update via pre-composition.
 Finally, going back from UNF to Target uses the stored information in UNF to make sure the Jacobians are computed efficiently. 
@@ -31,26 +32,24 @@ The grammar of Source UNF is given in Figure~\ref{fig:unf_source_grammar}.
 
 There are a few notable things in this syntax. 
 Every primitive is indexed by a list of types from the source language, 
-which corresponds to a context being carried. 
+which corresponds to a context being carried. We will often elide the brackets ![!,!]!.
 Every constant, unary, or binary operator from Source has a corresponding $n$-ary operator !op$_{T,n}$! in UNF.
 Sequential composition is denoted by !;! and !e$_{1}$;e$_{2}$! means that !e$_{1}$! should be performed, and then !e$_{2}$!.
 The array operators !map2! and !reduce! have extra indices that represent well-formed terms in Source.
-The language has a second kind of sequential composition, which we call passing sequential compsition $\pcomp$.
-In !e$_{1}$ $\pcomp$ e$_{2}$! the idea is first that !e$_{1}$! is computed, followed by !e$_{2}$!. 
-However, !e$_{1}$! outputs an argument which is not used by !e$_{2}$! and is just passed by !e$_{2}$! 
-along and returned with the output of !e$_{2}$!.
 The language also contains a projection !proj! which forgets some of the elements, 
 and a pairing operator !pair! which takes the last pair of elements and returns the pairing of these elements.
 
-The typing rules are detailed in Figure~\ref{fig:source_unf_typesystem}.
-$\reals^{\times n}$ is a notation for $\reals,\ldots,\reals$ with $n$ factors $\reals$.
-
-\input{figures/source_unf_typesystem}
+A judgment in Source UNF is a triple !(T$_1$,e,T$_2$)! where !T$_1$! and !T$_2$! are lists of types of Source, and !e! is an expression of the Source UNF.
+The typing rules are detailed in Figure~\ref{fig:unf_source_grammar}.
+$\reals^{\times n}$ is a notation for $\reals,\ldots,\reals$ with $n$ factors $\reals$. 
+When !T$_1$! and !T$_2$! are lists of types and !A! a type, the operator !,! denotes snoc in !T$_1$,A! and denotes append in !T$_1$,T$_2$!.
 
 \begin{example}
-    !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$! 
-    represents !x$_1$:$\reals$, x$_2$:$\reals$, x$_3$:$\reals$ $\vdash$ let (x$_1$,x$_2$,x$_3$,x$_4$)=(x$_1$,x$_2$,x$_3$,cos(x$_3$)) in (x$_1$,x$_2$,<x$_3$,x$_4$>)!.
-    $\comp$ can more generally be understood as a let binding of a tuple, and primitives only act on the last parts of the tuple, always returning the context.
+    \label{exm:unf}
+    The term in Source UNF !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$! 
+    intuitively represents a term \\
+    !x$_1$:$\reals$,x$_2$:$\reals$,x$_3$:$\reals$ $\vdash$ let (x$_1$,x$_2$,x$_3$,x$_4$)=(x$_1$,x$_2$,x$_3$,cos(x$_3$)) in (x$_1$,x$_2$,<x$_3$,x$_4$>)!.\\
+    The operator $\comp$ can more generally be understood as a let binding of a tuple, and primitives only act on the last parts of the tuple, always also returning their whole context.
 \end{example}
 
 \subsection{Target UNF} % (fold)
@@ -60,14 +59,13 @@ The Target UNF is an extension of Source UNF.
 Its types are lists of types of Target. 
 Higher-order types are needed for the continuation introduced by reverse-mode. 
 In addition, it contains several new primitives which represent the transpose Jacobian of the primitives of Source UNF.
-Lastly, Target UNF has an internal composition $\icomp$. 
-!e$_{1}$ $\icomp$ e$_{2}$! represents precomposition of a curried function !e$_{1}$! by a term !e$_{2}$!
+Given a type !T$\defeq$ [A$_1$,$\ldots$,A$_n$]!, we write \underline{T} for the type !A$_1$ $\times\ldots\times$ A$_n$! of Target. 
+Target UNF has an internal composition $\icomp$. 
+!e$_{1}$ $\icomp$ e$_{2}$! represents precomposition of a curried function !e$_{1}$! by a term !e$_{2}$!.
 It is used by the reverse-mode transformation to pre-compose the continuation term by a transpose Jacobian.
-The grammar of Target UNF is given in Figure~\ref{fig:unf_source_grammar} and its type system in Figure~\ref{fig:target_unf_typesystem}.
+The grammar and type system of target UNF is given in Figure~\ref{fig:unf_target_grammar}.
 
 \input{figures/target_unf}
-
-\input{figures/target_unf_typesystem}
 
 \subsection{Simple reverse mode transformation} % (fold)
 \label{sub:Simple reverse mode transformation}
@@ -78,30 +76,107 @@ To a list of types, the transformation adds a higher-order type.
 It is to be understood as the continuation for the pure storage of the gradient.
 On primitive constants of Source UNF, it returns a pair. 
 The first part is the initial term (pre-composed by a projection because it is not using the continuation variable).
-The second part returns the continuation term pre-composed by the transpose Jacobian of the primitive.
+The second part returns the continuation term pre-composed by the transpose Jacobian of the primitive. 
+There is a sharp contrast between the simplicity of $\Dsynrevsymbol_{\rho}$ compared to $\directD{\rho}{\Gamma}{Y}$ from Figure~\ref{fig:direct_diff_macro}.
+
+\begin{example}
+    Continuing with our previous example !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$!, we have
+
+    \begin{tabular}{l}
+        !$\reals$,$\reals$,$\reals$,$\reals\times\reals\times\reals$->$\rho \vdash \Dsynrevsymbol_{\rho}$(cos$_{\reals,\reals}\comp$ pair$_{\reals,\reals; \reals\times\reals}$): $\reals$,$\reals$,$\reals \times \reals$,$(\reals\times\reals\times(\reals\times\reals))$->$\rho$! \\
+        = !<proj$_{\reals^3;\reals^3->\rho;[]} \comp$ cos$_{\reals,\reals}$, proj$_{[];\reals^3;\reals^3->\rho} \icomp$ (proj$_{\reals^3;\reals^3->\rho;[]}$ $\comp$ J$^T$cos$_{\reals,\reals}$)> $\comp$! \\
+        !<proj$_{\reals^4;\reals^4->\rho;[]} \comp$ pair$_{\reals,\reals; \reals\times\reals}$, proj$_{[];\reals^4;\reals^4->\rho} \icomp$ (proj$_{\reals^4;\reals^4->\rho;[]}$ $\comp$ J$^T$pair$_{\reals,\reals; \reals\times\reals}$)>!
+    \end{tabular}
+\end{example}
+
+\begin{lemma}[Well typedness $\Dsynrevsymbol_{\rho}$]
+    Let !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$! be a term in Source UNF. \\
+    Then  !A$_{1}$,$\ldots$,A$_{n}$,A$_{1}\times\ldots\times$ A$_{n}$->$\rho$ $\vdash$ $\Dsynrevsymbol_{\rho}$(e): B$_{1}$,$\ldots$,B$_{m}$,B$_{1}\times\ldots\times$ B$_{m}$->$\rho$!.
+\end{lemma}
+\begin{proof}
+    By induction on derivation of !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$!.
+\end{proof}
 
 \input{figures/macro_diff}
 
-\subsection{transformations to and from UNF} % (fold)
+\subsection{Transformations to and from UNF} % (fold)
 \label{sub:transformations to and from UNF}
 
-We give a translation from our Source to Source UNF in Figure~\ref{fig:source_to_unf}.
+We first give a translation from our Source to Source UNF in Figure~\ref{fig:source_to_unf}, which we call $\UNFSymbol$.
+As discussed above, $\UNFSymbol$ sends a constant or an operator to a primitive in Source UNF. 
+This term in Source UNF carries the context of the original term in Source.
+$\UNFSymbol$ sequentializes a term, mimicking a left-to-right call-by-value evaluation.
+Because of this, when we are trying to return a pair, this needs to be witnessed, and this is the role of !pair!.
+When we need to pass the result of type !A! of !e$_{1}$! through !e$_{2}$! which does not take it as an input, we can transform !e$_{2}$! to accept and pass it.
+It's the equivalent in UNF of a weakening.
+This weakening is required when we transform a non-unary operator such as $+$ or !pair!, as we transform the arguments in order and we need to keep all of their results.
+We write this new term $(\widetilde{e_{2}})_{A}$ and it defined by induction on !e$_{2}$! as follows. 
+We assume given a type !A! that needs to be passed, and drop the index !A!.
 
-TODO:redo
+\begin{tabular}{r c l}
+    $\widetilde{var_{T;i}}$  &=& $var_{T,A;i}$ \\
+    $\widetilde{op_{T;n}}$  &=& $op_{T,A;n}$ \\
+    $\widetilde{pair_{T;B\times C}}$  &=& $pair_{T,A;B\times C}$ \\
+    $\widetilde{proj_{T_1;T_2;T_3}}$  &=& $proj_{T_1;T_2;T_3,A}$ 
+\end{tabular}
+\begin{tabular}{r c l}
+    $\widetilde{e_1 \comp e_2}$  &=& $\widetilde{e_1}\comp\widetilde{e_2}$ \\
+    $\widetilde{map2_{T;x,y.e}}$  &=& $map2_{T,A;x,y.e}$ \\
+    $\widetilde{reduce_{T;x,y.e_1;e_2}}$ &=& $reduce_{T,A;x,y.e_1;e_2}$
+\end{tabular}
 
-UNF acts as a sort of stack. 
-The input represents the current stage of the stack, and we return the new value added to the stack.
-All results are kept, so the stack keeps growing. One might be surprised that the transformation for pairs and let is similar.
-The order of UNF really follows what the trace of doing a sequential call-by-value evaluation would look like if the return value does not matter.
-In other words, when evaluating !let x= e1 in e2! in call by value, we first evaluate !e1! and then !e2!. 
-Similarly in !<e1, e2>!, we evaluate !e1! and then !e2!. 
-Our ultimate goal is to return a gradient, not the original term, so what really matters is the order of evaluation, and what is evaluated.
+We want to preserve the invariant that $\UNFSymbol$(!e!) represents the term !e! which is also returning its context. 
+Because !x! is not free in $\Gamma \vdash$ !let x=e$_1$in e$_2$!, we need to hide !x! after $\UNFSymbol$(!e$_2$!).
+This explain the projection !proj! in $\UNFSymbol$ of a !let!. 
+More generally, in !e!$_{1} \comp$ !e!$_{2}$ the return value of !e!$_{1}$ acts as a new variable for !e!$_{2}$, 
+is not in the context of !e!$_{1}$, but will be returned by !e!$_{2}$.
+This means we need to hide all these intermediate values to preserve the invariant,
+and this explains the projection !proj! in the $\UNFSymbol$ of other terms. 
 
-TODO: need to explain that return values produce some kind of ANF and introduce new vars.
+\begin{lemma}[Well typedness $\UNFSymbol$]
+    Let !$\Gamma$=x$_1$:A$_{1}$,$\ldots$,x$_n$:A$_{n}$ $\vdash$ e:B! be a term in Source. Then
+    \begin{center}
+        !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ $\UNFSymbol$(e): A$_{1}$,$\ldots$,A$_{n}$,B!.
+    \end{center}
+\end{lemma}
+\begin{proof}
+    By induction on derivation of $\Gamma\vdash$!e:B!.
+\end{proof}
 
 \input{figures/source_to_unf}
 
-The transformation from the target UNF to the target language is presented in Figure~\ref{fig:unf_to_target}.
+Next, the transformation from Target UNF to Target is presented in Figure~\ref{fig:unf_to_target}. 
+We call this transformation $\UNFSymbol^{-1}$, but it is not a strict inverse of $\UNFSymbol$.
+Doing $\UNFSymbol$ followed by $\UNFSymbol^{-1}$ performs some version of the ANF transformation \cite{sabry1993reasoning}.
+
+Target UNF does not have variables. 
+A context type !T=[A$_1$,$\ldots$,A$_n$]! is transformed to a context \\
+!$\Gamma$=x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$!.
+We use this convention when definiting $\UNFSymbol^{-1}$. 
+For operators like !op$_{\Gamma;m}$!, we extend the notation above by saying that the variables from the context are \\
+!x$_1$:A$_1$,$\ldots$,x$_n$:A$_n$,x$_{n+1}$:$\reals$,$\ldots$,x$_{n+m}$:$\reals$!.
+
+% \begin{example}
+%     Continuing again with our previous example !cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$!, 
+%     we have, after removing a few unnecessary let-bindings:
+
+%     \begin{tabular}{l}
+%         !x$_1$,x$_2$,x$_3$:$\reals$,x$_4$:$\reals^3$->$\rho$ $\vdash$ $\UNFSymbol^{-1}$($\Dsynrevsymbol_{\rho}$(cos$_{\reals,\reals}$ $\comp$ pair$_{\reals,\reals; \reals\times\reals}$): $(\reals\times\reals) \times (\reals\times\reals\times(\reals\times\reals))$->$\rho$! \\
+%         = !TODO!
+%     \end{tabular}
+% \end{example}
+
+$\UNFSymbol^{-1}$ does not have as a simple typing property as $\UNFSymbol$, 
+because it treats primitives with and without a $J$ differently and should be performed after $\Dsynrevsymbol_{\rho}$.
+
+\begin{lemma}[Well typedness $\UNFSymbol^{-1}$]
+    Let !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$! be a term in Source UNF. Then
+    \begin{center}
+        !x$_1$:A$_{1}$,$\ldots$,x$_n$:A$_{n}$,x$_{n+1}$:A$_{1}\times\ldots\times$ A$_{n}$->$\rho$ $\vdash$ $\UNFSymbol^{-1}$($\Dsynrevsymbol_{\rho}$(e)): B$_m$ $\times$ (B$_{1}\times\ldots\times$ B$_{m}$->$\rho$) !.
+    \end{center}
+\end{lemma}
+\begin{proof}
+    By induction on derivation of !A$_{1}$,$\ldots$,A$_{n}$ $\vdash$ e: B$_{1}$,$\ldots$,B$_{m}$!.
+\end{proof}
 
 \input{figures/unf_to_target}
-

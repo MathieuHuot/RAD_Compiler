@@ -1,6 +1,4 @@
-\begin{notation}
-We introduce more notation in the table below.\\
-
+\begin{figure}
 \begin{tabular}{|l c l|}
     \hline
     !let x$_{1}$=e$_{1}$,$\ldots$,xn=en!  & \multirow{2}{*}{=} & !let x$_{1}$=e$_{1}$ in let x$_{2}$=e$_{2}$ in $\ldots$! \\
@@ -13,10 +11,14 @@ We introduce more notation in the table below.\\
     $\grad_{\Gamma_1}$(!e!) \quad\quad($\Gamma=\Gamma_1,\Gamma_2$, $|\Gamma_1|=k$)& = & $(e_1,\ldots,e_k)$ \\
     $\grad_{\Gamma_2}$(!e!) & = & $(e_{k+1},\ldots,e_n)$ \\
     && when $\grad_{\Gamma}($!e!$) = (e_1,\ldots,e_n)$ \\ \hline
+    !map (x. e1) A! & = & !map2 (x y. e1) A A! \\ \hline
     !ZerosLike(A)! & = & !map (x.0) A! \\ \hline
     !OnesLike(A)! & = & !map (x.1) A! \\ \hline
     !ZerosLike(n)! & = & !map (x.0) (x:$\Array{\reals}{n}$)! \\ \hline
     !OnesLike(n)! & = & !map (x.1) (x:$\Array{\reals}{n}$)! \\ \hline
 \end{tabular}
-TODO: I don't have map in the language, super annoying.
-\end{notation}
+\vspace{-0.4cm}
+\caption{Notations used for reverse-mode AD transformation.}
+\vspace{-0.4cm}
+\label{tbl:notation:one}
+\end{figure}

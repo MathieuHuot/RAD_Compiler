@@ -1,0 +1,80 @@
+\begin{table}
+ \label{fig:comparison-table}
+ % \begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+ % \hline
+ %  & \rot{Reverse Mode}  & \rot{Complexity} & \rot{Pure Derivatives} & \rot{Correctness Proofs} & \rot{Tensor Support}  & \rot{Recursion} & \rot{Conditional} \\
+ % \hline
+ % \system{} (This Paper) &
+ % \supfull & \supfull & \supfull & \supfull  & \supfull  & \suphalf & \supfull \\ 
+ % \hline
+ % Lantern~\cite{lantern_icfp} & 
+ % \supfull & \suphalf & \supnone & \supnone & \supfull & \supfull & \supfull \\ 
+ % \hline
+ % \dfsmooth{}~\cite{shaikhha2019efficient} 
+ % & 
+ % \supnone & \supnone & \supfull & \supnone & \supfull  & \suphalf  & \supfull \\ 
+ % \hline
+ % \cite{huot2020correctness} &
+ % \supfull & \supnone & \supfull & \supfull & \supnone & \suphalf & \supfull \\ 
+ % \hline
+ % \cite{brunel2019backpropagation} &
+ % \supfull & \suphalf & \supfull & \supfull & \supnone & \supnone & \supnone \\ 
+ % \hline
+ % \cite{abadi2019simple} &
+ % \supfull & \suphalf & \supfull & \supfull & \supnone & \supfull & \supfull \\ 
+ % \hline
+ % \cite{barthe2020versatility} &
+ % \supnone & \supnone & \supfull & \supfull  & \supnone & \supnone & \supfull \\ 
+ % \hline
+ % \cite{pearlmutter2008reverse} &
+ % \supfull & \supfull  & \supnone & \supnone & \supnone & \supfull & \supfull \\ 
+ % \hline
+ % \cite{Elliott:2018:SEA:3243631.3236765} &
+ % \supfull & \supnone & \supfull & \supfull & \supnone & \supnone & \supnone \\ 
+ % \hline
+ % \cite{sherman2021} & 
+ % \supnone & \supnone & \supfull & \supfull & \supnone & \suphalf & \supfull \\ 
+ % \hline
+ % \cite{vytiniotis2019differentiable} &
+ % \supfull & \suphalf & \supfull & \supnone & \supfull & \supnone & \supnone \\ 
+ % \hline
+ % \cite{mak2020differential} & 
+ % \supfull & \supnone & \supfull & \supfull & \supnone & \supnone & \supnone \\ 
+ % \hline
+ % \cite{vakar2020reverse} & 
+ % \supfull & \supnone & \supfull & \supfull & \supfull & \supnone & \supnone \\ 
+ % \hline
+ % \cite{Manzyuk2012} & 
+ % \supnone & \supnone & \supfull & \supfull & \supnone & \supnone & \supnone \\ 
+ % \hline 
+ % \cite{cockett2019reverse} &
+ % \supfull & \supnone & \supfull & \supfull & \supnone & \supnone & \supnone  \\ 
+ % \hline
+ % \cite{gallagher-sdg}  & 
+ % \supnone & \supnone & \supfull & \supfull & \supnone & \supnone & \supnone  \\ 
+ % \hline
+ \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+ \hline
+  & \rot{This Paper} & \rot{\cite{lantern_icfp}}  & \rot{\cite{shaikhha2019efficient}}  & \rot{\cite{huot2020correctness}}  & \rot{\cite{brunel2019backpropagation}}  & \rot{\cite{abadi2019simple}}  & \rot{\cite{barthe2020versatility}}  & \rot{\cite{pearlmutter2008reverse}}  & \rot{\cite{Elliott:2018:SEA:3243631.3236765}} & \rot{\cite{sherman2021}}  & \rot{\cite{vytiniotis2019differentiable}}  & \rot{\cite{mak2020differential}}  & \rot{\cite{vakar2020reverse}}  & \rot{\cite{Manzyuk2012}}  & \rot{\cite{cockett2019reverse}}  & \rot{\cite{gallagher-sdg}} \\ \hline
+Reverse Mode &
+\supfull & \supfull & \supnone & \supfull & \supfull & \supfull & \supnone & \supfull & \supfull & \supnone & \supfull & \supfull & \supfull & \supnone & \supfull & \supnone \\ \hline
+Complexity &
+\supfull & \suphalf & \supnone & \supnone & \suphalf & \suphalf & \supnone & \supfull & \supnone & \supnone & \suphalf & \supnone & \supnone & \supnone & \supnone & \supnone \\ \hline
+Pure Derivatives &
+\supfull & \supnone & \supfull & \supfull & \supfull & \supfull & \supfull & \supnone & \supfull & \supfull & \supfull & \supfull & \supfull & \supfull & \supfull & \supfull \\ \hline
+Correctness Proofs &
+\supfull & \supnone & \supnone & \supfull & \supfull & \supfull & \supfull & \supnone & \supfull & \supfull & \supnone & \supfull & \supfull & \supfull & \supfull & \supfull \\ \hline
+Tensor Support &
+\supfull & \supfull & \supfull & \supnone & \supnone & \supnone & \supnone & \supnone & \supnone & \supnone & \supfull & \supnone & \supfull & \supnone & \supnone & \supnone \\ \hline
+Higher-order Functions &
+\supnone & \supfull & \supfull & \supfull & \supfull & \supnone & \supfull & \supfull & \supnone & \supfull & \supfull & \supfull & \supfull & \supfull & \supnone & \supfull \\ \hline
+Recursion &
+\suphalf & \supfull & \suphalf & \suphalf & \supnone & \supfull & \supnone & \supfull & \supnone & \suphalf & \supnone & \supnone & \supnone & \supnone & \supnone & \supnone \\ \hline
+Conditional &
+\supfull & \supfull & \supfull & \supfull & \supnone & \supfull & \supfull & \supfull & \supnone & \supfull & \supnone & \supnone & \supnone & \supnone & \supnone & \supnone \\ \hline
+ \end{tabular}
+ \caption{Comparison of different functional differentiable programming frameworks.
+ $\supfull$ means the property is verified, and $\supnone$ means its absent from the work.
+ $\suphalf$ for complexity means the proof is not fully covered and for recursion that it does not support general recursion}
+ \label{tbl:relwork}
+ \end{table}

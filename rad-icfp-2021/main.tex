@@ -12,8 +12,6 @@
 \acmYear{2021}
 \bibliographystyle{ACM-Reference-Format}
 \citestyle{acmauthoryear} 
-%%
-
 
 \usepackage{booktabs}   %% For formal tables:
                         %% http://ctan.org/pkg/booktabs
@@ -22,14 +20,16 @@
 
 \usepackage{wasysym}
 \usepackage{xspace}
+\usepackage{array,multirow}
+\usepackage{adjustbox}
 
 \input{macros}
 
-%% end of the preamble, start of the body of the document source.
 \begin{document}
 
-\title{Differentiable Programming: correct, efficient and pure}
-\subtitle{Lambda, the ultimate backpropagator, revisited}
+% \title{Differentiable Programming: correct, efficient and pure}
+% \subtitle{Lambda, the ultimate backpropagator, revisited}
+\title{Denotationally Correct, Purely Functional, Efficient Reverse-mode Automatic Differentiation}
 
 \author{Mathieu Huot}
 \email{mathieu.huot@cs.ox.ac.uk}   
@@ -48,7 +48,7 @@
 
 \input{abstract}
 
-\keywords{automatic differentiation, functional programming}
+\keywords{denotational semantics, automatic differentiation, functional programming, optimization}
 
 \maketitle
 
@@ -56,13 +56,10 @@
 \input{background} 
 \input{purerad}
 \input{unf}
-\input{correctness} 
-% \input{efficientdiff}
 \input{complexity}
+\input{correctness} 
 \input{generalization}
 \input{relwork} 
-
-% \input{simplecase} %3 pages
 
 \begin{acks}
 We have benefited from discussing this work with many people, including Y.~Kaddar, J.~Sigal, M.~V\'ak\'ar, E. Arrighi, S. Staton and others. 

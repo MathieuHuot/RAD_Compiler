@@ -1,35 +1,42 @@
 \section{Discussion and future work} % (fold)
 \label{sec:discussion_and_future_work}
 
-\noindent \textbf{More dynamic language}
-JAX \cite{bradbury2020jax,frostig2018compiling} is a modern framework that provides state-of-the-art automatic differentiation. 
-One feature that makes it popular is that it uses JIT compilation, 
-which seems to be the best avenue to help best ML practitioners as it allows them 
-to quickly experiment but also benefit from the full power of static optimizations.
-We are interested in seeing how our work could sit in a JIT compiler. 
+\noindent \textbf{Design space}
+First, there is a tradeoff to reach between a general expressive language and a domain specific one. The latter usually has more static information and a specific representation that lends itself to better optimizations.
+Then, many optimizations performed on AD implementations consist in hand-crafted derivatives for useful operations like matrix-matrix multiplication, dot-product, etc.
+They don't seem to arise from theoretical justifications, are error prone, and can hardly fit with more general optimizations.
+This makes these systems harder to prove correct. The problem is thus to ensure provable correctness and pureness, while not compromising on efficiency. In addition, we would like something easily provably efficient. 
+A real-world implementation based on our work would of course optimize further, potentially using hand-crafted operations as well, but it would be based on solid grounds.
 
-\noindent \textbf{More optimizations.}
-As pointed in \ref{sub:Adding general arrays} it would be interesting to have a more principled representation 
-of tensors which could lead to more optimizations. 
-There is always a tension between dynamicity and the possibility for static optimizations 
-and we believe our language offers a good tradeoff, but it will be interesting to tailor it 
-further for specific applications.
+% \noindent \textbf{More dynamic language}
+% JAX \cite{bradbury2020jax,frostig2018compiling} is a modern framework that provides state-of-the-art automatic differentiation. 
+% One feature that makes it popular is that it uses JIT compilation, 
+% which seems to be the best avenue to help best ML practitioners as it allows them 
+% to quickly experiment but also benefit from the full power of static optimizations.
+% We are interested in seeing how our work could sit in a JIT compiler. 
 
-\noindent \textbf{Cost function and memory accesses}
-Our cost model \ref{sub:costModel} is simple but has limits. 
-In particular, it does not capture well cost in term of
-parallel computing, and memory management (cache optimization is one of best way to optimize such linear algebra intensive computations).
-For instance, in the earlier days of automatic differentiation, 
-advanced checkpointing techniques were used to avoid storing all the intermediate values just to save memory 
-and try avoiding saturation of RAM. 
-These problems are harder to analyze and, eventually, it seems to come down to a lot of experimenting and benchmarking.
+% \noindent \textbf{More optimizations.}
+% As pointed in \ref{sub:Adding general arrays} it would be interesting to have a more principled representation 
+% of tensors which could lead to more optimizations. 
+% There is always a tension between dynamicity and the possibility for static optimizations 
+% and we believe our language offers a good tradeoff, but it will be interesting to tailor it 
+% further for specific applications.
 
-\noindent \textbf{Parallelism and GPU}
-We tried to locally preserve parallelism. Having a pure transformation should help with found parallelism. 
-It would be interesting to implement on transformations and see how they perform on GPU.
-It is well-known that the addition of references provoked by the standard reverse-mode transformation
-restricts a lot of optimizations and it is not hard to find examples in C where the compiler does not detect simple optimizations 
-because of the references introduced by reverse-mode.
+% \noindent \textbf{Cost function and memory accesses}
+% Our cost model \ref{sub:costModel} is simple but has limits. 
+% In particular, it does not capture well cost in term of
+% parallel computing, and memory management (cache optimization is one of best way to optimize such linear algebra intensive computations).
+% For instance, in the earlier days of automatic differentiation, 
+% advanced checkpointing techniques were used to avoid storing all the intermediate values just to save memory 
+% and try avoiding saturation of RAM. 
+% These problems are harder to analyze and, eventually, it seems to come down to a lot of experimenting and benchmarking.
+
+% \noindent \textbf{Parallelism and GPU}
+% We tried to locally preserve parallelism. Having a pure transformation should help with found parallelism. 
+% It would be interesting to implement on transformations and see how they perform on GPU.
+% It is well-known that the addition of references provoked by the standard reverse-mode transformation
+% restricts a lot of optimizations and it is not hard to find examples in C where the compiler does not detect simple optimizations 
+% because of the references introduced by reverse-mode.
 
 % \noindent \textbf{implementation, BLaS, benchmark}
 
@@ -43,25 +50,29 @@ Their work focuses on computable reals which is hard to compare in terms of effi
 with our more standard approach of AD.
 
 \noindent \textbf{More array primitives}
-filter, flatten, gather, scanl, ...
-can be derived by hand once and then it's ok
+We focused on giving reverse derivatives for a small set of array primitives. 
+Other common primitives include filter, flatten, gather. 
+These functions can easily be added to our Source language once we provide a reverse derivative for them.
+This is reminiscent of hand-crafted derivatives present in large AD frameworks (usually hundreds), 
+and these can already be added in added in our language. 
+One only needs to make sure that the provided transpose Jacobian is correct.
 
-\noindent \textbf{Recursion}
-TODO
+% \noindent \textbf{Recursion}
+% It would be an interesting extension to our work to see if one can define efficient pure reverse derivatives on general recursion.
 
-\noindent \textbf{Higher derivatives}
-TODO
+% \noindent \textbf{Higher derivatives}
+% There are recent approaches to computing higher derivatives using jets \cite{betancourt2018geometric} which generalise forward and reverse mode.
+% A more standard approach is to iterate forward or reverse-mode. 
+% Forward mode is standard and can easily be defined on our Target language. 
+% As our optimization procedure removes lambdas, to iterate reverse-mode we would only need to compute reverse derivatives for the new primitives of Target, that is !scanl, scanr, shift1L, shift1R!.
 
-\noindent \textbf{Sparse data and matrix representation}
-TODO
-
-\noindent \textbf{Further applications}
-Reverse-mode differentiation is notoriously difficult to grasp, implement, and optimize.
-We hope this work could help develop a new perspective on pure reverse-mode automatic differentiation.
-Other applications include the use of fancier datatypes e.g. dependent types, 
-in probabilistic programming, e.g. for HMC or Variational Inference. 
-It is also of interest to see how to extend this work with other techniques which 
-have had renewed interest such as implicit differentiation \cite{blondel2021efficient,lorraine2020optimizing}.
+% \noindent \textbf{Further applications}
+% Reverse-mode differentiation is notoriously difficult to grasp, implement, and optimize.
+% We hope this work could help develop a new perspective on pure reverse-mode automatic differentiation.
+% Other applications include the use of fancier datatypes e.g. dependent types, 
+% in probabilistic programming, e.g. for HMC or Variational Inference. 
+% It is also of interest to see how to extend this work with other techniques which 
+% have had renewed interest such as implicit differentiation \cite{blondel2021efficient,lorraine2020optimizing}.
 
 % 	https://github.com/apple/swift/blob/master/docs/DifferentiableProgramming.md#approaches-to-automatic-differentiation
 
@@ -74,11 +85,26 @@ TODO: should talk a bit about the recent paper: reverse AD in Dex \cite{paszke20
 \section{Related Work} % (fold)
 \label{sec:related_work}
 
+\noindent \textbf{Correctness of AD in functional languages.}
+Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotational,brunel2019backpropagation,barthe2020versatility,mazza2021automatic,lee2020correctness} have focused on correctness of AD in a purely functional setting, 
+often leaving efficiency on the side, especially for reverse-mode differentiation. 
+We see our work as a complement and a first bridge between these works 
+and more practical considerations of efficiency and implementations, 
+which often require a lot more care than is acknowledged in more theoretical works.
+
+An exception is \cite{abadi-plotkin2020} which gives a reverse-mode transformation that is proved correct and with the right complexity.
+This work is purely first-order, does not have arrays and uses a non-standard semantics. 
+Our work is more canonical in the sense that it can more directly be implemented in a standard call-by-value language.
+They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
+Instead, they follow the principle of unrolling for recursive calls and evaluating the conditional before differentiating, 
+which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
+This is a well-known limit in TensorFlow \cite{abadi2016tensorflow} which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
+
 \noindent \textbf{Usage of iteration mechanics}
-A immense effort in machine learning for the past decade has been in finding
+An immense effort in machine learning for the past decade has been in finding
 good architectures, to limit computational costs, 
 avoid vanishing and exploding gradients, 
-and have better building blocks of large complicated systems than traditional layers of a neural network.
+and have better building blocks for large complicated systems than traditional layers of a neural network.
 Different approaches 
 (Dynamic neural networks \cite{jin2017manipulability,wu2016deep}, 
 Recursive NN \cite{socher2011parsing,biancofiore2017recursive}, 
@@ -93,21 +119,6 @@ but one should be able to adapt this on any algebraic data type.
 It will be interesting to see if and how we recover efficient backpropagation on the proposed architectures 
 which is usually derived by hand and one main goal of these papers.
 
-\noindent \textbf{Correctness of AD in functional languages.}
-Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotational,brunel2019backpropagation,barthe2020versatility,mazza2021automatic,ee2020correctness} have focused on correctness of AD in a purely functional setting, 
-often leaving efficiency on the side, especially for reverse-mode differentiation. 
-We see our work as a complement and a first bridge between these works 
-and more practical considerations of efficiency and implementations, 
-which often require a lot more care than is acknowledegd in more theoretical works.
-
-An exception is \cite{abadi-plotkin2020} which gives a reverse-mode transformation that is proved correct and with the right complexity.
-This work is purely first-order, does not have arrays and uses a non standard semantics. 
-Our work is more canonical in the sense that it can more directly be implemented in a standard call-by-value language.
-They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
-Instead, they follow the principle of unrolling for recursive calls and evaluating the conditional before differentiating, 
-which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
-This is a well-known limit in TensorFlow \cite{abadi2016tensorflow} which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
-
 \noindent \textbf{Array Languages and AD}
 
 Given the enormous computation needs for state-of-the-art large scale machine learning applications, 
@@ -121,14 +132,14 @@ TODO
 \noindent \textbf{Comparison to other recent papers.}
 
 TODO
-\cite{ee2020correctness}: non diff function
+\cite{lee2020correctness}: non diff function
 \cite{sherman2021}: non diff HO functions
 \cite{pearlmutter2008reverse}: based on this
 \cite{elliott2018simple}: bit similar because using CT as useful language, but we take impl and opti more seriously.
 \cite{shaikhha2019efficient}: similar approach but here more complicated for reverse mode, would be interesting to investigate more loop fusions here.
 
 Relatively recent work in AD (2008-2020):
-\cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,wang2018demystifying,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing,bernstein2020differentiating}
+\cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,lantern_icfp,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing,bernstein2020differentiating}
 
 Good recent surveys: \cite{van2018automatic,baydin2017automatic}
 

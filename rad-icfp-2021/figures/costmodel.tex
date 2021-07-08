@@ -1,0 +1,23 @@
+\begin{figure*}[t]
+    \begin{tabular}{|l c l|}
+        \hline
+      !$\cost$(c)! &=& !(1,0,0,0)! \\ 
+      !$\cost$(x)! &=& !(1,0,0,0)! \\ 
+      !$\cost$(op1 e)! &=& !$\cost$(op1)+$\cost$(e)! \\ 
+      !$\cost$(e$_1$ op2 e$_2$)! &=& !$\cost$(op2)+$\cost$(e$_1$)+$\cost$(e$_2$)! \\ 
+      !$\cost$(<e$_1$,e$_2$>)! &=& !$\cost$(e$_1$)+$\cost$(e$_2$)! \\ 
+      !$\cost$($\pi_i$(e))! &=& !(1,0,0,0)+$\cost$(e)! \\ 
+      !$\cost$(let x=e$_1$ in e$_2$)! &=& !(1,0,0,0)+$\cost$(e$_1$)+$\cost$(e$_2$)! \\ 
+      !$\cost$(map2 (x,y.e$_1$) e$_2$ e$_3$)! &=& !n*($\cost$(e$_1$)+(2,0,0,0))+$\cost$(e$_2$)+$\cost$(e$_3$)! \\ 
+      !$\cost$(reduce (x,y.e$_1$) e$_2$ e$_3$)! &=& !n*($\cost$(e$_1$)+(2,0,0,0))+$\cost$(e$_2$)+$\cost$(e$_3$)! \\ 
+      !$\cost$(scanl (x,y.e$_1$) e$_2$ e$_3$)! &=& !n*($\cost$(e$_1$)+(3,0,0,0))+$\cost$(e$_2$)+$\cost$(e$_3$)! \\ 
+      !$\cost$(scanr (x,y.e$_1$) e$_2$ e$_3$)! &=& !n*($\cost$(e$_1$)+(3,0,0,0))+$\cost$(e$_2$)+$\cost$(e$_3$)! \\ 
+      !$\cost$(shift1L e)! &=& !$\cost$(e)+(n,0,0,0)! \\ 
+      !$\cost$(shift1R e)! &=& !$\cost$(e)+(n,0,0,0)! \\ 
+      \hline
+    \end{tabular}
+    \vspace{-0.4cm}
+    \caption{Cost model for the restricted target language}
+    \label{fig:costmodel}
+    \vspace{-0.4cm}
+\end{figure*}

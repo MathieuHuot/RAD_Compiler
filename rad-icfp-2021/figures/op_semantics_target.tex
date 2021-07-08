@@ -11,9 +11,11 @@
     !shift1R [v$_1$,$\ldots$,v$_{n+1}$]! & \transto & ![v$_1$,$\ldots$,v$_n$]! \\ \hline
     !shift1R []! & \transto & ![]! \\ \hline
     !scanl (x,y.e) v []! & \transto & ![v]! \\\hline
-    !scanl (x,y.e) v [v$_1$,$\ldots$,v$_n$]! & \transto & !v::(scanl (x,y.e) e[v/x,v$_1$/y] [v$_2$,$\ldots$,v$_n$])!\\ \hline
+    !scanl (x,y.e) v [v$_1$,$\ldots$,v$_n$]! & \transto & !v::(scanl (x,y.e) e[v/x,v$_1$/y]! \\ 
+    && !           [v$_2$,$\ldots$,v$_n$])!\\ \hline
     !scanr (x,y.e) v []! & \transto & ![v]! \\ \hline
-    !scanr (x,y.e) v [v$_1$,$\ldots$,v$_n$]! & \transto & !(scanl (x,y.e) e[v/x,v$_1$/y] [v$_2$,$\ldots$,v$_n$])::v! \\ \hline
+    !scanr (x,y.e) v [v$_1$,$\ldots$,v$_n$]! & \transto & !(scanl (x,y.e) e[v/x,v$_1$/y]! \\
+    && !       [v$_2$,$\ldots$,v$_n$])::v! \\ \hline
     !reduce (x,y.e) v []! & \transto & !v! \\ \hline
     !reduce (x,y.e) v [v$_1$,$\ldots$,v$_n$]! & \transto  & !reduce (x,y.e) e[v/x,v$_1$/y] [v$_2$,$\ldots$,v$_n$])!\\ \hline
     !map2 (x,y.e) [v$_{11}$,$\ldots$,v$_{1n}$]! & \multirow{2}{*}{\transto} & ![e[v$_{11}$/x,v$_{21}$/y],$\ldots$,e[v$_{1n}$/x,v$_{2n}$/y]]! \\ 

@@ -1,19 +1,20 @@
 \begin{figure*}[t]
+\begin{tabular}{|c|}
+\hline
     \begin{tabular}{r c l}
-        $\Dsynrevsymbol_{\rho}$(!A1,$\ldots$,An!) &=& !A1,$\ldots$,An,(A1x$\ldots$xAn)->!$\rho$
+    $\Dsynrevsymbol_{\rho}$(!A$_1$,$\ldots$,A$_n$!) &=& !A$_1$,$\ldots$,A$_n$,(A$_1\times\ldots\times$A$_n$)->$\rho$!\\ \\
+    $\Dsynrevsymbol_{\rho}$(!var!$_{T;i}$) &=& $F$(!var$_{T;i}$, J$^T$var$_{T;i}$!) \\
+    $\Dsynrevsymbol_{\rho}$(!op!$_{\Gamma;n}$) &=& $F$(!op$_{T;n}$,J$^T$op$_{T;n}$!) \\ 
+    $\Dsynrevsymbol_{\rho}$(!pair!$_{T;A\times B}$) &=& $F$(!pair$_{T;A\times B}$, J$^T$pair$_{T;A\times B}$!) \\
+    $\Dsynrevsymbol_{\rho}$(!proj!$_{T_1;T_2;T_3}$) &=& $F$(!proj$_{T_1;T_2;T_3}$,J$^T$proj$_{T1;T2;T3}$!) \\
+    $\Dsynrevsymbol_{\rho}$(!e$_1\comp$e$_2$!) &=& $\Dsynrevsymbol_{\rho}$(!e$_1$!)$\comp$ $\Dsynrevsymbol_{\rho}$(!e$_2$!)\\ 
+    $\Dsynrevsymbol_{\rho}$(!map2!$_{T;x,y.e}$) &=& $F$(!map2$_{T;x,y.e}$, J$^T$map2$_{T;x,y.e}$!) \\
+    $\Dsynrevsymbol_{\rho}$(!reduce!$_{T;x,y.e_1;e_2}$) &=& $F$(!reduce$_{T;x,y.e_1;e_2}$, J$^T$reduce$_{T;x,y.e_1;e_2}$!) \\
+    \end{tabular}\\
+    where !$F$(A,B)$\defeq$ <proj$_{T;\underline{T}->\rho;[]} \comp$ A, proj$_{[];T;\underline{T}->\rho} \icomp$ (proj$_{T;\underline{T}->\rho;[]}$ $\comp$ B)>!\\\hline
     \end{tabular}
-
-    \medskip
-    \begin{tabular}{r c l}
-    $\Dsynrevsymbol_{\rho}$(!var!$_{T;i}$) &=& !<proj!$_{T;\underline{T}->\rho;[]} \comp$ !var!$_{T;i}$!, proj!$_{[];T;\underline{T}->\rho} \icomp$ (!proj!$_{T;\underline{T}->\rho;[]}$ $\comp$ !J!$^T$!var!$_{T;i}$)!>! \\
-    $\Dsynrevsymbol_{\rho}$(!op!$_{\Gamma;n}$) &=& !<proj!$_{T;\underline{T}->\rho;[]} \comp$ !op!$_{T;n}$!, proj!$_{[];T;\underline{T}->\rho} \icomp$ (!proj!$_{T;\underline{T}->\rho;[]}$ $\comp$ !J!$^T$!op!$_{T;,n}$)!>! \\ 
-    $\Dsynrevsymbol_{\rho}$(!pair!$_{T;A\times B}$) &=& !<proj!$_{T;\underline{T}->\rho;[]} \comp$ !pair!$_{T;A\times B}$!, proj!$_{[];T;\underline{T}->\rho} \icomp$ (!proj!$_{T;\underline{T}->\rho;[]}$ $\comp$ !J!$^T$!pair!$_{T;A\times B}$)!>! \\
-    $\Dsynrevsymbol_{\rho}$(!proj!$_{T1;T2;T3}$) &=& !<proj!$_{T;\underline{T}->\rho;[]} \comp$ !proj!$_{T1;T2;T3}$!, proj!$_{[];T;\underline{T}->\rho} \icomp$ (!proj!$_{T;\underline{T}->\rho;[]}$ $\comp$ !J!$^T$!proj!$_{T1;T2;T3}$)!>! \\
-    $\Dsynrevsymbol_{\rho}$(!e1!$\comp$!e2!) &=& $\Dsynrevsymbol_{\rho}$(!e1!); $\Dsynrevsymbol_{\rho}$(!e2!)\\ 
-    $\Dsynrevsymbol_{\rho}$(!e1!$\pcomp$!e2!) &=& TODO \\
-    $\Dsynrevsymbol_{\rho}$(!map2!$_{T;x,y.e}$) &=& !<proj!$_{T;\underline{T}->\rho;[]} \comp$ !map2!$_{T;x,y.e}$, !proj!$_{[];T;\underline{T}->\rho} \icomp$ (!proj!$_{T;\underline{T}->\rho;[]}$ $\comp$ !J!$^T$!map2!$_{T;x,y.e}$)!>! \\
-    $\Dsynrevsymbol_{\rho}$(!reduce!$_{T;x,y.e1;e2}$) &=& !<proj!$_{T;\underline{T}->\rho;[]} \comp$ !reduce!$_{T;x,y.e1;e2}$, !proj!$_{[];T;\underline{T}->\rho} \icomp$ (!proj!$_{T;\underline{T}->\rho;[]}$ $\comp$ !J!$^T$!reduce!$_{T;x,y.e1;e2}$)!>! \\
-    \end{tabular}
+    \vspace{-0.4cm}
     \caption{Reverse-mode differentiation from Source UNF to Target UNF}
     \label{fig:diff_macro}    
+    \vspace{-0.4cm}
 \end{figure*}

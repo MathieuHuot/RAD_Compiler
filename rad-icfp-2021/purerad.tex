@@ -6,27 +6,26 @@
 
 We consider a standard call-by-value language. 
 It consists of a first-order functional language with arrays and a few typical second-order array operations. 
-The types !T1,T2! and terms !e1,e2! are given in Figure~\ref{fig:source_grammar}.
+The types !T1,T2!, terms !e1,e2!, and typing rules are given in Figure~\ref{fig:source_grammar}.
 We have included a minimal set of array operations for the sake of illustration,  it is not hard to add more.
 See Section~\ref{sec:generalization}.
 
 \input{figures/source_grammar}
 
-The typing rules are given in Figure~\ref{fig:source_typesystem}. 
-For scalar operations, we assume given a set of operations, including $+$ and $*$. 
+For scalar operations, we assume a given set of operations, including $+$ and $*$. 
 !op1! and !op2! denote respectively a unary and a binary operation on reals. 
 These operations represent smooth total functions, 
 but again this can be easily generalized (\S\ref{sec:generalization}).  
 Typical examples include !cos, exp, +, *!. 
 We use infix notation for binary operators.
 
-!reduce! is a fold left operator for which the function is assumed to be associative, 
+The !reduce! operator is a fold-left operator for which the function is assumed to be associative, 
 and the provided initial value should be a unit of the binary operation.
-It is a well-known parallel friendly construct. For the sake of simplicity in the presentation, the bound function in !reduce! 
-is restricted to having no free variables. For the same reason, we currently restrict to arrays of reals.
-We show how to lift these restrictions in Section~\ref{sec:generalization}.
-
-\input{figures/source_type_system}
+It is a well-known parallel friendly construct. 
+For the sake of simplicity in the presentation, the bound function in !reduce! 
+is restricted to having no free variables. Furthermore, as our main focus is on AD and not array processing,
+we currently restrict to arrays of reals.
+We show how to lift these restrictions and how to differentiate some other array operators in Section~\ref{sec:generalization}.
 
 \subsection{Target Language}
 
@@ -34,8 +33,8 @@ The target language of our source-code transformation is an extension to the sou
 It is a higher-order language, as our purely functional reverse-mode introduces a continuation.
 The set of scalar operations should also be closed under partial differentiation. 
 In more detail, for every unary scalar operation !op1!, 
-we assumed given an operator $\partial_1$!op1! whose semantics should be the derivative of !op1!.
-For every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2! 
+we assumed a given operator $\partial$!op1! whose semantics should be the derivative of !op1!, e.g. $\partial$!cos!=!sin!.
+Similarly, for every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2!, 
 respectively representing the first and second partial derivative of !op2!.
 
 Similarly, the target language contains more array primitives which are used to define the reverse derivatives of array operations. 
@@ -47,25 +46,60 @@ Finally, we add two new shift operators !shift1L! and !shift1R!.
 They take an array of size $n$, and respectively forget the first and the last element of the array.
 These somewhat ad-hoc operators naturally show up when differentiating fold-like operators.
 
-The types and terms are presented in Figure~\ref{fig:target_grammar}.
+The grammar for types and terms along with the type system of the target language are presented in Figure~\ref{fig:target_grammar}.
 Our lambda abstractions take $n$ arguments as we are not interested here with partial applications. 
 In fact, the lambda abstractions introduced by reverse-mode will be removed during partial evaluation, 
 and the notation with lambda abstractions having $n$ bound variables makes reading slightly easier.
 We note that we don't actually need the full power of higher-order because we only use lambda abstractions over variables of ground types
 and let expressions binding such lambda abstractions. We only need the target language to be second-order.
-The type system for the extended grammar of the target language is presented in Figure~\ref{fig:target_typesystem}. 
 
 \input{figures/target_grammar}
-
-\input{figures/target_type_system}
 
 \subsection{Macro for pure reverse mode transformation} % (fold)
 \label{sub:Macro for pure reverse mode transformation}
 
 In Figure~\ref{fig:direct_diff_macro} we present our direct transformation from the source language to the target language for pure reverse mode differentiation.
-We explain in the next Section (\ref{sub:Partial evaluation and optimization}) how to optimize it further and compute the gradient.
-Admittedly, this transformation may be hard to read, and it is not straightforward to show its correctness directly. 
-In Section~\ref{sec:unf} we decompose this transformation into three simpler steps via a novel intermediate representation (UNF).
+Given a term $\Gamma\vdash e : \reals$, we can compute its gradient $\grad_\Gamma e$ from a particular instance of 
+$\directD{\rho}{\Gamma}{Y}(e)$. First, $\rho, Y$ specifies if we want to compute the whole gradient regarding the variables from $\Gamma$ or a subset of it.
+For a subset $\rho\subset \Gamma$, one chooses $Y$ to be the projection function sending a variable 
+$x_i:G$ of $\Gamma$ to $x_i$ if it belongs to $\rho$ and to $0_G$ otherwise.
+In particular, we take $Y=Id_\Gamma$ to compute the whole gradient.
+Next, the gradient will be given by the second part of the pair $\directD{\rho}{\Gamma}{Y}(e)$, 
+and we need to initialize the tangent variables. All of them are set to $0$ except the one corresponding to the output value of !e!, 
+which we initialize at $1$ to run the backpropagation. 
+All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,1)$.
+
+\input{figures/notation}
+
+\begin{notation}
+We now introduce several notations which are useful when defining the transformation for reverse-mode in Figure~\ref{tbl:notation:one}.
+Ground types are defined inductively by
+\begin{center}
+    $G::= \RR \mid G\times \ldots \times G \mid \Array{\RR}{n}$
+\end{center} 
+
+$(\RR,+,\underline{0})$ forms a monoid and this monoid structure extends canonically 
+to a monoid structure $(G,\widehat{+},0_G)$ for every ground type $G$. 
+It is defined inductively on $G$ as follows
+
+\begin{tabular}{l c l}
+    $0_\RR$  & $\defeq$ & $\underline{0}$ \\
+    $0_{G_1\times \ldots \times G_n}$ & $\defeq$ &  $< O_{G_1},\ldots, 0_{G_n} >$ \\
+    $0_{\Array{\RR}{n}}$& $\defeq$ & !ZerosLike(n)!
+\end{tabular}
+\begin{tabular}{l c l}
+    $a\widehat{+}_\RR b$ & $\defeq$ & $ a+b$ \\
+    $(a_1,\ldots,a_n)\widehat{+}_{G_1\times\ldots\times G_n}$ & $\defeq$ & $(a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n)$ \\
+    $(b_1,\ldots,b_n)$ && \\
+    $A\widehat{+}_{\Array{\RR}{n}}B $ & $\defeq$ & !map2! + $A$ $B$ 
+\end{tabular}
+
+A ground context is a context only containing variables of ground type.
+The previous monoid structure again extends canonically on ground contexts $\Gamma$ by defining
+$0_{x1:G1,\ldots,x_n:G_n}\defeq 0_{G_1},\ldots,0_{G_n}$ and 
+$a_1,\ldots,a_n\widehat{+}_{x1:G_1,\ldots, x_n:G_n}b_1,\ldots,b_n\defeq a_1\widehat{+}_{G_1}b_1,\ldots,a_n\widehat{+}_{G_n}b_n$.
+
+\end{notation}
 
 \begin{example}
     The reverse-mode transformation of the terms from the introduction are given by
@@ -105,105 +139,15 @@ For non-unary operations, we differentiate the arguments from the left to the ri
 which is modeled by the continuation $Y$. 
 Importantly for performance, each continuation variable $Y$ is only used once.
 
-We now introduce several notations which are useful when defining the transformation for reverse-mode.
-
-\input{figures/notation_D}
-
 We have the following typing lemma for $\directD{\rho}{\Gamma}{Y}$.
 \begin{lemma}[Typing $\directD{\rho}{\Gamma}{Y}$]
-    If $\Gamma \vdash$ !e: A!, then $\Gamma$!,Y: !$\Gamma\to \rho \vdash \directD{\rho}{\Gamma}{Y}$!(e): !$\directD{\rho}{\Gamma}{Y}$!(A)!.
+    If $\Gamma \vdash$ !e: A!, then $\Gamma$!,Y:!$\Gamma\to \rho \vdash \directD{\rho}{\Gamma}{Y}$!(e): !$\directD{\rho}{\Gamma}{Y}$!(A)!.
 \end{lemma}
+\begin{proof}
+By induction on derivation of $\Gamma\vdash$!e:A!.
+\end{proof}
 
 \input{figures/direct_macro_diff}
 
-\subsection{Partial evaluation and optimization} % (fold)
-\label{sub:Partial evaluation and optimization}
-
-Given a term $\Gamma\vdash e : \reals$, we can compute its gradient $\grad_\Gamma e$ from a particular instance of 
-$\directD{\rho}{\Gamma}{Y}(e)$. First, $\rho, Y$ specifies if we want to compute the whole gradient regarding the variables from $\Gamma$ or a subset of it.
-For a subset $\rho\subset \Gamma$, one chooses $Y$ to be the projection function sending a variable 
-$x_i:G$ of $\Gamma$ to $x_i$ if it belongs to $\rho$ and to $0_G$ otherwise.
-In particular, we take $Y=Id_\Gamma$ to compute the whole gradient.
-Next, the gradient will be given by the second part of the pair $\directD{\rho}{\Gamma}{Y}(e)$, 
-and we need to initialize the tangent variables. All of them are set to $0$ except the one corresponding to the output value of !e!, 
-which we initialize at $1$ to run the backpropagation. 
-All in all, we compute the gradient via $\pi_2\directD{\rho}{\Gamma}{Id_\Gamma}(e)(0_\Gamma,1)$.
-
-Following the insight from Section~\ref{subsec:insights}, 
-we don't want to keep all the lambda abstractions as this is costly. 
-The transformation is designed in such a way that all the lambda abstractions are given arguments,  
-and we can use partial evaluation to do beta-reduce all these lambda abstractions.
-
-By inspection in Figure~\ref{fig:direct_diff_macro}, 
-we see that there is a linear usage of  each continuation $Y$ 
-and that it is always applied to almost the identity. 
-More precisely, we have applications of the form !fun (x1,$\ldots$,xn) -> Y(e1,$\ldots$,en)! 
-where the !ei! are !xi! except for at most $k$ (independant of $n$) terms.
-In fact we have $k=2$, except for the !map2! case which requires a more detailed analysis (see Section~\ref{sec:complexity}).
-
-Using inlining as given in Figure~\ref{fig:optim}, this allows us to rewrite
-
-\begin{tabular}{l}
-!fun (x$_{1}$,$\ldots$,x$_n$) -> (fun (y$_{1}$,$\ldots$,y$_n$) -> (f$_{1}$,$\ldots$,f$_n$))(e$_{1}$,$\ldots$,e$_n$)! 
-$\transto$ \\
-!fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!
-\end{tabular}
-
-Using the invariant above, most of the !e!$_{i}$ are variables. 
-Without loss of generality, assume the onlt terms !e!$_{i}$ which are not variables are !e!$_{n-1}$ and !e!$_{n}$.
-we can use forward subsitution on the other !e!$_{i}$ and we obtain
-
-\begin{tabular}{l}
-    !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{1}$,$\ldots$,y$_n$ = e$_1$,$\ldots$,e$_n$ in (f$_{1}$,$\ldots$,f$_n$)!  $\transto$ \\
-    !fun (x$_{1}$,$\ldots$,x$_n$) -> let y$_{n-1}$,y$_n$ =e$_{n-1},$e$_1$ in (f$_{1}$[x$_{1}$/y$_{1}$],$\ldots$,f$_{n-2}[$x$_{n-2}$/y$_{n-2}]$,f$_{n-1}$,f$_{n}$)!
-\end{tabular}
-It means that it does not change the evaluation cost of most of the !f!$_{i}$ for $1\leq i \leq n-2$.
-The new evaluation cost is reduced to the sum of the cost of evaluating 
-the !f!$_{i}$ in addition to the cost of evaluating !e!$_{n-1}$ and !e!$_{n}$, O($n$) movement of variables.
-
-\begin{example}
-    After forward-substitution and inlining the inner !Y!$_{i}$, the gradient of the terms from the introduction reduces to
-
-    \begin{tabular}{c l}
-        & $\grad_\Gamma$(!let w$_{1}$ = x$_{1}$ * x$_{2}$ in let w$_{2}$ = w$_{1}$ * x$_{1}$ in w$_{2}$!) \\
-        =& !let w$_1$,Y$_1$= <x$_1$ * x$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y(y$_{1}$+x$_2$*z,y$_{2}$+x$_1$*z,y$_{3}$) > in! \\
-        & !let w$_{2}$,Y$_{2}$= <w$_{1}$ * x$_{1}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{1}$(y$_{1}$+w$_1$*z,y$_{2}$,y$_{3}$,y$_{4}$+x$_{1}$*z) > in! \\
-        & !let y,Y$_{3}$= <w$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$,z) -> Y$_{2}$(y$_{1}$,y$_{2}$,y$_{3}$,y$_{4}$+z)> in! \\
-        & !<y, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> Y$_{3}$(y$_{1}$,y$_{2}$,y$_{3}$,0,z) >!
-    \end{tabular}
-
-After another simplification step, we obtain 
-
-\begin{tabular}{c l}
-    & $\grad_\Gamma$(!let w$_{1}$ = x$_{1}$ * x$_{2}$ in let w$_{2}$ = w$_{1}$ * x$_{1}$ in w$_{2}$!) \\
-    =& !let w$_1$= x$_1$ * x$_{2}$ in let w$_{2}$= w$_{1}$ * x$_{1}$ in! \\
-        & !<w$_{2}$, fun (y$_{1}$,y$_{2}$,y$_{3}$,z) -> let y'$_{1}$=y$_{1}$+w$_1$*z in !\\
-        & \quad\quad\quad!let z'=y$_4$+x$_1$*z in Y(y'+x$_2$*z',y$_{2}$+x$_1$*z',y$_{3}$) >!
-\end{tabular}
-
-Similarly, for the gradient of !prod(A)! we obtain
-
-\begin{tabular}{c l}
-        & $\grad_\Gamma$(!prod(A)!) \\
-        & !let A$_{0}$= shift1R (scanl * 1 A) in!\\
-        & !let A$_{1}$= shift1L (map2 (a,b.b) A$_{0}$ A) in!\\
-        & !let A$_{2}$= map2 (a,b.a) A$_{0}$ A in!\\
-        & !let A$_{3}$= scanr * 1 A$_{1}$ in!\\
-        & !<prod(A), fun (X,z) -> Y(X+map2 (a,b. a*z*b) A$_{2}$ A$_{3}$)>! 
-    \end{tabular}
-\end{example}
-
-Though this transformation after the inlining above already has the right complexity, 
-its purity allows us to make the most out of generic optimizations.  
-A list of common optimizations that are useful for this language can be found in Figure~\ref{fig:optim}.
-
-\begin{example}
-As shown in appendix \ref{sub:gradintro}, the optimizations from Figure~\ref{fig:optim} 
-are sufficient to show that the gradients of the terms of the introduction reduce to the following.
-
-\begin{tabular}{{r c l}}
-    $\nabla_A$!prod(A)! &=& !map2 * (scanr * 1 (shift1L A)) (shift1R (scanl * 1 A))!\\
-    $\nabla_A$!sum(A)! &=& !map (x -> 1) A!\\
-    $\nabla_A$!dot(A,B)! &=& !B! 
-\end{tabular}
-\end{example}
+Admittedly, the transformation presented in this section may be hard to read, and it is not straightforward to show its correctness directly. 
+Next, we decompose this transformation into three simpler steps via a novel intermediate representation.

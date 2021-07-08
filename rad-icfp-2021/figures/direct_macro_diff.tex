@@ -1,10 +1,12 @@
 \begin{figure*}[t]
-    \begin{tabular}{r c l}
-        $\directD{\rho}{\Gamma}{Y}$(!A!) &=& !A $\times$ ($\Gamma$ $\times$ A->$\rho$)!\\
-    \end{tabular}
-    \medskip
-
-    \begin{tabular}{r c l}
+    % \begin{tabular}{r c l}
+    %     $\directD{\rho}{\Gamma}{Y}$(!A!) &=& !A $\times$ ($\Gamma$ $\times$ A->$\rho$)!\\
+    % \end{tabular}
+    % \medskip
+    \small
+    \begin{tabular}{|r c l|}
+    \hline
+        $\directD{\rho}{\Gamma}{Y}$(!A!) &=& !A $\times$ ($\Gamma$ $\times$ A->$\rho$)!\\ & & \\
         $\directD{\rho}{\Gamma}{Y}$(!c!) &=& 
             !<c, fun (x$_{1}$,$\ldots$,x$_n$,z) ->! \\
             && !Y(x$_{1}$,$\ldots$,x$_{n}$) >!\\
@@ -46,13 +48,16 @@
         $\directD{\rho}{\Gamma}{Y}$(!reduce (x,y.e$_{1}$) e$_{2}$ e$_{3}$!) &=&
             !let y$_{1}$,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{2}$) in! \\
             && !let A,Y$_{2}$ = !$\directD{\rho}{\Gamma,y_1}{Y_1}$!(e$_{3}$) in! \\
-            && !let A$_{0}$ = shift1R (scanl (x,y.e$_{1}$) y$_{1}$ A) in! \\
-            && !let A$_{1}$ = shift1L (map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ A) in! \\
-            && !let A$_{2}$ = map2 (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ A in! \\
-            && !let A$_{3}$ = scanr * 1 A$_{1}$ in! \\
+            && !let A$_{0}$=shift1R (scanl (x,y.e$_{1}$) y$_{1}$ A) in! \\
+            && !let A$_{1}$=shift1L (map2! \\
+            && !   (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A$_{0}$ A) in! \\
+            && !let A$_{2}$=map2 (a,b.(!$\grad_{\{y\}}$!)e$_{1}$[a/x,b/y]) A$_{0}$ A in! \\
+            && !let A$_{3}$=scanr * 1 A$_{1}$ in! \\
             && !<reduce (x,y.e$_{1}$) y$_{1}$ A, fun (x$_{1}$,$\ldots$,x$_n$,z) ->! \\
-            && !Y$_{2}$(x$_{1}$,$\ldots$,x$_n$, map2 (x,y. x*y*z) A$_{2}$ A$_{3}$>! \\
+            && !Y$_{2}$(x$_{1}$,$\ldots$,x$_n$, map2 (x,y. x*y*z) A$_{2}$ A$_{3}$)>! \\ \hline
         \end{tabular}
+    \vspace{-0.4cm}
     \caption{Reverse-mode transformation from source to target language}
     \label{fig:direct_diff_macro}    
+    \vspace{-0.4cm}
 \end{figure*}
