@@ -133,14 +133,14 @@ Other aspects of AD are discussed in recent surveys \cite{van2018automatic,baydi
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have introduced a transformation on programs to compute provably efficient (\S\ref{sec:complexity}) 
+We introduced a transformation on programs to compute provably efficient (\S\ref{sec:complexity}) 
 gradients via reverse derivatives in a purely functional way (\S\ref{sub:Macro for pure reverse mode transformation})
 on a simple yet expressive language with functions on arrays (\S\ref{sub:sourcelang}), 
 combined with standard functional optimizations (\S\ref{fig:optim}).  
 We introduced a novel intermediate representation, Unary Normal Form (\S\ref{sec:unf}) 
-to decompose our transformation into simpler transformations.
-We gave denotational semantics to our languages and our transformations (\S\ref{sec:correctness}), 
-and showed correctness of the reverse-mode translation (\S\ref{sub:Correctness theorem}).
+to decompose our translation into simpler ones.
+We gave denotational semantics to our languages (\S\ref{sec:correctness}), 
+and proved correctness of the reverse-mode translation (\S\ref{sub:Correctness theorem}).
 We showed (\S\ref{sec:generalization}) how to lift the restrictions that
 we introduced on arrays and how to extend our approach with other constructs such as conditionals.
 \clearpage
