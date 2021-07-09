@@ -1,11 +1,11 @@
 \begin{abstract}
-    Reverse-mode differentiation is used for optimization, but it does not preserve purity of the underlying program which makes it notoriously harder to optimize.
+    Reverse-mode differentiation is used for optimization, but it introduces references which break the purity of the underlying program, making them notoriously harder to optimize.
     We present a reverse-mode differentiation on a purely functional language with array operations.  
-    It is the first one to deliver a provably efficient, purely functional and denotationnally correct reverse-mode differentiation.
+    It is the first one to deliver a provably efficient, purely functional, and denotationally correct reverse-mode differentiation.
     We show that our transformation is semantically correct and verifies the cheap gradient principle. 
     Inspired by PROPs and compilation to categories, we introduce a novel intermediate representation that we call `unary form'.
     Our reverse-mode transformation is factored as a compilation scheme through this intermediate representation.
     We obtain provably efficient gradients by performing general partial evaluation optimizations after our reverse-mode transformation, as opposed to manually derived ones.
-    For simple first-order programs, the obtained output programs resemble static single assignment (SSA) code. 
+    For simple first-order programs, the obtained output programs resemble static-single-assignment (SSA) code. 
     We emphasize the modularity of our approach and show how our language can easily be enriched with more optimized primitives, as required for some speedups in practice.
 \end{abstract}

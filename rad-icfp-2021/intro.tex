@@ -38,7 +38,8 @@ In other words, abstracting away from imperative code is still a hurdle that fun
 % to a representation that leads to more efficient implementations.
 
 In this paper, we define a purely functional (without references or control mechanisms such as state monads), denotationally correct, and provably efficient reverse-mode AD. 
-To do so, we define the Unary Normal Form (UNF) representation inspired by PROPs \cite{hackney2015category} and compilation to categories \cite{elliott2017compiling}.
+To do so, we define the Unary Normal Form (UNF) representation inspired by PROPs \cite{maclane1965categorical} %\cite{hackney2015category} 
+and compilation to categories \cite{elliott2017compiling}.
 We can easily define and prove correctness of reverse-mode on this representation. 
 The whole reverse-mode transformation is obtained by compiling the language to this intermediate representation, applying the simpler reverse-mode transformation, and compiling again to the original language.
 After standard optimizations, the output program looks like SSA~\cite{cytron1989efficient} or ANF~\cite{sabry1993reasoning}, which leads to more efficient implementations.
