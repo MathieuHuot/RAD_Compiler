@@ -21,11 +21,12 @@ We use infix notation for binary operators.
 
 The !reduce! operator is a fold-left operator for which the function is assumed to be associative, 
 and the provided initial value should be a unit of the binary operation.
-It is a well-known parallel friendly construct. 
+It is a well-known parallel-friendly construct. 
 For the sake of simplicity in the presentation, the bound function in !reduce! 
 is restricted to having no free variables. Furthermore, as our main focus is on AD and not array processing,
 we currently restrict to arrays of reals.
-We show how to lift these restrictions and how to differentiate some other array operators in Section~\ref{sec:generalization}.
+We show how to lift these restrictions and how to differentiate some other array operators in Section~\ref{sec:generalization} 
+and in the supplementary material.
 
 \subsection{Target Language}
 
