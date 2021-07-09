@@ -10,16 +10,13 @@ that, after partial evaluation, our reverse-mode transformation satisfies a vers
 As can be seen from the examples, $\directD{\rho}{\Gamma}{Y}$ introduces a lot of functions of several arguments.
 Following the insight from Section~\ref{subsec:insights}, we do not want to keep all these costly lambda abstractions.
 The transformation is designed in such a way that all the lambda abstractions are given arguments,  
-and we can use partial evaluation to beta-reduce all these lambda abstractions.
+and we can use partial evaluation to beta-reduce all these lambda abstractions. 
+By inspecting each rule in Figure~\ref{fig:direct_diff_macro}, this allows us to prove by induction on the judgment of !e!:
 
 \begin{lemma}
     Let $\Gamma \vdash$!e: A! be a term in Source. 
     Every variable !Y! in $\directD{\rho}{\Gamma}{Y}$(!e!) which is not of ground type is used exactly once.
 \end{lemma}
-
-\begin{proof}
-    By induction on the judgment of !e!. We inspect each rule in Figure~\ref{fig:direct_diff_macro}.
-\end{proof}
 
 From the previous lemma, we see that there is a linear usage of  each continuation $Y$. 
 This is one key property which has been ensured by $\UNFSymbol$.
