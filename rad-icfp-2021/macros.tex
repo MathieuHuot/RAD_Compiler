@@ -70,6 +70,12 @@ breakatwhitespace=true,
 \lstset{language=llql}
 \lstMakeShortInline[columns=fixed]!
 
+\newenvironment{absolutelynopagebreak}
+  {\par\nobreak\vfil\penalty0\vfilneg
+   \vtop\bgroup}
+  {\par\xdef\tpd{\the\prevdepth}\egroup
+   \prevdepth=\tpd}
+
 % Jacobian
 \DeclareMathOperator{\J}{J}
 % \newcommand{\J}{\mathop{\mathbf J}}
