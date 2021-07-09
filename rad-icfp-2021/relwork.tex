@@ -82,10 +82,10 @@ As shown in \ref{sub:lift_recipe}, one mostly only needs to make sure that the p
 \label{sec:related_work}
 
 \noindent \textbf{Correctness of AD in functional languages.}
-Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotational,brunel2019backpropagation,barthe2020versatility,mazza2021automatic,lee2020correctness} have focused on correctness of AD in a purely functional setting, 
+Several recent work \cite{huot2020correctness,vakar2020reverse,vakar2020denotational,brunel2019backpropagation,barthe2020versatility,mazza2021automatic,lee2020correctness,abadi-plotkin2020} have focused on correctness of AD in a purely functional setting, 
 often leaving efficiency on the side, especially for reverse-mode differentiation. 
 We see our work as a complement and a first bridge between these works 
-and more practical considerations of efficiency and implementations, 
+and more practical considerations of efficiency, 
 which often require a lot more care than is acknowledged in more theoretical works.
 
 % An exception is \cite{abadi-plotkin2020}.
@@ -96,43 +96,39 @@ which often require a lot more care than is acknowledged in more theoretical wor
 % which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
 % This is a known limitation in TensorFlow \cite{abadi2016tensorflow}. %which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
 
-\noindent \textbf{Usage of iteration mechanics}
+\noindent \textbf{Usage of iteration mechanics.}
 An immense effort in machine learning for the past decade has been in finding
 good architectures, to limit computational costs, 
 avoid vanishing and exploding gradients, 
 and have better building blocks for large complicated systems than traditional layers of a neural network.
-Different approaches 
-(Dynamic neural networks \cite{jin2017manipulability,wu2016deep}, 
+Different approaches such as Dynamic neural networks \cite{jin2017manipulability,wu2016deep}, 
 Recursive NN \cite{socher2011parsing,biancofiore2017recursive}, 
 Reccurent NN \cite{bahdanau2014neural,luong2015effective}, 
 Tree LSTM \cite{tai2015improved,chen2016enhanced}, 
 Dynamic Recursive NN \cite{guo2019dynamic}, 
-Top-down Tree LSTM \cite{zhang2015top}, 
-Recursion in DNN \cite{jeong2018improving}) 
+Top-down Tree LSTM \cite{zhang2015top}, and
+Recursion in DNN \cite{jeong2018improving}
 have found that recursive data structures such as trees are good candidates.
-We have emphasized here on differentiating fold left on arrays for efficiency, 
+We have emphasized here on differentiating fold-based recursion on arrays for efficiency, 
 but one should be able to adapt this on any algebraic data type. 
-It will be interesting to see if and how we recover efficient backpropagation on the proposed architectures 
+It will be interesting to see if and how we recover efficient purely functional backpropagation (as opposed to the imperative version of~\cite{lantern_icfp}) on the proposed architectures 
 which is usually derived by hand and one main goal of these papers.
 
-\noindent \textbf{Array Languages and AD}
-
+\noindent \textbf{Array Languages and AD.}
 Given the enormous computation needs for state-of-the-art large scale machine learning applications, 
 which require extremely efficient tensor computations and automatic differentiation for backpropagation, 
 combining array languages and automatic differentiation (tensor calculus) in the best-fitted 
-intermediate representation for optimizations is of key interest and active research. 
-See for instance the recent work by \cite{bernstein2020differentiating,laue2018computing,laue2020simple}.
-Advanced array programming is considered an orthogonal problem to AD and we focused our work on the latter.
+intermediate representation for optimizations is of key interest and active research~\cite{bernstein2020differentiating,laue2018computing,laue2020simple}. 
+Advanced array programming is considered an orthogonal problem to AD and we focused our work on the differentiation aspect.
 
 \noindent \textbf{Comparison to other recent papers.}
-
 Table~\ref{tbl:relwork} does not reflect all the aspects of AD. For instance \cite{lee2020correctness} studies in more detail non differentiability, 
-and \cite{sherman2021} the differentiability of highly-non trivial higher-order functions. 
+and \cite{sherman2021} the differentiability of highly non-trivial higher-order and partial functions. 
 Our work is somewhat close in spirit to the idea of \cite{elliott2018simple} of compiling to categories.
-The idea of using closures as back-propagators is receiving recent attention, as is highlighted in \cite{vytiniotis2019differentiable},
-these ideas are used in Julia Zygote \cite{innes2019zygote}, Swift AD \cite{wei2018first}, and recently in \cite{paszke2021getting}.
-These seem closer to using control mechanims than having purely functional reverse-derivatives as far as we could tell.
-Other aspects of AD still are discussed in recent surveys \cite{van2018automatic,baydin2017automatic}.
+The idea of using closures as back-propagators is receiving recent attention, as is highlighted in \cite{vytiniotis2019differentiable,lantern_icfp}.
+These ideas are used in Julia Zygote \cite{innes2019zygote}, Swift AD \cite{wei2018first}, and recently in \cite{paszke2021getting}.
+These seem closer to using control mechanims than having purely functional reverse-derivatives.
+Other aspects of AD are discussed in recent surveys \cite{van2018automatic,baydin2017automatic}.
 
 \section{Conclusion}
 \label{sec:conclusion}
