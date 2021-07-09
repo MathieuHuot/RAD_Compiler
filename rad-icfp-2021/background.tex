@@ -3,15 +3,15 @@
 
 \subsection{Rudiments of forward-mode AD and dual numbers}
 
-To find the gradient $\nabla f$ of a function $f:\RR\to \RR$ in a compositional way, need both $f$ and $\nabla f$ when calculating $\nabla (f;g)$.
-We are more thus generally interested in transforming a function $f:\RR^n\to \RR$ into a function
-$g:(\RR\times \RR)^n\to \RR\times \RR$ in such a way that for any
-$f_1\dots f_n:\RR\to\RR$, 
+To find the gradient $\nabla f$ of a function $f:\RR\to \RR$ compositionally, need both $f$ and $\nabla f$ when calculating $\nabla (f;g)$.
+This is the reason why we are more generally interested in transforming a function $f:\RR^n\to \RR$ into a function
+$g:(\RR\times \RR)^n\to \RR\times \RR$ in such a way that for every
+$f_1, \dots, f_n:\RR\to\RR$, 
 \begin{center}
     $(f_1,\nabla f_1,\dots, f_n,\nabla f_n);g = ((f_1,\dots, f_n);f,\nabla ((f_1, \dots, f_n);f))$.
 \end{center}
 
-The idea of AD is to systematically transform a differentiable function $f:\RR^n\to \RR$ to a function $g:\RR^{2n}\to \RR^2$ which captures~$f$ and all its partial derivatives.
+The idea of AD is to systematically transform a differentiable function $f:\RR^n\to \RR$ into a function $g:\RR^{2n}\to \RR^2$ which captures~$f$ and all its partial derivatives.
 An intuition for $g$ is often given in terms of dual numbers. The transformed function operates on pairs of numbers, $(x,x')$, and it is common
 to think of such a pair as $x+x'\epsilon$ for an `infinitesimal' $\epsilon$. The main two ways in which AD is performed in practice is by operator overloading or by source code transformation (see e.g. \cite{griewank2008evaluating} Chapter 6). 
 Our approach focuses on source code transformation which is better fitted for compilation and optimizations.
