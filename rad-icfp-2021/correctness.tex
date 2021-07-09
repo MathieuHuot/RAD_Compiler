@@ -18,10 +18,10 @@ Informally, notice that it makes sense to talk about the opposite of a category 
 For roughly this reason, concategories are a more natural place to consider reverse derivatives than multicategories, 
 even though they are syntactically less familiar. 
 The $\directD{\rho}{\Gamma}{Y}$ translation passes from the multicategory for the source syntax to the concategory for UNF, where reverse-mode differentiation is easier, and then back to the multicategory for the target syntax. 
-In this way the translations between Source/Target and Source UNF/Target UNF are merely changing perspective from multicategories to concategories.
+In this way, the translations between Source/Target and Source UNF/Target UNF are merely changing perspective from multicategories to concategories.
 We work with a specific multicategory and concategory built from diffeological spaces and smooth maps, so that we can verify the construction of reverse derivatives. 
 Since diffeological spaces support products, they can be presented as a category, a multicategory and a concategory. 
-In abstract mathematics the difference between these presentations is almost trivial. 
+Mathematically, the difference between these presentations is almost trivial. 
 But in terms of programming syntax, the difference between presentations has a big effect, as can be seen from the difference between the complex translation in Section~\ref{sec:simplediff} and the simple translations in Section~\ref{sec:unf}, which are much more readily verified.
 
 \subsection{Denotational semantics} % (fold)
@@ -85,7 +85,7 @@ Instead, we can interpret Target in the category of Diffeological spaces,
 as in \cite{huot2020correctness}. 
 Diffeological spaces (\cite{iglesias2013diffeology}) are a conservative extension of $\CartSp$. 
 The key idea will be that a higher-order function is called smooth if it sends smooth functions to smooth functions, meaning that we can never use it
-to build first order functions that are not smooth.
+to build first-order functions that are not smooth.
 
 \begin{definition}
 	A \emph{diffeological space} $(X,\plots{X})$ consists of a set $X$ together with, for each $n$ and each open subset $U$ of $\RR^n$,  a set $\plots{X}^U\subseteq [U\to X]$ of functions, called \emph{plots}, such that
@@ -120,7 +120,7 @@ One main reason for introducing UNF is to have a better handle over
 the computation flow of the term, in the same vein as the ANF or CPS transformations.
 A convenient categorical setting for this is to use string diagrams.
 To better fit the standard denotational semantics of languages, 
-we use concategories instead. Similarly to categories and multicategories, 
+we use concategories instead. Similar to the settings of categories and multicategories, 
 most categorical constructions used for the semantics of functional languages 
 have equivalent in concategories.
 
@@ -207,11 +207,11 @@ This comparison of morphisms of $\ConcatS$ gives the $\UNFSymbol$ transformation
 We can interpret Source in $\CSource$ as follows. The functor is an identity on types. 
 On morphisms, we interpret them as morphisms in the concategory as follows.
 The terminal map is interpreted as the identity. The operators !op1,op2! by themselves.
-Crucially, the semantics of a !let! becomes composition in the concategory. 
+Crucially, the semantics of a !let! is simple composition in the concategory. 
 The semantics of a variable is the pairing of the identity with a projection.
 The operation !map2 (x,y.e)! is interpreted as the pairing of the identity and itself, and !reduce (x,y.e$_1$) $e_2$! as itself.
 
-Interpretating Source in $\CSource$ allows us to see terms of Source as morphisms in the concategory $\ConcatS$, 
+Interpreting Source in $\CSource$ allows us to see terms of Source as morphisms in the concategory $\ConcatS$, 
 and to compare them to terms of Source UNF which are already interpreted in $\CSource$.
 The following proposition can be shown by induction on the structure of the terms.
 
@@ -328,7 +328,7 @@ in the sense that it produces a term that computes the gradient of the original 
 \end{proposition}
 
 By inspecting what that composition of transformations does on the terms of Source, 
-we show that this indeed gives computes the same as the transformation 
+we show that this indeed computes the same as the transformation 
 $\directD{\rho}{\Gamma}{Y}$ from Section~\ref{sub:Macro for pure reverse mode transformation}. 
 This should not come as a surprise because the design of $\directD{\rho}{\Gamma}{Y}$ was in fact guided via 
 this decomposition and intermediate representation.

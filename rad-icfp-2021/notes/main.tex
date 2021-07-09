@@ -90,7 +90,7 @@ This is for most cases above except notably for let binding in which case it is:
  These types $\Gamma\times A \times \Delta_1\times \Delta_2 \times B$ ought to be unordered and represent just a set of variables, thus the extra annoyance with permutations in an ordered setting. 
 
  Semantically, $\UNFSymbol(e1) \widehat{;} \UNFSymbol(e2)$ is a macro for $\UNFSymbol(e1) ; \UNFSymbol(\widetilde{e2}); \sigma$ where $\Gamma,\Delta_1,A\vdash \widetilde{e2}:B$ is the weakening of $e2$, and $\sigma: \Gamma\times\Delta_1\times A \times \Delta_2 \times B \to \Gamma\times\Delta_1\times \Delta_2 \times A\times B$ is the obvious permutation with this type.
-The weakening and permutation are slightly changed in the obvious way for let binding to make the thing typecheck. 
+The weakening and permutation are slightly changed in the obvious way for let binding to make the thing to type-check. 
 
 
  : I probably need to add permutations $\sigma$ in the language of UNF then.
@@ -98,7 +98,7 @@ The weakening and permutation are slightly changed in the obvious way for let bi
 
 \section{Semantics attempts}
 
-Because UNF inspects the code of its agument, it is not invariant under $\beta,\eta$ and so cannot be directly expressed as a structure preserving functor from the syntactic category of the source language modulo $\beta,\eta$ to another category. 
+Because UNF inspects the code of its agument, it is not invariant under $\beta,\eta$ and so cannot be directly expressed as a structure-preserving functor from the syntactic category of the source language modulo $\beta,\eta$ to another category. 
 
 \subsection{Syntactic source category}
 
