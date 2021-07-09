@@ -17,20 +17,22 @@
         !map2 + A ZerosLike(B)! && !A!\\
         !map (x.x) A! && \\ \hline
         !map2 * A ZerosLike(B)! & \transto & !ZerosLike(B)! \\ \hline
-        !map2 (x,y.e) A B! \quad\quad(!y! not free in !e! ) & \transto & !map x.e A!  \\ \hline
-        !map2 (x,y.e) A B! \quad\quad(!x! not free in !e! ) & \transto & !map y.e B!  \\ \hline
-        !scanl * 1 OnesLike(A)! && \\
-        !scanr * 1 OnesLike(A)! & \transto & !1! \\
-        !reduce * 1 OnesLike(A)! && \\ \hline
-        !scanl + 0 ZerosLike(A)! && \\
-        !scanr + 0 ZerosLike(A)! & \transto & !0! \\
-        !reduce + 0 ZerosLike(A)! && \\ \hline
+        % !map2 (x,y.e) A B! \quad\quad(!y! not free in !e! ) & \transto & !map x.e A!  \\ \hline
+        % !map2 (x,y.e) A B! \quad\quad(!x! not free in !e! ) & \transto & !map y.e B!  \\ \hline
+        % !scanl * 1 OnesLike(A)! && \\
+        % !scanr * 1 OnesLike(A)! & \transto & !1! \\
+        % !reduce * 1 OnesLike(A)! && \\ \hline
+        !reduce * 1 OnesLike(A)! & \transto & !1! \\ \hline
+        % !scanl + 0 ZerosLike(A)! && \\
+        % !scanr + 0 ZerosLike(A)! & \transto & !0! \\
+        % !reduce + 0 ZerosLike(A)! && \\ \hline
+        !reduce + 0 ZerosLike(A)! & \transto & !0! \\ \hline
         !shift1L OnesLike(n+1)! & \multirow{2}{*}{\transto} & !OnesLike(n)! \\ 
         !shift1R OnesLike(n+1)! && \\ \hline
        
         \hline \hline
-        \textit{Classic array simplifications}  & & \\ \hline
-        !map (x.e$_1$) (map (y.e$_2$) A)! & \transto & !map (y. let x=e$_2$ in e$_1$) A! \\ \hline
+        \textit{Classic array simplification}  & & \\ \hline
+        % !map (x.e$_1$) (map (y.e$_2$) A)! & \transto & !map (y. let x=e$_2$ in e$_1$) A! \\ \hline
         !map (x.e$_1$) (map2 (y$_1$,y$_2$.e$_2$) A B)! & \transto & !map2 (y$_1$,y$_2$.let x=e$_2$ in e$_1$) A B! \\ \hline
         \textit{Tuple partial evaluation}  & & \\ \hline
         $\pi_i$!<e$_1$,$\ldots$,en>! & \transto & !ei! \\
