@@ -53,12 +53,10 @@ The problem is that this could break the complexity of reverse mode because of t
 \smartpara{Non-Solution 2}
 A slightly better option would be to define 
 
-\begin{tabular}{r c l}
-    $\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) 
-    &=& !let b=e$_1$ in!   \\
-    && !<if b then e$_2$ else e$_3$, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
-    && !Y(b*!$\directD{\rho}{\Gamma}{Y}$!(e$_2$)(x$_1$,$\ldots$,x$_n$,z)+!\\
-    && \quad!(1-b)*!$\directD{\rho}{\Gamma}{Y}$!(e$_3$)(x$_1$,$\ldots$,x$_n$,z))>!
+\begin{tabular}{l}
+    $\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) \\
+    !let b=e$_1$ in <if b then e$_2$ else e$_3$, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
+    !Y(b*!$\directD{\rho}{\Gamma}{Y}$!(e$_2$)(x$_1$,$\ldots$,x$_n$,z)+(1-b)*!$\directD{\rho}{\Gamma}{Y}$!(e$_3$)(x$_1$,$\ldots$,x$_n$,z))>!
 \end{tabular}
 
 Now both derivatives of !e2! and !e3! are put together, and this might unlock some optimizations, 
@@ -67,11 +65,9 @@ but there is still a non-linear usage of the continuation variable !Y!.
 \smartpara{Solution}
 If we know we want to compute the whole gradient of the expression, we can define the translation as follows:
 
-\begin{tabular}{r c l}
-    $\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) 
-    &=& !let b=e$_1$ in!   \\
-    && !<if b then e$_2$ else e$_3$, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
-    && !Y((x$_1$,$\ldots$,x$_n$)!$\widehat{+}$($\grad_\Gamma$!(e$_2$)*b!$\widehat{+}\grad_\Gamma$!(e$_3$)*(1-b))*z)>!\\
+\begin{tabular}{l}
+    !$\directD{\rho}{\Gamma}{Y}$(if e$_1$ then e$_2$ else e$_3$) = let b=e$_1$ in <if b then e$_2$ else e$_3$,! \\
+    !fun (x$_1$,$\ldots$,x$_n$,z) -> Y((x$_1$,$\ldots$,x$_n$)!$\widehat{+}$($\grad_\Gamma$!(e$_2$)*b!$\widehat{+}\grad_\Gamma$!(e$_3$)*(1-b))*z)>!\\
 \end{tabular}
 
 This time, there is a linear usage of the continuation variable !Y!. We note that adding conditionals does not break differentiability as long as there are no non-trivial primitives $\reals\to\BB$.
