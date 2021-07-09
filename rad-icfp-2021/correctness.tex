@@ -184,7 +184,7 @@ We can interpret Target UNF in $\ConcatT$ as follows.
 The part common with Source UNF is interpreted in the same way as for the case of Source UNF.
 
 \begin{tabular}{l c l}
-    $\seml$!J!$^T$!var!$_{T;i} \semr$ &=& TODO \\
+    $\seml$!J!$^T$!var!$_{T;i} \semr$ &=& $\pi_T \widehat{+}(0,\pi_A,0)$ \\
     $\seml$!J!$^T$!map2!$_{T;x,y.e}\semr$  &=& $id_T\concatcomp map2_{T;x,y.e}$ \\
     $\seml$!e$_1$!$\icomp$!e$_2$!$\semr$ &=& $\Lambda$($id_\Gamma\concatcomp\seml$!e2!$\semr$; $\Lambda^{-1}$($\seml$!e1!$\semr$)) \\
     $\seml$!J!$^T$!reduce!$_{T;x,y.e_1;e_2}\semr$  &=& $id_T\concatcomp reduce_{T;x,y.e_1;e_2}$ \\
@@ -195,6 +195,7 @@ The part common with Source UNF is interpreted in the same way as for the case o
     $\seml$!<e$_1$, e$_2$>!$\semr$  &=& !<!$\seml$!e1!$\semr$, $\seml$!e2!$\semr$!>! \\
     $\seml$!J!$^T$!pair!$_{T;A\times B} \semr$ &=& $id_T\concatcomp$!<$\pi_1,\pi_2$>! \\
  \end{tabular}
+ where !T,A! $\vdash$ (0,$\pi_A$,0): !T! and the projection $\pi_A$ lands in the $i$-th element of the list !T!.
 
 \subsection{Semantics of $\UNFSymbol$ transformations} % (fold)
 \label{sub:Semantics for UNF transformations}
@@ -258,12 +259,23 @@ and show that it matches the syntactic $\Dsynrevsymbol_{\rho}$
 from Section~\ref{sub:Simple reverse mode transformation}.
 
 \begin{definition}[$\Dsynrevsymbol_{\rho}$ as a lax functor]
-    We define $\Dsynrevsymbol_{\rho}:\ConcatS\to\ConcatT$ as follows.
-    $\Dsynrevsymbol_{\rho}$(![A$_1$,$\ldots$,A$_n$])=[A$_1$,$\ldots$,A$_n$,A$_1\times\ldots\times$A$_n\to \rho$]!.
-    TODO
+    We define $\Dsynrevsymbol_{\rho}:\ConcatS\to\ConcatT$ as follows.\\
+    !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_n$])=[A$_1$,$\ldots$,A$_n$,A$_1\times\ldots\times$A$_n\to \rho$]!.
+    !$\Dsynrevsymbol_{\rho}$(op1)=<op1,$\pi_{last}\circ$ J$^T$op1>!,\\ 
+    !$\Dsynrevsymbol_{\rho}$(op2)=<op2,$\pi_{last}\circ$ J$^T$op2>!,\\
+    !$\Dsynrevsymbol_{\rho}$(map2 (x,y.e))=<map2 (x,y.e),$\pi_{last}\circ$ J$^T$map2 (x,y.e)>!,\\
+    !$\Dsynrevsymbol_{\rho}$(reduce$_{x,y.e_1,e_2}$)=<reduce$_{x,y.e_1,e_2}$,$\pi_{last}\circ$ J$^T$reduce$_{x,y.e_1,e_2}$>!, 
+    where $\pi_{last}$ is the projection to the last element (the continuation variable).
+    It naturally extends on sequential composition. It does not automatically extend to a multi-functor between concategories because \\
+    !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$] $\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$]$\neq$ $\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp \Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])!.
+    However there is a map !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp \Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])$\to \Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]$\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$])!.
+    Internally as a lambda term, it is given by \\
+    $(x_1,\ldots,x_k,Y_1,(x_{k+1},\ldots,x_n,Y_s)\mapsto (x_1,\ldots,x_n,\lambda(y_1,\ldots,y_n)\to Y_1(y_1,\ldots,y_k)\widehat{+}Y_2(y_{k+1},\ldots,y_n)$.
+    Here, $\widehat{+}$ is the reverse-derivative of the copy map which is known to be fanout. 
+    It is not surprising to see it appear as $\Dsynrevsymbol_{\rho}$ is a semantic functor, and it does not need to be efficient. 
 \end{definition}
 
-The design of $\Dsynrevsymbol_{\rho}$ on UNF is inspired by the semantic one between concategories, 
+The design of the syntactic $\Dsynrevsymbol_{\rho}$ on the UNF language is inspired by the semantic one between concategories, 
 and it's routine to check that they match. 
 
 \begin{proposition}[semantic of syntactic D matches D lax functor]
