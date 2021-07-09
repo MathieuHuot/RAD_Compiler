@@ -47,6 +47,9 @@ and \cite{sherman2021} uses sophisticated higher-order primitives such as root f
 Their work focuses on computable reals which is hard to compare in terms of efficiency with our more standard approach of AD.
 It is however quite difficult to prove a complexity result in the higher-order setting. 
 In addition, standard techniques of defunctionalization struggle when higher-order is combined with recursion.
+Our reverse-mode transformation does not support recursion, 
+so it is currently always possible to partially evaluate a higher-order program to our Source language, seen as intermediate representation,
+then perform our reverse-mode transformation.
 
 \noindent \textbf{Array primitives}
 We focused on giving reverse derivatives for a small set of array primitives. 

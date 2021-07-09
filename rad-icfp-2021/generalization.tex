@@ -59,7 +59,7 @@ A slightly better option would be to define
     && \quad!(1-b)*!$\directD{\rho}{\Gamma}{Y}$!(e$_3$)(x$_1$,$\ldots$,x$_n$,z))>!
 \end{tabular}
 
-It is slightly better because both derivatives of !e2! and !e3! are put together, and this might unlock some optimizations, 
+Now both derivatives of !e2! and !e3! are put together, and this might unlock some optimizations, 
 but there is still a non-linear usage of the continuation variable !Y!.
 
 \smartpara{Solution}
@@ -74,7 +74,7 @@ If we know we want to compute the whole gradient of the expression, we can defin
 
 This time, there is a linear usage of the continuation variable !Y!. We note that adding conditionals does not break differentiability as long as there are no non-trivial primitives $\reals\to\BB$.
 Non smooth functions such as the Rectified Linear Unit (ReLU) in machine learning which can be defined as $ReLU(x)\defeq max(0,x)$ 
-requires a non smooth primitive such as $>0: \reals\to\BB$. In several AD systems such as TensorFlow, 
+requires a non-smooth primitive such as $>0: \reals\to\BB$. In several AD systems such as TensorFlow, 
 the condition is evaluated before differentiation is applied, and so conditionals are never directly differentiated.
 
 \subsection{Recipe for Adding More Constructs}
@@ -88,7 +88,7 @@ If the operator has type $A\to B$, then one should provide its transpose Jacobia
 Such operators can often be unrolled to first-order programs. 
 
 \smartpara{Correctness}
-To check correctness of the given Jacobian, it suffices to 
+To check the correctness of the given Jacobian, it suffices to 
 check that the semantics of the transpose Jacobian matches the Jacobian of the unrolled program. 
 
 \smartpara{Complexity}
