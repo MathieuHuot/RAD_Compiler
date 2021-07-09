@@ -136,8 +136,10 @@ $map2_{x,y.e}: \Array{\reals}{n},\Array{\reals}{n}\to \Array{\reals}{n}$ and $re
 \end{definition}
 
 One may notice that the syntax of $\ConcatS$ is somewhere in between the syntax of Source and of Source UNF.
-Given two morphisms !e$_1$:T$_1$->T$_2$! and !e$_2$:T$_3$->T$_4$!, we denote by !e$_1 \concatcomp$ e$_2$:T$_1$,T$_3$->T$_2$,T$_4$!.
+Given two morphisms !e$_1$:T$_1$->T$_2$! and !e$_2$:T$_3$->T$_4$!, we denote by !e$_1 \concatcomp$ e$_2$:T$_1$,T$_3$->T$_2$,T$_4$! 
+their parallel composition.
 We denote by $u_T$ the unique morphism from !T! to the terminal object $[]$.
+$pair_{T;A\times B}$ is the canonical isomorphism pairing !A,B! into !A$\times$B! in the context !T!.
 We can interpret Source UNF in $\ConcatS$ as follows.
 
 \begin{tabular}{l c l}
@@ -192,7 +194,7 @@ We interpret Source in a new multicategory,
 whose morphisms are particular morphisms of $\ConcatS$.
 As Source UNF is itself interpreted in $\ConcatS$, 
 this gives us a way to compare terms in Source with terms in Source UNF.
-This comparison precisely gives the UNF transformation.
+This comparison of morphisms of $\ConcatS$ gives the $\UNFSymbol$ transformation.
 
 \begin{definition}[Mutlicategory from concat]
     We define $\CSource$ to be the multicategory with the same objects as Source and\\ 
@@ -209,39 +211,38 @@ Crucially, the semantics of a !let! becomes composition in the concategory.
 The semantics of a variable is the pairing of the identity with a projection.
 The operation !map2 (x,y.e)! is interpreted as the pairing of the identity and itself, and !reduce (x,y.e$_1$) $e_2$! as itself.
 
-Interpretating Source in $\CSource$ allows us to see terms of Source as morphisms in the concategory $\ConcatS$.
-This allows us to compare to semantics of terms of Source and of Source UNF.
+Interpretating Source in $\CSource$ allows us to see terms of Source as morphisms in the concategory $\ConcatS$, 
+and to compare them to terms of Source UNF which are already interpreted in $\CSource$.
 The following proposition can be shown by induction on the structure of the terms.
 
 \begin{proposition}[construction above gives UNF]
     Let !$\Gamma \vdash$ e:A! be a term in Source. 
-    Seen as morphisms in $\CSource$, we have !$\seml$e$\semr$=$\seml\UNFSymbol$(e)$\semr$!.
+    Seen as morphisms in $\CSource$, !$\seml$e$\semr$=$\seml\UNFSymbol$(e)$\semr$!.
 \end{proposition}
 
-In a similar vein, we form a concategory from the syntactic multicategory for Target.
-We then use the universal property of $\ConcatT$ to construct a functor from $\ConcatT$ to this concategory.
-This allows us to compare the terms of Target UNF and the terms of Target. 
-$UNF^-1$ arises in this way.
+Somewhat dually, we form a concategory from the syntactic multicategory for Target.
+Then we use the universal property of $\ConcatT$ to construct a functor from $\ConcatT$ to this concategory.
+This allows us to compare the terms of Target UNF and the terms of Target, and $\UNFSymbol^{-1}$ arises in this way.
 
 \begin{definition}[Concat from multicat]
     A multicategory $\catC$ naturally defines a concategory with the same objects as $\catC$ and
     with morphisms $\underline{A}\to [B_1,\ldots,B_n]$ being $n$ morphisms $\underline{A}\to B_i$ of $\catC$. 
 \end{definition}
 
-This allows to form a concategory $\CTarget$ from the syntactic multicategory for Target.
+We thus consider the concategory $\CTarget$ from the syntactic multicategory for Target.
 We can interpret $\ConcatT$ in $\CTarget$. 
-The functor is identity on objects, sends operations !op1,op2! to themselves. 
-It sends Jacobian operations to terms of Target as given by $\UNFSymbol^{-1}$ in Figure~\ref{fig:unf_to_target}
+The functor is identity-on-objects, sends operations !op1,op2! to themselves. 
+It sends Jacobian operations to terms of Target as given by $\UNFSymbol^{-1}$ in Figure~\ref{fig:unf_to_target}.
 
 This interpretation is in essence $\UNFSymbol^{-1}$. 
 The difference is that to preserve typing, the semantic $\UNFSymbol^{-1}$
-sends a non Jacobian primitive to a tuple, as in the Example \ref{exm:unf}. 
-This is highly inefficient and the the syntactic $\UNFSymbol^{-1}$ 
-additionally projects to the last element, where the non trivial information of the term is.
+sends a non-Jacobian primitive to a tuple, as in the Example \ref{exm:unf}. 
+This is highly inefficient, and the the syntactic $\UNFSymbol^{-1}$ 
+additionally projects to the last element, where the non-trivial information of the term is.
 
 What remains to explain now is the reverse mode transformation between Source UNF and Target UNF.
 We construct a functor $\Dsynrevsymbol_{\rho}:\ConcatS\to\ConcatT$. 
-This functor will easily be shown to compute reverse-mode derivatives.
+This functor is easily shown to compute reverse-mode derivatives.
 Because terms of Source UNF in $\ConcatS$, we observe the effect of $\Dsynrevsymbol_{\rho}$ on them
 and show that it matches the syntactic $\Dsynrevsymbol_{\rho}$ 
 from Section~\ref{sub:Simple reverse mode transformation}.
@@ -257,8 +258,8 @@ from Section~\ref{sub:Simple reverse mode transformation}.
     It naturally extends on sequential composition. 
     It does not automatically extend to a multi-functor between concategories because \\
     !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]!{$\concatcomp$}![A$_{k+1}$,$\ldots$,A$_n$] $\neq$ $\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp\Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])!.\\
-    However there is a map !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp \Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])$\to \Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]$\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$])!.
-    Internally as a lambda term, it is given by \\
+    Still, there is a map !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp \Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])$\to \Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]$\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$])!.
+    Internally, as a lambda term, it is given by \\
     $(x_1,\ldots,x_k,Y_1,(x_{k+1},\ldots,x_n,Y_s)\mapsto (x_1,\ldots,x_n,\lambda(y_1,\ldots,y_n)\to Y_1(y_1,\ldots,y_k)\widehat{+}Y_2(y_{k+1},\ldots,y_n)$.
     Here, $\widehat{+}$ is the reverse-derivative of the copy map which is known to be fanout. 
     It is not surprising to see it appear as $\Dsynrevsymbol_{\rho}$ is a semantic functor, and it does not need to be efficient. 
@@ -274,7 +275,7 @@ and it's routine to check that they match.
     \end{center}
 \end{proposition}
 
-In summary, we have the following picture
+In summary, we have the following picture (not a proper categorical diagram):
 
 \[
 \begin{tikzcd}
@@ -286,8 +287,9 @@ In summary, we have the following picture
 \subsection{Correctness theorem} % (fold)
 \label{sub:Correctness theorem}
 
-First, we start from the correctness of $\Dsynrevsymbol_{\rho}$:Source UNF $\to$ Target UNF, which is easy to establish, 
-and then propagate this information to Source and Target via the $\UNFSymbol$ and $\UNFSymbol^{-1}$ transformations.
+First, we start from the correctness of the syntactic $\Dsynrevsymbol_{\rho}$: Source UNF $\to$ Target UNF, which is easy to establish, 
+and then propagate this information to Source and Target via the $\UNFSymbol$ and $\UNFSymbol^{-1}$ transformations. 
+The semantics brackets $\sem{-}$ in this section are in diffeological spaces.
 
 \begin{proposition}[Correctness $\Dsynrevsymbol_{\rho}$]
     For every term !$\reals^{\times n} \vdash$ e: $\reals^{\times n+1}$! in Source UNF,
@@ -301,7 +303,8 @@ This uses the fact that for every primitive constant $A$, $\sem{J^TA}=J^T\sem{A}
 
 Recall that the intuition from Source UNF is that it consists of terms of Source that also return their context.
 From there, the intuition for the Jacobian of a primitive in Target UNF is that it should be the Jacobian of
-the corresponding term in Target. This is easily checked for scalar operations. For the more difficult cases, we have 
+the corresponding term in Target. This is easily checked for scalar operations. 
+For the non-trivial cases, we have 
 
 \begin{proposition}
 $\UNFSymbol^{-1}$ preserves the semantics of Jacobians of !map2! and !reduce!.
