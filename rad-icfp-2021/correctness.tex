@@ -7,7 +7,7 @@ and verified by working in a well-known category for differentiability: diffeolo
 In general, categories with products (and more generally monoidal categories) can be equivalently presented in the following three ways. 
 Although the three styles of presentation are categorically equivalent, the choice of presentation affects the internal language syntax.
 \begin{itemize}
-    \item categories, where each arrow has one source and one target. These are most familiar but don’t directly match with a programming syntax (except the categorical abstract machine). 
+    \item categories, where each arrow has one source and one target. These are most familiar but do not directly match with a programming syntax (except the categorical abstract machine). 
     \item multicategories, where each arrow has a list of source objects !A$_1,\ldots,$A$_n$! and one target !B!, thought of as a map !A$_1$ $\times\ldots\times$A$_n\to$B!. 
     These are very close to the syntax usually used in typed programming languages \cite{lambek1968deductive,staton2013universal}, 
     thinking of an arrow as a typed term !x$_1$:A$_1,\ldots,$x$_n$:A$_n$ $\vdash$ B!.
@@ -257,7 +257,7 @@ from Section~\ref{sub:Simple reverse mode transformation}.
     where $\pi_{last}$ is the projection to the last element (the continuation variable).
     It naturally extends on sequential composition. 
     It does not automatically extend to a multi-functor between concategories because \\
-    !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]!{$\concatcomp$}![A$_{k+1}$,$\ldots$,A$_n$] $\neq$ $\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp\Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])!.\\
+    !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]$\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$]) $\neq$ $\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp\Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])!.\\
     Still, there is a map !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp \Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])$\to \Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]$\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$])!.
     Internally, as a lambda term, it is given by \\
     $(x_1,\ldots,x_k,Y_1,(x_{k+1},\ldots,x_n,Y_s)\mapsto (x_1,\ldots,x_n,\lambda(y_1,\ldots,y_n)\to Y_1(y_1,\ldots,y_k)\widehat{+}Y_2(y_{k+1},\ldots,y_n)$.
