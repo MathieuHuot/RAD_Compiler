@@ -234,6 +234,7 @@ The gradient of  derivative $\nabla_A$!prod(A)! is given by
     $\stackrel{\eta-reduction}{=}$ & !map2 * (scanr * 1 shift1L A)! &\\
     & \quad\quad\quad\quad !(shift1R (scanl * 1 A))! &
 \end{tabular}
+
  \end{proof}
 
  \begin{lemma}
@@ -248,13 +249,15 @@ The gradient of !sum(A)! is given by
     = & $\nabla_A$ !reduce + 0 A! & \\
     $\defeq$ & \Big(!fun z ->! & \\ 
     & !let A$_0$ = shift1R (scanl + 0 A) in! & \\
-    & !let A$_1$ = shift1L (map2 (x,y -> 1) A$_0$ A) in! & \\ 
+    & !let A$_1$ = shift1L! & \\
+    & \quad\quad !(map2 (x,y -> 1) A$_0$ A) in! & \\ 
     & !let A$_2$ = map2 (x,y -> 1) A$_0$ A in! & \\
     & !let A$_3$ = scanr * 1 A$_1$ in! &\\
     & !map2 (a,b -> a*b*z) A$_3$ A$_2$! & \\
     & \Big)(1)\\
     $\stackrel{\beta-reduction}{=}$  & !let A$_0$ = shift1R (scanl + 0 A) in! & \\
-    & !let A$_1$ = shift1L (map2 (x,y -> 1) A$_0$ A) in! & !A$_1$=OnesLike(shift1L(A))! \\
+    & !let A$_1$ = shift1L! & !A$_1$=OnesLike(shift1L(A))! \\
+    & \quad\quad !(map2 (x,y -> 1) A$_0$ A) in! & \\
     & !let A$_2$ = map2 (x,y -> 1) A$_0$ A in! & !A$_2$=OnesLike(A)!\\
     & !let A$_3$ = scanr * 1 A$_1$ in! & \\
     & !map2 (a,b -> a*b*1) A$_3$ A$_2$! & !map2 * A$_3$ A$_2$! \\
@@ -263,11 +266,13 @@ The gradient of !sum(A)! is given by
     & !let A$_2$ = OnesLike(A)! & forward substitution \\
     & !let A$_3$ = scanr * 1 A$_1$ in! & \\
     & !map2 * A$_3$ A$_2$! & \\
-    = & !let A$_3$ = scanr * 1 OnesLike(shift1L(A)) in! & !A$_3$=OnesLike(A)!\\
+    = & !let A$_3$ = scanr * 1! & !A$_3$=OnesLike(A)!\\
+    &  \quad\quad!OnesLike(shift1L(A)) in! & \\
     & !map2 * A$_3$ OnesLike(A)! & forward substitution \\
     = & !map2 * OnesLike(A) OnesLike(A)! & \\
     = & !OnesLike(A)!
     \end{tabular}
+
 \end{proof}
 
  \begin{lemma}
@@ -285,7 +290,8 @@ The reverse derivative of !map2 * A B! is given by
 \end{tabular}
 
 Let's call this term !Y!.
-For convenience, let us also rewrite !map2 * B (map (x -> 1) A)! 
+For convenience, let us also rewrite \\
+!map2 * B (map (x -> 1) A)! 
 as !let C = map (x -> 1) A in map2 * B C!.
 
 Then the gradient of !dot(A,B)! is given by
@@ -294,21 +300,23 @@ Then the gradient of !dot(A,B)! is given by
     & $\nabla$ !dot(A,B)! & \\
     = & $\nabla$ !let C = map (x -> 1) A in map2 * B C! & \\
     $\defeq$ & \Big(!fun z ->! & \\ 
-    & !let A$_0$ = shift1R (scanl + 0 A) in!  \hspace{4cm}\rdelim\}{5}{3mm}[\parbox{40mm}{same reduction\\as previously}]\\
+    & !let A$_0$ = shift1R (scanl + 0 A) in! &\\
     & !let A$_1$ = shift1L (map2 (x,y -> 1) A$_0$ A) in! & \\ 
     & !let A$_2$ = map2 (x,y -> 1) A$_0$ A in! & \\
     & !let A$_3$ = scanr * 1 A$_1$ in! &\\
     & !Y(map2 (a,b -> a*b*z) A$_3$ A$_2$)! & \\
-    & \Big)(ZerosLike(A),1)\\
-    = & !Y(OnesLike(A))! & \\
+    & \Big)!(ZerosLike(A),1)!\\
+    = & !Y(OnesLike(A))! & (same reduction as previously)\\
     = & !let C$_1$ = map2 (a,b -> b) A B in! & !C$_1$ = B! \\
     & !let C$_2$ = map2 (a,b -> a) A B in! & !C$_2$ = A! \\
-    & !(map2 * C$_1$ OnesLike(A), map2 * C$_2$ OnesLike(A))!  &\\
+    & !(map2 * C$_1$ OnesLike(A),! &\\ 
+    & !map2 * C$_2$ OnesLike(A))!  &\\
     = & !let C$_1$=B in! & forward substitution \\
     & !let C$_2$=A in! & forward substitution \\
     & !(map2 * C$_1$ OnesLike(A),! & !C$_1$! \\
     & !map2 * C$_2$ OnesLike(A))! & !C$_2$! \\
-    = & !(map2 * B OnesLike(A), map2 * A OnesLike(A))! \\
+    = & !(map2 * B OnesLike(A),! & \\
+    & !map2 * A OnesLike(A))! & \\
     = & !(B, A)!
 \end{tabular}
 
