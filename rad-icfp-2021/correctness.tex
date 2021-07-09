@@ -184,7 +184,7 @@ The part common with Source UNF is interpreted in the same way as for the case o
     $\seml$!J!$^T$!op!$_{T;n} \semr$ &=& $id_T\concatcomp J^Top_n$ \\
     $\seml$!<e$_1$, e$_2$>!$\semr$  &=& !<!$\seml$!e1!$\semr$, $\seml$!e2!$\semr$!>! \\
     $\seml$!J!$^T$!pair!$_{T;A\times B} \semr$ &=& $id_T\concatcomp$!<$\pi_1,\pi_2$>! \\
- \end{tabular}
+ \end{tabular}\\
  where !T,A! $\vdash$ (0,$\pi_A$,0): !T! and the projection $\pi_A$ lands in the $i$-th element of the list !T!.
 
 \subsection{Semantics of $\UNFSymbol$ transformations} % (fold)
@@ -220,7 +220,7 @@ The following proposition can be shown by induction on the structure of the term
     Seen as morphisms in $\CSource$, !$\seml$e$\semr$=$\seml\UNFSymbol$(e)$\semr$!.
 \end{proposition}
 
-Somewhat dually, we form a concategory from the syntactic multicategory for Target.
+Dually, we form a concategory from the syntactic multicategory for Target.
 Then we use the universal property of $\ConcatT$ to construct a functor from $\ConcatT$ to this concategory.
 This allows us to compare the terms of Target UNF and the terms of Target, and $\UNFSymbol^{-1}$ arises in this way.
 
@@ -237,7 +237,7 @@ It sends Jacobian operations to terms of Target as given by $\UNFSymbol^{-1}$ in
 This interpretation is in essence $\UNFSymbol^{-1}$. 
 The difference is that to preserve typing, the semantic $\UNFSymbol^{-1}$
 sends a non-Jacobian primitive to a tuple, as in the Example \ref{exm:unf}. 
-This is highly inefficient, and the the syntactic $\UNFSymbol^{-1}$ 
+This is highly inefficient, and the syntactic $\UNFSymbol^{-1}$ 
 additionally projects to the last element, where the non-trivial information of the term is.
 
 What remains to explain now is the reverse mode transformation between Source UNF and Target UNF.
