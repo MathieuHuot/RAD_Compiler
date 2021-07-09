@@ -102,9 +102,9 @@ This term can be further optimized via constant propagation and algebraic simpli
     \end{tabular}
 \end{center}
 where !reduce! is a known fold-left operator for which the function argument is associative. 
-It is notably faster to execute than a fold-left as it is parallel friendly.
+It is notably faster to execute than a fold-left as it is parallel-friendly.
 
-The gradient of each of these expressions w.r.t. !A! will be:
+The gradient of each of these expressions with respect to !A! is:
 \begin{center}
     \begin{tabular}{{r c l}}
         $\nabla_A$!prod(A)! &:=& !map2 * (scanr * 1 (shift1L A)) (shift1R (scanl * 1 A))! \\
@@ -112,14 +112,14 @@ The gradient of each of these expressions w.r.t. !A! will be:
         $\nabla_A$!dot(A,B)! &:=& !B! 
     \end{tabular}
 \end{center}
-where:
+where
 \begin{itemize}
 \item !scanl! is the scan-left operator that returns all the intermediate results of fold-left,
 \item !scanr! is the scan-right operator that returns all the intermediate results of fold-right,
 \item !shift1L [v$_1$,$\ldots$,v$_n$]! is the shift-left operator and returns ![v$_2$,$\ldots$,v$_{n}$]!, and 
 \item !shift1R [v$_1$,$\ldots$,v$_n$]! is the shift-right operator and returns ![v$_1$,$\ldots$,v$_{n-1}$]!.
 \end{itemize}
-These gradients are some examples among numerous ones which are usually derived by hand, and are here obtained automatically as special cases of our work.
+These gradients are a few examples among numerous ones which are usually derived by hand, and are here obtained automatically as special cases of our work.
 \end{example}   
 
 \input{figures/compilation_scheme}
@@ -135,9 +135,9 @@ We show how to directly compute an efficient reverse-mode AD for the expressions
 Furthermore, we show how to extend our work to a richer language in Section~\ref{sec:generalization}.
 \item One of the key insights behind efficient reverse-mode AD is to only consider unary operators. 
 Inspired by this insight and following IRs such as SSA and ANF, we introduce a novel IR, UNF (Section~\ref{sec:unf})).
-We introduce an alternative and easier to follow compilation pipeline for efficient reverse-mode AD (bottom of Figure~\ref{fig:outline}).
-\item We prove the complexity guarantees for the reverse ADed programs. Furthermore, we show a list of optimizations that can further improve the constant factors (Section~\ref{sec:complexity}).
-\item We proof the correctness of our transformations (top/bottom parts of Figure~\ref{fig:outline}) by defining the denotational semantics of our languages using multicategories and concategories (Section~\ref{sec:correctness}).
+We introduce an alternative and easier-to-follow compilation pipeline for efficient reverse-mode AD (bottom of Figure~\ref{fig:outline}).
+\item We prove complexity guarantees for the reverse-ADed programs. Furthermore, we show a list of optimizations that can further improve the constant factors (Section~\ref{sec:complexity}).
+\item We prove the correctness of our transformations (top/bottom parts of Figure~\ref{fig:outline}) by defining a denotational semantics of our languages using multicategories and concategories (Section~\ref{sec:correctness}).
 \end{itemize}
 
 Next, we recall rudiments of automatic differentiation, forward and reverse-mode differentiation.
