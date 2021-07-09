@@ -139,13 +139,10 @@ For non-unary operations, we differentiate the arguments from the left to the ri
 which is modeled by the continuation $Y$. 
 Importantly for performance, each continuation variable $Y$ is only used once.
 
-We have the following typing lemma for $\directD{\rho}{\Gamma}{Y}$.
+We have the following typing lemma for $\directD{\rho}{\Gamma}{Y}$, routinely proved by induction on derivation of $\Gamma\vdash$!e:A!.
 \begin{lemma}[Typing $\directD{\rho}{\Gamma}{Y}$]
     If $\Gamma \vdash$ !e: A!, then $\Gamma$!,Y:!$\Gamma\to \rho \vdash \directD{\rho}{\Gamma}{Y}$!(e): !$\directD{\rho}{\Gamma}{Y}$!(A)!.
 \end{lemma}
-\begin{proof}
-By induction on derivation of $\Gamma\vdash$!e:A!.
-\end{proof}
 
 \input{figures/direct_macro_diff}
 
