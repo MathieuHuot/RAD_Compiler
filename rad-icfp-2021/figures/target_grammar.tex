@@ -5,11 +5,13 @@
     \hline
     \multicolumn{3}{|c|}{\textbf{Core Grammar}} & \multicolumn{1}{c|}{\textbf{Description}}\\\hline
     !T! & \mbox{::=} & $\ldots$ & \grammarcomment{Same as Source} \\
+    & $\mid$ & !T!$\times \ldots \times$!T! & \grammarcomment{$n$-tuples}\\ 
     & $\mid$ & !T->T! & \grammarcomment{Function Type}\\ 
     \hline
     !e! & \mbox{::=} & $\ldots$ & \grammarcomment{Same as Source}\\
     & $\mid$ & !fun (x$_1$,$\ldots$,x$_n$) -> e! & \grammarcomment{Lambda Abstraction}\\
     & $\mid$ & !e(e$_1\ldots$e$_n$)! & \grammarcomment{Function Application}\\
+    & $\mid$ & !<e,$\ldots$,e>! & \grammarcomment{Tuples}\\
     & $\mid$ & !scanl (x,y.e) e e! $\mid$ !scanr (x,y.e) e e! & \grammarcomment{Array scan left and right}\\
     & $\mid$ & !shift1L e! $\mid$ !shift1R e! & \grammarcomment{Array left/right shifting}\\
     \hline
@@ -67,7 +69,14 @@
         $\Gamma$ $\vdash$ !e!: $\Array{\reals}{0}$
         \\\hline  
         $\Gamma \vdash$ !shift1R e!: $\Array{\reals}{0}$
-    \end{tabular} \\ \hline
+    \end{tabular} 
+    \\ 
+    \begin{tabular}{c}
+        for all $i$, $\Gamma$ $\vdash$ !e$_i$!: !T$_i$!
+        \\\hline  
+        $\Gamma \vdash$ !<e$_1$,$\ldots$,e$_n$>!: !T$_1\times\ldots\times$T$_n$!
+    \end{tabular} \\
+    \hline
     \end{tabular}
     \vspace{-0.4cm}
     \caption{Grammar and type system of the target language.}
