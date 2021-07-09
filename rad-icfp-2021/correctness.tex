@@ -24,11 +24,6 @@ Since diffeological spaces support products, they can be presented as a category
 In abstract mathematics the difference between these presentations is almost trivial. 
 But in terms of programming syntax, the difference between presentations has a big effect, as can be seen from the difference between the complex translation in Section~\ref{sec:simplediff} and the simple translations in Section~\ref{sec:unf}, which are much more readily verified.
 
- \begin{theorem}
-     For every $\Gamma \vdash$ !e:!$\reals$, we have 
-     $\sem{\grad_\Gamma e}= \grad_\Gamma\sem{e}$ in the category of diffeological spaces.
- \end{theorem}
-
 \subsection{Denotational semantics} % (fold)
 \label{sub:Denotational semantics source and Target}
 
@@ -36,7 +31,7 @@ A multicategory generalizes a category by allowing multimorphisms, that is, morp
 Most categorical structures from category theory can be phrased similarly in multicategories.
 It is standard to give a denotational semantics of a first-order language in a Cartesian category, and alternatively in a multicategory.
 
-A term $x_1:A_1,\ldots,x_n:A_n\vdash e:A$ is interpreted as a morphism $\sem{e}:[\sem{A_1},\ldots,\sem{A_n}]\to \sem{A}$ in a multicategory.
+A term $x_1:A_1,\ldots,x_n:A_n\vdash e:A$ is interpreted in a multicategory as a morphism $\sem{e}:[\sem{A_1},\ldots,\sem{A_n}]\to \sem{A}$.
 Substitution is interpreted as composition. We first consider a syntactic model for a language, which consists of a 
 free multicategory on some base types and primitives. Our source and target languages induce syntactic multicategories as follows.
 
@@ -46,7 +41,7 @@ free multicategory on some base types and primitives. Our source and target lang
     Composition is by substitution.
 \end{definition}
 
-We similarly define $\SynTarget$, the syntactic multicategory for Target.
+We similarly define $\SynTarget$, the syntactic multicategory on the target language.
 
 $\SynSource$ satisfies the following universal property: 
 for every Cartesian multicategory $\catC$,
@@ -75,19 +70,16 @@ Well typed terms $\Gamma\vdash$!e: !$A$ are interpreted as functions $\sem{\Gamm
         !$\seml$c$\semr$! & $\defeq$ & $c\in\RR$ \\
     \end{tabular}
 
-    \begin{tabular}{r c l} 
-    !$\seml$map2 (x,y.e$_1$) e$_2$ e$_3\semr_\gamma$ ! & $\defeq$ & !<$\Delta_n,$,$\seml$ e$_2\semr$,$\seml$ e$_2\semr$>;swap;$(\seml$ e$_1\semr)^{\times n}$!
-    \end{tabular}
-    
-where $\Delta_n$ is the $n$-copy map !<id,$\ldots$,id>!.
-The semantics for !reduce (x,y.e$_1$) e$_2$ e$_3$! is given by first !<$\Delta_n,$,$\seml$ e$_2\semr$,$\seml$ e$_2\semr$>!, following a swap isomorphism  $\Gamma^n \times \RR \times \RR^n \to \reals \times (\reals \times \Gamma)^n$. 
-Finally, we apply $\seml$ e$_1\semr \times id$ $n$ times, where the identity is of the obvious type at each stage.
-
 Variables are interpreted as projections $\pi_i$, let binding as composition in the multicategory. 
 Pairs are interpreted using the Cartesian structure of the multicategory.
+This interpretation extends to !map2 (x,y.e$_1$) e$_2$ e$_3$!. It is given by
+!<$\Delta_n,$,$\seml$ e$_2\semr$,$\seml$ e$_2\semr$>;swap;$(\seml$ e$_1\semr)^{\times n}$!
+where $\Delta_n$ is the $n$-copy map !<id,$\ldots$,id>!, and !swap! a permutation.
+Similarly, the semantics for !reduce (x,y.e$_1$) e$_2$ e$_3$! is then given by first !<$\Delta_n,$,$\seml$ e$_2\semr$,$\seml$ e$_2\semr$>!, followed by a perumutation $\Gamma^n \times \RR \times \RR^n \to \reals \times (\reals \times \Gamma)^n$. 
+Finally, we apply $\seml$ e$_1\semr \times id$ $n$ times, where the identity is of the obvious type at each stage.
 \end{definition}
 
-We can similarly interpret Target in a multicategory of smooth-like spaces and functions. 
+We can similarly interpret the target language in a multicategory of smooth-like spaces and functions. 
 However, Target is higher-order and $\CartSp$ is not Cartesian Closed. 
 Instead, we can interpret Target in the category of Diffeological spaces, 
 as in \cite{huot2020correctness}. 
@@ -125,21 +117,17 @@ We can thus interpret function types !$\seml$A -> B$\semr$! = $\Diff$($\seml$!A!
 \label{sub:Semantics for UNF using concategories}
 
 One main reason for introducing UNF is to have a better handle over
-the computation flow of the term, similarly to what the ANF or CPS transformations do.
+the computation flow of the term, in the same vein as the ANF or CPS transformations.
 A convenient categorical setting for this is to use string diagrams.
 To better fit the standard denotational semantics of languages, 
-we can instead use concategories. 
-
-Concategories are a generalization of categories and multicategories in that 
-they allow morphisms both from and to a list of objects. 
-Similarly to categories and multicategories, 
-most categorical construtions used for the semantics of functional languages 
+we use concategories instead. Similarly to categories and multicategories, 
+most categorical constructions used for the semantics of functional languages 
 have equivalent in concategories.
 
 In particular, one can form a syntactic concategory on some base types and primitives, 
 which satisfies a similar universal property as syntactic multicategories.
-Two particular examples are of interest for us, as they will allow us to interpret Source and Target UNF
-but they will also help us explain the UNF and $UNF^{-1}$ transformations.
+Two particular examples are of interest to us, as they will allow us to interpret Source UNF and Target UNF
+but they will also help us explain the $\UNFSymbol$ and $UNF^{-1}$ transformations.
 
 \begin{definition}[$\ConcatS$]
 Let $\ConcatS$ be the syntactic Cartesian concategory whose types are those of Source and 
@@ -325,7 +313,8 @@ $\UNFSymbol^{-1}$ preserves the semantics of Jacobians of !map2! and !reduce!.
 \end{center}
 \end{proposition}
 
-This is proved in Appendix \ref{sub:Reverse derivative of array operations}.
+This is proved in the supplementary material.
+%Appendix \ref{sub:Reverse derivative of array operations}.
 
 From this, we now deduce that the composite transformation $\UNFSymbol$, $\Dsynrevsymbol_{\rho}$, $\UNFSymbol^{-1}$ is correct
 in the sense that it produces a term that computes the gradient of the original term.
