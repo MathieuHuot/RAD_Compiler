@@ -206,11 +206,11 @@ As Source UNF is itself interpreted in $\ConcatS$,
 this gives us a way to compare terms in Source with terms in Source UNF.
 This comparison precisely gives the UNF transformation.
 
-\begin{definition}[Mutlicat from concat]
-    We define $\CSource$ to be the multicategory with the same objects as Source and 
+\begin{definition}[Mutlicategory from concat]
+    We define $\CSource$ to be the multicategory with the same objects as Source and\\ 
     $\CSource([A_1,\ldots,A_n],B)=\{f\in\ConcatS([A_1,\ldots,A_n],[A_1,\ldots,A_n,B], \forall i.f;\pi_{A_i}=id_{A_i})$.
     The composition of $f_i:\underline{A}_i\to B_i$ with $g:\underline{B}\to C$ is given 
-    $f_1\concatcomp\ldots f_n;(u_{\underline{B}_1}\concatcomp A_1 \concatcomp \ldots \concatcomp u_{\underline{B}_n}\concatcomp A_n);g$.
+    $f_1\concatcomp\ldots\concatcomp f_n;(u_{\underline{B}_1}\concatcomp A_1 \concatcomp \ldots \concatcomp u_{\underline{B}_n}\concatcomp A_n);g$.
     In other words each term $f_i$ forgets about its output $\underline{B}_i$, and then we use the composition in the concategory.
 \end{definition}
 
@@ -266,8 +266,9 @@ from Section~\ref{sub:Simple reverse mode transformation}.
     !$\Dsynrevsymbol_{\rho}$(map2 (x,y.e))=<map2 (x,y.e),$\pi_{last}\circ$ J$^T$map2 (x,y.e)>!,\\
     !$\Dsynrevsymbol_{\rho}$(reduce$_{x,y.e_1,e_2}$)=<reduce$_{x,y.e_1,e_2}$,$\pi_{last}\circ$ J$^T$reduce$_{x,y.e_1,e_2}$>!, 
     where $\pi_{last}$ is the projection to the last element (the continuation variable).
-    It naturally extends on sequential composition. It does not automatically extend to a multi-functor between concategories because \\
-    !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$] $\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$]$\neq$ $\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp \Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])!.
+    It naturally extends on sequential composition. 
+    It does not automatically extend to a multi-functor between concategories because \\
+    !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]!{$\concatcomp$}![A$_{k+1}$,$\ldots$,A$_n$] $\neq$ $\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp\Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])!.\\
     However there is a map !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp \Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])$\to \Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]$\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$])!.
     Internally as a lambda term, it is given by \\
     $(x_1,\ldots,x_k,Y_1,(x_{k+1},\ldots,x_n,Y_s)\mapsto (x_1,\ldots,x_n,\lambda(y_1,\ldots,y_n)\to Y_1(y_1,\ldots,y_k)\widehat{+}Y_2(y_{k+1},\ldots,y_n)$.

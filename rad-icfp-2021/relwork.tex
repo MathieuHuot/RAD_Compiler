@@ -89,9 +89,9 @@ An exception is \cite{abadi-plotkin2020} which gives a reverse-mode transformati
 This work is purely first-order, does not have arrays and uses a non-standard semantics. 
 Our work is more canonical in the sense that it can more directly be implemented in a standard call-by-value language.
 They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
-Instead, they follow the principle of unrolling for recursive calls and evaluating the conditional before differentiating, 
+Instead, they follow the principle of unrolling the recursive calls and evaluating the conditional before differentiating, 
 which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
-This is a well-known limit in TensorFlow \cite{abadi2016tensorflow} which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
+This is a known limitation in TensorFlow \cite{abadi2016tensorflow}. %which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
 
 \noindent \textbf{Usage of iteration mechanics}
 An immense effort in machine learning for the past decade has been in finding
@@ -135,8 +135,8 @@ Curry paper: The idea of using closures as back-propagators is receiving recent 
     For example Julia Zygote \cite{innes2019zygote} and Swift AD \cite{wei2018first} chose this design. 
     Other recent work follows similar ideas [27, 26] but is using meta-programming as an implementation technique.
 
-Relatively recent work in AD (2008-2020):
-\cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,lantern_icfp,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing,bernstein2020differentiating}
+% Relatively recent work in AD (2008-2020):
+% \cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,lantern_icfp,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing,bernstein2020differentiating}
 
 Good recent surveys: \cite{van2018automatic,baydin2017automatic}
 
