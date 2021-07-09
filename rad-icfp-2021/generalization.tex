@@ -29,7 +29,7 @@ $\directD{\rho}{\Gamma}{Y}$(!reduce (x,y.e1) e$_2$ e$_3$!)
 && !let B$_1$=scanr $1_\Gamma$ $\widehat{\times}$ B$_0$ in! \\
 && !let B$_2$=reduce $\widehat{+}$ $0_\Gamma$ B$_1$ in! \\
 && !<reduce (x,y.e1) y$_1$ A, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
-&& !Y((x$_1$,$\ldots$,x$_n$)$\widehat{+}$B$_2$,0,map2 (a,b. a*b*z) A$_2$ A$_3$)! \\ \hline
+&& !Y((x$_1$,$\ldots$,x$_n$)$\widehat{+}(z*$B$_2$),0,map2 (a,b. a*b*z) A$_2$ A$_3$)! \\ \hline
 \end{tabular}
 \end{small}
 \caption{The reverse-mode AD transformation of \codekw{reduce} without restrictions on its function argument.}

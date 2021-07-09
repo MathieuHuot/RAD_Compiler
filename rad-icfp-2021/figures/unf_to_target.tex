@@ -15,8 +15,9 @@
     $\invUNFSymbol$(!J!$^T$!proj!$_{T_1;T_2;T_3}$) &=& !(x$_1$,$\ldots$,x$_k$,0,$\ldots$,0,x$_{k+p}$,$\ldots$,x$_n$)! \\
     $\invUNFSymbol$(!J!$^T$!pair!$_{T;A\times B}$) &=& !(x$_1$,$\ldots$,x$_{n-1}$,$\pi_1$x$_n$,$\pi_2$x$_n$)! \\
     $\invUNFSymbol$(!J!$^T$!map2!$_{\Gamma;x,y.e}$) &=& 
-    !let G=!$\grad_{\Gamma}$!e$_{1}$ in!\\
-    && !((x$_{1}$,$\ldots$,x$_n$)!$\widehat{+}$!(G*(reduce + 0 x$_{n+3}$)),!\\
+    !let G = (map2 * x$_{n+3}$ !\\
+    && \quad\quad!(map2 (a,b.(!$\grad_\Gamma$!e$_{1}$)[a/x.b/y])  x$_{n+1}$  x$_{n+2}$)) in! \\
+    && !((x$_{1}$,$\ldots$,x$_n$)$\widehat{+}$(reduce $\widehat{+}$ $\widehat{0}$ G),!\\
     && ! map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x]*b) x$_{n+1}$ x$_{n+3}$,!\\
     && ! map2 (a,b.(!$\grad_{\{y\}}$!e$_{1}$)[a/x]*b) x$_{n+2}$ x$_{n+3}$ )!\\
     $\invUNFSymbol$(!J!$^T$!reduce!$_{\Gamma;x,y.e1;e2}$) &=& !let A$_{0}$ = shift1R (scanl (x,y.e$_{1}$) y$_{1}$ x$_{n+1}$) in! \\

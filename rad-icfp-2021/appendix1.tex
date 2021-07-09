@@ -107,9 +107,10 @@ In this figure, we have shown the translation of the !map! operator as well, whi
             && !Y$_2$(x$_1$,$\ldots$,x$_n$,y$_1$,B)>! \\
     $\directD{\rho}{\Gamma}{Y}$(!map (x.e$_{1}$) e$_{2}$!) &=&  
             !let A,Y$_{1}$ = $\directD{\rho}{\Gamma}{Y}$(e$_{2}$) in! \\
-            && !let G=$\grad_{\Gamma}$ e$_{1}$ in!\\
             && !<map (x.e$_{1}$) A, fun (x$_{1}$,$\ldots$,x$_n$,Z) -> !\\
-            && !Y$_{1}$( (x$_{1}$,$\ldots$,x$_n$)$\widehat{+}$(G*(reduce + 0 Z)),!\\
+            && !let G = (map2 * Z!\\
+            && !  (map (a.(!$\grad_\Gamma$!e$_{1}$)[a/x]) A)) in! \\
+            && !Y$_{1}$( (x$_{1}$,$\ldots$,x$_n$)$\widehat{+}$(reduce $\widehat{+}$ $\widehat{0}$ G),!\\
             && \quad\quad !map2 (a,b.($\grad_{\{x\}}$e$_{1}$)[a/x]*b) A Z )>!\\\hline
 \end{tabular}
 \end{center}
@@ -165,9 +166,10 @@ Then, using this notation, there are only minimal changes to the reverse derivat
     $\directD{\rho}{\Gamma}{Y}$(!map2 (x,y.e$_1$: G) e$_2$ e$_3$!) &=&  
     !let A,Y$_1$ = !$\directD{\rho}{\Gamma}{Y}$!(e2) in! \\
     && !let B,Y$_2$ = !$\directD{\rho}{\Gamma,A}{Y1}$!(e$_3$) in! \\
-    && !let C=!$\grad_{\Gamma}$!e$_1$ in!\\
     && !<map2 (x,y.e$_1$) A B, fun (x$_1$,$\ldots$,x$_n$,Z) -> !\\
-    && !Y$_2$( (x$_1$,$\ldots$,x$_n$)!$\widehat{+}$!(C!$\widehat{*}$!(reduce + 0 Z)),!\\
+    && !let G = (map2 $\widehat{*}$ Z!\\
+    && !  (map (a.(!$\grad_\Gamma$!e$_{1}$)[a/x]) A)) in! \\
+    && !Y$_2$( (x$_1$,$\ldots$,x$_n$)!$\widehat{+}$!(reduce $\widehat{+}$ $\widehat{0}$ G),!\\
     && \quad\quad! map2 (a,b.(!$\grad_{\{x\}}$!e$_1$)[a/x]!$\widehat{*}$!b) A Z,!\\
     && \quad\quad! map2 (a,b.(!$\grad_{\{y\}}$!e$_1$)[a/x]!$\widehat{*}$!b) B Z )>!\\
     $\directD{\rho}{\Gamma}{Y}$(!reduce (x,y.e$_{1}$) e$_{2}$ e$_{3}$!) &=&
