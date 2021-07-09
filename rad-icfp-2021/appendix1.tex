@@ -21,12 +21,15 @@ We now prove that the reverse mode transformation is correct on array operations
     The reverse derivative of !map2! is correct.
 \end{proposition}
 
-% \begin{proof}
-% Let's call !t! the term !map2 (x,.y) A B!. 
-% By chosing !Z! to a hot vector at i, call it !Z$_i$!, we're back to showing the result for the term $\Gamma \vdash$!e[a$_i$/x,b$_i$/y]: $\reals$!.
-% In $\directD{\rho}{\Gamma}{Y}$(!t!)(!Z$_i$!), the term !G*(reduce + 0 Z)! reduces to !G!. 
-% This means 
-% \end{proof}
+\begin{proof}
+Let us denote by !t! the term !map2 (x,y.e) A B!. Without loss of generality, assume !A!=$[a_1,\ldots,a_n]$ and !B!=$[b_1,\ldots,b_n]$.
+By chosing !Z! to a hot vector at i, call it !Z$_i$!, we're back to showing the result for the term $\Gamma \vdash$!e[a$_i$/x,b$_i$/y]: $\reals$!.
+In !$\directD{\rho}{\Gamma}{Y}$(t)(Z$_i$)!, the term !G = (map2 * Z (map2 (a,b.($\grad_\Gamma$e$_{1}$)[a/x.b/y]) A B))! 
+reduces to $\frac{\partial e}{\partial x_i}$[a$_i$/x,b$_i$/y]. As !a$_i$,b$_i$! are independant of $x_i$, 
+this term is equal to $\frac{\partial e[a_i/x,b_i/y]}{\partial x_i}$, as expected.
+Similarly, the term !map2 * (map2 (a,b.(!$\grad_{\{x\}}$!e$_{1}$)[a/x,b/y]) A B) Z! reduces to $\frac{\partial e}{\partial x}$[a$_i$/x,b$_i$/y].
+As !a$_i$! is a variable, and independant of !b$_i$!, this is equal to $\frac{\partial e[a_i/x,b_i/y]}{\partial a_i}$.
+\end{proof}
 
 \begin{lemma}
     if !op2! is an associative binary operation with unit $\Gamma \vdash$ !v:! $\reals$, then 
@@ -50,7 +53,25 @@ Similarly for the other case.
 \end{proposition}
 
 \begin{proof}
-    TODO
+    The notation for the general case are cumbersome and non-insightful. 
+    We will exemplify the proof on the case of an array of size 3. We use infix notation for the binary operation $e$.
+    The output term unrolls to $v_3\defeq ((v ~e ~a_1)~ e~ a_2) ~e~ a_3$, where $v$ is the unit of $e$.
+    By the lemma above we know that the derivative w.r.t $v$ is 0, and focus on the partial derivatives w.r.t $a_i$.
+    Write $v_1\defeq(v~ e~ a_1)$, $v_2 \defeq v_1 ~e ~a_2$.
+    By inspection we have
+    \begin{itemize}
+        \item $\frac{\partial v_3}{\partial a_3}=\frac{\partial e}{\partial x_2}(v_2,a_3)$
+        \item $\frac{\partial v_3}{\partial a_2}=\frac{\partial v_3}{\partial x_1}\times\frac{\partial v_2}{\partial x_2}=\frac{\partial e}{\partial x_1}(v_2,a_3)\times \frac{\partial e}{\partial x_2}(v_1,a_2)$
+        \item $\frac{\partial v_3}{\partial a_1}=\frac{\partial v_3}{\partial x_1}\times\frac{\partial v_2}{\partial x_2}\times\frac{\partial v_1}{\partial x_2}=\frac{\partial e}{\partial x_1}(v_2,a_3)\times \frac{\partial e}{\partial x_1}(v_1,a_2)\times\frac{\partial e}{\partial x_2}(v,a_1)$
+    \end{itemize}
+    We thus need the following intermediate results
+    \begin{itemize}
+        \item $A_0=[v,v_1,v_2]$=!shift1R(scanl v e A)!
+        \item $A_1 =[\grad_{\{x_1\}}e(v_1,a_2),\grad_{\{x_1\}}e(v_2,a_3)]=$ !shift1L (map2 (a,b.$\grad_{\{x_1\}}$e(a/x,b/y)) $A_0$ A)!
+        \item $A_2 =[\grad_{\{x_2\}}e(v,a_1),\grad_{\{x_2\}}e(v_1,a_2),\grad_{\{x_2\}}e(v_2,a_3)]=$ !map2 (a,b.$\grad_{\{x_2\}}$e(a/x,b/y)) $A_0$ A!
+        \item $A_3 =[\frac{\partial e}{\partial x_1}(v_2,a_3)\times \frac{\partial e}{\partial x_1}(v_1,a_2),\frac{\partial e}{\partial x_1}(v_2,a_3),1]=$ !scanr 1 * $A_1$!
+    \end{itemize}
+    And we return $A_4=$ !map2 $A_2$ $A_3$!.
 \end{proof}
 
 \subsection{Adding more array operators}
