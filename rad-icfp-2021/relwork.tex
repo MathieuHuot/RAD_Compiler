@@ -85,13 +85,13 @@ We see our work as a complement and a first bridge between these works
 and more practical considerations of efficiency and implementations, 
 which often require a lot more care than is acknowledged in more theoretical works.
 
-An exception is \cite{abadi-plotkin2020} which gives a reverse-mode transformation that is proved correct and with the right complexity.
-This work is purely first-order, does not have arrays and uses a non-standard semantics. 
-Our work is more canonical in the sense that it can more directly be implemented in a standard call-by-value language.
-They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
-Instead, they follow the principle of unrolling the recursive calls and evaluating the conditional before differentiating, 
-which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
-This is a known limitation in TensorFlow \cite{abadi2016tensorflow}. %which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
+% An exception is \cite{abadi-plotkin2020}.
+% This work is purely first-order, does not have arrays and uses a non-standard semantics. 
+% Our work is more canonical in the sense that it can more directly be implemented in a standard call-by-value language.
+% They do allow conditionals and recursion but their semantics suggest that they don't have a canonical transformation on these constructs. 
+% Instead, they follow the principle of unrolling the recursive calls and evaluating the conditional before differentiating, 
+% which requires to recompute the whole gradient when taken at new values that can change the value of the conditional. 
+% This is a known limitation in TensorFlow \cite{abadi2016tensorflow}. %which TeaserFlow EagerMode \cite{agrawal2019tensorflow} tries to bypass. 
 
 \noindent \textbf{Usage of iteration mechanics}
 An immense effort in machine learning for the past decade has been in finding
@@ -116,29 +116,20 @@ which is usually derived by hand and one main goal of these papers.
 
 Given the enormous computation needs for state-of-the-art large scale machine learning applications, 
 which require extremely efficient tensor computations and automatic differentiation for backpropagation, 
-combining array languages and automatic differentiation (tensor calculus) in the best 
-fitted intermediate representation for optimizations is of key interest and active research.
-\cite{bernstein2020differentiating} 
-TODO
-\cite{laue2018computing,laue2020simple}
+combining array languages and automatic differentiation (tensor calculus) in the best-fitted 
+intermediate representation for optimizations is of key interest and active research. 
+See for instance the recent work by \cite{bernstein2020differentiating,laue2018computing,laue2020simple}.
+Advanced array programming is considered an orthogonal problem to AD and we focused our work on the latter.
 
 \noindent \textbf{Comparison to other recent papers.}
 
-TODO
-\cite{lee2020correctness}: non diff function
-\cite{sherman2021}: non diff HO functions
-\cite{pearlmutter2008reverse}: based on this
-\cite{elliott2018simple}: bit similar because using CT as useful language, but we take impl and opti more seriously.
-\cite{shaikhha2019efficient}: similar approach but here more complicated for reverse mode, would be interesting to investigate more loop fusions here.
-\cite{paszke2021getting}
-Curry paper: The idea of using closures as back-propagators is receiving recent attention. 
-    For example Julia Zygote \cite{innes2019zygote} and Swift AD \cite{wei2018first} chose this design. 
-    Other recent work follows similar ideas [27, 26] but is using meta-programming as an implementation technique.
-
-% Relatively recent work in AD (2008-2020):
-% \cite{mak2020differential,elliotthigher,vytiniotis2019differentiable,innes2018don,baydin2017automatic,huot2020correctness,gallagher-sdg,manzyuk2012confusion,lantern_icfp,beck1994if,wang2018backpropagation,betancourt2018geometric,elliott2018simple,carpenter2015stan,paszke2017automatic,shaikhha2019efficient,innes2019zygote,griewank2008evaluating,kucukelbir2017automatic,brunel2019backpropagation,barthe2020versatility,abadi2019simple,cockett2019reverse,van2018automatic,hascoet2013tapenade,abadi2016tensorflow,pearlmutter2008reverse,bergstra2010theano,fong2019backprop,ehrhard2003differential,agrawal2019tensorflow,bettencourt2019taylor,cruttwell2017cartesian,manzyuk2012simply,laue2018computing,bernstein2020differentiating}
-
-Good recent surveys: \cite{van2018automatic,baydin2017automatic}
+Table~\ref{tbl:relwork} does not reflect all the aspects of AD. For instance \cite{lee2020correctness} studies in more detail non differentiability, 
+and \cite{sherman2021} the differentiability of highly-non trivial higher-order functions. 
+Our work is somewhat close in spirit to the idea of \cite{elliott2018simple} of compiling to categories.
+The idea of using closures as back-propagators is receiving recent attention, as is highlighted in \cite{vytiniotis2019differentiable},
+these ideas are used in Julia Zygote \cite{innes2019zygote}, Swift AD \cite{wei2018first}, and recently in \cite{paszke2021getting}.
+These seem closer to using control mechanims than having purely functional reverse-derivatives as far as we could tell.
+Other aspects of AD still are discussed in recent surveys \cite{van2018automatic,baydin2017automatic}.
 
 \section{Conclusion}
 \label{sec:conclusion}
