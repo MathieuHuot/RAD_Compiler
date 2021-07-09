@@ -19,10 +19,10 @@
 
 % \subsection{Motivation}
 Deep learning is moving towards increasingly sophisticated optimization objectives that employ tensors and operations on tensors.
-Reverse-mode Automatic Differentiation (AD) is a technique to automatically compute the gradient of objective functions of form $\RR^n\to\RR$.
+Reverse-mode Automatic Differentiation (AD) is a technique to automatically compute the gradient of objective functions of the form $\RR^n\to\RR$.
 Such functions appear a lot in practice: for instance, as loss functions in machine learning.
 
-In order to reach the efficiency of the usual imperative version of reverse-mode, the transformations even in functional languages~\cite{pearlmutter2008reverse} resort to references.
+In order to reach the efficiency of the usual imperative version of reverse-mode, the transformations, even in functional languages~\cite{pearlmutter2008reverse}, resort to references.
 The lack of purity in reverse-mode is known to make it significantly harder to optimize and parallelize. 
 None of the current implementations of reverse-mode in a functional setting~\cite{lantern_icfp,pearlmutter2008reverse,baydin2016diffsharp} are pure, and often complicated heuristics with no guarantees are used, e.g.~\cite{xla}.
 As a result, to optimize for efficiency, a hand-crafted reverse-derivative must be given, for every important non-trivial operation.
@@ -38,17 +38,17 @@ In other words, abstracting away from imperative code is still a hurdle that fun
 % to a representation that leads to more efficient implementations.
 
 In this paper, we define a purely functional (without references or control mechanisms such as state monads), denotationally correct, and provably efficient reverse-mode AD. 
-To do so, we define the Unary Normal Form (UNF) representation inspired by PROPs \cite{maclane1965categorical} %\cite{hackney2015category} 
-and compilation to categories \cite{elliott2017compiling}.
+To do so, we define the Unary Normal Form (UNF) representation inspired by PROPs~\cite{maclane1965categorical} %\cite{hackney2015category} 
+and compilation to categories~\cite{elliott2017compiling}.
 We can easily define and prove correctness of reverse-mode on this representation. 
-The whole reverse-mode transformation is obtained by compiling the language to this intermediate representation, applying the simpler reverse-mode transformation, and compiling again to the original language.
+The whole reverse-mode transformation is obtained by compiling the language to this Intermediate Representation (IR), applying the simpler reverse-mode transformation, and compiling again to the original language.
 After standard optimizations, the output program looks like SSA~\cite{cytron1989efficient} or ANF~\cite{sabry1993reasoning}, which leads to more efficient implementations.
 
 \input{figures/related_work_table}
 
 \subsection{Examples}
 
-We introduce the general idea of efficient reverse-mode in a functional setting the next examples.
+We introduce the general idea of efficient reverse-mode in a functional setting through the following examples.
 % We recall some basics of reverse-mode differentiation in Section~\ref{sec:background}.
 
 \begin{example}[First-order term]
