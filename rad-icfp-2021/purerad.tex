@@ -34,7 +34,7 @@ The target language of our source-code transformation is an extension to the sou
 It is a higher-order language, as our purely functional reverse-mode introduces a continuation.
 The set of scalar operations should also be closed under partial differentiation. 
 In more detail, for every unary scalar operation !op1!, 
-we assumed a given operator $\partial$!op1! whose semantics should be the derivative of !op1!, e.g. $\partial$!cos!=!sin!.
+we assumed a given operator $\partial$!op1! whose semantics should be the derivative of !op1!, e.g. $\partial$!sin!=!cos!.
 Similarly, for every binary operator !op2!, we assume given operators $\partial_1$!op2!, $\partial_2$!op2!, 
 respectively representing the first and second partial derivative of !op2!.
 

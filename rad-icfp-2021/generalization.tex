@@ -14,9 +14,8 @@ Assume we allow $\Gamma$, !x!: $\reals$, !y!: $\reals$ $\vdash$ !e!: $\reals$ to
 !reduce (x,y.e) v A!. We need to add a term depending on $\grad_{\{xi\}}e$ to !yi! in the continuation.
 As writing the derivative becomes quite cumbersome, we use a more compact notation using arrays of tuples. 
 Similarly to the monoid $\widehat{+},0_\Gamma$ defined in Section~\ref{sub:Macro for pure reverse mode transformation},
-we use $\widehat{\times},1_\Gamma$ for obvious extension of the monoid $(\reals,\times,1)$. The modified reverse-mode transformation is shown in Figure~\ref{fig:lift_reduce}.
-
-We can now compute the reverse-mode transformation as follows.
+we use $\widehat{\times},1_\Gamma$ for obvious extension of the monoid $(\reals,\times,1)$. 
+The modified reverse-mode transformation is shown in Figure~\ref{fig:lift_reduce}.
 
 \begin{figure}
 
@@ -54,7 +53,7 @@ The problem is that this could break the complexity of reverse mode because of t
 A slightly better option would be to define 
 
 \begin{tabular}{l}
-    $\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) \\
+    $\directD{\rho}{\Gamma}{Y}$(!if e$_1$ then e$_2$ else e$_3$!) = \\
     !let b=e$_1$ in <if b then e$_2$ else e$_3$, fun (x$_1$,$\ldots$,x$_n$,z) ->! \\
     !Y(b*!$\directD{\rho}{\Gamma}{Y}$!(e$_2$)(x$_1$,$\ldots$,x$_n$,z)+(1-b)*!$\directD{\rho}{\Gamma}{Y}$!(e$_3$)(x$_1$,$\ldots$,x$_n$,z))>!
 \end{tabular}
@@ -79,7 +78,7 @@ the condition is evaluated before differentiation is applied, and so conditional
 \label{sub:lift_recipe}
 To add more constructs to our language, 
 there is no need to go through UNF; most of the backend of our work can be used as a black box.
-The non-smooth variables of the operator (typically booleans or integers) should be considered as external to the language, similarly to the way we treat the index $n$ of arrays.
+Non-smooth variables (typically booleans or integers) should be considered as external to the language, similarly to the way we treat indices $n$ of arrays.
 
 \smartpara{Reverse AD}
 If the operator has type $A\to B$, then one should provide its transpose Jacobian, a term $B\to A$. 

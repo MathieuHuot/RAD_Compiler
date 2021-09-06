@@ -5,7 +5,7 @@ Following the intuition highlighted in Section~\ref{subsec:insights},
 we present a new language which we call Unary Normal Form (UNF). 
 There is a Source UNF for the Source language and a Target UNF for the Target language.
 Just as Target is an extension of Source, Target UNF is an extension of Source UNF.
-They serve as intermediate representation our the reverse-mode compilation pipeline (see Figure~\ref{fig:outline}).
+They serve as intermediate representations in the reverse-mode compilation pipeline (see Figure~\ref{fig:outline}).
 
 One takeaway from this paper is that efficient pure reverse-mode is complicated because of the several things it does.
 It goes through the term and keeps a store for the gradients to be updated. 
@@ -55,7 +55,7 @@ When !T$_1$! and !T$_2$! are lists of types and !A! a type, the operator !,! den
 \subsection{Target UNF} % (fold)
 \label{sub:Target UNF}
 
-The Target UNF is an extension of Source UNF. 
+Target UNF is an extension of Source UNF. 
 Its types are lists of types of Target. 
 Higher-order types are needed for the continuation introduced by reverse-mode. 
 In addition, it contains several new primitives which represent the transpose Jacobian of the primitives of Source UNF.
@@ -110,7 +110,7 @@ Because of this, when we are trying to return a pair, this needs to be witnessed
 When we need to pass the result of type !A! of !e$_{1}$! through !e$_{2}$! which does not take it as an input, we can transform !e$_{2}$! to accept and pass it.
 It's the equivalent in UNF of a weakening.
 This weakening is required when we transform a non-unary operator such as $+$ or !pair!, as we transform the arguments in order and we need to keep all of their results.
-We write this new term $(\widetilde{e_{2}})_{A}$ and it defined by induction on !e$_{2}$! as follows. 
+We write this new term $(\widetilde{e_{2}})_{A}$. It is defined by induction on !e$_{2}$! as follows. 
 We assume given a type !A! that needs to be passed, and drop the index !A!.
 
 \begin{tabular}{r c l}

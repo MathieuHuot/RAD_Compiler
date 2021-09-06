@@ -1,0 +1,176 @@
+Rebuttal:
+
+We are very grateful to the anonymous reviewers for their detailed feedback. 
+If we are given the chance for a revised version, all the minor comments and typos raised by the reviewers have been addressed.
+
+For reviewer2's question:
+
+For reviewer3's questions:
+
+Reviewer 1:
+
+Paper summary
+This unary form is like Forth with typed stacks;
+A Jacobian amounts to a function from stack-gradients to stack-gradients, 
+which can be composed by partial evaluation as long as control flow is static.
+
+Weaknesses
+Although the paper is organized so that earlier material motivates later material, insufficient explanation makes understanding much earlier material require understanding later material. For instance:
+Understanding Section 3 requires understanding Section 4 (I recommend simply dropping Section 3).
+Understanding Section 4 requires understanding Section 6 (I recommend stating the invariant maintained by Figure 8 formally up front).
+Understanding Section 5.1 requires understanding Section 5.4 (I recommend merging the material).
+Understanding the second line on page 8 (below Figure 4) requires knowing the notation \mathit{Id}_\GammaId 
+Γ
+​
+  (which is introduced in Figure 4, which is not referred to in the text above) and the notation 0_\Gamma0 
+Γ
+​
+  (which is introduced below in Notation 1).
+More broadly speaking, understanding this paper requires a prior understanding of reverse-mode AD to an extent that limits its audience severely at POPL.
+The paper does not firmly establish the languages that its transformations move among. Examples:
+
+Figure 4, bottom two rows, (x:A[R]^n)(x:A[R] 
+n
+ ) uses the unbound variable xx
+To type-check e_1;e_2e 
+1
+​
+ ;e 
+2
+​
+  in Source UNF, Figure 6 requires T,A \vdash e_2:T,A,BT,A⊢e 
+2
+​
+ :T,A,B, but Figure 9 uses proj and pair after ;;, and the typing rules for proj and pair in Figure 6 do not match T,A \vdash e_2:T,A,BT,A⊢e 
+2
+​
+ :T,A,B.
+Figure 9 says "constant seen as a 0-ary operator", which should be stated when defining Source UNF. Typical programming languages only have a finite number of operators.
+Page 20 (between Definitions 6.4 and 6.5) interpret a \tilde{;} 
+;
+~
+​
+  construct in Source UNF, but there is no such construct in Figure 6.
+Although the paper couches semantics and correctness in category theory, it boils down to the sentence "This functor is easily shown to compute reverse-mode derivatives" on page 21, yet the paper never formalizes what it means to "compute reverse-mode derivatives". Ultimately the source language in this paper is so "limited" (Section 2.2) that it doesn't advance our understanding of reverse-mode AD much.
+
+Page 1 "PROPs": what are they?
+Page 1 "often complicated heuristics with no guarantees are used": Give concrete examples of those heuristics in a footnote.
+Page 2, Example 1.1: The prime ' 
+′is used both for dual (w) and for update (y). Only use the prime ' 
+′for one of these two purposes; choose a different symbol for the other purpose. Also, rename y1,y2,y3,y4,y5 to Dx1,Dx2,Dx3,Dw1,Dw2 (or use some other letter instead of D).
+Refer to Table 1 in the text nearby.
+Figure 1 and elsewhere: don't use math mode for italics.
+Page 2 "The gradient of each of these expressions with respect to A is:": Clarify whether your transformation turns the 3 lines of code displayed above into the 3 lines of code displayed below.
+Page 4, first sentence of Section 2.1, "need both" -> "we need both". The "To" at the beginning of this sentence is confusing: even if our goal is not "to find the gradient ∇f of a function f:R→R compositionally", don't we still "need both f and ∇f when calculating ∇(f;g)"?
+Page 4, Section 2.2, define J.
+Page 5, "lose compositionality": Clarify what is lost. Compositionality means that the meaning of a complex expression is determined by its structure and the meanings of its constituents.
+Page 5, after "by noting that", f_{i+1}(f_i)f 
+i+1
+​
+ (f 
+i
+​
+ ) should be f_{i+1} \circ f_if 
+i+1
+​
+ ∘f 
+i
+​
+ , )()( should be )\circ()∘(, and on the next line, YJ^TfYJ 
+T
+ f should be Y\circ J^TfY∘J 
+T
+ f. On the next line, "applying the identity continuation Rn→Rn on the second component" should be "applying the second component to the identity continuation Rn→Rn".
+
+Page 7, "We only need the target language to be second-order.": The target language can probably stay first-order if you treat functions at the meta-level of the transformation.
+Page 9, "The idea is that ρ represents the return type of the derivative part" needs to be explained more clearly, with formalization and examples.
+Figure 7, where is the "term pairing" e ::= <e,e> construct of target UNF used? I don't see it used in Figure 8.
+Page 16, above Theorem 5.4, in the displayed equations, pairs of braces are missing after "max" (perhaps you forgot to escape your braces with backslashes).
+Page 19, after "This interpretation extends to", the extra spaces before e are strange, and some e2s seem like they should be e3s. These problems make this paragraph hard to understand.
+Page 20 "somewhere in between the syntax" is too vague.
+Page 21, the second-to-last paragraph needs to make the following phrases concrete by referring to Example 4.1: "non-Jacobian primitive"? "a tuple"? "highly inefficient"? "projects to the last element"? "non-trivial information of the term"?
+Section 7.2 discusses modifications to the composed transformation of Figure 5, but it should be easier to understand (and prove correct and efficient) to modify the decomposed transformations of Section 4 instead.
+Page 23, "makes everything harder to optimize" is too broad.
+Page 23, define "non-linear usage".
+Page 24, "compute the whole gradient of the expression" is unclear. Give examples where we do and examples where we don't want to compute the whole gradient of the expression. It seems that there are common cases of conditionals that your solution does not handle, and that motivates the use of mutable cells allocated at run time.
+Show line numbers in draft manuscripts to ease commenting. Number all displayed equations.
+Spell check.
+
+Reviewer 2:
+
+Paper summary
+
+Strengths
+A unique aspect of the work is to consider performance aspects and to perform complexity analysis where the reverse-mode transformation is still pure.
+
+Weaknesses
+The complexity analysis does not consider any parallelism as part of the cost model. Although perhaps reasonable as a first step, the ability to parallelize AD is extremely important in practice.
+The work does not include any implementation, neither as an explicit implementation for empirical evaluation, nor a mechanized approach when proving correctness or complexity. Hence, the practical performance implications can only be considered in theory.
+
+Figure 1 shows a descriptive outline of the compilation strategy and an overview of the paper. As shown in the top of the figure and explained in Section 3, there is a direct translation from the source language to the target language. As stated in the middle of page 9, it is neither trivial to understand this approach, nor to prove it correct. And, this is why you describe the second chain via UNF? But, why do you then describe this direct translation in the first place? What does it add, compared to the second chain?
+I found the presentation of UNF slightly more complicated than what I think it needs to be. Specifically, when you first introduce the source and target UNF languages (Figures 6 and 7), it is not obvious what the semantics of UNF actually is. It is first in the latter part of the section it becomes clearer, when the transformation from source to source UNF is described. Hence, this section would be more readable if the order is changed, and where the source UNF is introduced together with the transformation from the source language. A more detailed example would also be valuable.
+The re-translation step (non-strict transformation UNF^{-1}) is not completely clear. In particular, the reintroduction of variable names, as briefly discussed at the end of page 13.
+It would be good if the discussion of how to extend the language further could be elaborated a bit more. For instance, currently the the source language contains product types, but not sum types. How would such an extension affect the approach? Is it direct, and in such a case, why?
+On page 24, it says that your approach does not support recursion, which is also clear from the rest of the paper. But, in table 1, the column for "This Paper" shows recursion half filled in. It says in the caption that it means "not supporting general recursion". Is the rational to fill it in for this case, that it can use operations like "reduce" on arrays? It would be good to be clearer regarding this already in the introduction.
+
+Questions for the response period
+Why do you present the direct translation (Section 3)? What does it add, compared to performing the translation and differentiation via UNF?
+
+Reviewer 3:
+
+Notable features of the approach include:
+The core language studied has no form of recursion, and no conditionals. The paper briefly discusses extensions (in particular with conditionals) at the end, but still banning primitive functions from reals to booleans which generate non-smooth functions.
+
+Weaknesses
+Quite a few recent papers propose program transformations for reverse-mode AD of purely functional programs. See for instance [Vákár 2021] which also has arrays, motivates the transformation categorically and validates it via denotational semantics in diffeological spaces. [Mazza and Pagani 2021] do it for PCF, with full support of recursion and conditionals; and there are others.
+In contrast, the language considered here is minimalistic. Table 1 seems to claim a partial support for recursion, but it is hard to see what that corresponds to as there is no recursion or iteration in the language. I guess it is map/reduce? The table also claims that conditionals are supported, but this is only briefly sketched in Section 7.2, and this is without primitives R→ B such as >0 making conditionals useful.
+The UNF syntax and conversions seems more like a tool than an end in itself, though it does make differentiation more intuitive.
+So aside from efficiency, I am not sure which aspect of this work to put forward with respect to existing literature. The paper should also be more upfront about the fact that the main original contribution, with respect to existing work, is a proof of the cheap gradient principle.
+Explanations are a bit lacking and assume familiarity which gradients, Jacobians etc.
+
+Comments for author
+Section 1.1: the example is hard to follow, because no typing and/or explanation for the components is given, and this appears before the introduction to AD in Section 2.
+Section 2.1: this is titled "Rudiments of forward-mode AD and dual numbers", but it only seems to introduce the objective of AD, not forward-mode.
+Section 2.2: "The problem with the previous approach shows up when one wants to compute the full gradient of a function R n → R, for a large n. Forward-mode only computes one directional derivative..." -> this sounds weird since we have not introduced forward-mode.
+p.4: "Typically ... completely missed" -> this largely ignores the recent literature on the topic.
+p.5: the brackets <, > make the spacing really awkward. Please use \langle, \rangle. Plus, pairing of functions is written (f, g) before (in Section 2.1).
+p.5: "x′+ = ∂1op(x, y); y′+ = ∂2op(x, y)" -> spacing makes it really hard to parse.
+p.5: "We have to carry a continuation and β-reduce a lot of higher-order functions." -> this is a bit imprecise. Why is that a problem?
+p.6: "call-by-value" -> sounds a bit strange for a first-order language without calls (nor operational semantics).
+p.6: "The types T1 , T2 , terms e1 , e2" -> why not "types T, terms e"? Besides, sometimes indices appear sometimes as subscripts, and sometimes not. This happens inconsistently throughout the whole paper.
+Figure 3: the translation also involves partial derivatives of operations, which do not appear here.
+Figure 4: "∇Γ e" -> inconsistent, sometimes this is ∇Γ(e), sometimes not.
+Figure 4: in the clauses ZerosLike(n) and OnesLike(n), x is unbound.
+p.8: reverse-mode AD is not actually defined! Well it is defined in Figure 5, two pages later, and Figure 5 is not referred to before p.12.
+Lemma 3.2: but we still do not have the definition!
+p.9: "UNF introduces the call-by-value evaluation of the arguments before evaluating the arguments and a good management of the environment" -> ?
+Figure 5: missing '(' in the clause for let
+p.11: "cos_{R, R}" -> doesn't match the grammar of terms. Should it be "cos_{R, R; 2}"?
+Figure 7: the grammar for types implies that one cannot form e.g. [R, R] -> R (as we only add lists of types from target). Is that intended?
+Figure 7: what is [A -> B]?
+The arrow appears sometimes as ->, sometimes as →
+p.13: "Doing UNF followed by UNF^{−1} performs some version of the ANF transformation" -> this sounds weird since later on it is said that UNF^{-1} has no general typing preservation property and should be performed after AD.
+Lemma 5.1: "Every variable ... is used exactly once" -> in what sense? Only one occurrence (so not stable under beta-reduction)? Linear typing?
+p.15: "This rewriting ... movement of variables" -> this does not make sense before the cost model is defined.
+Figure 12: suddenly conditionals appear. Why?
+p.17: "The induction hypothesis is then too weak to conclude" -> but you have not said what the IH is.
+p.19: "modulo the ηβ-laws" -> undefined, and Source does not have functions. Do you mean ηβ for products?
+p.19: "SynSource satisfies the following universal property" -> what about arrays? reduce/map? let?
+p.19: "⟨∆n,,[[e2]],[[e2]]⟩; swap;([[e1]])×n" -> why ",,"? Also, spacing is off.
+p.20: I was not aware of "concategories". I don't think it is a well-known notion. There should be a reference, including derived notions such as cartesian concategories which are used in the paper without much introduction.
+p.20: "explain the UNF and UNF^{−1} transformations." -> font inconsistent.
+p.20: "We denote by ... in the context T" -> font for T inconsistent.
+Please give the typing of [[-]]!
+p.21: Notations \Lambda and \Lambda^{-1} not introduced.
+Definition 6.6: "Mutlicategory"
+What is \underline{-}? What are u_{\underline{B}_i}? A "++" is split in two "+" around the line.
+p.21: "We can interpret Source in C_{Source} as follows" -> is this an interpretation or a functor? A functor from SynSource to C_{Source}?
+There are inconsistencies in the font of 'e' below.
+The naming convention of categorical structure SynSource/C_{Source} etc is not enlightening. Besides, SynSource is not used beyond p.19.
+p.21: "Seen as morphisms in C_{Source}" -> what is seen as a morphism in C_{Source}?
+p.22: the diagram is not very clear. Where is AD from Source to Target? Proposition 6.10 corresponds to the commutation of which square?
+
+Questions for the response period
+Why does the language not include a primitive to create an array? Doesn't that limit expressivity?
+
+Lemma 5.1: Every variable ... is used exactly once" -> in what sense? Only one occurrence (so not stable under beta-reduction)? Linear typing?

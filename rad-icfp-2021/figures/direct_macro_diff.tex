@@ -13,7 +13,7 @@
         $\directD{\rho}{\Gamma}{Y}$(!x!) &=& 
             !<x, fun (x$_{1}$,$\ldots$,x$_n$,z) ->! \\
             && !Y((x$_{1}$,$\ldots$,x$_n$)!$\widehat{+}$![pos(x)]z) >!\\
-        $\directD{\rho}{\Gamma}{Y}$!let x:A = e$_{1}$ in e$_{2}$!) &=& 
+        $\directD{\rho}{\Gamma}{Y}$(!let x:A = e$_{1}$ in e$_{2}$!) &=& 
             !let x,Y$_{1}$ = !$\directD{\rho}{\Gamma}{Y}$!(e$_{1}$) in! \\
             &&!let y,Y$_{2}$ = !$\directD{\rho}{\Gamma,x:A}{Y_1}$!(e$_{2}$) in!\\ 
             &&!<y, fun (x$_{1}$,$\ldots$,x$_n$,z) -> Y$_{2}$(x$_{1}$,$\ldots$,x$_n$,!$0_{A}$!,z)>!\\

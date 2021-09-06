@@ -15,11 +15,11 @@ By inspecting each rule in Figure~\ref{fig:direct_diff_macro}, this allows us to
 
 \begin{lemma}
     Let $\Gamma \vdash$!e: A! be a term in Source. 
-    Every variable !Y! in $\directD{\rho}{\Gamma}{Y}$(!e!) which is not of ground type is used exactly once.
+    Every variable !Y! in $\directD{\rho}{\Gamma}{Y}$(!e!) which is not of ground type has exactly one occurrence in the term.
 \end{lemma}
 
-From the previous lemma, we see that there is a linear usage of  each continuation $Y$. 
-This is one key property which has been ensured by $\UNFSymbol$.
+From the previous lemma, we see that there is a linear usage of each continuation variable $Y$. 
+This is one key property ensured by $\UNFSymbol$.
 We also note that, apart from the !map2! case, this continuation variable is always applied to almost the identity. 
 More precisely, we have applications of the form !fun (x1,$\ldots$,xn) -> Y(e1,$\ldots$,en)! 
 where the !ei! are !xi! except for at most $k$ (independent of $n$) terms.
@@ -80,7 +80,7 @@ We have the following result.
 
 \begin{lemma}
     \label{lem:noHO}
-    Let $\Gamma \vdash$!e: A! be a term in Source. 
+    Let $\Gamma \vdash$ !e:A! be a term in Source. 
     After the partial evaluation step, $\directD{\rho}{\Gamma}{Y}$(!e!) does not have lambda abstractions.
     Its only variable (bound and free) which does not have a ground type is !Y!.
 \end{lemma}
@@ -102,13 +102,14 @@ MULTS the number of multiplications,
 and NLOPS the number of elementary non-linear operations like !cos! or !exp!.
 
 The gives a complexity function $\cost$ valued in $\RR^4$. 
-For instance, we have 
+For primitive operations, we have for instance
 
 \begin{tabular}{ll}
-    $\cost(*)=(3,0,1,0)$ & $\cost(+)=(3,1,0,0)$\\
-    $\cost(c)=(1,0,0,0)$ & $\cost($!sin!$)=(2,0,0,1)$
+    $\cost$(!*!)=$(3,0,1,0)$ & $\cost($!+!$)=(3,1,0,0)$\\
+    $\cost$(!c!)=$(1,0,0,0)$ & $\cost($!sin!$)=(2,0,0,1)$
 \end{tabular}
 
+More generally $\cost($!op1!$)=(2,0,0,1)$ for the other unary operations.
 For simplicity, we will not address any parallelism in our cost model. 
 So the cost of !map (x.e)! on an array of size $n$ will be $n*\cost$(!e!).
 Following Lemma \ref{lem:noHO}, we do not need our cost model to deal with higher-order variables and lambda abstractions.
@@ -124,22 +125,13 @@ We define the Nesting of Array Operations $\NestA$ of a term !e! of Source by in
 
 \begin{center}
 \begin{tabular}{r c l}
-    $\NestA$(!c!) &=& 0 \\
-    $\NestA$(!x!) &=& 0 \\
-\end{tabular}
-    \begin{tabular}{r c l}
-    $\NestA$($\pi_i$(!e!)) &=& $\NestA$(!e!)\\
-    $\NestA$(!op1 e!) &=& $\NestA$(!e!) \\
-\end{tabular}
-\end{center}
-
-\begin{center}
-\begin{tabular}{r c l}
-    $\NestA$(!let x:A = e$_1$ in e$_2$:B!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!)  \\ 
-    $\NestA$(!< e$_1$, e$_2$ >:AxB!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!) \\ 
-    $\NestA$(!e$_1$ op2 e$_2$!) &=& max $\NestA$(!e$_1$!), $\NestA$(!e$_2$!)\\
-    $\NestA$(!map2 (x,y.e$_1$) e$_2$ e$_3$!) &=& max 1+$\NestA$(!e$_1$!),$\NestA$(!e$_2$!),$\NestA$(!e$_3$!) \\
-    $\NestA$(!reduce (x,y.e$_1$) e$_2$ e$_3$!) &=& max 1+$\NestA$(!e$_1$!),$\NestA$(!e$_2$!),$\NestA$(!e$_3$!) \\
+    $\NestA$(!c!), $\NestA$(!x!) &=& 0 \\
+    $\NestA$($\pi_i$(!e!)), $\NestA$(!op1 e!) &=& $\NestA$(!e!) \\
+    $\NestA$(!let x:A = e$_1$ in e$_2$:B!) &=& max($\NestA$(!e$_1$!), $\NestA$(!e$_2$!))  \\ 
+    $\NestA$(!< e$_1$, e$_2$ >:AxB!) &=& max($\NestA$(!e$_1$!), $\NestA$(!e$_2$!)) \\ 
+    $\NestA$(!e$_1$ op2 e$_2$!) &=& max($\NestA$(!e$_1$!), $\NestA$(!e$_2$!))\\
+    $\NestA$(!map2 (x,y.e$_1$) e$_2$ e$_3$!) &=& max(1+$\NestA$(!e$_1$!), $\NestA$(!e$_2$!), $\NestA$(!e$_3$!)) \\
+    $\NestA$(!reduce (x,y.e$_1$) e$_2$ e$_3$!) &=& max(1+$\NestA$(!e$_1$!), $\NestA$(!e$_2$!), $\NestA$(!e$_3$!))
 \end{tabular}
 \end{center}
 
@@ -163,7 +155,7 @@ More precisely, there should be a constant $K$ such that for each program !$\Gam
 that $\directD{\rho}{\Gamma}{Y}$ verifies the cheap gradient principle. 
 
 There is a first restriction that prevents our transformation from satisfying the cheap gradient principle.
-If we try to show that the cheap gradient principle holds by induction on the term, it fails on the !map2!.
+If we try to show that the cheap gradient principle holds by induction on the term, it fails on !map2!.
 When differentiating !map2!, there are three series of calls to (sub)gradients of !e$_1$!. 
 The induction hypothesis is then too weak to conclude. 
 The problem comes from the fact that !e$_1$! could itself use !map2!. 
@@ -186,7 +178,7 @@ at most 2 !x!$_i$ in the continuation are not variables.
 \subsection{Optimizations} % (fold)
 \label{sub:Optimizations}
 
-In Figure~\ref{fig:optim} we present a of optimizations. 
+In Figure~\ref{fig:optim} we present a list of optimizations. 
 These optimizations are all obviously valid according to the semantic model. 
 As our language is purely functional, we can use these extra optimizations aggressively. 
 A lot of simplifications come from the ring structure of the reals, lifted to tuples and arrays.
@@ -196,7 +188,6 @@ and resembles SSA-code \cite{cytron1989efficient}.
 Even though our reverse-mode transformation has the right complexity after the partial evaluation step, 
 the constant factor is of huge importance in practice. 
 The purity of our transformation allows us to make the most out of generic optimizations.  
-A list of common optimizations that are useful for this language can be found in Figure~\ref{fig:optim}.
 In addition, hand-crafted efficient derivatives and more optimizations can easily be added to our language.
 
 \begin{example}

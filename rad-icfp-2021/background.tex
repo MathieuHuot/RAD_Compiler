@@ -27,7 +27,7 @@ Mathematically, forward mode essentially computes $(\J f)v=\J f_n(\J f_{n-1}(\ld
 Reverse-mode, on the other hand, computes $(\J f)^Tv = \J^Tf_1(\J^T f_{2}(\ldots(\J^T f_nv))\ldots)$ for a vector $v\in\RR$.
 In particular, taking $v=1$ computes the gradient of $f$.
 
-Because the computation flow of the function is reversed, the actual implementation of reverse-mode is way quite tricky. 
+Because the computation flow of the function is reversed, the actual implementation of reverse-mode is quite tricky. 
 Reverse-mode AD is only well-understood as a source-code transformation on limited programming languages. 
 Typically, its implementations on more expressive languages that have features such as higher-order functions and conditionals
 make use of define-by-run approaches. These approaches first build a computation graph during runtime, effectively evaluating the program until a straight-line

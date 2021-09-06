@@ -236,14 +236,14 @@ It sends Jacobian operations to terms of Target as given by $\UNFSymbol^{-1}$ in
 
 This interpretation is in essence $\UNFSymbol^{-1}$. 
 The difference is that to preserve typing, the semantic $\UNFSymbol^{-1}$
-sends a non-Jacobian primitive to a tuple, as in the Example \ref{exm:unf}. 
+sends a non-Jacobian primitive to a tuple, as in Example \ref{exm:unf}. 
 This is highly inefficient, and the syntactic $\UNFSymbol^{-1}$ 
 additionally projects to the last element, where the non-trivial information of the term is.
 
 What remains to explain now is the reverse mode transformation between Source UNF and Target UNF.
 We construct a functor $\Dsynrevsymbol_{\rho}:\ConcatS\to\ConcatT$. 
-This functor is easily shown to compute reverse-mode derivatives.
-Because terms of Source UNF in $\ConcatS$, we observe the effect of $\Dsynrevsymbol_{\rho}$ on them
+This functor computes reverse-mode derivatives. \MH{define more precisely}
+Because terms of Source UNF are interpreted in $\ConcatS$, we observe the effect of $\Dsynrevsymbol_{\rho}$ on them
 and show that it matches the syntactic $\Dsynrevsymbol_{\rho}$ 
 from Section~\ref{sub:Simple reverse mode transformation}.
 
@@ -255,13 +255,13 @@ from Section~\ref{sub:Simple reverse mode transformation}.
     !$\Dsynrevsymbol_{\rho}$(map2 (x,y.e))=<map2 (x,y.e),$\pi_{last}\circ$ J$^T$map2 (x,y.e)>!,\\
     !$\Dsynrevsymbol_{\rho}$(reduce$_{x,y.e_1,e_2}$)=<reduce$_{x,y.e_1,e_2}$,$\pi_{last}\circ$ J$^T$reduce$_{x,y.e_1,e_2}$>!, 
     where $\pi_{last}$ is the projection to the last element (the continuation variable).
-    It naturally extends on sequential composition. 
-    It does not automatically extend to a multi-functor between concategories because \\
+    It naturally extends to sequential composition. 
+    It does not automatically extend to a multi-functor \MH{define} between concategories because \\
     !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]$\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$]) $\neq$ $\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp\Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])!.\\
     Still, there is a map !$\Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$])$\concatcomp \Dsynrevsymbol_{\rho}$([A$_{k+1}$,$\ldots$,A$_n$])$\to \Dsynrevsymbol_{\rho}$([A$_1$,$\ldots$,A$_k$]$\concatcomp$[A$_{k+1}$,$\ldots$,A$_n$])!.
     Internally, as a lambda term, it is given by \\
     $(x_1,\ldots,x_k,Y_1,(x_{k+1},\ldots,x_n,Y_s)\mapsto (x_1,\ldots,x_n,\lambda(y_1,\ldots,y_n)\to Y_1(y_1,\ldots,y_k)\widehat{+}Y_2(y_{k+1},\ldots,y_n)$.
-    Here, $\widehat{+}$ is the reverse-derivative of the copy map which is known to be fanout. 
+    Here, $\widehat{+}$ is the reverse-derivative of the copy map, which is known to be fanout \MH{define}. 
     It is not surprising to see it appear as $\Dsynrevsymbol_{\rho}$ is a semantic functor, and it does not need to be efficient. 
 \end{definition}
 
